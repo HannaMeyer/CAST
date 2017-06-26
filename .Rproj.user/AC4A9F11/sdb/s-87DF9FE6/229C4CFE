@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "#' Create Space-time Folds\n#' @description Create spatial, temporal or spatio-temporal Folds for cross validation\n#' @param x data.frame containing spatio-temporal data\n#' @param spacevar Character indicating which column of x identifies the \n#' spatial units (e.g. ID of weather stations)\n#' @param timevar Character indicating which column of x identifies the \n#' temporal units (e.g. the day of the year)\n#' @param k numeric. Number of folds. If spacevar or timevar is NA and a \n#' leave one location out or leave one time step out cv should be performed,\n#' set k to the number of unique spatial or temporal units. \n\n#' @return A list that contains a list for model training and a list for \n#' model validation that can directly be used as \"index\" and \"indexOut\" in\n#' caret's train function\n#' @author Hanna Meyer\n#' @examples\n#'  \\dontrun{\n#' library(GSIF)\n#' data(cookfarm)\n#' indices <- CreateSpacetimeFolds(cookfarm$readings,\"SOURCEID\",\"Date\")\n#' str(indices)\n#' ### Prepare for leave one location out cross validation\n#' indices <- CreateSpacetimeFolds(cookfarm$readings,spacevar=\"SOURCEID\",\n#' k=length(unique(cookfarm$readings$SOURCEID)))\n#' }\n#' @export CreateSpacetimeFolds\n#' @aliases CreateSpacetimeFolds\n\nCreateSpacetimeFolds <- function(x,spacevar=NA,timevar=NA,\n                                 k=10,seed=sample(1:1000, 1)){\n  require(caret)\n  #split space into k folds\n  if(!is.na(spacevar)){\n    set.seed(seed)\n  spacefolds <- lapply(createFolds(1:length(unique(x[,spacevar])),k),function(y){\n    unique(x[,spacevar])[y]})\n  }\n  #split time into k folds\n  if(!is.na(timevar)){\n    set.seed(seed)\n  timefolds <- lapply(createFolds(1:length(unique(x[,timevar])),k),function(y){\n    unique(x[,timevar])[y]})\n  }\n  # combine space and time folds\n  cvindices_train <- list()\n  cvindices_test <- list()\n  for (i in 1:k){\n    if(!is.na(timevar)&!is.na(spacevar)){\n    cvindices_test[[i]]<- which(x[,spacevar]%in%spacefolds[[i]]&\n                                  x[,timevar]%in%timefolds[[i]])\n    cvindices_train[[i]]<- which(!x[,spacevar]%in%spacefolds[[i]]&\n                                   !x[,timevar]%in%timefolds[[i]])\n    }\n    if(is.na(timevar)&!is.na(spacevar)){\n      cvindices_test[[i]]<- which(x[,spacevar]%in%spacefolds[[i]])\n      cvindices_train[[i]]<- which(!x[,spacevar]%in%spacefolds[[i]])\n    }\n    if(!is.na(timevar)&is.na(spacevar)){\n      cvindices_test[[i]]<- which(x[,timevar]%in%timefolds[[i]])\n      cvindices_train[[i]]<- which(!x[,timevar]%in%timefolds[[i]])\n    }\n  }\n  return(list(\"index\"=cvindices_train,\"indexOut\"=cvindices_test))\n}\n",
+    "created" : 1498493096906.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4045844147",
+    "id" : "229C4CFE",
+    "lastKnownWriteTime" : 1496853232,
+    "last_content_update" : 1496853232,
+    "path" : "~/Documents/Release/environmentalinformatics-marburg/CAST/R/CreateSpacetimeFolds.R",
+    "project_path" : "R/CreateSpacetimeFolds.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
