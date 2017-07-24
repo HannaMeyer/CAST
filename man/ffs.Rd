@@ -6,10 +6,9 @@
 \usage{
 ffs(predictors, response, method = "rf",
   metric = ifelse(is.factor(response), "Accuracy", "RMSE"),
-  maximize = ifelse(metric == "RMSE", FALSE, TRUE), withinSD = FALSE,
+  maximize = ifelse(metric == "RMSE", FALSE, TRUE), withinSE = FALSE,
   trControl = trainControl(), tuneLength = 3, tuneGrid = NULL,
-  seed = sample(1:1000, 1), runParallel = FALSE, cores = detectCores(),
-  ...)
+  seed = sample(1:1000, 1), ...)
 }
 \arguments{
 \item{predictors}{see \code{\link{train}}}
@@ -22,7 +21,7 @@ ffs(predictors, response, method = "rf",
 
 \item{maximize}{see \code{\link{train}}}
 
-\item{withinSD}{Logical Models are only selected if they are better than the
+\item{withinSE}{Logical Models are only selected if they are better than the
 currently best models Standard error}
 
 \item{trControl}{see \code{\link{train}}}
@@ -31,9 +30,7 @@ currently best models Standard error}
 
 \item{tuneGrid}{see \code{\link{train}}}
 
-\item{seed}{A random number}
-
-\item{runParallel}{Logical}
+\item{seed}{A random number used for model training}
 
 \item{...}{arguments passed to the classification or regression routine
 (such as randomForest). Errors will occur if values for tuning parameters are
@@ -42,10 +39,11 @@ passed here.}
 \item{numeric}{Number of cores for parallel processing}
 }
 \value{
-A list of class train. Beside of the usual train contentm
+A list of class train. Beside of the usual train content
 the object contains the vector "selectedvars" and "selectedvars_perf"
-that give the order of the variables selected as well as their corresponding
-performance (starting from the first two variables)
+that give the order of the best variables selected as well as their corresponding
+performance (starting from the first two variables). It also contains "perf_all"
+that gives the performance of all model runs.
 }
 \description{
 A simple forward feature selection algorithm
@@ -79,9 +77,14 @@ ffsmodel$selectedvars_perf
 
 # or perform model with target-oriented validation (LLO CV)
 #the example is taken from the GSIF package and is described
-#in Gasch et al. (2015). Using target-oriented validation, the reference is
-#Meyer et al. (in prep). Due to high computation time needed, only a
-#small and thus not robust example is shown here.
+#in Gasch et al. (2015). The ffs approach for this dataset is described in
+#Meyer et al. (submitted to Environmental Modelling and Software).
+Due to high computation time needed, only a small and thus not robust example
+is shown here. Run it in parallel on 3 cores:
+
+require(doParallel)
+cl <- makeCluster(3)
+registerDoParallel(cl)
 
 dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 trainDat <- dat[createDataPartition(dat$VW, p = 0.001,list=FALSE),]
@@ -90,6 +93,8 @@ predictors <- c("DEM","TWI","NDRE.M","Bt","BLD","PHI","Precip_cum","cdayt")
 ffsmodel <- ffs(trainDat[,predictors],trainDat$VW,method="rf",
 trControl=trainControl(method="cv",index=indices$index,indexOut=indices$indexOut),
 tuneLength=1)
+
+stopCluster(cl)
 
 }
 \seealso{

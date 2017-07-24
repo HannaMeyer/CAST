@@ -5,21 +5,21 @@
 #' @param method see \code{\link{train}}
 #' @param metric see \code{\link{train}}
 #' @param maximize see \code{\link{train}}
-#' @param withinSD Logical Models are only selected if they are better than the
+#' @param withinSE Logical Models are only selected if they are better than the
 #' currently best models Standard error
 #' @param trControl see \code{\link{train}}
 #' @param tuneLength see \code{\link{train}}
 #' @param tuneGrid see \code{\link{train}}
-#' @param seed A random number
-#' @param runParallel Logical
+#' @param seed A random number used for model training
 #' @param numeric Number of cores for parallel processing
 #' @param ... arguments passed to the classification or regression routine
 #' (such as randomForest). Errors will occur if values for tuning parameters are
 #' passed here.
-#' @return A list of class train. Beside of the usual train contentm
+#' @return A list of class train. Beside of the usual train content
 #' the object contains the vector "selectedvars" and "selectedvars_perf"
-#' that give the order of the variables selected as well as their corresponding
-#' performance (starting from the first two variables)
+#' that give the order of the best variables selected as well as their corresponding
+#' performance (starting from the first two variables). It also contains "perf_all"
+#' that gives the performance of all model runs.
 #' @details Models with two predictors are first trained using all possible
 #' pairs of predictor variables. The best model of these initial models is kept.
 #' On the basis of this best model the predictor variables are iteratively
@@ -50,9 +50,14 @@
 #'
 #' # or perform model with target-oriented validation (LLO CV)
 #' #the example is taken from the GSIF package and is described
-#' #in Gasch et al. (2015). Using target-oriented validation, the reference is
-#' #Meyer et al. (in prep). Due to high computation time needed, only a
-#' #small and thus not robust example is shown here.
+#' #in Gasch et al. (2015). The ffs approach for this dataset is described in
+#' #Meyer et al. (submitted to Environmental Modelling and Software).
+#' Due to high computation time needed, only a small and thus not robust example
+#' is shown here. Run it in parallel on 3 cores:
+#'
+#' require(doParallel)
+#' cl <- makeCluster(3)
+#' registerDoParallel(cl)
 #'
 #' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 #' trainDat <- dat[createDataPartition(dat$VW, p = 0.001,list=FALSE),]
@@ -62,6 +67,8 @@
 #' trControl=trainControl(method="cv",index=indices$index,indexOut=indices$indexOut),
 #' tuneLength=1)
 #'
+#' stopCluster(cl)
+#'
 #' @export ffs
 #' @aliases ffs
 
@@ -70,31 +77,26 @@ ffs <- function (predictors,
                  method = "rf",
                  metric = ifelse(is.factor(response), "Accuracy", "RMSE"),
                  maximize = ifelse(metric == "RMSE", FALSE, TRUE),
-                 withinSD = FALSE,
+                 withinSE = FALSE,
                  trControl = trainControl(),
                  tuneLength = 3,
                  tuneGrid = NULL,
                  seed = sample(1:1000, 1),
-                 runParallel = FALSE,
-                 cores = detectCores(),
                  ...){
   require(caret)
-  if(runParallel){
-    require(doParallel)
-    cl <- makeCluster(cores)
-    registerDoParallel(cl)
-  }
+
   n <- length(names(predictors))
   acc <- 0
+  perf_all <- list()
   if(maximize) evalfunc <- function(x){max(x,na.rm=T)}
   if(!maximize) evalfunc <- function(x){min(x,na.rm=T)}
   isBetter <- function (actmodelperf,bestmodelperf,
-                        bestmodelperfSD=NULL,
+                        bestmodelperfSE=NULL,
                         maximization=FALSE,
                         withinSE=FALSE){
     if(withinSE){
-      result <- ifelse (!maximization, actmodelperf < bestmodelperf-bestmodelperfSD,
-                        actmodelperf > bestmodelperf+bestmodelperfSD)
+      result <- ifelse (!maximization, actmodelperf < bestmodelperf-bestmodelperfSE,
+                        actmodelperf > bestmodelperf+bestmodelperfSE)
     }else{
       result <- ifelse (!maximization, actmodelperf < bestmodelperf,
                         actmodelperf > bestmodelperf)
@@ -113,29 +115,28 @@ ffs <- function (predictors,
                    tuneGrid = tuneGrid)
     ### compare the model with the currently best model
     actmodelperf <- evalfunc(model$results[,names(model$results)==metric])
-    if(withinSD){
-      actmodelperfSD <- Rsenal::se(
+      actmodelperfSE <- Rsenal::se(
         sapply(unique(model$resample$Resample),
                FUN=function(x){mean(model$resample[model$resample$Resample==x,
                                                    metric])}))
-
-    }
     if (i == 1){
       bestmodelperf <- actmodelperf
-      if(withinSD){
-        bestmodelperfSD <- actmodelperfSD
-      }
+      bestmodelperfSE <- actmodelperfSE
       bestmodel <- model
     } else{
       if (isBetter(actmodelperf,bestmodelperf,maximization=maximize,withinSE=FALSE)){
         bestmodelperf <- actmodelperf
-        if(withinSD){
-          bestmodelperfSD <- actmodelperfSD
+        if(withinSE){
+          bestmodelperfSE <- actmodelperfSE
         }
         bestmodel <- model
       }
     }
     acc <- acc+1
+    perf_all[[acc]] <- list(
+      model$finalModel$xNames,
+      actmodelperf,actmodelperfSE)
+    names(perf_all[[acc]]) <- c("variables",metric,"SE")
     print(paste0("maxmimum number of models that still need to be trained: ",
                  2*(n-1)^2/2-acc))
   }
@@ -160,6 +161,8 @@ ffs <- function (predictors,
                      length(startvars), " variables"))
       bestmodel$selectedvars <- selectedvars
       bestmodel$selectedvars_perf <- selectedvars_perf[-length(selectedvars_perf)]
+      names(perf_all) <- paste0("run_", 1:length(perf_all))
+      bestmodel$perf_all <- perf_all
       return(bestmodel)
       break()
     }
@@ -172,23 +175,21 @@ ffs <- function (predictors,
                      tuneLength = tuneLength,
                      tuneGrid = tuneGrid)
       actmodelperf <- evalfunc(model$results[,names(model$results)==metric])
-      if(withinSD){
-        actmodelperfSD <- Rsenal::se(
+        actmodelperfSE <- Rsenal::se(
           sapply(unique(model$resample$Resample),
                  FUN=function(x){mean(model$resample[model$resample$Resample==x,
                                                      metric])}))
-      }
-      if(isBetter(actmodelperf,bestmodelperf,bestmodelperfSD,
-                  maximization=maximize,withinSE=withinSD)){
+      if(isBetter(actmodelperf,bestmodelperf,bestmodelperfSE,
+                  maximization=maximize,withinSE=withinSE)){
         bestmodelperf <- actmodelperf
-        if(withinSD){
-          bestmodelperfSD <- actmodelperfSD
-        }
+          bestmodelperfSE <- actmodelperfSE
         bestmodel <- model
-
-
       }
       acc <- acc+1
+      perf_all[[acc]] <- list(
+        model$finalModel$xNames,
+        actmodelperf,actmodelperfSE)
+      names(perf_all[[acc]]) <- c("variables",metric,"SE")
       print(paste0("maxmimum number of models that still need to be trained: ",
                    2*(n-1)^2/2-acc))
     }
@@ -205,10 +206,9 @@ ffs <- function (predictors,
                    " with ",metric," ",round(min(bestmodel$results[,metric]),3)))
     }
   }
-  if(runParallel){
-    stopCluster(cl)
-  }
   bestmodel$selectedvars <- selectedvars
   bestmodel$selectedvars_perf <- selectedvars_perf
+  names(perf_all) <- paste0("run_", 1:length(perf_all))
+  bestmodel$perf_all <- perf_all
   return(bestmodel)
 }
