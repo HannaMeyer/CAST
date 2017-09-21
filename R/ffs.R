@@ -84,7 +84,7 @@ ffs <- function (predictors,
                  seed = sample(1:1000, 1),
                  ...){
   require(caret)
-
+  se <- function(x){sd(x, na.rm = TRUE)/sqrt(length(na.exclude(x)))}
   n <- length(names(predictors))
   acc <- 0
   perf_all <- list()
@@ -115,7 +115,7 @@ ffs <- function (predictors,
                    tuneGrid = tuneGrid)
     ### compare the model with the currently best model
     actmodelperf <- evalfunc(model$results[,names(model$results)==metric])
-      actmodelperfSE <- Rsenal::se(
+      actmodelperfSE <- se(
         sapply(unique(model$resample$Resample),
                FUN=function(x){mean(model$resample[model$resample$Resample==x,
                                                    metric])}))
@@ -175,7 +175,7 @@ ffs <- function (predictors,
                      tuneLength = tuneLength,
                      tuneGrid = tuneGrid)
       actmodelperf <- evalfunc(model$results[,names(model$results)==metric])
-        actmodelperfSE <- Rsenal::se(
+        actmodelperfSE <- se(
           sapply(unique(model$resample$Resample),
                  FUN=function(x){mean(model$resample[model$resample$Resample==x,
                                                      metric])}))
