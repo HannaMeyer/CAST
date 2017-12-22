@@ -7,7 +7,7 @@
 ffs(predictors, response, method = "rf",
   metric = ifelse(is.factor(response), "Accuracy", "RMSE"),
   maximize = ifelse(metric == "RMSE", FALSE, TRUE), withinSE = FALSE,
-  trControl = trainControl(), tuneLength = 3, tuneGrid = NULL,
+  trControl = caret::trainControl(), tuneLength = 3, tuneGrid = NULL,
   seed = sample(1:1000, 1), ...)
 }
 \arguments{
@@ -35,8 +35,6 @@ currently best models Standard error}
 \item{...}{arguments passed to the classification or regression routine
 (such as randomForest). Errors will occur if values for tuning parameters are
 passed here.}
-
-\item{numeric}{Number of cores for parallel processing}
 }
 \value{
 A list of class train. Beside of the usual train content
@@ -66,23 +64,23 @@ probably shorten the calculation time
 This validation is particulary suitable for
 leave-location-out cross validations where variable selection
 MUST be based on the performance of the model on the hold out station.
+See \href{https://doi.org/10.1016/j.envsoft.2017.12.001}{Meyer et al. (2018)}
+for further details.
 }
 \examples{
- \dontrun{
 data(iris)
 ffsmodel <- ffs(iris[,1:4],iris$Species)
 ffsmodel$selectedvars
 ffsmodel$selectedvars_perf
-}
 
 # or perform model with target-oriented validation (LLO CV)
 #the example is taken from the GSIF package and is described
 #in Gasch et al. (2015). The ffs approach for this dataset is described in
-#Meyer et al. (submitted to Environmental Modelling and Software).
-Due to high computation time needed, only a small and thus not robust example
-is shown here. Run it in parallel on 3 cores:
-
-require(doParallel)
+#Meyer et al. (2018).
+#Due to high computation time needed, only a small and thus not robust example
+#is shown here. Run it in parallel on 3 cores:
+\dontrun{
+library(doParallel)
 cl <- makeCluster(3)
 registerDoParallel(cl)
 
@@ -95,7 +93,7 @@ trControl=trainControl(method="cv",index=indices$index,indexOut=indices$indexOut
 tuneLength=1)
 
 stopCluster(cl)
-
+}
 }
 \seealso{
 \code{\link{train}},

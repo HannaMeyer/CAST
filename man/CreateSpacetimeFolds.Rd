@@ -10,18 +10,20 @@ CreateSpacetimeFolds(x, spacevar = NA, timevar = NA, k = 10,
 \arguments{
 \item{x}{data.frame containing spatio-temporal data}
 
-\item{spacevar}{Character indicating which column of x identifies the 
+\item{spacevar}{Character indicating which column of x identifies the
 spatial units (e.g. ID of weather stations)}
 
-\item{timevar}{Character indicating which column of x identifies the 
+\item{timevar}{Character indicating which column of x identifies the
 temporal units (e.g. the day of the year)}
 
-\item{k}{numeric. Number of folds. If spacevar or timevar is NA and a 
+\item{k}{numeric. Number of folds. If spacevar or timevar is NA and a
 leave one location out or leave one time step out cv should be performed,
 set k to the number of unique spatial or temporal units.}
+
+\item{seed}{numeric. See ?seed}
 }
 \value{
-A list that contains a list for model training and a list for 
+A list that contains a list for model training and a list for
 model validation that can directly be used as "index" and "indexOut" in
 caret's train function
 }
@@ -29,7 +31,6 @@ caret's train function
 Create spatial, temporal or spatio-temporal Folds for cross validation
 }
 \examples{
- \dontrun{
 library(GSIF)
 data(cookfarm)
 indices <- CreateSpacetimeFolds(cookfarm$readings,"SOURCEID","Date")
@@ -37,7 +38,6 @@ str(indices)
 ### Prepare for leave one location out cross validation
 indices <- CreateSpacetimeFolds(cookfarm$readings,spacevar="SOURCEID",
 k=length(unique(cookfarm$readings$SOURCEID)))
-}
 }
 \author{
 Hanna Meyer

@@ -11,7 +11,6 @@
 #' @param tuneLength see \code{\link{train}}
 #' @param tuneGrid see \code{\link{train}}
 #' @param seed A random number used for model training
-#' @param numeric Number of cores for parallel processing
 #' @param ... arguments passed to the classification or regression routine
 #' (such as randomForest). Errors will occur if values for tuning parameters are
 #' passed here.
@@ -36,26 +35,26 @@
 #' @note This validation is particulary suitable for
 #' leave-location-out cross validations where variable selection
 #' MUST be based on the performance of the model on the hold out station.
+#' See \href{https://doi.org/10.1016/j.envsoft.2017.12.001}{Meyer et al. (2018)}
+#' for further details.
 
 #' @author Hanna Meyer
 #' @seealso \code{\link{train}},
 #' \code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}}
 #' @examples
-#'  \dontrun{
 #' data(iris)
 #' ffsmodel <- ffs(iris[,1:4],iris$Species)
 #' ffsmodel$selectedvars
 #' ffsmodel$selectedvars_perf
-#' }
 #'
 #' # or perform model with target-oriented validation (LLO CV)
 #' #the example is taken from the GSIF package and is described
 #' #in Gasch et al. (2015). The ffs approach for this dataset is described in
-#' #Meyer et al. (submitted to Environmental Modelling and Software).
-#' Due to high computation time needed, only a small and thus not robust example
-#' is shown here. Run it in parallel on 3 cores:
-#'
-#' require(doParallel)
+#' #Meyer et al. (2018).
+#' #Due to high computation time needed, only a small and thus not robust example
+#' #is shown here. Run it in parallel on 3 cores:
+#' \dontrun{
+#' library(doParallel)
 #' cl <- makeCluster(3)
 #' registerDoParallel(cl)
 #'
@@ -68,7 +67,7 @@
 #' tuneLength=1)
 #'
 #' stopCluster(cl)
-#'
+#'}
 #' @export ffs
 #' @aliases ffs
 
@@ -78,12 +77,11 @@ ffs <- function (predictors,
                  metric = ifelse(is.factor(response), "Accuracy", "RMSE"),
                  maximize = ifelse(metric == "RMSE", FALSE, TRUE),
                  withinSE = FALSE,
-                 trControl = trainControl(),
+                 trControl = caret::trainControl(),
                  tuneLength = 3,
                  tuneGrid = NULL,
                  seed = sample(1:1000, 1),
                  ...){
-  require(caret)
   se <- function(x){sd(x, na.rm = TRUE)/sqrt(length(na.exclude(x)))}
   n <- length(names(predictors))
   acc <- 0
@@ -107,7 +105,7 @@ ffs <- function (predictors,
   twogrid <- t(data.frame(combn(names(predictors),2)))
   for (i in 1:nrow(twogrid)){
     set.seed(seed)
-    model <- train(predictors[,twogrid[i,]],
+    model <- caret::train(predictors[,twogrid[i,]],
                    response,
                    method=method,
                    trControl=trControl,
@@ -168,7 +166,7 @@ ffs <- function (predictors,
     }
     for (i in 1:length(nextvars)){
       set.seed(seed)
-      model <- train(predictors[,c(startvars,nextvars[i])],
+      model <- caret::train(predictors[,c(startvars,nextvars[i])],
                      response,
                      method = method,
                      trControl = trControl,
