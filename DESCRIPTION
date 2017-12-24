@@ -12,5 +12,5 @@ Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.1.0)
 Imports: caret, stats, utils
-Suggests: doParallel, GSIF
+Suggests: doParallel, GSIF, randomForest
 RoxygenNote: 6.0.1
