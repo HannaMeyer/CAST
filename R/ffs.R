@@ -41,6 +41,11 @@
 #' @author Hanna Meyer
 #' @seealso \code{\link{train}},
 #' \code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}}
+#' @references
+#' \itemize{
+#' \item Gasch, C.K., Hengl, T., Gräler, B., Meyer, H., Magney, T., Brown, D.J. (2015): Spatio-temporal interpolation of soil water, temperature, and electrical conductivity in 3D+T: the Cook Agronomy Farm data set. Spatial Statistics 14: 70-90.
+#' \item Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.
+#' }
 #' @examples
 #' data(iris)
 #' ffsmodel <- ffs(iris[,1:4],iris$Species)
