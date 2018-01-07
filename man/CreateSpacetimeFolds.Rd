@@ -39,6 +39,9 @@ str(indices)
 indices <- CreateSpacetimeFolds(cookfarm$readings,spacevar="SOURCEID",
 k=length(unique(cookfarm$readings$SOURCEID)))
 }
+\references{
+Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.
+}
 \author{
 Hanna Meyer
 }

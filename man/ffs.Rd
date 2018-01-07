@@ -68,11 +68,12 @@ See \href{https://doi.org/10.1016/j.envsoft.2017.12.001}{Meyer et al. (2018)}
 for further details.
 }
 \examples{
+\dontrun{
 data(iris)
 ffsmodel <- ffs(iris[,1:4],iris$Species)
 ffsmodel$selectedvars
 ffsmodel$selectedvars_perf
-
+}
 # or perform model with target-oriented validation (LLO CV)
 #the example is taken from the GSIF package and is described
 #in Gasch et al. (2015). The ffs approach for this dataset is described in

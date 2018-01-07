@@ -13,6 +13,8 @@
 #' model validation that can directly be used as "index" and "indexOut" in
 #' caret's train function
 #' @author Hanna Meyer
+#' @references
+#' Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.
 #' @examples
 #' library(GSIF)
 #' data(cookfarm)

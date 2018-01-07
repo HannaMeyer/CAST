@@ -1,13 +1,15 @@
 Package: CAST
 Type: Package
-Title: Caret Applications for Spatio-Temporal models
+Title: Caret Applications for Spatial-Temporal Models
 Version: 0.1.0
 Authors@R: c(person("Hanna", "Meyer", email = "hanna.meyer@geo.uni-marburg.de", role = c("cre", "aut")),
              person("Chris", "Reudenbach", role = c("ctb")),
              person("Thomas", "Nauss", role = c("ctb")))
+Author: Hanna Meyer [cre, aut], Chris Reudenbach [ctb], Thomas Nauss [ctb]             
 Maintainer: Hanna Meyer <hanna.meyer@geo.uni-marburg.de>
-Description: The package includes functionality to run caret with spatial or spatio-temporal data. The package includes the functions published in \href{https://doi.org/10.1016/j.envsoft.2017.12.001}{Meyer et al. (2018)}.
+Description: Supporting functionality to run caret with spatial or spatial-temporal data.
 License: GPL (>= 3) | file LICENSE
+URL: https://github.com/environmentalinformatics-marburg/CAST
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.1.0)

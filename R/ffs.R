@@ -47,11 +47,12 @@
 #' \item Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.
 #' }
 #' @examples
+#' \dontrun{
 #' data(iris)
 #' ffsmodel <- ffs(iris[,1:4],iris$Species)
 #' ffsmodel$selectedvars
 #' ffsmodel$selectedvars_perf
-#'
+#'}
 #' # or perform model with target-oriented validation (LLO CV)
 #' #the example is taken from the GSIF package and is described
 #' #in Gasch et al. (2015). The ffs approach for this dataset is described in
