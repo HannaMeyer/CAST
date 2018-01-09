@@ -1,10 +1,10 @@
-#' Caret Applications for Spatio-Temporal models
+#' 'caret' Applications for Spatio-Temporal models
 #'
-#' @description The package includes functionality to run caret with spatial or spatio-temporal data. The package includes the functions published in \href{https://doi.org/10.1016/j.envsoft.2017.12.001}{Meyer et al. (2018)}.
+#' @description Supporting functionality to run 'caret' with spatial or spatial-temporal data. 'caret' is a frequently used package for model training and prediction using machine learning. This package includes functions to improve spatial-temporal modelling tasks using 'caret'. It prepares data for Leave-Location-Out and Leave-Time-Out cross-validation which are target-oriented validation strategies for spatial-temporal models. To decrease overfitting and improve model performances, the package implements a forward feature selection that selects suitable predictor variables in view to their contribution to the target-oriented performance.
 
 #' @name CAST
 #' @docType package
-#' @title Caret Applications for Spatio-Temporal models
+#' @title 'caret' Applications for Spatial-Temporal Models
 #' @author Hanna Meyer
 #' \cr
 #' \emph{Maintainer:} Hanna Meyer \email{hanna.meyer@@geo.uni-marburg.de}

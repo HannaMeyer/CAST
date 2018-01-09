@@ -11,18 +11,25 @@
 #' @param seed numeric. See ?seed
 #' @return A list that contains a list for model training and a list for
 #' model validation that can directly be used as "index" and "indexOut" in
-#' caret's train function
+#' caret's trainControl function
+#' @note Standard k-fold cross-validation can lead to considerable misinterpretation in spatial-temporal modelling tasks. This function can be used to prepare a Leave-Location-Out, Leave-Time-Out or Leave-Location-and-Time-Out cross-validation as target-oriented validation strategies for spatial-temporal prediction tasks. See Meyer et al. (2018) for further information.
 #' @author Hanna Meyer
+#' @seealso \code{\link{trainControl}},\code{\link{ffs}}
 #' @references
 #' Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.
 #' @examples
 #' library(GSIF)
 #' data(cookfarm)
+#' ### Prepare for 10-fold Leave-Location-and-Time-Out cross validation
 #' indices <- CreateSpacetimeFolds(cookfarm$readings,"SOURCEID","Date")
 #' str(indices)
-#' ### Prepare for leave one location out cross validation
+#' ### Prepare for 10-fold Leave-Location-Out cross validation
+#' indices <- CreateSpacetimeFolds(cookfarm$readings,spacevar="SOURCEID")
+#' str(indices)
+#' ### Prepare for leave-One-Location-Out cross validation
 #' indices <- CreateSpacetimeFolds(cookfarm$readings,spacevar="SOURCEID",
 #' k=length(unique(cookfarm$readings$SOURCEID)))
+#' str(indices)
 #' @export CreateSpacetimeFolds
 #' @aliases CreateSpacetimeFolds
 
