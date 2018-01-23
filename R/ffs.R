@@ -88,6 +88,11 @@ ffs <- function (predictors,
                  tuneGrid = NULL,
                  seed = sample(1:1000, 1),
                  ...){
+  if (trControl$method=="LOOCV"){
+    if (withinSE==TRUE){
+      print("warning: withinSE is set to FALSE as no SE can be calculated using method LOOCV")
+      withinSE = FALSE
+  }}
   se <- function(x){sd(x, na.rm = TRUE)/sqrt(length(na.exclude(x)))}
   n <- length(names(predictors))
   acc <- 0
@@ -112,17 +117,21 @@ ffs <- function (predictors,
   for (i in 1:nrow(twogrid)){
     set.seed(seed)
     model <- caret::train(predictors[,twogrid[i,]],
-                   response,
-                   method=method,
-                   trControl=trControl,
-                   tuneLength = tuneLength,
-                   tuneGrid = tuneGrid)
+                          response,
+                          method=method,
+                          trControl=trControl,
+                          tuneLength = tuneLength,
+                          tuneGrid = tuneGrid)
     ### compare the model with the currently best model
     actmodelperf <- evalfunc(model$results[,names(model$results)==metric])
-      actmodelperfSE <- se(
-        sapply(unique(model$resample$Resample),
-               FUN=function(x){mean(model$resample[model$resample$Resample==x,
-                                                   metric])}))
+    if(withinSE){
+    actmodelperfSE <- se(
+      sapply(unique(model$resample$Resample),
+             FUN=function(x){mean(model$resample[model$resample$Resample==x,
+                                                 metric])}))
+    }else{
+      actmodelperfSE <- NA
+    }
     if (i == 1){
       bestmodelperf <- actmodelperf
       bestmodelperfSE <- actmodelperfSE
@@ -130,9 +139,7 @@ ffs <- function (predictors,
     } else{
       if (isBetter(actmodelperf,bestmodelperf,maximization=maximize,withinSE=FALSE)){
         bestmodelperf <- actmodelperf
-        if(withinSE){
-          bestmodelperfSE <- actmodelperfSE
-        }
+        bestmodelperfSE <- actmodelperfSE
         bestmodel <- model
       }
     }
@@ -173,20 +180,24 @@ ffs <- function (predictors,
     for (i in 1:length(nextvars)){
       set.seed(seed)
       model <- caret::train(predictors[,c(startvars,nextvars[i])],
-                     response,
-                     method = method,
-                     trControl = trControl,
-                     tuneLength = tuneLength,
-                     tuneGrid = tuneGrid)
+                            response,
+                            method = method,
+                            trControl = trControl,
+                            tuneLength = tuneLength,
+                            tuneGrid = tuneGrid)
       actmodelperf <- evalfunc(model$results[,names(model$results)==metric])
-        actmodelperfSE <- se(
-          sapply(unique(model$resample$Resample),
-                 FUN=function(x){mean(model$resample[model$resample$Resample==x,
-                                                     metric])}))
+      if(withinSE){
+      actmodelperfSE <- se(
+        sapply(unique(model$resample$Resample),
+               FUN=function(x){mean(model$resample[model$resample$Resample==x,
+                                                   metric])}))
+      }else{
+        actmodelperfSE <- NA
+      }
       if(isBetter(actmodelperf,bestmodelperf,bestmodelperfSE,
                   maximization=maximize,withinSE=withinSE)){
         bestmodelperf <- actmodelperf
-          bestmodelperfSE <- actmodelperfSE
+        bestmodelperfSE <- actmodelperfSE
         bestmodel <- model
       }
       acc <- acc+1
