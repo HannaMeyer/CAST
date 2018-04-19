@@ -5,11 +5,9 @@
 #' @name CAST
 #' @docType package
 #' @title 'caret' Applications for Spatial-Temporal Models
-#' @author Hanna Meyer
+#' @author Hanna Meyer, Christoph Reudenbach, Marvin Ludwig, Thomas Nauss
 #' \cr
 #' \emph{Maintainer:} Hanna Meyer \email{hanna.meyer@@geo.uni-marburg.de}
-#'
-#'
 #'
 #' @import caret
 

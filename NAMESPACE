@@ -2,6 +2,7 @@
 
 export(CreateSpacetimeFolds)
 export(ffs)
+export(plot_ffs)
 import(caret)
 importFrom(stats,na.exclude)
 importFrom(stats,sd)

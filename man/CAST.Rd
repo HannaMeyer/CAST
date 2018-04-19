@@ -12,7 +12,7 @@ Supporting functionality to run 'caret' with spatial or spatial-temporal data. '
 'caret' Applications for Spatio-Temporal models
 }
 \author{
-Hanna Meyer
+Hanna Meyer, Christoph Reudenbach, Marvin Ludwig, Thomas Nauss
 \cr
 \emph{Maintainer:} Hanna Meyer \email{hanna.meyer@geo.uni-marburg.de}
 }
