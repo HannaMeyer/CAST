@@ -22,7 +22,7 @@
 #' @aliases plot_ffs
 
 
-plot_ffs <- function(ffs_model,palette="viridis",marker="red",size=1.5,lwd=0.5,
+plot_ffs <- function(ffs_model,palette="rainbow",marker="black",size=1.5,lwd=0.5,
                      pch=21){
   metric <- ffs_model$metric
   output_df <- ffs_model$perf_all
@@ -54,11 +54,6 @@ plot_ffs <- function(ffs_model,palette="viridis",marker="red",size=1.5,lwd=0.5,
     ggplot2::scale_colour_gradientn(breaks=seq(2,max(output_df$nvar),
                                                by=ceiling(max(output_df$nvar)/5)),
                                     colours = cols, name = "variables",guide = "colourbar")+
-    ggplot2::theme(axis.line = ggplot2::element_line(colour = "black"),
-                   panel.grid.major = ggplot2::element_blank(),
-                   panel.grid.minor = ggplot2::element_blank(),
-                   panel.border = ggplot2::element_blank(),
-                   panel.background = ggplot2::element_blank())+
     ggplot2::scale_x_continuous(name = "Model run")+
     ggplot2::scale_y_continuous(name = metric)
 }

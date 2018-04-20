@@ -4,7 +4,7 @@
 \alias{plot_ffs}
 \title{Plot results of a Forward feature selection}
 \usage{
-plot_ffs(ffs_model, palette = "viridis", marker = "red", size = 1.5,
+plot_ffs(ffs_model, palette = "rainbow", marker = "black", size = 1.5,
   lwd = 0.5, pch = 21)
 }
 \arguments{
