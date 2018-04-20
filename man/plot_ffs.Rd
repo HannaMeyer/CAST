@@ -4,17 +4,21 @@
 \alias{plot_ffs}
 \title{Plot results of a Forward feature selection}
 \usage{
-plot_ffs(ffs_model, palette = "viridis")
+plot_ffs(ffs_model, palette = "viridis", marker = "red")
 }
 \arguments{
 \item{ffs_model}{Result of a forward feature selection see \code{\link{ffs}}}
 
-\item{palette}{A color palette}
+\item{palette}{Character. A color palette}
+
+\item{marker}{Character. Color to mark the best models}
 }
 \description{
-A simple plotting function for a forward feature selection result.
-bars represent standard errors from cross validation.
-Marked points show the best model from each number of variables.
+A plotting function for a forward feature selection result.
+Each point is the mean performance of a model run. Error bars represent
+the standard errors from cross validation.
+Marked points show the best model from each number of variables until a further variable
+could not improve the results.
 }
 \examples{
 \dontrun{

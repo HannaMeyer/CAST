@@ -1,9 +1,12 @@
 #' Plot results of a Forward feature selection
-#' @description A simple plotting function for a forward feature selection result.
-#' bars represent standard errors from cross validation.
-#' Marked points show the best model from each number of variables.
+#' @description A plotting function for a forward feature selection result.
+#' Each point is the mean performance of a model run. Error bars represent
+#' the standard errors from cross validation.
+#' Marked points show the best model from each number of variables until a further variable
+#' could not improve the results.
 #' @param ffs_model Result of a forward feature selection see \code{\link{ffs}}
-#' @param palette A color palette
+#' @param palette Character. A color palette
+#' @param marker Character. Color to mark the best models
 #' @author Marvin Ludwig and Hanna Meyer
 #' @seealso \code{\link{ffs}}
 #' @examples
@@ -16,8 +19,7 @@
 #' @aliases plot_ffs
 
 
-
-plot_ffs <- function(ffs_model,palette="viridis"){
+plot_ffs <- function(ffs_model,palette="viridis",marker="red"){
   metric <- ffs_model$metric
   output_df <- ffs_model$perf_all
   output_df$run <- seq(nrow(output_df))
@@ -25,37 +27,37 @@ plot_ffs <- function(ffs_model,palette="viridis"){
   bestmodels <- c()
   for (i in unique(output_df$nvar)){
     if (ffs_model$maximize){
-    bestmodels <- c(bestmodels,
-                    output_df$run[output_df$nvar==i][which(output_df$value[
-                      output_df$nvar==i]==max(output_df$value[output_df$nvar==i]))])
+      bestmodels <- c(bestmodels,
+                      output_df$run[output_df$nvar==i][which(output_df$value[
+                        output_df$nvar==i]==max(output_df$value[output_df$nvar==i]))][1])
     }else{
       bestmodels <- c(bestmodels,
                       output_df$run[output_df$nvar==i][which(output_df$value[
-                        output_df$nvar==i]==min(output_df$value[output_df$nvar==i]))])
+                        output_df$nvar==i]==min(output_df$value[output_df$nvar==i]))][1])
     }
   }
-  bestmodels <- bestmodels[1:length(ffs_model$selectedvars)]
-  cols1 <- rev(eval(parse(text=paste0(palette,"(",max(output_df$nvar)-1,")"))))
-  cols <- cols1[output_df$nvar-1]
-  output_df$ymin <- output_df$value - output_df$SE
-  output_df$ymax <- output_df$value + output_df$SE
-
-
-
+  bestmodels <- bestmodels[1:(length(ffs_model$selectedvars)-1)]
+  cols <- rev(eval(parse(text=paste0(palette,"(",max(output_df$nvar)-1,")"))))
+  ymin <- output_df$value - output_df$SE
+  ymax <- output_df$value + output_df$SE
   ggplot2::ggplot(output_df, ggplot2::aes_string(x = "run", y = "value"))+
-    ggplot2::geom_errorbar(ggplot2::aes_string(ymin = "ymin", ymax = "ymax"), color = cols)+
-   ggplot2::geom_point(ggplot2::aes_string(colour="nvar"))+
-    ggplot2::geom_point(data=output_df[-bestmodels, ],ggplot2::aes_string(x = "run", y = "value"),
-                       pch=21)+
-    ggplot2::geom_point(data=output_df[bestmodels, ],ggplot2::aes_string(x = "run", y = "value"),
-                        pch=21,colour="red",lwd=1.5)+
-    ggplot2::scale_colour_gradientn(breaks=seq(2,max(output_df$nvar),by=ceiling(max(output_df$nvar)/5)),colours = cols1, name = "# of variables",guide = "colourbar")+
- #   ggplot2::scale_colour_gradientn(breaks=seq(2, max(output_df$nvar), length.out = 1+max(output_df$nvar)%%5),colours = cols1, name = "# of variables",guide = "colourbar")+
-        ggplot2::theme(axis.line = ggplot2::element_line(colour = "black"),
-          panel.grid.major = ggplot2::element_blank(),
-          panel.grid.minor = ggplot2::element_blank(),
-          panel.border = ggplot2::element_blank(),
-          panel.background = ggplot2::element_blank())+
+    ggplot2::geom_errorbar(ggplot2::aes(ymin = ymin, ymax = ymax),
+                           color = cols[output_df$nvar-1])+
+    ggplot2::geom_point(ggplot2::aes_string(colour="nvar"),size=1.5)+
+#    ggplot2::geom_point(data=output_df[-bestmodels, ],
+#                        ggplot2::aes_string(x = "run", y = "value"),
+#                        pch=21)+
+    ggplot2::geom_point(data=output_df[bestmodels, ],
+                        ggplot2::aes_string(x = "run", y = "value"),
+                        pch=21,colour=marker,lwd=2)+
+    ggplot2::scale_colour_gradientn(breaks=seq(2,max(output_df$nvar),
+                                               by=ceiling(max(output_df$nvar)/5)),
+                                    colours = cols, name = "variables",guide = "colourbar")+
+    ggplot2::theme(axis.line = ggplot2::element_line(colour = "black"),
+                   panel.grid.major = ggplot2::element_blank(),
+                   panel.grid.minor = ggplot2::element_blank(),
+                   panel.border = ggplot2::element_blank(),
+                   panel.background = ggplot2::element_blank())+
     ggplot2::scale_x_continuous(name = "Model run")+
     ggplot2::scale_y_continuous(name = metric)
 }
