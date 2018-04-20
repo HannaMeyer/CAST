@@ -7,6 +7,9 @@
 #' @param ffs_model Result of a forward feature selection see \code{\link{ffs}}
 #' @param palette Character. A color palette
 #' @param marker Character. Color to mark the best models
+#' @param size Numeric. Size of the points
+#' @param lwd Numeric. Width of the error bars
+#' @param pch Numeric. Type of point marking the best models
 #' @author Marvin Ludwig and Hanna Meyer
 #' @seealso \code{\link{ffs}}
 #' @examples
@@ -19,7 +22,8 @@
 #' @aliases plot_ffs
 
 
-plot_ffs <- function(ffs_model,palette="viridis",marker="red"){
+plot_ffs <- function(ffs_model,palette="viridis",marker="red",size=1.5,lwd=0.5,
+                     pch=21){
   metric <- ffs_model$metric
   output_df <- ffs_model$perf_all
   output_df$run <- seq(nrow(output_df))
@@ -42,14 +46,11 @@ plot_ffs <- function(ffs_model,palette="viridis",marker="red"){
   ymax <- output_df$value + output_df$SE
   ggplot2::ggplot(output_df, ggplot2::aes_string(x = "run", y = "value"))+
     ggplot2::geom_errorbar(ggplot2::aes(ymin = ymin, ymax = ymax),
-                           color = cols[output_df$nvar-1])+
-    ggplot2::geom_point(ggplot2::aes_string(colour="nvar"),size=1.5)+
-#    ggplot2::geom_point(data=output_df[-bestmodels, ],
-#                        ggplot2::aes_string(x = "run", y = "value"),
-#                        pch=21)+
+                           color = cols[output_df$nvar-1],lwd=lwd)+
+    ggplot2::geom_point(ggplot2::aes_string(colour="nvar"),size=size)+
     ggplot2::geom_point(data=output_df[bestmodels, ],
                         ggplot2::aes_string(x = "run", y = "value"),
-                        pch=21,colour=marker,lwd=2)+
+                        pch=pch,colour=marker,lwd=size)+
     ggplot2::scale_colour_gradientn(breaks=seq(2,max(output_df$nvar),
                                                by=ceiling(max(output_df$nvar)/5)),
                                     colours = cols, name = "variables",guide = "colourbar")+

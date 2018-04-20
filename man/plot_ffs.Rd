@@ -4,7 +4,8 @@
 \alias{plot_ffs}
 \title{Plot results of a Forward feature selection}
 \usage{
-plot_ffs(ffs_model, palette = "viridis", marker = "red")
+plot_ffs(ffs_model, palette = "viridis", marker = "red", size = 1.5,
+  lwd = 0.5, pch = 21)
 }
 \arguments{
 \item{ffs_model}{Result of a forward feature selection see \code{\link{ffs}}}
@@ -12,6 +13,12 @@ plot_ffs(ffs_model, palette = "viridis", marker = "red")
 \item{palette}{Character. A color palette}
 
 \item{marker}{Character. Color to mark the best models}
+
+\item{size}{Numeric. Size of the points}
+
+\item{lwd}{Numeric. Width of the error bars}
+
+\item{pch}{Numeric. Type of point marking the best models}
 }
 \description{
 A plotting function for a forward feature selection result.
