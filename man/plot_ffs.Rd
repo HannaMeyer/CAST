@@ -11,12 +11,10 @@ plot_ffs(ffs_model, palette = "viridis")
 
 \item{palette}{A color palette}
 }
-\value{
-A plot object. Grey bars represent standard errors from cross validation.
-Marked points show the best model from each number of variables.
-}
 \description{
-A simple plotting function for a forward feature selection result
+A simple plotting function for a forward feature selection result.
+bars represent standard errors from cross validation.
+Marked points show the best model from each number of variables.
 }
 \examples{
 \dontrun{
