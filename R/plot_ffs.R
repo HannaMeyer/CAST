@@ -66,7 +66,6 @@ plot_ffs <- function(ffs_model,palette=rainbow,reverse=TRUE, marker="black",size
   }else{
     dfint <- output_df
     dfint$nvar <- as.factor(dfint$nvar)
-    print(class(dfint$run))
     p <- ggplot2::ggplot(dfint, ggplot2::aes_string(x = "run", y = "value"))+
       ggplot2::geom_errorbar(ggplot2::aes(ymin = ymin, ymax = ymax),
                              color = cols[output_df$nvar-1],lwd=lwd)+
