@@ -4,13 +4,15 @@
 \alias{plot_ffs}
 \title{Plot results of a Forward feature selection}
 \usage{
-plot_ffs(ffs_model, palette = "rainbow", marker = "black", size = 1.5,
-  lwd = 0.5, pch = 21)
+plot_ffs(ffs_model, palette = rainbow, reverse = TRUE, marker = "black",
+  size = 1.5, lwd = 0.5, pch = 21)
 }
 \arguments{
 \item{ffs_model}{Result of a forward feature selection see \code{\link{ffs}}}
 
-\item{palette}{Character. A color palette}
+\item{palette}{A color palette}
+
+\item{reverse}{Character. Should the palette be reversed?}
 
 \item{marker}{Character. Color to mark the best models}
 
