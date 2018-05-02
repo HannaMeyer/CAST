@@ -23,7 +23,7 @@
 #' @aliases plot_ffs
 
 
-plot_ffs <- function(ffs_model,palette=rainbow,reverse=TRUE, marker="black",size=1.5,lwd=0.5,
+plot_ffs <- function(ffs_model,palette=rainbow,reverse=FALSE, marker="black",size=1.5,lwd=0.5,
                      pch=21){
   metric <- ffs_model$metric
   output_df <- ffs_model$perf_all
