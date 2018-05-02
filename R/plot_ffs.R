@@ -42,7 +42,6 @@ plot_ffs <- function(ffs_model,palette=rainbow,reverse=FALSE, marker="black",siz
     }
   }
   bestmodels <- bestmodels[1:(length(ffs_model$selectedvars)-1)]
-  #  cols <- rev(eval(parse(text=paste0(palette,"(",max(output_df$nvar)-1,")"))))
   if (!reverse){
     cols <- palette(max(output_df$nvar)-1)
   }else{
