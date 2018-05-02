@@ -14,6 +14,7 @@
 #' @importFrom stats na.exclude
 #' @importFrom stats sd
 #' @importFrom utils combn
+#' @importFrom grDevices rainbow
 #' @keywords package
 #'
 NULL
