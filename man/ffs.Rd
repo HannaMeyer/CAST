@@ -8,7 +8,7 @@ ffs(predictors, response, method = "rf",
   metric = ifelse(is.factor(response), "Accuracy", "RMSE"),
   maximize = ifelse(metric == "RMSE", FALSE, TRUE), withinSE = FALSE,
   trControl = caret::trainControl(), tuneLength = 3, tuneGrid = NULL,
-  seed = sample(1:1000, 1), ...)
+  seed = sample(1:1000, 1), verbose = TRUE, ...)
 }
 \arguments{
 \item{predictors}{see \code{\link{train}}}
@@ -31,6 +31,8 @@ currently best models Standard error}
 \item{tuneGrid}{see \code{\link{train}}}
 
 \item{seed}{A random number used for model training}
+
+\item{verbose}{Logical. Should information about the progress be printed?}
 
 \item{...}{arguments passed to the classification or regression routine
 (such as randomForest). Errors will occur if values for tuning parameters are
