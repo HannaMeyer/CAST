@@ -192,6 +192,7 @@ ffs <- function (predictors,
       model <- caret::train(predictors[,c(startvars,nextvars[i])],
                             response,
                             method = method,
+                            metric=metric,
                             trControl = trControl,
                             tuneLength = tuneLength,
                             tuneGrid = tuneGrid)
