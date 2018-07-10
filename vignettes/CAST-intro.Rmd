@@ -16,10 +16,7 @@ vignette: >
 knitr::opts_chunk$set(fig.width = 8.83)
 ```
 
-```{r, echo=FALSE}
-library (mapview)
-mapviewOptions(basemaps = c("Esri.WorldImagery"))
-```
+
 
 ## Introduction
 ### Background
@@ -70,6 +67,8 @@ library(sp)
 data_sp <- unique(data[,c("SOURCEID","Easting","Northing")])
 coordinates(data_sp) <- ~Easting+Northing
 proj4string(data_sp) <- CRS("+init=epsg:26911")
+#plot the data:
+mapviewOptions(basemaps = c("Esri.WorldImagery"))
 mapview(data_sp)
 ```
 
