@@ -2,11 +2,4 @@
 .Rhistory
 .RData
 .Ruserdata
-*.pdf
-*.out
-*.tex
-*.toc
-*.log
-*.blg
-*.bbl
-*.aux
+inst/doc
