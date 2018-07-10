@@ -2,7 +2,10 @@
 title: "Introduction to CAST"
 author: "Hanna Meyer"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_document
+output:
+  rmarkdown::html_document:
+    toc: true
+    theme: united
 vignette: >
   %\VignetteIndexEntry{Introduction to CAST}
   %\VignetteEngine{knitr::rmarkdown}
@@ -11,9 +14,11 @@ vignette: >
 
 ```{r setup, echo=FALSE}
 knitr::opts_chunk$set(fig.width = 8.83)
+```
+
+```{r, echo=FALSE}
 library (mapview)
 mapviewOptions(basemaps = c("Esri.WorldImagery"))
-```
 ```
 
 ## Introduction
