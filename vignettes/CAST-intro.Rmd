@@ -48,7 +48,7 @@ help(CAST)
 The example prediction task for this tutorial is the following: We have a set of data loggers distributed over a farm, and we want to map soil moisture, based on a set of spatial and temporal predictor variables. We will use Random Forests as a machine learning algorithm in this tutorial.
 
 ### Description of the example dataset
-To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251) and available via the GSIF package ([Hengl 2017](https://cran.r-project.org/web/packages/GSIF/index.html)). The dataset included in CAST is a re-structured dataset which was used for the analysis in [Meyer et al 2018](https://www.sciencedirect.com/science/article/pii/S1364815217310976).
+To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251) and available via the GSIF package ([Hengl 2017](https://CRAN.R-project.org/package=GSIF)). The dataset included in CAST is a re-structured dataset which was used for the analysis in [Meyer et al 2018](https://www.sciencedirect.com/science/article/pii/S1364815217310976).
 
 
 ```{r, message = FALSE, warning=FALSE}
