@@ -110,10 +110,11 @@ ffs <- function (predictors,
                  seed = sample(1:1000, 1),
                  verbose=TRUE,
                  ...){
+  trControl$returnResamp <- "final"
   if (trControl$method=="LOOCV"){
     if (withinSE==TRUE){
       print("warning: withinSE is set to FALSE as no SE can be calculated using method LOOCV")
-      withinSE = FALSE
+      withinSE <- FALSE
     }}
   se <- function(x){sd(x, na.rm = TRUE)/sqrt(length(na.exclude(x)))}
   n <- length(names(predictors))
@@ -121,8 +122,8 @@ ffs <- function (predictors,
   perf_all <- data.frame(matrix(ncol=length(predictors)+3,nrow=2*(n-1)^2/2))
   names(perf_all) <- c(paste0("var",1:length(predictors)),metric,"SE","nvar")
 
-  if(maximize) evalfunc <- function(x){max(x,na.rm=T)}
-  if(!maximize) evalfunc <- function(x){min(x,na.rm=T)}
+  if(maximize) evalfunc <- function(x){max(x,na.rm=TRUE)}
+  if(!maximize) evalfunc <- function(x){min(x,na.rm=TRUE)}
   isBetter <- function (actmodelperf,bestmodelperf,
                         bestmodelperfSE=NULL,
                         maximization=FALSE,
@@ -154,7 +155,7 @@ ffs <- function (predictors,
     actmodelperfSE <- se(
       sapply(unique(model$resample$Resample),
              FUN=function(x){mean(model$resample[model$resample$Resample==x,
-                                                 metric])}))
+                                                 metric],na.rm=TRUE)}))
     if (i == 1){
       bestmodelperf <- actmodelperf
       bestmodelperfSE <- actmodelperfSE
@@ -220,7 +221,7 @@ ffs <- function (predictors,
       actmodelperfSE <- se(
         sapply(unique(model$resample$Resample),
                FUN=function(x){mean(model$resample[model$resample$Resample==x,
-                                                   metric])}))
+                                                   metric],na.rm=TRUE)}))
       if(isBetter(actmodelperf,bestmodelperf,
                   selectedvars_SE[length(selectedvars_SE)], #SE from model with nvar-1
                   maximization=maximize,withinSE=withinSE)){
