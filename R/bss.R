@@ -51,6 +51,13 @@ bss <- function (predictors,
                  verbose=TRUE,
                  ...){
   trControl$returnResamp <- "final"
+  if(class(response)=="character"){
+    response <- factor(response)
+    if(metric=="RMSE"){
+      metric <- "Accuracy"
+      maximize <- TRUE
+    }
+  }
   se <- function(x){sd(x, na.rm = TRUE)/sqrt(length(na.exclude(x)))}
   n <- length(names(predictors))
   if(maximize) evalfunc <- function(x){max(x,na.rm=T)}
@@ -97,7 +104,15 @@ bss <- function (predictors,
                  2^n-(n+1) - acc))
     }
   }
+  if (maximize){
+    selectedvars_perf <- max(bestmodel$results[,metric])
+  } else{
+    selectedvars_perf <- min(bestmodel$results[,metric])
+  }
+  bestmodel$selectedvars <- bestmodel$finalModel$xNames
+  bestmodel$selectedvars_perf <- selectedvars_perf
   bestmodel$perf_all <- perf_all
   bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
+  bestmodel$perf_all <- bestmodel$perf_all[order(bestmodel$perf_all$nvar),]
   return(bestmodel)
 }
