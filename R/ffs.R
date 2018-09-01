@@ -110,6 +110,13 @@ ffs <- function (predictors,
                  verbose=TRUE,
                  ...){
   trControl$returnResamp <- "final"
+  if(class(response)=="character"){
+    response <- factor(response)
+    if(metric=="RMSE"){
+      metric <- "Accuracy"
+      maximize <- TRUE
+      }
+  }
   if (trControl$method=="LOOCV"){
     if (withinSE==TRUE){
       print("warning: withinSE is set to FALSE as no SE can be calculated using method LOOCV")
