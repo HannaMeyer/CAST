@@ -35,8 +35,7 @@ currently best models Standard error}
 \item{verbose}{Logical. Should information about the progress be printed?}
 
 \item{...}{arguments passed to the classification or regression routine
-(such as randomForest). Errors will occur if values for tuning parameters are
-passed here.}
+(such as randomForest).}
 }
 \value{
 A list of class train. Beside of the usual train content
@@ -125,7 +124,7 @@ stopCluster(cl)
 }
 }
 \seealso{
-\code{\link{train}},
+\code{\link{train}},\code{\link{bss}},
 \code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}}
 }
 \author{

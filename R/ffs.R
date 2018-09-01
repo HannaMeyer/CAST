@@ -13,8 +13,7 @@
 #' @param seed A random number used for model training
 #' @param verbose Logical. Should information about the progress be printed?
 #' @param ... arguments passed to the classification or regression routine
-#' (such as randomForest). Errors will occur if values for tuning parameters are
-#' passed here.
+#' (such as randomForest).
 #' @return A list of class train. Beside of the usual train content
 #' the object contains the vector "selectedvars" and "selectedvars_perf"
 #' that give the order of the best variables selected as well as their corresponding
@@ -40,7 +39,7 @@
 #' for further details.
 
 #' @author Hanna Meyer
-#' @seealso \code{\link{train}},
+#' @seealso \code{\link{train}},\code{\link{bss}},
 #' \code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}}
 #' @references
 #' \itemize{
@@ -149,7 +148,7 @@ ffs <- function (predictors,
                           method=method,
                           trControl=trControl,
                           tuneLength = tuneLength,
-                          tuneGrid = tuneGrid)
+                          tuneGrid = tuneGrid,...)
     ### compare the model with the currently best model
     actmodelperf <- evalfunc(model$results[,names(model$results)==metric])
     actmodelperfSE <- se(
