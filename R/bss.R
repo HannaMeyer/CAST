@@ -11,20 +11,25 @@
 #' @param seed A random number
 #' @param verbose Logical. Should information about the progress be printed?
 #' @param ... arguments passed to the classification or regression routine
-#' (such as randomForest). Errors will occur if values for tuning parameters are
-#' passed here.
+#' (such as randomForest).
 #' @return A list of class train. Beside of the usual train content
-#' the object contains "perf_all" that gives the performance of all model runs.
+#' the object contains the vector "selectedvars" and "selectedvars_perf"
+#' that give the best variables selected as well as their corresponding
+#' performance. It also contains "perf_all" that gives the performance of all model runs.
 #' @details bss is an alternative to \code{\link{ffs}} and ideal if the training
 #' set is small. Models are iteratively fitted using all different combinations
 #' of predictor variables. Hence, 2^X models are calculated. Dont try running bss
 #' on very large datasets because the computation time is much higher compared to
 #' \code{\link{ffs}}.
-
 #'
-#' @note This validation is particulary suitable for
-#' leave-one-station-out cross validations where variable selection
+#' The internal cross validation can be run in parallel. See information
+#' on parallel processing of carets train functions for details.
+#'
+#'
+#' @note This validation is particulary suitable for spatial
+#' leave-location-out cross validations where variable selection
 #' MUST be based on the performance of the model on the hold out station.
+#' Note that bss is very slow since all combinations of variables are tested.
 #' A more time efficient alternative is the forward feature selection (\code{\link{ffs}})
 #'  (\code{\link{ffs}}).
 #' @author Hanna Meyer
@@ -70,10 +75,8 @@ bss <- function (predictors,
   testgrid <- expand.grid(lapply(seq_along(names(predictors)), c, 0))
   testgrid <- testgrid[-which(rowSums(testgrid==0)>=(length(names(predictors))-1)),]
   acc <- 0
-
   perf_all <- data.frame(matrix(ncol=length(predictors)+3,nrow=nrow(testgrid)))
   names(perf_all) <- c(paste0("var",1:length(predictors)),metric,"SE","nvar")
-
   for (i in 1:nrow(testgrid)){
     set.seed(seed)
     model <- caret::train(predictors[,unlist(testgrid[i,])],
@@ -114,5 +117,6 @@ bss <- function (predictors,
   bestmodel$perf_all <- perf_all
   bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
   bestmodel$perf_all <- bestmodel$perf_all[order(bestmodel$perf_all$nvar),]
+  bestmodel$type <- "bss"
   return(bestmodel)
 }
