@@ -32,7 +32,7 @@
 #' Using withinSE will favour models with less variables and
 #' probably shorten the calculation time
 #'
-#' @note This validation is particulary suitable for
+#' @note This validation is particulary suitable for spatial
 #' leave-location-out cross validations where variable selection
 #' MUST be based on the performance of the model on the hold out station.
 #' See \href{https://doi.org/10.1016/j.envsoft.2017.12.001}{Meyer et al. (2018)}
@@ -208,6 +208,7 @@ ffs <- function (predictors,
       bestmodel$selectedvars_perf_SE <- selectedvars_SE[-length(selectedvars_SE)] #!!!
       bestmodel$perf_all <- perf_all
       bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
+      bestmodel$type <- "ffs"
       return(bestmodel)
       break()
     }
@@ -267,5 +268,6 @@ ffs <- function (predictors,
   bestmodel$selectedvars_perf_SE <- selectedvars_SE
   bestmodel$perf_all <- perf_all
   bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
+  bestmodel$type <- "ffs"
   return(bestmodel)
 }
