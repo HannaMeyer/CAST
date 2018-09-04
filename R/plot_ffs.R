@@ -30,6 +30,9 @@ plot_ffs <- function(ffs_model,palette=rainbow,reverse=FALSE, marker="black",siz
   output_df$run <- seq(nrow(output_df))
   names(output_df)[which(names(output_df)==metric)] <- "value"
 
+  if (is.null(ffs_model$type)){
+    ffs_model$type <- "ffs"
+  }
   if (ffs_model$type=="bss"){
     bestmodels <- output_df$run[which(output_df$value==ffs_model$selectedvars_perf)]
   }else{
