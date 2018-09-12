@@ -155,7 +155,8 @@ ffs <- function (predictors,
                           method=method,
                           trControl=trControl,
                           tuneLength = tuneLength,
-                          tuneGrid = tuneGrid,...)
+                          tuneGrid = tuneGrid,
+                          ...)
     ### compare the model with the currently best model
     actmodelperf <- evalfunc(model$results[,names(model$results)==metric])
     actmodelperfSE <- se(
@@ -223,7 +224,8 @@ ffs <- function (predictors,
                             metric=metric,
                             trControl = trControl,
                             tuneLength = tuneLength,
-                            tuneGrid = tuneGrid)
+                            tuneGrid = tuneGrid,
+                            ...)
       actmodelperf <- evalfunc(model$results[,names(model$results)==metric])
       actmodelperfSE <- se(
         sapply(unique(model$resample$Resample),
