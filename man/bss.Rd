@@ -65,7 +65,7 @@ A more time efficient alternative is the forward feature selection (\code{\link{
 \dontrun{
 data(iris)
 bssmodel <- bss(iris[,1:4],iris$Species)
-bssmodel$finalModel$xNames
+bssmodel$perf_all
 }
 }
 \seealso{

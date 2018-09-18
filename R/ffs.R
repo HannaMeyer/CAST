@@ -151,8 +151,9 @@ ffs <- function (predictors,
     }
     set.seed(seed)
     #adaptations for pls:
+    tuneGrid_orig <- tuneGrid
     if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>2)){
-      tuneGrid_orig <- tuneGrid
+#      tuneGrid_orig <- tuneGrid
       tuneGrid <- data.frame(ncomp=tuneGrid[tuneGrid$ncomp<=2,])
       print("note: maximum ncomp is 2")
     }
@@ -230,8 +231,8 @@ ffs <- function (predictors,
       }
       set.seed(seed)
       #adaptation for pls:
+      tuneGrid_orig <- tuneGrid
       if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>ncol(predictors[,c(startvars,nextvars[i])]))){
-        tuneGrid_orig <- tuneGrid
         tuneGrid<- data.frame(ncomp=tuneGrid[tuneGrid$ncomp<=ncol(predictors[,c(startvars,nextvars[i])]),])
         print(paste0("note: maximum ncomp is", ncol(predictors[,c(startvars,nextvars[i])])))
       }

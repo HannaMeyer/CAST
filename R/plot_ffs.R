@@ -1,4 +1,4 @@
-#' Plot results of a Forward feature selection
+#' Plot results of a Forward feature selection or best subset selection
 #' @description A plotting function for a forward feature selection result.
 #' Each point is the mean performance of a model run. Error bars represent
 #' the standard errors from cross validation.
@@ -12,7 +12,7 @@
 #' @param lwd Numeric. Width of the error bars
 #' @param pch Numeric. Type of point marking the best models
 #' @author Marvin Ludwig and Hanna Meyer
-#' @seealso \code{\link{ffs}}
+#' @seealso \code{\link{ffs}}, \code{\link{bss}}
 #' @examples
 #' \dontrun{
 #' data(iris)
