@@ -115,7 +115,7 @@ ffs <- function (predictors,
     if(metric=="RMSE"){
       metric <- "Accuracy"
       maximize <- TRUE
-      }
+    }
   }
   if (trControl$method=="LOOCV"){
     if (withinSE==TRUE){
@@ -150,6 +150,13 @@ ffs <- function (predictors,
       print(paste0("model using ",paste0(twogrid[i,],collapse=","), " will be trained now..." ))
     }
     set.seed(seed)
+    #adaptations for pls:
+    if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>2)){
+      tuneGrid_orig <- tuneGrid
+      tuneGrid <- data.frame(ncomp=tuneGrid[tuneGrid$ncomp<=2,])
+      print("note: maximum ncomp is 2")
+    }
+    #train model:
     model <- caret::train(predictors[,twogrid[i,]],
                           response,
                           method=method,
@@ -157,6 +164,10 @@ ffs <- function (predictors,
                           tuneLength = tuneLength,
                           tuneGrid = tuneGrid,
                           ...)
+    if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>2)){
+      tuneGrid <- tuneGrid_orig
+    }
+
     ### compare the model with the currently best model
     actmodelperf <- evalfunc(model$results[,names(model$results)==metric])
     actmodelperfSE <- se(
@@ -218,6 +229,13 @@ ffs <- function (predictors,
         print(paste0("model using additional variable ",nextvars[i], " will be trained now..." ))
       }
       set.seed(seed)
+      #adaptation for pls:
+      if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>ncol(predictors[,c(startvars,nextvars[i])]))){
+        tuneGrid_orig <- tuneGrid
+        tuneGrid<- data.frame(ncomp=tuneGrid[tuneGrid$ncomp<=ncol(predictors[,c(startvars,nextvars[i])]),])
+        print(paste0("note: maximum ncomp is", ncol(predictors[,c(startvars,nextvars[i])])))
+      }
+
       model <- caret::train(predictors[,c(startvars,nextvars[i])],
                             response,
                             method = method,
@@ -226,6 +244,7 @@ ffs <- function (predictors,
                             tuneLength = tuneLength,
                             tuneGrid = tuneGrid,
                             ...)
+      tuneGrid <- tuneGrid_orig
       actmodelperf <- evalfunc(model$results[,names(model$results)==metric])
       actmodelperfSE <- se(
         sapply(unique(model$resample$Resample),
