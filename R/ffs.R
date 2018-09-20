@@ -153,9 +153,10 @@ ffs <- function (predictors,
     #adaptations for pls:
     tuneGrid_orig <- tuneGrid
     if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>2)){
-#      tuneGrid_orig <- tuneGrid
       tuneGrid <- data.frame(ncomp=tuneGrid[tuneGrid$ncomp<=2,])
-      print("note: maximum ncomp is 2")
+      if(verbose){
+        print("note: maximum ncomp is 2")
+      }
     }
     #train model:
     model <- caret::train(predictors[,twogrid[i,]],
@@ -234,8 +235,9 @@ ffs <- function (predictors,
       tuneGrid_orig <- tuneGrid
       if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>ncol(predictors[,c(startvars,nextvars[i])]))){
         tuneGrid<- data.frame(ncomp=tuneGrid[tuneGrid$ncomp<=ncol(predictors[,c(startvars,nextvars[i])]),])
-        print(paste0("note: maximum ncomp is", ncol(predictors[,c(startvars,nextvars[i])])))
-      }
+        if(verbose){
+          print(paste0("note: maximum ncomp is ", ncol(predictors[,c(startvars,nextvars[i])])))
+        }}
 
       model <- caret::train(predictors[,c(startvars,nextvars[i])],
                             response,
