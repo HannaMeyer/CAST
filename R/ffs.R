@@ -222,6 +222,7 @@ ffs <- function (predictors,
       bestmodel$selectedvars_perf_SE <- selectedvars_SE[-length(selectedvars_SE)] #!!!
       bestmodel$perf_all <- perf_all
       bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
+      bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
       bestmodel$type <- "ffs"
       return(bestmodel)
       break()
@@ -293,5 +294,6 @@ ffs <- function (predictors,
   bestmodel$perf_all <- perf_all
   bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
   bestmodel$type <- "ffs"
+  bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
   return(bestmodel)
 }
