@@ -1,3 +1,11 @@
+# `CAST` 0.3.0
+
+* new feature: Best subset selection (bss) with target-oriented validation as (very slow but very reliable) alternative to ffs
+
+* minor adaptations: verbose option included, improved examples for ffs
+
+* bugfix: minor adaptations done for usage with plsr
+
 # `CAST` 0.2.1
 
 * new feature: Introduction to CAST is included as a vignette.
