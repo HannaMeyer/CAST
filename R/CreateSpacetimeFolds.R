@@ -35,27 +35,40 @@
 
 CreateSpacetimeFolds <- function(x,spacevar=NA,timevar=NA,
                                  k=10,seed=sample(1:1000, 1)){
+  x <- data.frame(x)
+  if(!is.na(spacevar)){
+    if(k>length(unique(x[,spacevar]))){
+      k <- length(unique(x[,spacevar]))
+      print(paste0("warning: k is higher than number of unique locations. k is set to ",k))
+    }
+  }
+  if(!is.na(timevar)){
+    if(k>length(unique(x[,timevar]))){
+      k <- length(unique(x[,timevar]))
+      print(paste0("warning: k is higher than number of unique points in time. k is set to ",k))
+    }
+  }
   #split space into k folds
   if(!is.na(spacevar)){
     set.seed(seed)
-  spacefolds <- lapply(caret::createFolds(1:length(unique(x[,spacevar])),k),function(y){
-    unique(x[,spacevar])[y]})
+    spacefolds <- lapply(caret::createFolds(1:length(unique(x[,spacevar])),k),function(y){
+      unique(x[,spacevar])[y]})
   }
   #split time into k folds
   if(!is.na(timevar)){
     set.seed(seed)
-  timefolds <- lapply(caret::createFolds(1:length(unique(x[,timevar])),k),function(y){
-    unique(x[,timevar])[y]})
+    timefolds <- lapply(caret::createFolds(1:length(unique(x[,timevar])),k),function(y){
+      unique(x[,timevar])[y]})
   }
   # combine space and time folds
   cvindices_train <- list()
   cvindices_test <- list()
   for (i in 1:k){
     if(!is.na(timevar)&!is.na(spacevar)){
-    cvindices_test[[i]]<- which(x[,spacevar]%in%spacefolds[[i]]&
-                                  x[,timevar]%in%timefolds[[i]])
-    cvindices_train[[i]]<- which(!x[,spacevar]%in%spacefolds[[i]]&
-                                   !x[,timevar]%in%timefolds[[i]])
+      cvindices_test[[i]]<- which(x[,spacevar]%in%spacefolds[[i]]&
+                                    x[,timevar]%in%timefolds[[i]])
+      cvindices_train[[i]]<- which(!x[,spacevar]%in%spacefolds[[i]]&
+                                     !x[,timevar]%in%timefolds[[i]])
     }
     if(is.na(timevar)&!is.na(spacevar)){
       cvindices_test[[i]]<- which(x[,spacevar]%in%spacefolds[[i]])

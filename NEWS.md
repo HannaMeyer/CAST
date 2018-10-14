@@ -1,3 +1,8 @@
+# `CAST` 0.3.1
+
+* bugfix: CreateSpaceTimeFolds accepts tibbles
+* bugfix: CreateSpaceTimeFolds automatically reduces k if necessary
+
 # `CAST` 0.3.0
 
 * new feature: Best subset selection (bss) with target-oriented validation as (very slow but very reliable) alternative to ffs
