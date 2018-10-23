@@ -15,6 +15,7 @@
 #' @importFrom stats sd
 #' @importFrom utils combn
 #' @importFrom grDevices rainbow
+#' @importFrom graphics axis plot segments
 #' @keywords package
 #'
 NULL

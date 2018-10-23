@@ -5,11 +5,14 @@
 \alias{plot_bss}
 \title{Plot results of a Forward feature selection or best subset selection}
 \usage{
-plot_ffs(ffs_model, palette = rainbow, reverse = FALSE, marker = "black",
-  size = 1.5, lwd = 0.5, pch = 21)
+plot_ffs(ffs_model, plotType = "all", palette = rainbow,
+  reverse = FALSE, marker = "black", size = 1.5, lwd = 0.5,
+  pch = 21, ...)
 }
 \arguments{
 \item{ffs_model}{Result of a forward feature selection see \code{\link{ffs}}}
+
+\item{plotType}{character. Either "all" or "selected"}
 
 \item{palette}{A color palette}
 
@@ -22,6 +25,8 @@ plot_ffs(ffs_model, palette = rainbow, reverse = FALSE, marker = "black",
 \item{lwd}{Numeric. Width of the error bars}
 
 \item{pch}{Numeric. Type of point marking the best models}
+
+\item{...}{Further arguments for base plot if type="selected"}
 }
 \description{
 A plotting function for a forward feature selection result.
@@ -29,13 +34,8 @@ Each point is the mean performance of a model run. Error bars represent
 the standard errors from cross validation.
 Marked points show the best model from each number of variables until a further variable
 could not improve the results.
-}
-\examples{
-\dontrun{
-data(iris)
-ffsmodel <- ffs(iris[,1:4],iris$Species)
-plot_ffs(ffsmodel)
-}
+If type=="selected", the contribution of the selected variables to the model
+performance is shown.
 }
 \seealso{
 \code{\link{ffs}}, \code{\link{bss}}

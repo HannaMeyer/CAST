@@ -2,6 +2,7 @@
 
 * bugfix: CreateSpaceTimeFolds accepts tibbles
 * bugfix: CreateSpaceTimeFolds automatically reduces k if necessary
+* new feature: plot_ffs has option to plot selected variables only
 
 # `CAST` 0.3.0
 
