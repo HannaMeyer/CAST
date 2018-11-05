@@ -191,7 +191,7 @@ ffs <- function (predictors,
     perf_all[acc,1:length(model$finalModel$xNames)] <- model$finalModel$xNames
     perf_all[acc,(length(predictors)+1):ncol(perf_all)] <- c(actmodelperf,actmodelperfSE,length(model$finalModel$xNames))
     if(verbose){
-      print(paste0("maxmimum number of models that still need to be trained: ",
+      print(paste0("maximum number of models that still need to be trained: ",
                    (n-1)^2-acc))
     }
   }
@@ -266,7 +266,7 @@ ffs <- function (predictors,
       perf_all[acc,(length(predictors)+1):ncol(
         perf_all)] <- c(actmodelperf,actmodelperfSE,length(model$finalModel$xNames))
       if(verbose){
-        print(paste0("maxmimum number of models that still need to be trained: ",
+        print(paste0("maximum number of models that still need to be trained: ",
                      (n-1)^2-acc))
       }
     }
