@@ -7,6 +7,8 @@
 #' @param maximize see \code{\link{train}}
 #' @param withinSE Logical Models are only selected if they are better than the
 #' currently best models Standard error
+#' @param minVar Numeric. Number of variables to combine for the first selection.
+#' See Details.
 #' @param trControl see \code{\link{train}}
 #' @param tuneLength see \code{\link{train}}
 #' @param tuneGrid see \code{\link{train}}
@@ -31,6 +33,16 @@
 #'
 #' Using withinSE will favour models with less variables and
 #' probably shorten the calculation time
+#'
+#' Per Default, the ffs starts with all possible 2-pair combinations.
+#' minVar allows to start the selection with more than 2 variables, e.g.
+#' minVar=3 starts the ffs testing all combinations of 3 (instead of 2) variables
+#' first and then increasing the number. This is important for e.g. neural networks
+#' that often cannot make sense of only two variables. It is also relevant if
+#' it is assumed that the optimal variables can only be found if more than 2
+#' are considered at the same time. Note that the numer of models that need to be
+#' trained might increase since in total a number of
+#' n!/((n-minVar)!*minVar!)+(n-minVar)*(n-minVar+1)/2 will be trained.
 #'
 #' @note This validation is particulary suitable for spatial
 #' leave-location-out cross validations where variable selection
@@ -103,6 +115,7 @@ ffs <- function (predictors,
                  metric = ifelse(is.factor(response), "Accuracy", "RMSE"),
                  maximize = ifelse(metric == "RMSE", FALSE, TRUE),
                  withinSE = FALSE,
+                 minVar = 2,
                  trControl = caret::trainControl(),
                  tuneLength = 3,
                  tuneGrid = NULL,
@@ -125,7 +138,9 @@ ffs <- function (predictors,
   se <- function(x){sd(x, na.rm = TRUE)/sqrt(length(na.exclude(x)))}
   n <- length(names(predictors))
   acc <- 0
-  perf_all <- data.frame(matrix(ncol=length(predictors)+3,nrow=2*(n-1)^2/2))
+  perf_all <- data.frame(matrix(ncol=length(predictors)+3,
+                                nrow=factorial(n) / (factorial(n-minVar)* factorial(minVar))+
+                                  (n-minVar)*(n-minVar+1)/2))
   names(perf_all) <- c(paste0("var",1:length(predictors)),metric,"SE","nvar")
 
   if(maximize) evalfunc <- function(x){max(x,na.rm=TRUE)}
@@ -144,29 +159,29 @@ ffs <- function (predictors,
     return(result)
   }
   #### chose initial best model from all combinations of two variables
-  twogrid <- t(data.frame(combn(names(predictors),2)))
-  for (i in 1:nrow(twogrid)){
+  minGrid <- t(data.frame(combn(names(predictors),minVar)))
+  for (i in 1:nrow(minGrid)){
     if (verbose){
-      print(paste0("model using ",paste0(twogrid[i,],collapse=","), " will be trained now..." ))
+      print(paste0("model using ",paste0(minGrid[i,],collapse=","), " will be trained now..." ))
     }
     set.seed(seed)
     #adaptations for pls:
     tuneGrid_orig <- tuneGrid
-    if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>2)){
-      tuneGrid <- data.frame(ncomp=tuneGrid[tuneGrid$ncomp<=2,])
+    if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>minVar)){
+      tuneGrid <- data.frame(ncomp=tuneGrid[tuneGrid$ncomp<=minVar,])
       if(verbose){
-        print("note: maximum ncomp is 2")
+        print(paste0("note: maximum ncomp is ", minVar))
       }
     }
     #train model:
-    model <- caret::train(predictors[,twogrid[i,]],
+    model <- caret::train(predictors[,minGrid[i,]],
                           response,
                           method=method,
                           trControl=trControl,
                           tuneLength = tuneLength,
                           tuneGrid = tuneGrid,
                           ...)
-    if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>2)){
+    if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>minVar)){
       tuneGrid <- tuneGrid_orig
     }
 
@@ -192,7 +207,8 @@ ffs <- function (predictors,
     perf_all[acc,(length(predictors)+1):ncol(perf_all)] <- c(actmodelperf,actmodelperfSE,length(model$finalModel$xNames))
     if(verbose){
       print(paste0("maximum number of models that still need to be trained: ",
-                   (n-1)^2-acc))
+                   factorial(n) / (factorial(n-minVar)* factorial(minVar))+
+                     (n-minVar)*(n-minVar+1)/2-acc))
     }
   }
   #### increase the number of predictors by one (try all combinations)
@@ -209,12 +225,12 @@ ffs <- function (predictors,
     print(paste0(paste0("vars selected: ",paste(selectedvars, collapse = ',')),
                  " with ",metric," ",round(selectedvars_perf,3)))
   }
-  for (k in 1:(length(names(predictors))-2)){
+  for (k in 1:(length(names(predictors))-minVar)){ #????!!!!!!
     startvars <- names(bestmodel$trainingData)[-which(
       names(bestmodel$trainingData)==".outcome")]
     nextvars <- names(predictors)[-which(
       names(predictors)%in%startvars)]
-    if (length(startvars)<(k+1)){
+    if (length(startvars)<(k+(minVar-1))){ #!!!????
       message(paste0("Note: No increase in performance found using more than ",
                      length(startvars), " variables"))
       bestmodel$selectedvars <- selectedvars
@@ -223,6 +239,7 @@ ffs <- function (predictors,
       bestmodel$perf_all <- perf_all
       bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
       bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
+      bestmodel$minVar <- minVar
       bestmodel$type <- "ffs"
       return(bestmodel)
       break()
@@ -267,7 +284,8 @@ ffs <- function (predictors,
         perf_all)] <- c(actmodelperf,actmodelperfSE,length(model$finalModel$xNames))
       if(verbose){
         print(paste0("maximum number of models that still need to be trained: ",
-                     (n-1)^2-acc))
+                     factorial(n) / (factorial(n-minVar)* factorial(minVar))+
+                       (n-minVar)*(n-minVar+1)/2-acc))
       }
     }
     selectedvars <- c(selectedvars,names(bestmodel$trainingData)[-which(
@@ -293,6 +311,7 @@ ffs <- function (predictors,
   bestmodel$selectedvars_perf_SE <- selectedvars_SE
   bestmodel$perf_all <- perf_all
   bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
+  bestmodel$minVar <- minVar
   bestmodel$type <- "ffs"
   bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
   return(bestmodel)

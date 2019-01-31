@@ -29,21 +29,24 @@
 #' @aliases plot_ffs plot_bss
 
 
-plot_ffs <- function(ffs_model,plotType="all",palette=rainbow,reverse=FALSE, marker="black",size=1.5,lwd=0.5,
+plot_ffs <- function(ffs_model,plotType="all",palette=rainbow,reverse=FALSE,
+                     marker="black",size=1.5,lwd=0.5,
                      pch=21,...){
   metric <- ffs_model$metric
   if (is.null(ffs_model$type)){
     ffs_model$type <- "ffs"
+  }
+  if(is.null(ffs_model$minVar)){
+    ffs_model$minVar <- 2
   }
   if(ffs_model$type=="bss"&plotType=="selected"){
     type <- "all"
     print("warning: type must be 'all' for a bss model")
   }
   if (plotType=="selected"){
-    labels <- paste0(ffs_model$selectedvars[1],
-                     "+",ffs_model$selectedvars[2])
-    for (i in 3:length(ffs_model$selectedvars)){
-      labels <- c(labels,paste0("+",ffs_model$selectedvars[i]))
+    labels <- paste0(ffs_model$selectedvars[1:ffs_model$minVar],collapse="+")
+    for (i in ((ffs_model$minVar+1):length(ffs_model$selectedvars))){
+      labels <- paste0(c(labels,ffs_model$selectedvars[i]),collapse="+")
     }
     plot(ffs_model$selectedvars_perf,xaxt="n",xlab="",
          ylab=metric,
@@ -82,16 +85,16 @@ plot_ffs <- function(ffs_model,plotType="all",palette=rainbow,reverse=FALSE, mar
 }
 
   if (!reverse){
-    cols <- palette(max(output_df$nvar)-1)
+    cols <- palette(max(output_df$nvar)-(min(output_df$nvar)-1))
   }else{
-    cols <- rev(palette(max(output_df$nvar)-1))
+    cols <- rev(palette(max(output_df$nvar)-(min(output_df$nvar)-1)))
   }
   ymin <- output_df$value - output_df$SE
   ymax <- output_df$value + output_df$SE
   if (max(output_df$nvar)>11){
     p <- ggplot2::ggplot(output_df, ggplot2::aes_string(x = "run", y = "value"))+
       ggplot2::geom_errorbar(ggplot2::aes(ymin = ymin, ymax = ymax),
-                             color = cols[output_df$nvar-1],lwd=lwd)+
+                             color = cols[output_df$nvar-(min(output_df$nvar)-1)],lwd=lwd)+
       ggplot2::geom_point(ggplot2::aes_string(colour="nvar"),size=size)+
       ggplot2::geom_point(data=output_df[bestmodels, ],
                           ggplot2::aes_string(x = "run", y = "value"),
@@ -106,7 +109,7 @@ plot_ffs <- function(ffs_model,plotType="all",palette=rainbow,reverse=FALSE, mar
     dfint$nvar <- as.factor(dfint$nvar)
     p <- ggplot2::ggplot(dfint, ggplot2::aes_string(x = "run", y = "value"))+
       ggplot2::geom_errorbar(ggplot2::aes(ymin = ymin, ymax = ymax),
-                             color = cols[output_df$nvar-1],lwd=lwd)+
+                             color = cols[output_df$nvar-(min(output_df$nvar)-1)],lwd=lwd)+
       ggplot2::geom_point(ggplot2::aes_string(colour="nvar"),size=size)+
       ggplot2::geom_point(data=output_df[bestmodels, ],
                           ggplot2::aes_string(x = "run", y = "value"),

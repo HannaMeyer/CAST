@@ -7,8 +7,8 @@
 ffs(predictors, response, method = "rf",
   metric = ifelse(is.factor(response), "Accuracy", "RMSE"),
   maximize = ifelse(metric == "RMSE", FALSE, TRUE), withinSE = FALSE,
-  trControl = caret::trainControl(), tuneLength = 3, tuneGrid = NULL,
-  seed = sample(1:1000, 1), verbose = TRUE, ...)
+  minVar = 2, trControl = caret::trainControl(), tuneLength = 3,
+  tuneGrid = NULL, seed = sample(1:1000, 1), verbose = TRUE, ...)
 }
 \arguments{
 \item{predictors}{see \code{\link{train}}}
@@ -23,6 +23,9 @@ ffs(predictors, response, method = "rf",
 
 \item{withinSE}{Logical Models are only selected if they are better than the
 currently best models Standard error}
+
+\item{minVar}{Numeric. Number of variables to combine for the first selection.
+See Details.}
 
 \item{trControl}{see \code{\link{train}}}
 
@@ -60,6 +63,16 @@ on parallel processing of carets train functions for details.
 
 Using withinSE will favour models with less variables and
 probably shorten the calculation time
+
+Per Default, the ffs starts with all possible 2-pair combinations.
+minVar allows to start the selection with more than 2 variables, e.g.
+minVar=3 starts the ffs testing all combinations of 3 (instead of 2) variables
+first and then increasing the number. This is important for e.g. neural networks
+that often cannot make sense of only two variables. It is also relevant if
+it is assumed that the optimal variables can only be found if more than 2
+are considered at the same time. Note that the numer of models that need to be
+trained might increase since in total a number of
+n!/((n-minVar)!*minVar!)+(n-minVar)*(n-minVar+1)/2 will be trained.
 }
 \note{
 This validation is particulary suitable for spatial
