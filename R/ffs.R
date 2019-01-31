@@ -225,12 +225,12 @@ ffs <- function (predictors,
     print(paste0(paste0("vars selected: ",paste(selectedvars, collapse = ',')),
                  " with ",metric," ",round(selectedvars_perf,3)))
   }
-  for (k in 1:(length(names(predictors))-minVar)){ #????!!!!!!
+  for (k in 1:(length(names(predictors))-minVar)){
     startvars <- names(bestmodel$trainingData)[-which(
       names(bestmodel$trainingData)==".outcome")]
     nextvars <- names(predictors)[-which(
       names(predictors)%in%startvars)]
-    if (length(startvars)<(k+(minVar-1))){ #!!!????
+    if (length(startvars)<(k+(minVar-1))){
       message(paste0("Note: No increase in performance found using more than ",
                      length(startvars), " variables"))
       bestmodel$selectedvars <- selectedvars
