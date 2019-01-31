@@ -71,8 +71,7 @@ first and then increasing the number. This is important for e.g. neural networks
 that often cannot make sense of only two variables. It is also relevant if
 it is assumed that the optimal variables can only be found if more than 2
 are considered at the same time. Note that the numer of models that need to be
-trained might increase since in total a number of
-n!/((n-minVar)!*minVar!)+(n-minVar)*(n-minVar+1)/2 will be trained.
+trained is \eqn{\binom{n}{m} + \sum_{i=1}^{n-m}}.
 }
 \note{
 This validation is particulary suitable for spatial
