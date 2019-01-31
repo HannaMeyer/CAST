@@ -1,7 +1,7 @@
 Package: CAST
 Type: Package
 Title: 'caret' Applications for Spatial-Temporal Models
-Version: 0.3.1
+Version: 0.3.2
 Authors@R: c(person("Hanna", "Meyer", email = "hanna.meyer@geo.uni-marburg.de", role = c("cre", "aut")),
              person("Chris", "Reudenbach", role = c("ctb")),
              person("Marvin", "Ludwig", role = c("ctb")),
