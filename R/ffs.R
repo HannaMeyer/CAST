@@ -206,8 +206,8 @@ ffs <- function (predictors,
     perf_all[acc,(length(predictors)+1):ncol(perf_all)] <- c(actmodelperf,actmodelperfSE,length(model$finalModel$xNames))
     if(verbose){
       print(paste0("maximum number of models that still need to be trained: ",
-                   factorial(n) / (factorial(n-minVar)* factorial(minVar))+
-                     (n-minVar)*(n-minVar+1)/2-acc))
+                   round(factorial(n) / (factorial(n-minVar)* factorial(minVar))+
+                     (n-minVar)*(n-minVar+1)/2-acc,0)))
     }
   }
   #### increase the number of predictors by one (try all combinations)
@@ -283,8 +283,8 @@ ffs <- function (predictors,
         perf_all)] <- c(actmodelperf,actmodelperfSE,length(model$finalModel$xNames))
       if(verbose){
         print(paste0("maximum number of models that still need to be trained: ",
-                     factorial(n) / (factorial(n-minVar)* factorial(minVar))+
-                       (n-minVar)*(n-minVar+1)/2-acc))
+                     round(factorial(n) / (factorial(n-minVar)* factorial(minVar))+
+                       (n-minVar)*(n-minVar+1)/2-acc,0)))
       }
     }
     selectedvars <- c(selectedvars,names(bestmodel$trainingData)[-which(
