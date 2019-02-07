@@ -46,7 +46,7 @@ plot_ffs <- function(ffs_model,plotType="all",palette=rainbow,reverse=FALSE,
   if (plotType=="selected"){
     labels <- paste0(ffs_model$selectedvars[1:ffs_model$minVar],collapse="+")
     for (i in ((ffs_model$minVar+1):length(ffs_model$selectedvars))){
-      labels <- paste0(c(labels,ffs_model$selectedvars[i]),collapse="+")
+      labels <- c(labels,paste0("+",ffs_model$selectedvars[i]))
     }
     plot(ffs_model$selectedvars_perf,xaxt="n",xlab="",
          ylab=metric,
