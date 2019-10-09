@@ -202,8 +202,15 @@ ffs <- function (predictors,
       }
     }
     acc <- acc+1
-    perf_all[acc,1:length(model$finalModel$xNames)] <- model$finalModel$xNames
-    perf_all[acc,(length(predictors)+1):ncol(perf_all)] <- c(actmodelperf,actmodelperfSE,length(model$finalModel$xNames))
+
+    variablenames <- tryCatch({
+      model$finalModel$xNames
+    }, error=function(e)
+      names(model$finalModel@scaling$x.scale[[1]]))
+
+
+    perf_all[acc,1:length(variablenames)] <- variablenames
+    perf_all[acc,(length(predictors)+1):ncol(perf_all)] <- c(actmodelperf,actmodelperfSE,length(variablenames))
     if(verbose){
       print(paste0("maximum number of models that still need to be trained: ",
                    round(factorial(n) / (factorial(n-minVar)* factorial(minVar))+
@@ -278,9 +285,16 @@ ffs <- function (predictors,
         bestmodel <- model
       }
       acc <- acc+1
-      perf_all[acc,1:length(model$finalModel$xNames)] <- model$finalModel$xNames
+
+      variablenames <- tryCatch({
+        model$finalModel$xNames
+      }, error=function(e)
+        names(model$finalModel@scaling$x.scale[[1]]))
+
+
+      perf_all[acc,1:length(variablenames)] <- variablenames
       perf_all[acc,(length(predictors)+1):ncol(
-        perf_all)] <- c(actmodelperf,actmodelperfSE,length(model$finalModel$xNames))
+        perf_all)] <- c(actmodelperf,actmodelperfSE,length(variablenames))
       if(verbose){
         print(paste0("maximum number of models that still need to be trained: ",
                      round(factorial(n) / (factorial(n-minVar)* factorial(minVar))+

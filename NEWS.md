@@ -1,5 +1,7 @@
 # `CAST` 0.3.2
 * new feature: "minVar": Instead of always starting with 2-pair combinations, ffs can now also be started with combinations of more variables (e.g starting with all combinations of 3)
+* bugfix:
+  * failed for svmLinear before because of S4 class issues. Fixed now
 
 # `CAST` 0.3.1
 
