@@ -29,30 +29,33 @@
 #' library(sf)
 #' library(raster)
 #' library(caret)
-#' library(lubridate)
 #'
 #' # prepare sample data:
 #' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
-#' studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
-#' variables <- c("DEM","Easting","Northing")
-#' trainDat <- aggregate(dat[,c("VW",variables)],by=list(as.character(dat$SOURCEID)),mean)
+#' dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
+#' pts <- st_as_sf(dat,coords=c("Easting","Northing"))
+#' pts$ID <- 1:nrow(pts)
+#' studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
+#' trainDat <- extract(studyArea,pts,df=TRUE)
+#' trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
 #'
 #' # visualize data spatially:
-#' plot(studyArea[[1]])
-#' pts <- st_as_sf(trainDat,coords=c("Easting","Northing"))
-#' plot(pts["Group.1"],add=TRUE,col="black")
+#' spplot(scale(studyArea))
+#' plot(studyArea$DEM)
+#' plot(pts[,1],add=TRUE,col="black")
 #'
 #' # first calculate uncertainty based on a set of variables with equal weights:
+#' variables <- c("DEM","Easting","Northing")
 #' plot(uncertainty(trainDat,studyArea,variables=variables))
-#' plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
+#' plot(pts[,1],add=TRUE,col="black") #add training data to plot
 #'
 #' # or weight variables based on variable improtance from a trained model:
 #' set.seed(100)
 #' model <- train(trainDat[,which(names(trainDat)%in%variables)],
 #' trainDat$VW,method="rf",importance=TRUE,tuneLength=1)
 #' plot(varImp(model))
-#' # note that coordinates are the major predictors here, so uncertainty becomes higher
-#' # when moving away from the training data:
+#' # note that coordinates are the major predictors here,
+#' # so uncertainty becomes higher when moving away from the training data:
 #' plot(uncertainty(trainDat,studyArea,model=model,variables=variables))
 #' plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
 #'

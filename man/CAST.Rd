@@ -14,6 +14,6 @@ Supporting functionality to run 'caret' with spatial or spatial-temporal data. '
 \author{
 Hanna Meyer, Christoph Reudenbach, Marvin Ludwig, Thomas Nauss
 \cr
-\emph{Maintainer:} Hanna Meyer \email{hanna.meyer@geo.uni-marburg.de}
+\emph{Maintainer:} Hanna Meyer \email{hanna.meyer@uni-muenster.de}
 }
 \keyword{package}
