@@ -14,8 +14,14 @@
 #' @param model A caret model used to extract weights from (based on variable importance)
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the train dataset are used.
-#'
-#' @return A RasterLayer or data.frame containing the minimum distance to training data.
+#' @details Results range from 0 to 1 with 0 has only a short distance to the nearest
+#' training point and predictions can be considered very certain. 1 has the largest
+#' distance to the training data, hence predictions are more uncertain.
+#' Or explained in an other way: If a location is very similar to the properties
+#' of the training data it will have a low uncertainty while locations that are
+#' very different in its properties will have a high uncertainty.
+#' @return A RasterLayer or data.frame containing the scaled distance to the
+#' nearest training data point in the predictor space.
 #' @author
 #' Hanna Meyer
 #'
@@ -31,8 +37,14 @@
 #' trainDat <- aggregate(dat[,c("VW",variables)],by=list(as.character(dat$SOURCEID)),mean)
 #' studyArea <- studyArea[[which(names(studyArea)%in%c(variables))]]
 #'
+#' # visualize data:
+#' plot(studyArea[[1]])
+#' pts <- st_as_sf(trainDat,coords=c("Easting","Northing"))
+#' plot(pts["Group.1"],add=TRUE,col="black")
+#'
 #' # first calculate uncertainty based on a set of variables with equal weights:
 #' plot(uncertainty(trainDat,studyArea,variables=variables))
+#' plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
 #'
 #' # or weight variables based on variable improtance from a trained model:
 #' set.seed(100)
@@ -40,6 +52,7 @@
 #' trainDat$VW,method="rf",importance=TRUE)
 #' plot(varImp(model)) # note that coordinates are the major predictors here
 #' plot(uncertainty(trainDat,studyArea,model=model,variables=variables))
+#' plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
 #'
 #'
 #' @export uncertainty

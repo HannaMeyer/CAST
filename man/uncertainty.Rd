@@ -21,7 +21,8 @@ the model was meant to make predictions for.}
 of the train dataset are used.}
 }
 \value{
-A RasterLayer or data.frame containing the minimum distance to training data.
+A RasterLayer or data.frame containing the scaled distance to the
+nearest training data point in the predictor space.
 }
 \description{
 this function estimates uncertainty of spatial prediction models by
@@ -29,6 +30,14 @@ considering the distance of new data (i.e. a Raster Stack of spatial predictors
 used in the models) in the predictor variable space to the data used for model
 training. Predictors can be weighted in the ideal case based on the internal
 variable importance of the machine learning algorithm used for model training.
+}
+\details{
+Results range from 0 to 1 with 0 has only a short distance to the nearest
+training point and predictions can be considered very certain. 1 has the largest
+distance to the training data, hence predictions are more uncertain.
+Or explained in an other way: If a location is very similar to the properties
+of the training data it will have a low uncertainty while locations that are
+very different in its properties will have a high uncertainty.
 }
 \examples{
 library(sf)
@@ -42,8 +51,14 @@ variables <- c("DEM","NDRE.M","Easting","Northing")
 trainDat <- aggregate(dat[,c("VW",variables)],by=list(as.character(dat$SOURCEID)),mean)
 studyArea <- studyArea[[which(names(studyArea)\%in\%c(variables))]]
 
+# visualize data:
+plot(studyArea[[1]])
+pts <- st_as_sf(trainDat,coords=c("Easting","Northing"))
+plot(pts["Group.1"],add=TRUE,col="black")
+
 # first calculate uncertainty based on a set of variables with equal weights:
 plot(uncertainty(trainDat,studyArea,variables=variables))
+plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
 
 # or weight variables based on variable improtance from a trained model:
 set.seed(100)
@@ -51,6 +66,7 @@ model <- train(trainDat[,which(names(trainDat)\%in\%variables)],
 trainDat$VW,method="rf",importance=TRUE)
 plot(varImp(model)) # note that coordinates are the major predictors here
 plot(uncertainty(trainDat,studyArea,model=model,variables=variables))
+plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
 
 
 }
