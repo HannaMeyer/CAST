@@ -7,12 +7,12 @@
 #' @title 'caret' Applications for Spatial-Temporal Models
 #' @author Hanna Meyer, Christoph Reudenbach, Marvin Ludwig, Thomas Nauss
 #' \cr
-#' \emph{Maintainer:} Hanna Meyer \email{hanna.meyer@@geo.uni-marburg.de}
+#' \emph{Maintainer:} Hanna Meyer \email{hanna.meyer@@uni-muenster.de}
 #'
 #' @import caret
 
 #' @importFrom stats na.exclude
-#' @importFrom stats sd
+#' @importFrom stats sd dist na.omit
 #' @importFrom utils combn
 #' @importFrom grDevices rainbow
 #' @importFrom graphics axis plot segments

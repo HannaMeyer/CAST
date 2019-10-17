@@ -43,15 +43,15 @@ very different in its properties will have a high uncertainty.
 library(sf)
 library(raster)
 library(caret)
+library(lubridate)
 
-# prepare data:
+# prepare sample data:
 dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
-variables <- c("DEM","NDRE.M","Easting","Northing")
+variables <- c("DEM","Easting","Northing")
 trainDat <- aggregate(dat[,c("VW",variables)],by=list(as.character(dat$SOURCEID)),mean)
-studyArea <- studyArea[[which(names(studyArea)\%in\%c(variables))]]
 
-# visualize data:
+# visualize data spatially:
 plot(studyArea[[1]])
 pts <- st_as_sf(trainDat,coords=c("Easting","Northing"))
 plot(pts["Group.1"],add=TRUE,col="black")
@@ -63,8 +63,10 @@ plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
 # or weight variables based on variable improtance from a trained model:
 set.seed(100)
 model <- train(trainDat[,which(names(trainDat)\%in\%variables)],
-trainDat$VW,method="rf",importance=TRUE)
-plot(varImp(model)) # note that coordinates are the major predictors here
+trainDat$VW,method="rf",importance=TRUE,tuneLength=1)
+plot(varImp(model))
+# note that coordinates are the major predictors here, so uncertainty becomes higher
+# when moving away from the training data:
 plot(uncertainty(trainDat,studyArea,model=model,variables=variables))
 plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
 
