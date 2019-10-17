@@ -49,14 +49,18 @@
 #' plot(uncertainty(trainDat,studyArea,variables=variables))
 #' plot(pts[,1],add=TRUE,col="black") #add training data to plot
 #'
-#' # or weight variables based on variable improtance from a trained model:
+#' # or weight variables based on variable improtance from a (simple) trained model:
 #' set.seed(100)
 #' model <- train(trainDat[,which(names(trainDat)%in%variables)],
 #' trainDat$VW,method="rf",importance=TRUE,tuneLength=1)
+#' prediction <- predict(studyArea,model)
 #' plot(varImp(model))
 #' # note that coordinates are the major predictors here,
 #' # so uncertainty becomes higher when moving away from the training data:
-#' plot(uncertainty(trainDat,studyArea,model=model,variables=variables))
+#' par(mfrow=c(1,2))
+#' plot(prediction,main="predicted WV")
+#' plot(uncertainty(trainDat,studyArea,model=model,variables=variables),
+#' main="scaled uncertainty")
 #' plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
 #'
 #'
