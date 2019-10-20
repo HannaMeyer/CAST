@@ -4,8 +4,8 @@
 \alias{uncertainty}
 \title{Estimate uncertainty of spatial prediction models}
 \usage{
-uncertainty(train, predictors, weights = NA, model = NA,
-  variables = "all")
+uncertainty(train, predictors, weight = NA, model = NA,
+  variables = "all", scale = TRUE)
 }
 \arguments{
 \item{train}{a data.frame containing the data used for model training}
@@ -13,15 +13,17 @@ uncertainty(train, predictors, weights = NA, model = NA,
 \item{predictors}{A RasterStack, RasterBrick or data.frame containing the data
 the model was meant to make predictions for.}
 
-\item{weights}{A data.frame containing weights for each variable}
+\item{weight}{A data.frame containing weights for each variable}
 
 \item{model}{A caret model used to extract weights from (based on variable importance)}
 
 \item{variables}{character vector of predictor variables. if "all" then all variables
-of the train dataset are used.}
+of the train dataset are used. Check varImp(model).}
+
+\item{scale}{logical. Return uncertainty scaled between 0 and 1.}
 }
 \value{
-A RasterLayer or data.frame containing the scaled distance to the
+A RasterLayer or data.frame containing the (scaled) distance to the
 nearest training data point in the predictor space.
 }
 \description{
@@ -32,12 +34,10 @@ training. Predictors can be weighted in the ideal case based on the internal
 variable importance of the machine learning algorithm used for model training.
 }
 \details{
-Results range from 0 to 1 with 0 has only a short distance to the nearest
-training point and predictions can be considered very certain. 1 has the largest
-distance to the training data, hence predictions are more uncertain.
-Or explained in an other way: If a location is very similar to the properties
-of the training data it will have a low uncertainty while locations that are
-very different in its properties will have a high uncertainty.
+Interpretation of results: If a location is very similar to the properties
+of the training data it will have a low distance in the predictor variable space
+(low uncertainty) while locations that are very different in its properties
+will have a high uncertainty.
 }
 \examples{
 library(sf)
@@ -72,11 +72,10 @@ plot(varImp(model))
 # note that coordinates are the major predictors here,
 # so uncertainty becomes higher when moving away from the training data:
 par(mfrow=c(1,2))
-plot(prediction,main="predicted WV")
+plot(prediction,main="predicted VW")
 plot(uncertainty(trainDat,studyArea,model=model,variables=variables),
 main="scaled uncertainty")
 plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
-
 
 }
 \author{

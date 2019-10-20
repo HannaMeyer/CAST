@@ -10,17 +10,16 @@
 #' @param train a data.frame containing the data used for model training
 #' @param predictors A RasterStack, RasterBrick or data.frame containing the data
 #' the model was meant to make predictions for.
-#' @param weights A data.frame containing weights for each variable
+#' @param weight A data.frame containing weights for each variable
 #' @param model A caret model used to extract weights from (based on variable importance)
 #' @param variables character vector of predictor variables. if "all" then all variables
-#' of the train dataset are used.
-#' @details Results range from 0 to 1 with 0 has only a short distance to the nearest
-#' training point and predictions can be considered very certain. 1 has the largest
-#' distance to the training data, hence predictions are more uncertain.
-#' Or explained in an other way: If a location is very similar to the properties
-#' of the training data it will have a low uncertainty while locations that are
-#' very different in its properties will have a high uncertainty.
-#' @return A RasterLayer or data.frame containing the scaled distance to the
+#' of the train dataset are used. Check varImp(model).
+#' @param scale logical. Return uncertainty scaled between 0 and 1.
+#' @details Interpretation of results: If a location is very similar to the properties
+#' of the training data it will have a low distance in the predictor variable space
+#' (low uncertainty) while locations that are very different in its properties
+#' will have a high uncertainty.
+#' @return A RasterLayer or data.frame containing the (scaled) distance to the
 #' nearest training data point in the predictor space.
 #' @author
 #' Hanna Meyer
@@ -58,17 +57,16 @@
 #' # note that coordinates are the major predictors here,
 #' # so uncertainty becomes higher when moving away from the training data:
 #' par(mfrow=c(1,2))
-#' plot(prediction,main="predicted WV")
+#' plot(prediction,main="predicted VW")
 #' plot(uncertainty(trainDat,studyArea,model=model,variables=variables),
 #' main="scaled uncertainty")
 #' plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
 #'
-#'
 #' @export uncertainty
 #' @aliases uncertainty
 
-uncertainty <- function (train, predictors, weights=NA, model=NA,
-                         variables="all"){
+uncertainty <- function (train, predictors, weight=NA, model=NA,
+                         variables="all",scale=TRUE){
   ### if not specified take all variables from train dataset as default:
   if(length(variables)==1&&variables=="all"){
     variables=names(train)
@@ -77,33 +75,41 @@ uncertainty <- function (train, predictors, weights=NA, model=NA,
   out <- NA
   if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"){
     out <- predictors[[1]]
+    names(out) <- "uncertainty"
   }
   #### Extract weights from trained model:
-  #!!! achtung hier noch nach overall schauen!!!! statt [,1] für classifications
-  weights <- tryCatch(as.data.frame(t(caret::varImp(model)$importance[,1])),
-                      error=function(e) e)
-  if(!inherits(weights, "error")){
-    names(weights)<- rownames(caret::varImp(model)$importance)
+  weight <- tryCatch(if(model$modelType=="Classification"){
+    as.data.frame(t(apply(caret::varImp(model)$importance,1,mean)))
+  }else{
+    as.data.frame(t(caret::varImp(model)$importance[,"Overall"]))
+  }, error=function(e) e)
+  if(!inherits(weight, "error")){
+    weight <- t(apply(weight,1,scales::rescale,to = c(1, 100)))
+    names(weight)<- rownames(caret::varImp(model)$importance)
+  }else{
+    message("note: variables were not weighted either because no weights or model were given,
+    or no variable importance could be retrieved from the given model.
+    Check caret::varImp(model)")
   }
   #### order data:
   predictors <- predictors[[na.omit(match(variables, names(predictors)))]]
   train <- train[,na.omit(match(variables, names(train)))]
-  if(!inherits(weights, "error")){
-    weights <- weights[,na.omit(match(variables, names(weights)))]
+  if(!inherits(weight, "error")){
+    weight <- weight[,na.omit(match(variables, names(weight)))]
   }
   #### Scale data and weight predictors if applicable:
   train <- scale(train)
   scaleparam <- attributes(train)
-  if(!inherits(weights, "error")){
-    train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weights[x])})
+  if(!inherits(weight, "error")){
+    train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
   }
   if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"){
     predictors <- raster::as.data.frame(predictors)
   }
   predictors <- scale(predictors,center=scaleparam$`scaled:center`,
                       scale=scaleparam$`scaled:scale`)
-  if(!inherits(weights, "error")){
-    predictors <- sapply(1:ncol(predictors),function(x){predictors[,x]*unlist(weights[x])})
+  if(!inherits(weight, "error")){
+    predictors <- sapply(1:ncol(predictors),function(x){predictors[,x]*unlist(weight[x])})
   }
   #### For each pixel caclculate distance to each training point and search for
   #### min distance:
@@ -113,12 +119,19 @@ uncertainty <- function (train, predictors, weights=NA, model=NA,
     mindist <- pmin(mindist,tmp,na.rm=T)
     tmp <- mindist
   }
-  #### return scaled distances as RasterLayer or vector:
+  #### return (scaled) distances as RasterLayer or vector:
   if (class(out)=="RasterLayer"){
-    raster::values(out) <- scales::rescale(mindist, to = c(0, 1))
+    if(scale){
+      raster::values(out) <- scales::rescale(mindist, to = c(0, 1))
+    }else{
+      raster::values(out) <- mindist
+    }
   } else{
-    out <- scales::rescale(mindist, to = c(0, 1))
+    if(scale){
+      out <- scales::rescale(mindist, to = c(0, 1))
+    }else{
+      out <- mindist
+    }
   }
   return(out)
 }
-
