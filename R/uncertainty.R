@@ -79,13 +79,13 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
   }
   #### Extract weights from trained model:
   weight <- tryCatch(if(model$modelType=="Classification"){
-    as.data.frame(t(apply(caret::varImp(model)$importance,1,mean)))
+    as.data.frame(t(apply(caret::varImp(model,scale=F)$importance,1,mean)))
   }else{
-    as.data.frame(t(caret::varImp(model)$importance[,"Overall"]))
+    as.data.frame(t(caret::varImp(model,scale=F)$importance[,"Overall"]))
   }, error=function(e) e)
   if(!inherits(weight, "error")){
-    weight <- t(apply(weight,1,scales::rescale,to = c(1, 100)))
-    names(weight)<- rownames(caret::varImp(model)$importance)
+    #weight <- t(apply(weight,1,scales::rescale,to = c(1, 100)))
+    names(weight)<- rownames(caret::varImp(model,scale=F)$importance)
   }else{
     message("note: variables were not weighted either because no weights or model were given,
     or no variable importance could be retrieved from the given model.
