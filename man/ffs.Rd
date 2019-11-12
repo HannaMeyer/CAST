@@ -70,8 +70,7 @@ minVar=3 starts the ffs testing all combinations of 3 (instead of 2) variables
 first and then increasing the number. This is important for e.g. neural networks
 that often cannot make sense of only two variables. It is also relevant if
 it is assumed that the optimal variables can only be found if more than 2
-are considered at the same time. Note that the numer of models that need to be
-trained is \eqn{\binom{n}{m} + \sum_{i=1}^{n-m}}.
+are considered at the same time.
 }
 \note{
 This validation is particulary suitable for spatial

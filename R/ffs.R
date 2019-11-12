@@ -40,8 +40,7 @@
 #' first and then increasing the number. This is important for e.g. neural networks
 #' that often cannot make sense of only two variables. It is also relevant if
 #' it is assumed that the optimal variables can only be found if more than 2
-#' are considered at the same time. Note that the numer of models that need to be
-#' trained is \eqn{\binom{n}{m} + \sum_{i=1}^{n-m}}.
+#' are considered at the same time.
 #'
 #' @note This validation is particulary suitable for spatial
 #' leave-location-out cross validations where variable selection
@@ -203,18 +202,19 @@ ffs <- function (predictors,
     }
     acc <- acc+1
 
-    variablenames <- tryCatch({
-      model$finalModel$xNames
-    }, error=function(e)
-      names(model$finalModel@scaling$x.scale[[1]]))
+    #   variablenames <- tryCatch({
+    #      model$finalModel$xNames
+    #   }, error=function(e)
+    #      names(model$finalModel@scaling$x.scale[[1]]))
 
+    variablenames <- names(model$trainingData)[-length(names(model$trainingData))]
 
     perf_all[acc,1:length(variablenames)] <- variablenames
     perf_all[acc,(length(predictors)+1):ncol(perf_all)] <- c(actmodelperf,actmodelperfSE,length(variablenames))
     if(verbose){
       print(paste0("maximum number of models that still need to be trained: ",
                    round(factorial(n) / (factorial(n-minVar)* factorial(minVar))+
-                     (n-minVar)*(n-minVar+1)/2-acc,0)))
+                           (n-minVar)*(n-minVar+1)/2-acc,0)))
     }
   }
   #### increase the number of predictors by one (try all combinations)
@@ -286,11 +286,12 @@ ffs <- function (predictors,
       }
       acc <- acc+1
 
-      variablenames <- tryCatch({
-        model$finalModel$xNames
-      }, error=function(e)
-        names(model$finalModel@scaling$x.scale[[1]]))
+      #      variablenames <- tryCatch({
+      #        model$finalModel$xNames
+      #      }, error=function(e)
+      #        names(model$finalModel@scaling$x.scale[[1]]))
 
+      variablenames <- names(model$trainingData)[-length(names(model$trainingData))]
 
       perf_all[acc,1:length(variablenames)] <- variablenames
       perf_all[acc,(length(predictors)+1):ncol(
@@ -298,7 +299,7 @@ ffs <- function (predictors,
       if(verbose){
         print(paste0("maximum number of models that still need to be trained: ",
                      round(factorial(n) / (factorial(n-minVar)* factorial(minVar))+
-                       (n-minVar)*(n-minVar+1)/2-acc,0)))
+                             (n-minVar)*(n-minVar+1)/2-acc,0)))
       }
     }
     selectedvars <- c(selectedvars,names(bestmodel$trainingData)[-which(
