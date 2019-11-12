@@ -25,6 +25,7 @@
 #' Hanna Meyer
 #'
 #' @examples
+#' \dontrun{
 #' library(sf)
 #' library(raster)
 #' library(caret)
@@ -61,7 +62,7 @@
 #' plot(uncertainty(trainDat,studyArea,model=model,variables=variables),
 #' main="scaled uncertainty")
 #' plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
-#'
+#' }
 #' @export uncertainty
 #' @aliases uncertainty
 
