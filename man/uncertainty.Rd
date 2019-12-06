@@ -5,7 +5,7 @@
 \title{Estimate uncertainty of spatial prediction models}
 \usage{
 uncertainty(train, predictors, weight = NA, model = NA,
-  variables = "all", scale = TRUE)
+  variables = "all", scale = FALSE)
 }
 \arguments{
 \item{train}{a data.frame containing the data used for model training}
@@ -20,11 +20,10 @@ the model was meant to make predictions for.}
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the train dataset are used. Check varImp(model).}
 
-\item{scale}{logical. Return uncertainty scaled between 0 and 1.}
+\item{scale}{logical. If TRUE uncertainty is scaled between 0 and 1. See Details.}
 }
 \value{
-A RasterLayer or data.frame containing the (scaled) distance to the
-nearest training data point in the predictor space.
+A RasterLayer or data.frame
 }
 \description{
 this function estimates uncertainty of spatial prediction models by
@@ -38,8 +37,15 @@ Interpretation of results: If a location is very similar to the properties
 of the training data it will have a low distance in the predictor variable space
 (low uncertainty) while locations that are very different in its properties
 will have a high uncertainty.
+If scale is FALSE then uncertainty is returned as distance scaled by the length of the gradent in the training data:
+The further the distance in this variable space, the larger the uncertainty gets. e.g. an uncertainty of 0.5 means
+that the distance to the nearest training point is half the distance of the gradient observed in the training data.
+The uncertainty can get higher than 1 if the nearest training point is further away than the length of the gradient in the training data.
+This happens when we apply a model to an area that is fully out of the range of what the model was trained on.
+If scale is TRUE then the output is scaled between 0 and 1, but no comparison between models will be possible.
 }
 \examples{
+\dontrun{
 library(sf)
 library(raster)
 library(caret)
@@ -68,7 +74,7 @@ set.seed(100)
 model <- train(trainDat[,which(names(trainDat)\%in\%variables)],
 trainDat$VW,method="rf",importance=TRUE,tuneLength=1)
 prediction <- predict(studyArea,model)
-plot(varImp(model))
+plot(varImp(model,scale=FALSE))
 # note that coordinates are the major predictors here,
 # so uncertainty becomes higher when moving away from the training data:
 par(mfrow=c(1,2))
@@ -76,7 +82,7 @@ plot(prediction,main="predicted VW")
 plot(uncertainty(trainDat,studyArea,model=model,variables=variables),
 main="scaled uncertainty")
 plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
-
+}
 }
 \author{
 Hanna Meyer

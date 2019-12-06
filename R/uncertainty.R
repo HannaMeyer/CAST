@@ -14,13 +14,19 @@
 #' @param model A caret model used to extract weights from (based on variable importance)
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the train dataset are used. Check varImp(model).
-#' @param scale logical. Return uncertainty scaled between 0 and 1.
+#' @param scale logical. If TRUE uncertainty is scaled between 0 and 1. See Details.
 #' @details Interpretation of results: If a location is very similar to the properties
 #' of the training data it will have a low distance in the predictor variable space
 #' (low uncertainty) while locations that are very different in its properties
 #' will have a high uncertainty.
-#' @return A RasterLayer or data.frame containing the (scaled) distance to the
-#' nearest training data point in the predictor space.
+#' If scale is FALSE then uncertainty is returned as distance scaled by the length of the gradent in the training data:
+#' The further the distance in this variable space, the larger the uncertainty gets. e.g. an uncertainty of 0.5 means
+#' that the distance to the nearest training point is half the distance of the gradient observed in the training data.
+#' The uncertainty can get higher than 1 if the nearest training point is further away than the length of the gradient in the training data.
+#' This happens when we apply a model to an area that is fully out of the range of what the model was trained on.
+#' If scale is TRUE then the output is scaled between 0 and 1, but no comparison between models will be possible.
+#'
+#' @return A RasterLayer or data.frame
 #' @author
 #' Hanna Meyer
 #'
@@ -54,7 +60,7 @@
 #' model <- train(trainDat[,which(names(trainDat)%in%variables)],
 #' trainDat$VW,method="rf",importance=TRUE,tuneLength=1)
 #' prediction <- predict(studyArea,model)
-#' plot(varImp(model))
+#' plot(varImp(model,scale=FALSE))
 #' # note that coordinates are the major predictors here,
 #' # so uncertainty becomes higher when moving away from the training data:
 #' par(mfrow=c(1,2))
@@ -67,8 +73,9 @@
 #' @aliases uncertainty
 
 uncertainty <- function (train, predictors, weight=NA, model=NA,
-                         variables="all",scale=TRUE){
+                         variables="all",scale=FALSE){
   ### if not specified take all variables from train dataset as default:
+  if(nrow(train)<=1){stop("at least two training points need to be specified")}
   if(length(variables)==1&&variables=="all"){
     variables=names(train)
   }
@@ -93,10 +100,18 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
     Check caret::varImp(model)")
   }
   #### order data:
-  predictors <- predictors[[na.omit(match(variables, names(predictors)))]]
+  if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"){
+    predictors <- predictors[[na.omit(match(variables, names(predictors)))]]
+  }else{
+    predictors <- predictors[,na.omit(match(variables, names(predictors)))]
+  }
   train <- train[,na.omit(match(variables, names(train)))]
   if(!inherits(weight, "error")){
     weight <- weight[,na.omit(match(variables, names(weight)))]
+    if (any(weight<0)){
+      weight[weight<0]<-0
+      message("negative weights were set to 0")
+    }
   }
   #### Scale data and weight predictors if applicable:
   train <- scale(train)
@@ -109,9 +124,20 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
   }
   predictors <- scale(predictors,center=scaleparam$`scaled:center`,
                       scale=scaleparam$`scaled:scale`)
+
   if(!inherits(weight, "error")){
     predictors <- sapply(1:ncol(predictors),function(x){predictors[,x]*unlist(weight[x])})
   }
+
+  # calculate "global" maximum distance
+  #minvalues <- apply(predictors,2,function(x){min(x,na.rm=TRUE)}) # für jedes Raster min
+  #maxvalues <- apply(predictors,2,function(x){max(x,na.rm=TRUE)}) # für jedes Raster max
+
+  minvalues <- apply(train,2,function(x){min(x,na.rm=TRUE)}) # für jedes Raster min
+  maxvalues <- apply(train,2,function(x){max(x,na.rm=TRUE)}) # für jedes Raster max
+
+
+  maxdist <- dist(rbind(maxvalues,minvalues))
   #### For each pixel caclculate distance to each training point and search for
   #### min distance:
   tmp <- NA
@@ -120,6 +146,8 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
     mindist <- pmin(mindist,tmp,na.rm=T)
     tmp <- mindist
   }
+  #scale the distance to nearest training point by the maximum possible distance
+  mindist <- mindist/maxdist
   #### return (scaled) distances as RasterLayer or vector:
   if (class(out)=="RasterLayer"){
     if(scale){
