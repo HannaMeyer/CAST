@@ -129,13 +129,9 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
     predictors <- sapply(1:ncol(predictors),function(x){predictors[,x]*unlist(weight[x])})
   }
 
-  # calculate "global" maximum distance
-  #minvalues <- apply(predictors,2,function(x){min(x,na.rm=TRUE)}) # für jedes Raster min
-  #maxvalues <- apply(predictors,2,function(x){max(x,na.rm=TRUE)}) # für jedes Raster max
-
+  # calculate maximum potential distance:
   minvalues <- apply(train,2,function(x){min(x,na.rm=TRUE)}) # für jedes Raster min
   maxvalues <- apply(train,2,function(x){max(x,na.rm=TRUE)}) # für jedes Raster max
-
 
   maxdist <- dist(rbind(maxvalues,minvalues))
   #### For each pixel caclculate distance to each training point and search for
