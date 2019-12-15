@@ -122,7 +122,7 @@ tuneLength=1,trControl=ctrl)
 ffsmodel
 
 #compare to model without ffs:
-model <- ffs(trainDat[,predictors],trainDat$VW,method="rf",
+model <- train(trainDat[,predictors],trainDat$VW,method="rf",
 tuneLength=1, trControl=ctrl)
 model
 stopCluster(cl)
