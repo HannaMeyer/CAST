@@ -15,6 +15,7 @@
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the train dataset are used. Check varImp(model).
 #' @param scale logical. If TRUE uncertainty is scaled between 0 and 1. See Details.
+#' @param cl Cluster object created with parallel::makeCluster. To run things in parallel.
 #' @details Interpretation of results: If a location is very similar to the properties
 #' of the training data it will have a low distance in the predictor variable space
 #' (low uncertainty) while locations that are very different in its properties
@@ -73,7 +74,7 @@
 #' @aliases uncertainty
 
 uncertainty <- function (train, predictors, weight=NA, model=NA,
-                         variables="all",scale=FALSE){
+                         variables="all",scale=FALSE, cl=NULL){
   ### if not specified take all variables from train dataset as default:
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
   if(length(variables)==1&&variables=="all"){
@@ -136,12 +137,26 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
   maxdist <- dist(rbind(maxvalues,minvalues))
   #### For each pixel caclculate distance to each training point and search for
   #### min distance:
-  tmp <- NA
-  for (i in 1:nrow(train)){
-    mindist <- apply(predictors,1,function(x){dist(rbind(x,train[i,]))})
-    mindist <- pmin(mindist,tmp,na.rm=T)
-    tmp <- mindist
+  if(!is.null(cl)){ # if parallel then use parapply:
+    parallel::clusterExport(cl=cl, varlist=c("train"))
+    mindist <- parallel::parApply(cl=cl,predictors,1,FUN=function(x){
+      tmp <- NA
+      for (i in 1:nrow(train)){
+        current_min <- dist(rbind(x,train[i,]))
+        current_min <- pmin(current_min,tmp,na.rm=T)
+        tmp <- current_min
+      }
+      return(current_min)
+    })
+  }else{ # ...if not in parallel loop over train data:
+    tmp <- NA
+    for (i in 1:nrow(train)){
+      mindist <- apply(predictors,1,function(x){dist(rbind(x,train[i,]))})
+      mindist <- pmin(mindist,tmp,na.rm=T)
+      tmp <- mindist
+    }
   }
+
   #scale the distance to nearest training point by the maximum possible distance
   mindist <- mindist/maxdist
   #### return (scaled) distances as RasterLayer or vector:
