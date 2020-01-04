@@ -1,4 +1,4 @@
-# `CAST` 0.3.2
+# `CAST` 0.4.0
 * new feature: 
     * new function "uncertainty": quantify and visualize uncertainty of spatial 
     prediction models
