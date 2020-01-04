@@ -1,21 +1,21 @@
 Package: CAST
 Type: Package
 Title: 'caret' Applications for Spatial-Temporal Models
-Version: 0.3.2
-Authors@R: c(person("Hanna", "Meyer", email = "hanna.meyer@geo.uni-marburg.de", role = c("cre", "aut")),
+Version: 0.4.0
+Authors@R: c(person("Hanna", "Meyer", email = "hanna.meyer@uni-muenster.de", role = c("cre", "aut")),
              person("Chris", "Reudenbach", role = c("ctb")),
              person("Marvin", "Ludwig", role = c("ctb")),
              person("Thomas", "Nauss", role = c("ctb")))
 Author: Hanna Meyer [cre, aut], Chris Reudenbach [ctb], Marvin Ludwig [ctb], Thomas Nauss [ctb]             
-Maintainer: Hanna Meyer <hanna.meyer@geo.uni-marburg.de>
+Maintainer: Hanna Meyer <hanna.meyer@uni-muenster.de>
 Description: Supporting functionality to run 'caret' with spatial or spatial-temporal data. 'caret' is a frequently used package for model training and prediction using machine learning. This package includes functions to improve spatial-temporal modelling tasks using 'caret'. It prepares data for Leave-Location-Out and Leave-Time-Out cross-validation which are target-oriented validation strategies for spatial-temporal models. To decrease overfitting and improve model performances, the package implements a forward feature selection that selects suitable predictor variables in view to their contribution to the target-oriented performance.
 License: GPL (>= 3) | file LICENSE
-URL: https://github.com/environmentalinformatics-marburg/CAST
+URL: https://github.com/HannaMeyer/CAST
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.1.0)
 Imports: caret, stats, utils, ggplot2, graphics
 Suggests: doParallel, GSIF, randomForest, lubridate, raster, sp, knitr, mapview,
-    rmarkdown, sf, scales
+    rmarkdown, sf, scales, parallel
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
