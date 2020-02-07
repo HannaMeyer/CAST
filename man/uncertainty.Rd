@@ -5,7 +5,7 @@
 \title{Estimate uncertainty of spatial prediction models}
 \usage{
 uncertainty(train, predictors, weight = NA, model = NA,
-  variables = "all", scale = FALSE, cl = NULL)
+  variables = "all", scale = FALSE, cl = NULL, range = NULL)
 }
 \arguments{
 \item{train}{a data.frame containing the data used for model training}
@@ -23,6 +23,8 @@ of the train dataset are used. Check varImp(model).}
 \item{scale}{logical. If TRUE uncertainty is scaled between 0 and 1. See Details.}
 
 \item{cl}{Cluster object created with parallel::makeCluster. To run things in parallel.}
+
+\item{range}{numeric. Only specify if the range should not be detected automatically}
 }
 \value{
 A RasterLayer or data.frame

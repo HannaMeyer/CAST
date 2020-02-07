@@ -16,6 +16,7 @@
 #' of the train dataset are used. Check varImp(model).
 #' @param scale logical. If TRUE uncertainty is scaled between 0 and 1. See Details.
 #' @param cl Cluster object created with parallel::makeCluster. To run things in parallel.
+#' @param range numeric. Only specify if the range should not be detected automatically
 #' @details Interpretation of results: If a location is very similar to the properties
 #' of the training data it will have a low distance in the predictor variable space
 #' (low uncertainty) while locations that are very different in its properties
@@ -74,7 +75,7 @@
 #' @aliases uncertainty
 
 uncertainty <- function (train, predictors, weight=NA, model=NA,
-                         variables="all",scale=FALSE, cl=NULL){
+                         variables="all",scale=FALSE, cl=NULL, range=NULL){
   ### if not specified take all variables from train dataset as default:
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
   if(length(variables)==1&&variables=="all"){
@@ -82,7 +83,8 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
   }
   #### Prepare output as either as RasterLayer or vector:
   out <- NA
-  if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"){
+  if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
+      class(predictors)=="RasterLayer"){
     out <- predictors[[1]]
     names(out) <- "uncertainty"
   }
@@ -101,7 +103,8 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
     Check caret::varImp(model)")
   }
   #### order data:
-  if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"){
+  if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
+      class(predictors)=="RasterLayer"){
     predictors <- predictors[[na.omit(match(variables, names(predictors)))]]
   }else{
     predictors <- predictors[,na.omit(match(variables, names(predictors)))]
@@ -115,15 +118,16 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
     }
   }
   #### Scale data and weight predictors if applicable:
-  train <- scale(train)
+  train <- scale(train,center=FALSE)
   scaleparam <- attributes(train)
   if(!inherits(weight, "error")){
     train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
   }
-  if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"){
+  if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
+      class(predictors)=="RasterLayer"){
     predictors <- raster::as.data.frame(predictors)
   }
-  predictors <- scale(predictors,center=scaleparam$`scaled:center`,
+  predictors <- scale(predictors,center=FALSE,#scaleparam$`scaled:center`
                       scale=scaleparam$`scaled:scale`)
 
   if(!inherits(weight, "error")){
@@ -158,7 +162,11 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
   }
 
   #scale the distance to nearest training point by the maximum possible distance
+  if(is.null(range)){
   mindist <- mindist/maxdist
+  }else{
+    mindist <- mindist/unlist(range)
+  }
   #### return (scaled) distances as RasterLayer or vector:
   if (class(out)=="RasterLayer"){
     if(scale){
@@ -173,5 +181,6 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
       out <- mindist
     }
   }
+  attributes(out)$range <- maxdist
   return(out)
 }
