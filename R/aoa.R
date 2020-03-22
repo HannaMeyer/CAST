@@ -1,7 +1,8 @@
-#' Estimate uncertainty of spatial prediction models
+#' Estimate the area of applicability
 #'
 #' @description
-#' this function estimates uncertainty of spatial prediction models by
+#' this function estimates the area of inapplicability index (AOII) and the derived
+#' area of applicability (AOI) of spatial prediction models by
 #' considering the distance of new data (i.e. a Raster Stack of spatial predictors
 #' used in the models) in the predictor variable space to the data used for model
 #' training. Predictors can be weighted in the ideal case based on the internal
@@ -14,21 +15,20 @@
 #' @param model A caret model used to extract weights from (based on variable importance)
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the train dataset are used. Check varImp(model).
+#' @param threshold Numeric or character indicating the quantile (e.g. "90%"). Used to
+#' define the AOA
 #' @param scale logical. If TRUE uncertainty is scaled between 0 and 1. See Details.
+#' @param clstr Numeric or character. Spatial cluster affiliation for each data point. Should be used if replicates are present.
 #' @param cl Cluster object created with parallel::makeCluster. To run things in parallel.
-#' @param range numeric. Only specify if the range should not be detected automatically
-#' @details Interpretation of results: If a location is very similar to the properties
+#' @details The "Area of Inapplicability Index" (AOII) and the corresponding Area of Applicability (AOA) are calculated.
+#' Interpretation of results: If a location is very similar to the properties
 #' of the training data it will have a low distance in the predictor variable space
-#' (low uncertainty) while locations that are very different in its properties
-#' will have a high uncertainty.
-#' If scale is FALSE then uncertainty is returned as distance scaled by the length of the gradent in the training data:
-#' The further the distance in this variable space, the larger the uncertainty gets. e.g. an uncertainty of 0.5 means
-#' that the distance to the nearest training point is half the distance of the gradient observed in the training data.
-#' The uncertainty can get higher than 1 if the nearest training point is further away than the length of the gradient in the training data.
-#' This happens when we apply a model to an area that is fully out of the range of what the model was trained on.
-#' If scale is TRUE then the output is scaled between 0 and 1, but no comparison between models will be possible.
-#'
-#' @return A RasterLayer or data.frame
+#' (high inapplicability (aoii) index) while locations that are very different in their properties
+#' will have a high Area of Inapplicability Index (AOII).
+#' If scale is FALSE then AOII is returned as distance scaled by the average distance to a nearest training data point as
+#' observed in the training data. The further the distance in this predicor space, the larger the AOII gets.
+#' To get the AOA, a threshold to the AOII is applied.
+#' @return A RasterStack or data.frame with the AOII and AOA
 #' @author
 #' Hanna Meyer
 #'
@@ -54,8 +54,9 @@
 #'
 #' # first calculate uncertainty based on a set of variables with equal weights:
 #' variables <- c("DEM","Easting","Northing")
-#' plot(uncertainty(trainDat,studyArea,variables=variables))
-#' plot(pts[,1],add=TRUE,col="black") #add training data to plot
+#' AOA <- aoa(trainDat,studyArea,variables=variables)
+#' spplot(AOA$AOAI, col.regions=viridis(100))+
+#' spplot(AOA$AOA,col.regions=c("transparent","grey"))
 #'
 #' # or weight variables based on variable improtance from a (simple) trained model:
 #' set.seed(100)
@@ -63,19 +64,22 @@
 #' trainDat$VW,method="rf",importance=TRUE,tuneLength=1)
 #' prediction <- predict(studyArea,model)
 #' plot(varImp(model,scale=FALSE))
+#' #
 #' # note that coordinates are the major predictors here,
 #' # so uncertainty becomes higher when moving away from the training data:
 #' par(mfrow=c(1,2))
 #' plot(prediction,main="predicted VW")
-#' plot(uncertainty(trainDat,studyArea,model=model,variables=variables),
-#' main="scaled uncertainty")
-#' plot(pts["Group.1"],add=TRUE,col="black") #add training data to plot
+#' AOA <- aoa(trainDat,studyArea,model=model,variables=variables)
+#' spplot(AOA$AOAI, col.regions=viridis(100))
+#' spplot(AOA$AOAI, col.regions=viridis(100))+
+#' spplot(AOA$AOA,col.regions=c("transparent","grey"))
 #' }
-#' @export uncertainty
-#' @aliases uncertainty
+#' @export aoa
+#' @aliases aoa
 
-uncertainty <- function (train, predictors, weight=NA, model=NA,
-                         variables="all",scale=FALSE, cl=NULL, range=NULL){
+aoa <- function (train, predictors, weight=NA, model=NA,
+                 variables="all", threshold="90%",scale=FALSE,
+                 clstr=NULL,cl=NULL){
   ### if not specified take all variables from train dataset as default:
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
   if(length(variables)==1&&variables=="all"){
@@ -95,7 +99,6 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
     as.data.frame(t(caret::varImp(model,scale=F)$importance[,"Overall"]))
   }, error=function(e) e)
   if(!inherits(weight, "error")){
-    #weight <- t(apply(weight,1,scales::rescale,to = c(1, 100)))
     names(weight)<- rownames(caret::varImp(model,scale=F)$importance)
   }else{
     message("note: variables were not weighted either because no weights or model were given,
@@ -118,7 +121,7 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
     }
   }
   #### Scale data and weight predictors if applicable:
-  train <- scale(train,center=FALSE)
+  train <- scale(train)
   scaleparam <- attributes(train)
   if(!inherits(weight, "error")){
     train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
@@ -127,18 +130,12 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
       class(predictors)=="RasterLayer"){
     predictors <- raster::as.data.frame(predictors)
   }
-  predictors <- scale(predictors,center=FALSE,#scaleparam$`scaled:center`
+  predictors <- scale(predictors,center=scaleparam$`scaled:center`,#scaleparam$`scaled:center`
                       scale=scaleparam$`scaled:scale`)
 
   if(!inherits(weight, "error")){
     predictors <- sapply(1:ncol(predictors),function(x){predictors[,x]*unlist(weight[x])})
   }
-
-  # calculate maximum potential distance:
-  minvalues <- apply(train,2,function(x){min(x,na.rm=TRUE)}) # für jedes Raster min
-  maxvalues <- apply(train,2,function(x){max(x,na.rm=TRUE)}) # für jedes Raster max
-
-  maxdist <- dist(rbind(maxvalues,minvalues))
   #### For each pixel caclculate distance to each training point and search for
   #### min distance:
   if(!is.null(cl)){ # if parallel then use parapply:
@@ -160,14 +157,25 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
       tmp <- mindist
     }
   }
-
-  #scale the distance to nearest training point by the maximum possible distance
-  if(is.null(range)){
-  mindist <- mindist/maxdist
-  }else{
-    mindist <- mindist/unlist(range)
+  trainDist <- as.matrix(dist(train))
+  diag(trainDist) <- NA
+  # If data are highly clustered (repliates) make sure that distance to data from same
+  # cluster are excluded
+  if (!is.null(clstr)){
+    for (i in 1:nrow(trainDist)){
+      trainDist[i,clstr==clstr[i]] <- NA
+    }
   }
-  #### return (scaled) distances as RasterLayer or vector:
+  #scale the distance to nearest training point by average minimum distance as observed in training data
+  trainDist_min <- apply(trainDist,1,FUN=function(x){min(x,na.rm=T)})
+  trainDist_mean <- mean(trainDist_min)
+  trainDist_quantiles <- quantile((trainDist_mean-trainDist_min)/trainDist_mean)
+  mindist <- (mindist-trainDist_mean)/trainDist_mean
+  # define threshold for AOA
+  thres <- quantile(trainDist_mean-trainDist_min,
+                    probs=as.numeric(gsub("%","",threshold))/100)/trainDist_mean
+
+  #### scale distances if appliable:
   if (class(out)=="RasterLayer"){
     if(scale){
       raster::values(out) <- scales::rescale(mindist, to = c(0, 1))
@@ -181,6 +189,19 @@ uncertainty <- function (train, predictors, weight=NA, model=NA,
       out <- mindist
     }
   }
-  attributes(out)$range <- maxdist
+  #### Create Mask for DOA and return statistics
+  if (class(out)=="RasterLayer"){
+    masked_result <- out
+    raster::values(masked_result) <- 1
+    masked_result[out>thres] <- 0
+    masked_result <- raster::mask(masked_result,out)
+    out <- raster::stack(out,masked_result)
+    names(out) <- c("AOAI","AOA")
+    aoa_stats <- list("mean"=trainDist_mean,
+                      "quantiles"=t(data.frame(trainDist_quantiles)),
+                      "selected_quantile" =thres)
+    attributes(out)$aoa_stats <- NULL
+    attributes(out)$aoa_stats <- aoa_stats
+  }
   return(out)
 }

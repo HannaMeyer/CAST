@@ -10,9 +10,7 @@
 #' \emph{Maintainer:} Hanna Meyer \email{hanna.meyer@@uni-muenster.de}
 #'
 #' @import caret
-
-#' @importFrom stats na.exclude
-#' @importFrom stats sd dist na.omit
+#' @importFrom stats sd dist na.omit lm predict quantile na.exclude
 #' @importFrom utils combn
 #' @importFrom grDevices rainbow
 #' @importFrom graphics axis plot segments
