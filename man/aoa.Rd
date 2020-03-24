@@ -2,7 +2,7 @@
 % Please edit documentation in R/aoa.R
 \name{aoa}
 \alias{aoa}
-\title{Estimate the area of applicability}
+\title{Estimate the Area of Applicability}
 \usage{
 aoa(train, predictors, weight = NA, model = NA, variables = "all",
   threshold = "90\%", scale = FALSE, clstr = NULL, cl = NULL)
@@ -20,7 +20,7 @@ the model was meant to make predictions for.}
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the train dataset are used. Check varImp(model).}
 
-\item{threshold}{Numeric or character indicating the quantile (e.g. "90%"). Used to
+\item{threshold}{character indicating the quantile (e.g. "90%"). Used to
 define the AOA}
 
 \item{scale}{logical. If TRUE uncertainty is scaled between 0 and 1. See Details.}
@@ -30,32 +30,33 @@ define the AOA}
 \item{cl}{Cluster object created with parallel::makeCluster. To run things in parallel.}
 }
 \value{
-A RasterLayer or data.frame
+A RasterStack or data.frame with the AOAI and AOA
 }
 \description{
-this function estimates teh area of applicability of spatial prediction models by
+this function estimates the area of Applicability index (AOAI) and the derived
+area of applicability (AOA) of spatial prediction models by
 considering the distance of new data (i.e. a Raster Stack of spatial predictors
 used in the models) in the predictor variable space to the data used for model
 training. Predictors can be weighted in the ideal case based on the internal
 variable importance of the machine learning algorithm used for model training.
 }
 \details{
+The "Area of Inapplicability Index" and the corresponding Area of Applicability (AOA) are calculated.
 Interpretation of results: If a location is very similar to the properties
 of the training data it will have a low distance in the predictor variable space
-(low uncertainty) while locations that are very different in its properties
-will have a high uncertainty.
-If scale is FALSE then uncertainty is returned as distance scaled by the length of the gradent in the training data:
-The further the distance in this variable space, the larger the uncertainty gets. e.g. an uncertainty of 0.5 means
-that the distance to the nearest training point is half the distance of the gradient observed in the training data.
-The uncertainty can get higher than 1 if the nearest training point is further away than the length of the gradient in the training data.
-This happens when we apply a model to an area that is fully out of the range of what the model was trained on.
-If scale is TRUE then the output is scaled between 0 and 1, but no comparison between models will be possible.
+(low applicability index) while locations that are very different in their properties
+will have a low Applicability Index.
+The AOAI is returned as inverse distance scaled by the average distance to a nearest training data point as
+observed in the training data. The further the distance in this predicor space, the lower the AOAI gets.
+To get the AOA, a threshold to the AOAI is applied.
 }
 \examples{
 \dontrun{
 library(sf)
 library(raster)
 library(caret)
+library(viridis)
+library(latticeExtra)
 
 # prepare sample data:
 dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
@@ -75,7 +76,7 @@ plot(pts[,1],add=TRUE,col="black")
 variables <- c("DEM","Easting","Northing")
 AOA <- aoa(trainDat,studyArea,variables=variables)
 spplot(AOA$AOAI, col.regions=viridis(100))+
-spplot(AOA$AOA,col.regions=c("transparent","grey"))
+spplot(AOA$AOA,col.regions=c("grey","transparent"))
 
 # or weight variables based on variable improtance from a (simple) trained model:
 set.seed(100)
@@ -89,8 +90,9 @@ plot(varImp(model,scale=FALSE))
 par(mfrow=c(1,2))
 plot(prediction,main="predicted VW")
 AOA <- aoa(trainDat,studyArea,model=model,variables=variables)
-spplot(AOA$AOAI, col.regions=viridis(100))+
-spplot(AOA$AOA,col.regions=c("transparent","grey"))
+spplot(AOA$AOAI, col.regions=rev(viridis(100)))
+spplot(AOA$AOAI, col.regions=rev(viridis(100)))+
+spplot(AOA$AOA,col.regions=c("grey","transparent"))
 }
 }
 \author{

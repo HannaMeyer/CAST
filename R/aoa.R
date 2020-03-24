@@ -1,8 +1,8 @@
-#' Estimate the area of applicability
+#' Estimate the Area of Applicability
 #'
 #' @description
-#' this function estimates the area of inapplicability index (AOII) and the derived
-#' area of applicability (AOI) of spatial prediction models by
+#' this function estimates the area of Applicability index (AOAI) and the derived
+#' area of applicability (AOA) of spatial prediction models by
 #' considering the distance of new data (i.e. a Raster Stack of spatial predictors
 #' used in the models) in the predictor variable space to the data used for model
 #' training. Predictors can be weighted in the ideal case based on the internal
@@ -15,20 +15,20 @@
 #' @param model A caret model used to extract weights from (based on variable importance)
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the train dataset are used. Check varImp(model).
-#' @param threshold Numeric or character indicating the quantile (e.g. "90%"). Used to
+#' @param threshold character indicating the quantile (e.g. "90%"). Used to
 #' define the AOA
 #' @param scale logical. If TRUE uncertainty is scaled between 0 and 1. See Details.
 #' @param clstr Numeric or character. Spatial cluster affiliation for each data point. Should be used if replicates are present.
 #' @param cl Cluster object created with parallel::makeCluster. To run things in parallel.
-#' @details The "Area of Inapplicability Index" (AOII) and the corresponding Area of Applicability (AOA) are calculated.
+#' @details The "Area of Inapplicability Index" and the corresponding Area of Applicability (AOA) are calculated.
 #' Interpretation of results: If a location is very similar to the properties
 #' of the training data it will have a low distance in the predictor variable space
-#' (high inapplicability (aoii) index) while locations that are very different in their properties
-#' will have a high Area of Inapplicability Index (AOII).
-#' If scale is FALSE then AOII is returned as distance scaled by the average distance to a nearest training data point as
-#' observed in the training data. The further the distance in this predicor space, the larger the AOII gets.
-#' To get the AOA, a threshold to the AOII is applied.
-#' @return A RasterStack or data.frame with the AOII and AOA
+#' (low applicability index) while locations that are very different in their properties
+#' will have a low Applicability Index.
+#' The AOAI is returned as inverse distance scaled by the average distance to a nearest training data point as
+#' observed in the training data. The further the distance in this predicor space, the lower the AOAI gets.
+#' To get the AOA, a threshold to the AOAI is applied.
+#' @return A RasterStack or data.frame with the AOAI and AOA
 #' @author
 #' Hanna Meyer
 #'
@@ -37,6 +37,7 @@
 #' library(sf)
 #' library(raster)
 #' library(caret)
+#' library(viridis)
 #'
 #' # prepare sample data:
 #' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
@@ -56,7 +57,7 @@
 #' variables <- c("DEM","Easting","Northing")
 #' AOA <- aoa(trainDat,studyArea,variables=variables)
 #' spplot(AOA$AOAI, col.regions=viridis(100))+
-#' spplot(AOA$AOA,col.regions=c("transparent","grey"))
+#' spplot(AOA$AOA,col.regions=c("grey","transparent"))
 #'
 #' # or weight variables based on variable improtance from a (simple) trained model:
 #' set.seed(100)
@@ -65,14 +66,10 @@
 #' prediction <- predict(studyArea,model)
 #' plot(varImp(model,scale=FALSE))
 #' #
-#' # note that coordinates are the major predictors here,
-#' # so uncertainty becomes higher when moving away from the training data:
-#' par(mfrow=c(1,2))
-#' plot(prediction,main="predicted VW")
 #' AOA <- aoa(trainDat,studyArea,model=model,variables=variables)
-#' spplot(AOA$AOAI, col.regions=viridis(100))
-#' spplot(AOA$AOAI, col.regions=viridis(100))+
-#' spplot(AOA$AOA,col.regions=c("transparent","grey"))
+#' spplot(AOA$AOAI, col.regions=rev(viridis(100)))
+#' spplot(AOA$AOAI, col.regions=rev(viridis(100)))+
+#' spplot(AOA$AOA,col.regions=c("grey","transparent"))
 #' }
 #' @export aoa
 #' @aliases aoa
@@ -195,13 +192,17 @@ aoa <- function (train, predictors, weight=NA, model=NA,
     raster::values(masked_result) <- 1
     masked_result[out>thres] <- 0
     masked_result <- raster::mask(masked_result,out)
-    out <- raster::stack(out,masked_result)
-    names(out) <- c("AOAI","AOA")
-    aoa_stats <- list("mean"=trainDist_mean,
-                      "quantiles"=t(data.frame(trainDist_quantiles)),
-                      "selected_quantile" =thres)
-    attributes(out)$aoa_stats <- NULL
-    attributes(out)$aoa_stats <- aoa_stats
+    out <- raster::stack(-out,masked_result)
+  }else{
+    masked_result <- rep(1,length(out))
+    masked_result[out>thres] <- 0
+    out <- list(-out,masked_result)
   }
+  names(out) <- c("AOAI","AOA")
+  aoa_stats <- list("mean"=trainDist_mean,
+                    "quantiles"=t(data.frame(-trainDist_quantiles)),
+                    "selected_quantile" =-thres)
+  attributes(out)$aoa_stats <- NULL
+  attributes(out)$aoa_stats <- aoa_stats
   return(out)
 }
