@@ -5,7 +5,7 @@
 \title{Estimate the Area of Applicability}
 \usage{
 aoa(train, predictors, weight = NA, model = NA, variables = "all",
-  threshold = "90\%", scale = FALSE, clstr = NULL, cl = NULL)
+  threshold = "90\%", clstr = NULL, cl = NULL)
 }
 \arguments{
 \item{train}{a data.frame containing the data used for model training}
@@ -20,10 +20,8 @@ the model was meant to make predictions for.}
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the train dataset are used. Check varImp(model).}
 
-\item{threshold}{character indicating the quantile (e.g. "90%"). Used to
+\item{threshold}{character indicating the quantile (e.g. "90\%"). Used to
 define the AOA}
-
-\item{scale}{logical. If TRUE uncertainty is scaled between 0 and 1. See Details.}
 
 \item{clstr}{Numeric or character. Spatial cluster affiliation for each data point. Should be used if replicates are present.}
 
@@ -33,8 +31,8 @@ define the AOA}
 A RasterStack or data.frame with the AOAI and AOA
 }
 \description{
-this function estimates the area of Applicability index (AOAI) and the derived
-area of applicability (AOA) of spatial prediction models by
+this function estimates the Area of Applicability Index (AOAI) and the derived
+Area of Applicability (AOA) of spatial prediction models by
 considering the distance of new data (i.e. a Raster Stack of spatial predictors
 used in the models) in the predictor variable space to the data used for model
 training. Predictors can be weighted in the ideal case based on the internal
@@ -56,7 +54,6 @@ library(sf)
 library(raster)
 library(caret)
 library(viridis)
-library(latticeExtra)
 
 # prepare sample data:
 dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
@@ -85,10 +82,6 @@ trainDat$VW,method="rf",importance=TRUE,tuneLength=1)
 prediction <- predict(studyArea,model)
 plot(varImp(model,scale=FALSE))
 #
-# note that coordinates are the major predictors here,
-# so uncertainty becomes higher when moving away from the training data:
-par(mfrow=c(1,2))
-plot(prediction,main="predicted VW")
 AOA <- aoa(trainDat,studyArea,model=model,variables=variables)
 spplot(AOA$AOAI, col.regions=rev(viridis(100)))
 spplot(AOA$AOAI, col.regions=rev(viridis(100)))+
