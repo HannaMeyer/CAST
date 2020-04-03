@@ -5,7 +5,7 @@
 \title{Estimate the Area of Applicability}
 \usage{
 aoa(train, predictors, weight = NA, model = NA, variables = "all",
-  threshold = "90\%", clstr = NULL, cl = NULL)
+  clstr = NULL, cl = NULL)
 }
 \arguments{
 \item{train}{a data.frame containing the data used for model training}
@@ -20,9 +20,6 @@ the model was meant to make predictions for.}
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the train dataset are used. Check varImp(model).}
 
-\item{threshold}{character indicating the quantile (e.g. "90\%"). Used to
-define the AOA}
-
 \item{clstr}{Numeric or character. Spatial cluster affiliation for each data point. Should be used if replicates are present.}
 
 \item{cl}{Cluster object created with parallel::makeCluster. To run things in parallel.}
@@ -31,7 +28,7 @@ define the AOA}
 A RasterStack or data.frame with the AOAI and AOA
 }
 \description{
-this function estimates the Area of Applicability Index (AOAI) and the derived
+This function estimates the Area of Applicability Index (AOAI) and the derived
 Area of Applicability (AOA) of spatial prediction models by
 considering the distance of new data (i.e. a Raster Stack of spatial predictors
 used in the models) in the predictor variable space to the data used for model
@@ -39,14 +36,14 @@ training. Predictors can be weighted in the ideal case based on the internal
 variable importance of the machine learning algorithm used for model training.
 }
 \details{
-The "Area of Inapplicability Index" and the corresponding Area of Applicability (AOA) are calculated.
+The Area of Applicability Index (AOAI) and the corresponding Area of Applicability (AOA) are calculated.
 Interpretation of results: If a location is very similar to the properties
 of the training data it will have a low distance in the predictor variable space
-(low applicability index) while locations that are very different in their properties
+(AOAI towards 0) while locations that are very different in their properties
 will have a low Applicability Index.
-The AOAI is returned as inverse distance scaled by the average distance to a nearest training data point as
-observed in the training data. The further the distance in this predicor space, the lower the AOAI gets.
-To get the AOA, a threshold to the AOAI is applied.
+The AOAI is returned as inverse distance scaled by the average mean distance between
+training data points. The further the distance in this predicor space, the lower the AOAI gets.
+To get the AOA, a threshold to the AOAI is applied based on the mean+sd minimum distances between training data.
 }
 \examples{
 \dontrun{

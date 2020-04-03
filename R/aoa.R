@@ -1,7 +1,7 @@
 #' Estimate the Area of Applicability
 #'
 #' @description
-#' this function estimates the Area of Applicability Index (AOAI) and the derived
+#' This function estimates the Area of Applicability Index (AOAI) and the derived
 #' Area of Applicability (AOA) of spatial prediction models by
 #' considering the distance of new data (i.e. a Raster Stack of spatial predictors
 #' used in the models) in the predictor variable space to the data used for model
@@ -15,18 +15,16 @@
 #' @param model A caret model used to extract weights from (based on variable importance)
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the train dataset are used. Check varImp(model).
-#' @param threshold character indicating the quantile (e.g. "90\%"). Used to
-#' define the AOA
 #' @param clstr Numeric or character. Spatial cluster affiliation for each data point. Should be used if replicates are present.
 #' @param cl Cluster object created with parallel::makeCluster. To run things in parallel.
-#' @details The "Area of Inapplicability Index" and the corresponding Area of Applicability (AOA) are calculated.
+#' @details The Area of Applicability Index (AOAI) and the corresponding Area of Applicability (AOA) are calculated.
 #' Interpretation of results: If a location is very similar to the properties
 #' of the training data it will have a low distance in the predictor variable space
-#' (low applicability index) while locations that are very different in their properties
+#' (AOAI towards 0) while locations that are very different in their properties
 #' will have a low Applicability Index.
-#' The AOAI is returned as inverse distance scaled by the average distance to a nearest training data point as
-#' observed in the training data. The further the distance in this predicor space, the lower the AOAI gets.
-#' To get the AOA, a threshold to the AOAI is applied.
+#' The AOAI is returned as inverse distance scaled by the average mean distance between
+#' training data points. The further the distance in this predicor space, the lower the AOAI gets.
+#' To get the AOA, a threshold to the AOAI is applied based on the mean+sd minimum distances between training data.
 #' @return A RasterStack or data.frame with the AOAI and AOA
 #' @author
 #' Hanna Meyer
@@ -74,7 +72,8 @@
 #' @aliases aoa
 
 aoa <- function (train, predictors, weight=NA, model=NA,
-                 variables="all", threshold="90%",
+                 variables="all",
+                 #threshold=-1,
                  clstr=NULL,cl=NULL){
   ### if not specified take all variables from train dataset as default:
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
@@ -164,13 +163,13 @@ aoa <- function (train, predictors, weight=NA, model=NA,
   }
   #scale the distance to nearest training point by average minimum distance as observed in training data
   trainDist_min <- apply(trainDist,1,FUN=function(x){min(x,na.rm=T)})
-  trainDist_mean <- mean(trainDist_min)
-  trainDist_quantiles <- quantile((trainDist_mean-trainDist_min)/trainDist_mean,
-                                  probs=c(seq(0, 0.75, 0.25),0.8,0.9,0.95,1))
-  mindist <- (mindist-trainDist_mean)/trainDist_mean
+  trainDist_mean <- apply(trainDist,1,FUN=function(x){mean(x,na.rm=T)})
+  trainDist_avrgmin <- mean(trainDist_min)
+  trainDist_sdmin <- sd(trainDist_min)
+  trainDist_avrgmean <- mean(trainDist_mean)
+  mindist <- mindist/trainDist_avrgmean
   # define threshold for AOA:
-  thres <- quantile(trainDist_mean-trainDist_min,
-                    probs=as.numeric(gsub("%","",threshold))/100)/trainDist_mean
+  thres <- (trainDist_avrgmin+trainDist_sdmin)/trainDist_avrgmean
   #### Create Mask for DOA and return statistics
   if (class(out)=="RasterLayer"){
     raster::values(out) <- mindist
@@ -186,9 +185,10 @@ aoa <- function (train, predictors, weight=NA, model=NA,
     out <- list(-out,masked_result)
   }
   names(out) <- c("AOAI","AOA")
-  aoa_stats <- list("mean"=trainDist_mean,
-                    "quantiles"=t(data.frame(-trainDist_quantiles)),
-                    "selected_quantile" =-thres)
+  aoa_stats <- list("AvrgMean_train"=trainDist_avrgmean,
+                    "AvrgMin_train"=trainDist_avrgmin,
+                    "SdMin_train"=trainDist_sdmin,
+                    "threshold" =-thres)
   attributes(out)$aoa_stats <- NULL
   attributes(out)$aoa_stats <- aoa_stats
   return(out)
