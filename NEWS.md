@@ -1,7 +1,6 @@
 # `CAST` 0.4.0
 * new feature: 
-    * new function "uncertainty": quantify and visualize uncertainty of spatial 
-    prediction models
+    * new function "aoa": quantify and visualize the area of applicability of spatial prediction models
     * "minVar" in ffs: Instead of always starting with 2-pair combinations, ffs can now also be started with combinations of more variables (e.g starting with all combinations of 3)
 * bugfix:
   * ffs failed for "svmLinear" in previous version because of S4 class issues. Fixed now.

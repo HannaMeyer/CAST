@@ -13,9 +13,9 @@ aoa(train, predictors, weight = NA, model = NA, variables = "all",
 \item{predictors}{A RasterStack, RasterBrick or data.frame containing the data
 the model was meant to make predictions for.}
 
-\item{weight}{A data.frame containing weights for each variable}
+\item{weight}{A data.frame containing weights for each variable. Only required if no model is given.}
 
-\item{model}{A caret model used to extract weights from (based on variable importance)}
+\item{model}{A train object created with caret used to extract weights from (based on variable importance)}
 
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the train dataset are used. Check varImp(model).}
@@ -84,6 +84,10 @@ spplot(AOA$AOAI, col.regions=rev(viridis(100)))
 spplot(AOA$AOAI, col.regions=rev(viridis(100)))+
 spplot(AOA$AOA,col.regions=c("grey","transparent"))
 }
+}
+\references{
+Meyer, H., Pebesma, E. (in prep): Predicting into unknown space?
+Estimating the area of applicability of spatial prediction models.
 }
 \author{
 Hanna Meyer

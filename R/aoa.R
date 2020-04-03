@@ -11,8 +11,8 @@
 #' @param train a data.frame containing the data used for model training
 #' @param predictors A RasterStack, RasterBrick or data.frame containing the data
 #' the model was meant to make predictions for.
-#' @param weight A data.frame containing weights for each variable
-#' @param model A caret model used to extract weights from (based on variable importance)
+#' @param weight A data.frame containing weights for each variable. Only required if no model is given.
+#' @param model A train object created with caret used to extract weights from (based on variable importance)
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the train dataset are used. Check varImp(model).
 #' @param clstr Numeric or character. Spatial cluster affiliation for each data point. Should be used if replicates are present.
@@ -28,6 +28,9 @@
 #' @return A RasterStack or data.frame with the AOAI and AOA
 #' @author
 #' Hanna Meyer
+#' @references
+#' Meyer, H., Pebesma, E. (in prep): Predicting into unknown space?
+#' Estimating the area of applicability of spatial prediction models.
 #'
 #' @examples
 #' \dontrun{
