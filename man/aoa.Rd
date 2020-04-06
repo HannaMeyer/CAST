@@ -2,7 +2,7 @@
 % Please edit documentation in R/aoa.R
 \name{aoa}
 \alias{aoa}
-\title{Estimate the Area of Applicability}
+\title{Area of Applicability}
 \usage{
 aoa(train, predictors, weight = NA, model = NA, variables = "all",
   clstr = NULL, cl = NULL)
@@ -44,6 +44,7 @@ will have a low Applicability Index.
 The AOAI is returned as inverse distance scaled by the average mean distance between
 training data points. The further the distance in this predicor space, the lower the AOAI gets.
 To get the AOA, a threshold to the AOAI is applied based on the mean+sd minimum distances between training data.
+See Meyer et al. (submitted) for the full documentation of the methodology.
 }
 \examples{
 \dontrun{
@@ -51,6 +52,7 @@ library(sf)
 library(raster)
 library(caret)
 library(viridis)
+library(latticeExtra)
 
 # prepare sample data:
 dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
@@ -66,27 +68,29 @@ spplot(scale(studyArea))
 plot(studyArea$DEM)
 plot(pts[,1],add=TRUE,col="black")
 
-# first calculate uncertainty based on a set of variables with equal weights:
+# first calculate the AOAI based on a set of variables with equal weights:
 variables <- c("DEM","Easting","Northing")
 AOA <- aoa(trainDat,studyArea,variables=variables)
-spplot(AOA$AOAI, col.regions=viridis(100))+
-spplot(AOA$AOA,col.regions=c("grey","transparent"))
+spplot(AOA$AOAI, col.regions=viridis(100),main="Applicability Index")
+spplot(AOA$AOA,col.regions=c("grey","transparent"),main="Area of Applicability")
 
-# or weight variables based on variable improtance from a (simple) trained model:
+# or weight variables based on variable improtance from a trained model:
 set.seed(100)
 model <- train(trainDat[,which(names(trainDat)\%in\%variables)],
 trainDat$VW,method="rf",importance=TRUE,tuneLength=1)
+print(model) #note that this is a quite poor prediction model
 prediction <- predict(studyArea,model)
 plot(varImp(model,scale=FALSE))
 #
 AOA <- aoa(trainDat,studyArea,model=model,variables=variables)
-spplot(AOA$AOAI, col.regions=rev(viridis(100)))
-spplot(AOA$AOAI, col.regions=rev(viridis(100)))+
+spplot(AOA$AOAI, col.regions=viridis(100),main="Applicability Index")
+#plot predictions for the AOA only:
+spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
 spplot(AOA$AOA,col.regions=c("grey","transparent"))
 }
 }
 \references{
-Meyer, H., Pebesma, E. (in prep): Predicting into unknown space?
+Meyer, H., Pebesma, E. (submitted): Predicting into unknown space?
 Estimating the area of applicability of spatial prediction models.
 }
 \author{

@@ -1,4 +1,4 @@
-#' Estimate the Area of Applicability
+#' Area of Applicability
 #'
 #' @description
 #' This function estimates the Area of Applicability Index (AOAI) and the derived
@@ -25,11 +25,13 @@
 #' The AOAI is returned as inverse distance scaled by the average mean distance between
 #' training data points. The further the distance in this predicor space, the lower the AOAI gets.
 #' To get the AOA, a threshold to the AOAI is applied based on the mean+sd minimum distances between training data.
+#' See Meyer et al. (submitted) for the full documentation of the methodology.
+#'
 #' @return A RasterStack or data.frame with the AOAI and AOA
 #' @author
 #' Hanna Meyer
 #' @references
-#' Meyer, H., Pebesma, E. (in prep): Predicting into unknown space?
+#' Meyer, H., Pebesma, E. (submitted): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
 #'
 #' @examples
@@ -38,6 +40,7 @@
 #' library(raster)
 #' library(caret)
 #' library(viridis)
+#' library(latticeExtra)
 #'
 #' # prepare sample data:
 #' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
@@ -53,31 +56,36 @@
 #' plot(studyArea$DEM)
 #' plot(pts[,1],add=TRUE,col="black")
 #'
-#' # first calculate uncertainty based on a set of variables with equal weights:
+#' # first calculate the AOAI based on a set of variables with equal weights:
 #' variables <- c("DEM","Easting","Northing")
 #' AOA <- aoa(trainDat,studyArea,variables=variables)
-#' spplot(AOA$AOAI, col.regions=viridis(100))+
-#' spplot(AOA$AOA,col.regions=c("grey","transparent"))
+#' spplot(AOA$AOAI, col.regions=viridis(100),main="Applicability Index")
+#' spplot(AOA$AOA,col.regions=c("grey","transparent"),main="Area of Applicability")
 #'
-#' # or weight variables based on variable improtance from a (simple) trained model:
+#' # or weight variables based on variable improtance from a trained model:
 #' set.seed(100)
 #' model <- train(trainDat[,which(names(trainDat)%in%variables)],
 #' trainDat$VW,method="rf",importance=TRUE,tuneLength=1)
+#' print(model) #note that this is a quite poor prediction model
 #' prediction <- predict(studyArea,model)
 #' plot(varImp(model,scale=FALSE))
 #' #
 #' AOA <- aoa(trainDat,studyArea,model=model,variables=variables)
-#' spplot(AOA$AOAI, col.regions=rev(viridis(100)))
-#' spplot(AOA$AOAI, col.regions=rev(viridis(100)))+
+#' spplot(AOA$AOAI, col.regions=viridis(100),main="Applicability Index")
+#' #plot predictions for the AOA only:
+#' spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
 #' spplot(AOA$AOA,col.regions=c("grey","transparent"))
 #' }
 #' @export aoa
 #' @aliases aoa
 
-aoa <- function (train, predictors, weight=NA, model=NA,
+aoa <- function (train,
+                 predictors,
+                 weight=NA,
+                 model=NA,
                  variables="all",
-                 #threshold=-1,
-                 clstr=NULL,cl=NULL){
+                 clstr=NULL,
+                 cl=NULL){
   ### if not specified take all variables from train dataset as default:
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
   if(length(variables)==1&&variables=="all"){
@@ -88,7 +96,7 @@ aoa <- function (train, predictors, weight=NA, model=NA,
   if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
       class(predictors)=="RasterLayer"){
     out <- predictors[[1]]
-    names(out) <- "uncertainty"
+    #names(out) <- "uncertainty"
   }
   #### Extract weights from trained model:
   weight <- tryCatch(if(model$modelType=="Classification"){
@@ -188,11 +196,11 @@ aoa <- function (train, predictors, weight=NA, model=NA,
     out <- list(-out,masked_result)
   }
   names(out) <- c("AOAI","AOA")
-  aoa_stats <- list("AvrgMean_train"=trainDist_avrgmean,
+  attributes(out)$aoa_stats <- list("AvrgMean_train"=trainDist_avrgmean,
                     "AvrgMin_train"=trainDist_avrgmin,
                     "SdMin_train"=trainDist_sdmin,
                     "threshold" =-thres)
-  attributes(out)$aoa_stats <- NULL
-  attributes(out)$aoa_stats <- aoa_stats
+#  attributes(out)$aoa_stats <- NULL
+  #attributes(out)$aoa_stats <- aoa_stats
   return(out)
 }

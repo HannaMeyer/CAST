@@ -23,7 +23,7 @@
 #' ffsmodel <- ffs(iris[,1:4],iris$Species)
 #' plot_ffs(ffsmodel)
 #' #plot performance of selected variables only:
-#' plot_ffs(ffsmodel,plotType="selected)
+#' plot_ffs(ffsmodel,plotType="selected")
 #'}
 #' @export plot_ffs
 #' @aliases plot_ffs plot_bss

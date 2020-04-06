@@ -37,6 +37,15 @@ could not improve the results.
 If type=="selected", the contribution of the selected variables to the model
 performance is shown.
 }
+\examples{
+\dontrun{
+data(iris)
+ffsmodel <- ffs(iris[,1:4],iris$Species)
+plot_ffs(ffsmodel)
+#plot performance of selected variables only:
+plot_ffs(ffsmodel,plotType="selected")
+}
+}
 \seealso{
 \code{\link{ffs}}, \code{\link{bss}}
 }
