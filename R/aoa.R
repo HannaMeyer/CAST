@@ -96,7 +96,6 @@ aoa <- function (train,
   if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
       class(predictors)=="RasterLayer"){
     out <- predictors[[1]]
-    #names(out) <- "uncertainty"
   }
   #### Extract weights from trained model:
   weight <- tryCatch(if(model$modelType=="Classification"){
@@ -200,7 +199,5 @@ aoa <- function (train,
                     "AvrgMin_train"=trainDist_avrgmin,
                     "SdMin_train"=trainDist_sdmin,
                     "threshold" =-thres)
-#  attributes(out)$aoa_stats <- NULL
-  #attributes(out)$aoa_stats <- aoa_stats
   return(out)
 }
