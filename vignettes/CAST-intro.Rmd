@@ -14,6 +14,7 @@ vignette: >
 
 ```{r setup, echo=FALSE}
 knitr::opts_chunk$set(fig.width = 8.83)
+user_hanna <- Sys.getenv("USER") %in% c("hanna")
 ```
 
 
@@ -62,12 +63,17 @@ See [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S221167
 To get an impression on the spatial properties of the dataset, Let's have a look on the spatial distribution of the data loggers on the cookfarm:
 
 ```{r, message = FALSE, warning=FALSE}
-library(mapview)
+
 library(sp)
 data_sp <- unique(data[,c("SOURCEID","Easting","Northing")])
 coordinates(data_sp) <- ~Easting+Northing
 proj4string(data_sp) <- CRS("+init=epsg:26911")
-#plot the data:
+plot(data_sp,axes=T)
+```
+
+```{r, message = FALSE, warning=FALSE, eval=user_hanna}
+#...or plot the data with mapview (recommended!):
+library(mapview)
 mapviewOptions(basemaps = c("Esri.WorldImagery"))
 mapview(data_sp)
 ```
