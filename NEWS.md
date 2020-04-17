@@ -1,3 +1,7 @@
+# `CAST` 0.4.1
+* bugfix:
+  * variable threshold for aoa
+  
 # `CAST` 0.4.0
 * new feature: 
     * new function "aoa": quantify and visualize the area of applicability of spatial prediction models

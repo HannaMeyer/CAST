@@ -5,7 +5,7 @@
 \title{Area of Applicability}
 \usage{
 aoa(train, predictors, weight = NA, model = NA, variables = "all",
-  clstr = NULL, cl = NULL)
+  thres = 0.95, clstr = NULL, cl = NULL)
 }
 \arguments{
 \item{train}{a data.frame containing the data used for model training}
@@ -19,6 +19,8 @@ the model was meant to make predictions for.}
 
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the train dataset are used. Check varImp(model).}
+
+\item{thres}{numeric vector of probability of AOAI in training data, with values in [0,1].}
 
 \item{clstr}{Numeric or character. Spatial cluster affiliation for each data point. Should be used if replicates are present.}
 

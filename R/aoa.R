@@ -15,6 +15,7 @@
 #' @param model A train object created with caret used to extract weights from (based on variable importance)
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the train dataset are used. Check varImp(model).
+#' @param thres numeric vector of probability of AOAI in training data, with values in [0,1].
 #' @param clstr Numeric or character. Spatial cluster affiliation for each data point. Should be used if replicates are present.
 #' @param cl Cluster object created with parallel::makeCluster. To run things in parallel.
 #' @details The Area of Applicability Index (AOAI) and the corresponding Area of Applicability (AOA) are calculated.
@@ -84,6 +85,7 @@ aoa <- function (train,
                  weight=NA,
                  model=NA,
                  variables="all",
+                 thres=0.95,
                  clstr=NULL,
                  cl=NULL){
   ### if not specified take all variables from train dataset as default:
@@ -176,10 +178,14 @@ aoa <- function (train,
   trainDist_mean <- apply(trainDist,1,FUN=function(x){mean(x,na.rm=T)})
   trainDist_avrgmin <- mean(trainDist_min)
   trainDist_sdmin <- sd(trainDist_min)
+  #trainDist_medianmin <- median(trainDist_min)
   trainDist_avrgmean <- mean(trainDist_mean)
   mindist <- mindist/trainDist_avrgmean
   # define threshold for AOA:
-  thres <- (trainDist_avrgmin+trainDist_sdmin)/trainDist_avrgmean
+  #thres <- (trainDist_avrgmin+trainDist_sdmin)/trainDist_avrgmean
+  #thres <- max(trainDist_min/trainDist_avrgmean)
+  AOA_train_stats <- quantile(trainDist_min/trainDist_avrgmean,probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1))
+  thres <- quantile(trainDist_min/trainDist_avrgmean,probs = thres)
   #### Create Mask for DOA and return statistics
   if (class(out)=="RasterLayer"){
     raster::values(out) <- mindist
@@ -198,6 +204,7 @@ aoa <- function (train,
   attributes(out)$aoa_stats <- list("AvrgMean_train"=trainDist_avrgmean,
                     "AvrgMin_train"=trainDist_avrgmin,
                     "SdMin_train"=trainDist_sdmin,
+                    "AOA_train_stats" = -AOA_train_stats,
                     "threshold" =-thres)
   return(out)
 }
