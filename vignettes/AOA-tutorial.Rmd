@@ -1,0 +1,249 @@
+---
+title: "Area of applicability of spatial prediction models"
+author: "Hanna Meyer"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_document:
+    toc: true
+    theme: united
+vignette: >
+  %\VignetteIndexEntry{Area of applicability of spatial prediction models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(fig.width = 8.83)
+```
+
+---
+
+
+## Introduction
+In spatial predictive mapping, models are often applied to make predictions far beyond sampling locations (i.e. field observarions used to map a variable even on a global scale), where new locations might considerably differ in their environmental properties. However, areas in the predictor space without support of training data are problematic. The model has no knowledge about these environments and predictions for such areas have to be considered highly uncertain. 
+
+Here we implement the methodology described in Meyer\&Pebesma (submitted) to estimate the "area of applicability" (AOA) of spatial prediction models. To delineate the AOA, first an area of applicability index (AOAI) is calculated that is based on distances to the training data in the multidimensional predictor variable space. To account for relevance of predictor variables responsible for prediction patterns we weight variables by the model-derived importance scores prior to distance calculation. The AOA is then derived by applying a threshold based on the AOAI observed in the training data.
+ 
+This tutorial shows a suggestion of how to estimate the area of applicability of spatial prediction models. 
+
+For further information see: Meyer, H., Pebesma, E. (submitted): Predicting into unknown space? Estimating the area of applicability of spatial prediction models.
+
+### Getting started
+```{r, message = FALSE, warning=FALSE}
+library(CAST)
+library(virtualspecies)
+library(caret)
+library(raster)
+library(sp)
+library(viridis)
+library(latticeExtra)
+library(gridExtra)
+```
+
+```{r,message = FALSE,include=FALSE, warning=FALSE}
+RMSE = function(a, b){
+    sqrt(mean((a - b)^2,na.rm=T))
+}
+```
+
+## Get data
+
+### Generate Predictors
+
+As predictor variables, a set of bioclimatic variables are used (https://www.worldclim.org/). For this tutorial, they have been originally downloaded using the getData function from the raster package but cropped to an area in central Europe. The cropped data are provided in the CAST package.
+
+```{r, message = FALSE, warning=FALSE}
+predictors <- stack(system.file("extdata","bioclim.grd",package="CAST"))
+spplot(stretch(predictors,0,1),col.regions=viridis(100))
+```
+
+
+### Generate Response
+
+To be able to test the reliability of the method, we're using a simulated prediction task from the virtualspecies package. Therefore, a virtual response variable is simulated from the bioclimatic variables.
+See [Leroy et al. 2016](https://doi.org/10.1111/ecog.01388) for further information on this methodology.
+
+```{r,message = FALSE, warning=FALSE}
+response <- generateSpFromPCA(predictors,
+                              means = c(3,1),sds = c(2,2), plot=F)$suitab.raster
+```
+
+
+### Simulate sampling locations
+To simulate a typical prediction task, field sampling locations are randomly selected.
+Here, we randomly select 20 points. Note that this is a very small data set, but used here to avoid long computation times.
+```{r,message = FALSE, warning=FALSE}
+mask <- predictors[[1]]
+values(mask)[!is.na(values(mask))] <- 1
+mask <- rasterToPolygons(mask,dissolve=TRUE)
+set.seed(15)
+samplepoints <- spsample(mask,20,"random")
+spplot(response,col.regions=viridis(100),
+            sp.layout=list("sp.points", samplepoints, col = "red", first = FALSE, cex=2))
+```
+
+## Model training
+Next, a machine learning algorithm will be applied to learn the relationships between predictors and response.
+
+### Prepare data
+Therefore, predictors and response are extracted for the sampling locations.
+```{r,message = FALSE, warning=FALSE}
+trainDat <- extract(predictors,samplepoints,df=TRUE)
+trainDat$response <- extract (response,samplepoints)
+trainDat <- trainDat[complete.cases(trainDat),]
+```
+
+### Train the model
+Random Forest is applied here as machine learning algorithm (others can be used as well, as long as variable importance is returned). The model is validated by cross-validation to estimate the prediction error.
+```{r,message = FALSE, warning=FALSE}
+set.seed(10)
+model <- train(trainDat[,names(predictors)],
+               trainDat$response,
+               method="rf",
+               importance=TRUE,
+               trControl = trainControl(method="LOOCV",savePrediction="all"))
+print(model)
+
+```
+
+### Variable importance
+The estimation of the AOA will require the importance of the individual predictor variables. 
+```{r,message = FALSE, warning=FALSE}
+plot(varImp(model,scale = F),col="black")
+```
+
+### Predict and calculate error
+The trainined model is then used to make predictions for the entire area of interest. Since a simulated area-wide response is used, it's possible in this tutorial to compare the predictions with the true reference.
+```{r,message = FALSE, warning=FALSE}
+prediction <- predict(predictors,model)
+truediff <- abs(prediction-response)
+spplot(stack(prediction,response),main=c("prediction","reference"))
+```
+
+## AOA Calculation
+The visualization above shows the predictions made by the model. In the next step, the AOAI and AOA will be calculated to estimate the area for which the model is assumed to make reliable predictions (reliable here means in the range of the cross-validation error).
+
+The AOA calculation takes the model as input to extract the importance of the predictors, used as weights in multidimensional distance calculation. Note that the AOA can also be calculated without a trained mode (i.e. using training data and new data only). In this case all predicor variables are trated equally important (unless weights are given in form of a table).
+
+```{r,message = FALSE, warning=FALSE}
+AOA <- aoa(trainDat,predictors, variables = names(predictors),model=model)
+attributes(AOA)$aoa_stats
+```
+
+The output of the aoa function are two raster stacks: The first is the AOAI that is the negative normalized and weighted minimum distance to a nearest training data point divided by the average distance within the training data. The AOA is derived from the AOAI by using a threshold. The threshold is derived from the AOAI observed in the training data (by default the 95% quantile of the AOAI of all training data).
+The used threshold is returned in the AOA statistics.
+
+```{r,message = FALSE, warning=FALSE}
+grid.arrange(
+  spplot(truediff,col.regions=viridis(100),main="prediction error"),
+  spplot(AOA$AOAI,col.regions=rev(viridis(100)),main="AOAI"),
+  spplot(prediction, col.regions=viridis(100),main="prediction for AOA")+ spplot(AOA$AOA,col.regions=c("grey","transparent")), ncol=3)
+```
+
+The patterns in the AOAI are in general agreement with the true prediction error.
+Very low values are present in the alps, as they have not been covered by training data but feature very distinct environmental conditions. Since the AOAI values for these areas are below the threshold, the predictions are assumed to be not reliable and therefore should be excluded from further analysis.
+
+
+## AOA for spatially clustered data?
+
+The example above had randomly distributed training samples. However, sampling locations might also be highly clustered in space. In this case, the random cross-validation is not meaningful (see e.g.
+[Meyer et al. 2018](https://doi.org/10.1016/j.envsoft.2017.12.001), [Meyer et al. 2019](https://doi.org/10.1016/j.ecolmodel.2019.108815),
+[Valavi et al. 2019](https://doi.org/10.1111/2041-210X.13107),
+[Roberts et al. 2018](https://doi.org/10.1111/ecog.02881),
+[Pohjankukka et al. 2017](https://doi.org/10.1080/13658816.2017.1346255),
+[Brenning 2012](https://CRAN.R-project.org/package=sperrorest))
+
+ Also the threshold for the AOA is not reliable, because it is based in distance to a nearest data point within the training data (which is usually very small when data are clustered). Instead, cross-validation should be based on a leave-cluster-out approach, and the AOA estimation based on distances to a nearest data point NOT located in the same spatial cluster.
+ 
+To show how this looks like, we use 10 spatial locations and simulate 5 data points around each location.
+
+```{r clusteredpoints,message = FALSE, include=FALSE}
+#For a clustered sesign:
+csample <- function(x,n,nclusters,maxdist,seed){
+  set.seed(seed)
+  cpoints <- sp::spsample(x, n = nclusters, type="random")
+  result <- cpoints
+  result$clstrID <- 1:length(cpoints)
+  for (i in 1:length(cpoints)){
+    ext <- rgeos::gBuffer(cpoints[i,], width = maxdist)
+    newsamples <- sp::spsample(ext, n = (n-nclusters)/nclusters, 
+                               type="random")
+    newsamples$clstrID <- rep(i,length(newsamples))
+    result <- rbind(result,newsamples)
+    
+  }
+  result$ID <- 1:nrow(result)
+  return(result)
+}
+```
+
+
+```{r,message = FALSE, warning=FALSE}
+set.seed(15)
+samplepoints <- csample(mask,50,10,maxdist=0.25,seed=15)
+spplot(response,col.regions=viridis(100),
+            sp.layout=list("sp.points", samplepoints, col = "red", first = FALSE, cex=2))
+```
+
+```{r,message = FALSE, warning=FALSE}
+
+trainDat <- extract(predictors,samplepoints,df=TRUE)
+trainDat$response <- extract (response,samplepoints)
+trainDat <- merge(trainDat,samplepoints,by.x="ID",by.y="ID")
+trainDat <- trainDat[complete.cases(trainDat),]
+```
+
+We first train a model with (in this case) inappropriate random cross-validation.
+```{r,message = FALSE, warning=FALSE}
+set.seed(10)
+model_random <- train(trainDat[,names(predictors)],
+               trainDat$response,
+               method="rf",
+               importance=TRUE,
+               trControl = trainControl(method="cv"))
+prediction_random <- predict(predictors,model_random)
+print(model_random)
+```
+
+...and a model based on leave-cluster-out cross-validation.
+```{r,message = FALSE, warning=FALSE}
+folds <- CreateSpacetimeFolds(trainDat, spacevar="clstrID",k=10)
+set.seed(15)
+model <- train(trainDat[,names(predictors)],
+                 trainDat$response,
+                     method="rf",
+                 importance=TRUE,
+                 tuneGrid = expand.grid(mtry = c(2:length(names(predictors)))),
+                 trControl = trainControl(method="cv",index=folds$index))
+  print(model)
+  
+prediction <- predict(predictors,model)
+```
+
+
+The AOA is then calculated (for comparison) using the default approach, and second by taking the spatial clusters into account and calculating the threshold based on minimum distances to a nearest training point not located in the same cluster. This is done in the aoa function, but the user needs to indicate the cluster ID's (that were also used for cross-validation).
+
+```{r,message = FALSE, warning=FALSE}
+AOA <- aoa(trainDat,predictors, variables = names(predictors),model=model,clstr=trainDat$clstrID)
+
+AOA_random <- aoa(trainDat,predictors, variables = names(predictors),model=model)
+```
+
+
+```{r,message = FALSE, warning=FALSE}
+grid.arrange(spplot(AOA$AOAI,col.regions=rev(viridis(100)),main="AOAI"),
+  spplot(prediction, col.regions=viridis(100),main="prediction for AOA \n(spatial CV error applies)")+
+         spplot(AOA$AOA,col.regions=c("grey","transparent")),
+  spplot(prediction_random, col.regions=viridis(100),main="prediction for AOA \n(random CV error applies)")+
+         spplot(AOA_random$AOA,col.regions=c("grey","transparent")),
+ncol=3)
+```
+
+Note that the AOA is much larger for the spatial approach. However, the spatial cross-validation error is considerably larger, hence also the area for which this error applies is larger.
+The random cross-validation performance is very high, however, the area to which the performance applies is small.
+
+## Final notes
+* The AOA is estimated based on training data and new data (i.e. raster stack of the entire area of interest). The trainined model are only used for getting the variable importance needed to weight predictor variables. These can be given as a table either, so the approach can be used with other packages than caret as well.
+* The "default" aoa estimation is only meaningful for randomly or regularly distributed training data. When data are spatially clustered (which means they are usually also clustered in predictor space), the AOA should be estimated by a threshold that is calculated analog the the appropriate cross-validation being used.
+* Knowledge on the AOA is important when predictions are used as a baseline for decision making or subsequent environmental modelling. 
+* We suggest that the AOA should be provided alongside the prediction map and complementary to the communication of validation performances. 
