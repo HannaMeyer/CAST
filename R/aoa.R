@@ -1,7 +1,7 @@
 #' Area of Applicability
 #'
 #' @description
-#' This function estimates the Area of Applicability Index (AOAI) and the derived
+#' This function estimates the Dissimilarity Index (DI) and the derived
 #' Area of Applicability (AOA) of spatial prediction models by
 #' considering the distance of new data (i.e. a Raster Stack of spatial predictors
 #' used in the models) in the predictor variable space to the data used for model
@@ -12,23 +12,24 @@
 #' @param predictors A RasterStack, RasterBrick or data.frame containing the data
 #' the model was meant to make predictions for.
 #' @param weight A data.frame containing weights for each variable. Only required if no model is given.
-#' @param model A train object created with caret used to extract weights from (based on variable importance)
+#' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the train dataset are used. Check varImp(model).
-#' @param thres numeric vector of probability of AOAI in training data, with values in [0,1].
-#' @param clstr Numeric or character. Spatial cluster affiliation for each data point. Should be used if replicates are present.
+#' @param thres numeric vector of probability of DI in training data, with values in [0,1].
+#' @param folds Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
+#' Should be used if replicates are present. Only required if no model is given.
 #' @param cl Cluster object created with parallel::makeCluster. To run things in parallel.
-#' @details The Area of Applicability Index (AOAI) and the corresponding Area of Applicability (AOA) are calculated.
+#' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
 #' Interpretation of results: If a location is very similar to the properties
 #' of the training data it will have a low distance in the predictor variable space
-#' (AOAI towards 0) while locations that are very different in their properties
-#' will have a low Applicability Index.
-#' The AOAI is returned as inverse distance scaled by the average mean distance between
-#' training data points. The further the distance in this predicor space, the lower the AOAI gets.
-#' To get the AOA, a threshold to the AOAI is applied based on the mean+sd minimum distances between training data.
-#' See Meyer et al. (submitted) for the full documentation of the methodology.
+#' (DI towards 0) while locations that are very different in their properties
+#' will have a high DI.
+#' To get the AOA, a threshold to the DI is applied based on the DI in the training data.
+#' To calculate the DI in the training data, the minimum distance to an other training point
+#' (if applicable: not located in the same CV fold) is considered.
+#' See Meyer and Pebesma (submitted) for the full documentation of the methodology.
 #'
-#' @return A RasterStack or data.frame with the AOAI and AOA
+#' @return A RasterStack or data.frame with the DI and AOA
 #' @author
 #' Hanna Meyer
 #' @references
@@ -48,6 +49,7 @@
 #' dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
 #' pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 #' pts$ID <- 1:nrow(pts)
+#' pts <- pts[1:30,]
 #' studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
 #' trainDat <- extract(studyArea,pts,df=TRUE)
 #' trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
@@ -57,25 +59,25 @@
 #' plot(studyArea$DEM)
 #' plot(pts[,1],add=TRUE,col="black")
 #'
-#' # first calculate the AOAI based on a set of variables with equal weights:
+#' # first calculate the DI based on a set of variables with equal weights:
 #' variables <- c("DEM","Easting","Northing")
 #' AOA <- aoa(trainDat,studyArea,variables=variables)
-#' spplot(AOA$AOAI, col.regions=viridis(100),main="Applicability Index")
-#' spplot(AOA$AOA,col.regions=c("grey","transparent"),main="Area of Applicability")
+#' spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
+#' spplot(AOA$AOA,col.regions=c("green","red"),main="Area of Applicability")
 #'
 #' # or weight variables based on variable improtance from a trained model:
 #' set.seed(100)
 #' model <- train(trainDat[,which(names(trainDat)%in%variables)],
-#' trainDat$VW,method="rf",importance=TRUE,tuneLength=1)
+#' trainDat$VW,method="rf",importance=TRUE,tuneLength=1,trControl=trainControl(method="cv",number=5))
 #' print(model) #note that this is a quite poor prediction model
 #' prediction <- predict(studyArea,model)
 #' plot(varImp(model,scale=FALSE))
 #' #
 #' AOA <- aoa(trainDat,studyArea,model=model,variables=variables)
-#' spplot(AOA$AOAI, col.regions=viridis(100),main="Applicability Index")
+#' spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
 #' #plot predictions for the AOA only:
 #' spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
-#' spplot(AOA$AOA,col.regions=c("grey","transparent"))
+#' spplot(AOA$AOA,col.regions=c("transparent","grey"))
 #' }
 #' @export aoa
 #' @aliases aoa
@@ -86,7 +88,7 @@ aoa <- function (train,
                  model=NA,
                  variables="all",
                  thres=0.95,
-                 clstr=NULL,
+                 folds=NULL,
                  cl=NULL){
   ### if not specified take all variables from train dataset as default:
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
@@ -166,24 +168,44 @@ aoa <- function (train,
   }
   trainDist <- as.matrix(dist(train))
   diag(trainDist) <- NA
+
   # If data are highly clustered (repliates) make sure that distance to data from same
-  # cluster are excluded
-  if (!is.null(clstr)){
+  # cluster are excluded. Only required if no model with CV folds is given:
+  if (!is.null(folds)){
     for (i in 1:nrow(trainDist)){
-      trainDist[i,clstr==clstr[i]] <- NA
+      trainDist[i,folds==folds[i]] <- NA
     }
   }
+
+  ###!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # if folds are not manually assigned, CV folds from the model will be used
+  # to derive the threshold on the DI:
+  if(is.null(folds)){
+    CVfolds <- tryCatch(reshape2::melt(model$control$indexOut),
+                        error=function(e) e)
+    if(!inherits(CVfolds, "error")){
+      if (nrow(CVfolds)>nrow(trainDist)){
+        message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+      }else{
+        CVfolds <- CVfolds[order(CVfolds$value),]
+        for (i in 1:nrow(trainDist)){
+          trainDist[i,CVfolds$L1==CVfolds$L1[i]] <- NA
+        }
+      }
+    }else{
+      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+    }
+  }
+  ###!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   #scale the distance to nearest training point by average minimum distance as observed in training data
   trainDist_min <- apply(trainDist,1,FUN=function(x){min(x,na.rm=T)})
   trainDist_mean <- apply(trainDist,1,FUN=function(x){mean(x,na.rm=T)})
   trainDist_avrgmin <- mean(trainDist_min)
   trainDist_sdmin <- sd(trainDist_min)
-  #trainDist_medianmin <- median(trainDist_min)
   trainDist_avrgmean <- mean(trainDist_mean)
   mindist <- mindist/trainDist_avrgmean
   # define threshold for AOA:
-  #thres <- (trainDist_avrgmin+trainDist_sdmin)/trainDist_avrgmean
-  #thres <- max(trainDist_min/trainDist_avrgmean)
   AOA_train_stats <- quantile(trainDist_min/trainDist_avrgmean,probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1))
   thres <- quantile(trainDist_min/trainDist_avrgmean,probs = thres)
   #### Create Mask for DOA and return statistics
@@ -193,18 +215,20 @@ aoa <- function (train,
     raster::values(masked_result) <- 1
     masked_result[out>thres] <- 0
     masked_result <- raster::mask(masked_result,out)
-    out <- raster::stack(-out,masked_result)
+    masked_result <- raster::ratify(masked_result)
+    levels(masked_result)<- data.frame("ID"=c(0,1),levels=c("notAOA","AOA"))
+    out <- raster::stack(out,masked_result)
   }else{
     out <- mindist
     masked_result <- rep(1,length(out))
     masked_result[out>thres] <- 0
-    out <- list(-out,masked_result)
+    out <- list(out,masked_result)
   }
-  names(out) <- c("AOAI","AOA")
+  names(out) <- c("DI","AOA")
   attributes(out)$aoa_stats <- list("AvrgMean_train"=trainDist_avrgmean,
-                    "AvrgMin_train"=trainDist_avrgmin,
-                    "SdMin_train"=trainDist_sdmin,
-                    "AOA_train_stats" = -AOA_train_stats,
-                    "threshold" =-thres)
+                                    "AvrgMin_train"=trainDist_avrgmin,
+                                    "SdMin_train"=trainDist_sdmin,
+                                    "AOA_train_stats" = AOA_train_stats,
+                                    "threshold" =thres)
   return(out)
 }

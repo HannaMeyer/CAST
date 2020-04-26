@@ -1,8 +1,9 @@
 # `CAST` 0.4.1
 * new feature:
-  * vignette: tutorial introducing the "area of applicability"" 
-* bugfix:
+  * vignette: tutorial introducing the "area of applicability"
   * variable threshold for aoa
+* bugfix:
+  * various minor modifications in aoa
   
 # `CAST` 0.4.0
 * new feature: 

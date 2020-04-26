@@ -22,7 +22,7 @@ knitr::opts_chunk$set(fig.width = 8.83)
 ## Introduction
 In spatial predictive mapping, models are often applied to make predictions far beyond sampling locations (i.e. field observarions used to map a variable even on a global scale), where new locations might considerably differ in their environmental properties. However, areas in the predictor space without support of training data are problematic. The model has no knowledge about these environments and predictions for such areas have to be considered highly uncertain. 
 
-Here we implement the methodology described in Meyer\&Pebesma (submitted) to estimate the "area of applicability" (AOA) of spatial prediction models. To delineate the AOA, first an area of applicability index (AOAI) is calculated that is based on distances to the training data in the multidimensional predictor variable space. To account for relevance of predictor variables responsible for prediction patterns we weight variables by the model-derived importance scores prior to distance calculation. The AOA is then derived by applying a threshold based on the AOAI observed in the training data.
+Here we implement the methodology described in Meyer\&Pebesma (submitted) to estimate the "area of applicability" (AOA) of spatial prediction models. To delineate the AOA, first an dissimilarity index (DI) is calculated that is based on distances to the training data in the multidimensional predictor variable space. To account for relevance of predictor variables responsible for prediction patterns we weight variables by the model-derived importance scores prior to distance calculation. The AOA is then derived by applying a threshold based on the DI observed in the training data.
  
 This tutorial shows a suggestion of how to estimate the area of applicability of spatial prediction models. 
 
@@ -101,7 +101,7 @@ model <- train(trainDat[,names(predictors)],
                trainDat$response,
                method="rf",
                importance=TRUE,
-               trControl = trainControl(method="LOOCV",savePrediction="all"))
+               trControl = trainControl(method="cv"))
 print(model)
 
 ```
@@ -121,7 +121,7 @@ spplot(stack(prediction,response),main=c("prediction","reference"))
 ```
 
 ## AOA Calculation
-The visualization above shows the predictions made by the model. In the next step, the AOAI and AOA will be calculated to estimate the area for which the model is assumed to make reliable predictions (reliable here means in the range of the cross-validation error).
+The visualization above shows the predictions made by the model. In the next step, the DI and AOA will be calculated to estimate the area for which the model is assumed to make reliable predictions (reliable here means in the range of the cross-validation error).
 
 The AOA calculation takes the model as input to extract the importance of the predictors, used as weights in multidimensional distance calculation. Note that the AOA can also be calculated without a trained mode (i.e. using training data and new data only). In this case all predicor variables are trated equally important (unless weights are given in form of a table).
 
@@ -130,18 +130,18 @@ AOA <- aoa(trainDat,predictors, variables = names(predictors),model=model)
 attributes(AOA)$aoa_stats
 ```
 
-The output of the aoa function are two raster stacks: The first is the AOAI that is the negative normalized and weighted minimum distance to a nearest training data point divided by the average distance within the training data. The AOA is derived from the AOAI by using a threshold. The threshold is derived from the AOAI observed in the training data (by default the 95% quantile of the AOAI of all training data).
+The output of the aoa function are two raster stacks: The first is the DI that is the negative normalized and weighted minimum distance to a nearest training data point divided by the average distance within the training data. The AOA is derived from the DI by using a threshold. The threshold is derived from the DI observed in the training data (by default the 95% quantile of the DI of all training data).
 The used threshold is returned in the AOA statistics.
 
 ```{r,message = FALSE, warning=FALSE}
 grid.arrange(
   spplot(truediff,col.regions=viridis(100),main="prediction error"),
-  spplot(AOA$AOAI,col.regions=rev(viridis(100)),main="AOAI"),
-  spplot(prediction, col.regions=viridis(100),main="prediction for AOA")+ spplot(AOA$AOA,col.regions=c("grey","transparent")), ncol=3)
+  spplot(AOA$DI,col.regions=viridis(100),main="DI"),
+  spplot(prediction, col.regions=viridis(100),main="prediction for AOA")+ spplot(AOA$AOA,col.regions=c("transparent","grey")), ncol=3)
 ```
 
-The patterns in the AOAI are in general agreement with the true prediction error.
-Very low values are present in the alps, as they have not been covered by training data but feature very distinct environmental conditions. Since the AOAI values for these areas are below the threshold, the predictions are assumed to be not reliable and therefore should be excluded from further analysis.
+The patterns in the DI are in general agreement with the true prediction error.
+Very low values are present in the alps, as they have not been covered by training data but feature very distinct environmental conditions. Since the DI values for these areas are below the threshold, the predictions are assumed to be not reliable and therefore should be excluded from further analysis.
 
 
 ## AOA for spatially clustered data?
@@ -221,21 +221,21 @@ prediction <- predict(predictors,model)
 ```
 
 
-The AOA is then calculated (for comparison) using the default approach, and second by taking the spatial clusters into account and calculating the threshold based on minimum distances to a nearest training point not located in the same cluster. This is done in the aoa function, but the user needs to indicate the cluster ID's (that were also used for cross-validation).
+The AOA is then calculated (for comparison) using the default approach, and second by taking the spatial clusters into account and calculating the threshold based on minimum distances to a nearest training point not located in the same cluster. This is done in the aoa function, where the folds used for cross-validation are extracted from the model.
 
 ```{r,message = FALSE, warning=FALSE}
-AOA <- aoa(trainDat,predictors, variables = names(predictors),model=model,clstr=trainDat$clstrID)
+AOA <- aoa(trainDat,predictors, variables = names(predictors),model=model)
 
-AOA_random <- aoa(trainDat,predictors, variables = names(predictors),model=model)
+AOA_random <- aoa(trainDat,predictors, variables = names(predictors),model=model_random)
 ```
 
 
 ```{r,message = FALSE, warning=FALSE}
-grid.arrange(spplot(AOA$AOAI,col.regions=rev(viridis(100)),main="AOAI"),
+grid.arrange(spplot(AOA$DI,col.regions=viridis(100),main="DI"),
   spplot(prediction, col.regions=viridis(100),main="prediction for AOA \n(spatial CV error applies)")+
-         spplot(AOA$AOA,col.regions=c("grey","transparent")),
+         spplot(AOA$AOA,col.regions=c("transparent","grey")),
   spplot(prediction_random, col.regions=viridis(100),main="prediction for AOA \n(random CV error applies)")+
-         spplot(AOA_random$AOA,col.regions=c("grey","transparent")),
+         spplot(AOA_random$AOA,col.regions=c("transparent","grey")),
 ncol=3)
 ```
 
