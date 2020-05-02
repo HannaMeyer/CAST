@@ -22,9 +22,9 @@ knitr::opts_chunk$set(fig.width = 8.83)
 ## Introduction
 In spatial predictive mapping, models are often applied to make predictions far beyond sampling locations (i.e. field observarions used to map a variable even on a global scale), where new locations might considerably differ in their environmental properties. However, areas in the predictor space without support of training data are problematic. The model has no knowledge about these environments and predictions for such areas have to be considered highly uncertain. 
 
-Here we implement the methodology described in Meyer\&Pebesma (submitted) to estimate the "area of applicability" (AOA) of spatial prediction models. To delineate the AOA, first an dissimilarity index (DI) is calculated that is based on distances to the training data in the multidimensional predictor variable space. To account for relevance of predictor variables responsible for prediction patterns we weight variables by the model-derived importance scores prior to distance calculation. The AOA is then derived by applying a threshold based on the DI observed in the training data.
+Here we implement the methodology described in Meyer\&Pebesma (submitted) to estimate the "area of applicability" (AOA) of spatial prediction models. The AOA is defined as the area for which, in average, the cross-validation error of a trained model applies. To delineate the AOA, first an dissimilarity index (DI) is calculated that is based on distances to the training data in the multidimensional predictor variable space. To account for relevance of predictor variables responsible for prediction patterns we weight variables by the model-derived importance scores prior to distance calculation. The AOA is then derived by applying a threshold based on the DI observed in the training data.
  
-This tutorial shows a suggestion of how to estimate the area of applicability of spatial prediction models. 
+This tutorial shows an example of how to estimate the area of applicability of spatial prediction models. 
 
 For further information see: Meyer, H., Pebesma, E. (submitted): Predicting into unknown space? Estimating the area of applicability of spatial prediction models.
 
@@ -130,7 +130,7 @@ AOA <- aoa(trainDat,predictors, variables = names(predictors),model=model)
 attributes(AOA)$aoa_stats
 ```
 
-The output of the aoa function are two raster stacks: The first is the DI that is the negative normalized and weighted minimum distance to a nearest training data point divided by the average distance within the training data. The AOA is derived from the DI by using a threshold. The threshold is derived from the DI observed in the training data (by default the 95% quantile of the DI of all training data).
+The output of the aoa function are two raster data: The first is the DI that is the normalized and weighted minimum distance to a nearest training data point divided by the average distance within the training data. The AOA is derived from the DI by using a threshold. The threshold is derived from the DI observed in the training data (by default the 95% quantile of the DI of all training data) where the DI of the training data is calculated by considering the cross-validation folds.
 The used threshold is returned in the AOA statistics.
 
 ```{r,message = FALSE, warning=FALSE}
@@ -153,7 +153,7 @@ The example above had randomly distributed training samples. However, sampling l
 [Pohjankukka et al. 2017](https://doi.org/10.1080/13658816.2017.1346255),
 [Brenning 2012](https://CRAN.R-project.org/package=sperrorest))
 
- Also the threshold for the AOA is not reliable, because it is based in distance to a nearest data point within the training data (which is usually very small when data are clustered). Instead, cross-validation should be based on a leave-cluster-out approach, and the AOA estimation based on distances to a nearest data point NOT located in the same spatial cluster.
+ Also the threshold for the AOA is not reliable, because it is based in distance to a nearest data point within the training data (which is usually very small when data are clustered). Instead, cross-validation should be based on a leave-cluster-out approach, and the AOA estimation based on distances to a nearest data point not located in the same spatial cluster.
  
 To show how this looks like, we use 10 spatial locations and simulate 5 data points around each location.
 
@@ -221,19 +221,19 @@ prediction <- predict(predictors,model)
 ```
 
 
-The AOA is then calculated (for comparison) using the default approach, and second by taking the spatial clusters into account and calculating the threshold based on minimum distances to a nearest training point not located in the same cluster. This is done in the aoa function, where the folds used for cross-validation are extracted from the model.
+The AOA is then calculated (for comparison) using the model validated by random cross-validation, and second by taking the spatial clusters into account and calculating the threshold based on minimum distances to a nearest training point not located in the same cluster. This is done in the aoa function, where the folds used for cross-validation are automatically extracted from the model.
 
 ```{r,message = FALSE, warning=FALSE}
-AOA <- aoa(trainDat,predictors, variables = names(predictors),model=model)
+AOA_spatial <- aoa(trainDat,predictors, variables = names(predictors),model=model)
 
 AOA_random <- aoa(trainDat,predictors, variables = names(predictors),model=model_random)
 ```
 
 
 ```{r,message = FALSE, warning=FALSE}
-grid.arrange(spplot(AOA$DI,col.regions=viridis(100),main="DI"),
+grid.arrange(spplot(AOA_spatial$DI,col.regions=viridis(100),main="DI"),
   spplot(prediction, col.regions=viridis(100),main="prediction for AOA \n(spatial CV error applies)")+
-         spplot(AOA$AOA,col.regions=c("transparent","grey")),
+         spplot(AOA_spatial$AOA,col.regions=c("transparent","grey")),
   spplot(prediction_random, col.regions=viridis(100),main="prediction for AOA \n(random CV error applies)")+
          spplot(AOA_random$AOA,col.regions=c("transparent","grey")),
 ncol=3)
@@ -244,6 +244,6 @@ The random cross-validation performance is very high, however, the area to which
 
 ## Final notes
 * The AOA is estimated based on training data and new data (i.e. raster stack of the entire area of interest). The trainined model are only used for getting the variable importance needed to weight predictor variables. These can be given as a table either, so the approach can be used with other packages than caret as well.
-* The "default" aoa estimation is only meaningful for randomly or regularly distributed training data. When data are spatially clustered (which means they are usually also clustered in predictor space), the AOA should be estimated by a threshold that is calculated analog the the appropriate cross-validation being used.
+* The AOA is the area for which the cross-validation error of the model applies. Therefore it's important to choose the appropriate resampling strategy. E.g. when data are spatially clustered (which means they are usually also clustered in predictor space), the cross-validation should leave spatial units (e.g. cluster) out. The AOA will then be calculated accordingly by using the DI from the training data as a threshold, calculated as the minimim distance to other training data that do not occur in the same cross-validation fold
 * Knowledge on the AOA is important when predictions are used as a baseline for decision making or subsequent environmental modelling. 
 * We suggest that the AOA should be provided alongside the prediction map and complementary to the communication of validation performances. 
