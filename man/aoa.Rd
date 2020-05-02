@@ -62,6 +62,7 @@ dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
 pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 pts$ID <- 1:nrow(pts)
+set.seed(100)
 pts <- pts[1:30,]
 studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
 trainDat <- extract(studyArea,pts,df=TRUE)
@@ -73,7 +74,7 @@ plot(studyArea$DEM)
 plot(pts[,1],add=TRUE,col="black")
 
 # first calculate the DI based on a set of variables with equal weights:
-variables <- c("DEM","Easting","Northing")
+variables <- c("DEM","NDRE.Sd","TWI")
 AOA <- aoa(trainDat,studyArea,variables=variables)
 spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
 spplot(AOA$AOA,col.regions=c("green","red"),main="Area of Applicability")

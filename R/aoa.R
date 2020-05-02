@@ -49,6 +49,7 @@
 #' dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
 #' pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 #' pts$ID <- 1:nrow(pts)
+#' set.seed(100)
 #' pts <- pts[1:30,]
 #' studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
 #' trainDat <- extract(studyArea,pts,df=TRUE)
@@ -60,7 +61,7 @@
 #' plot(pts[,1],add=TRUE,col="black")
 #'
 #' # first calculate the DI based on a set of variables with equal weights:
-#' variables <- c("DEM","Easting","Northing")
+#' variables <- c("DEM","NDRE.Sd","TWI")
 #' AOA <- aoa(trainDat,studyArea,variables=variables)
 #' spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
 #' spplot(AOA$AOA,col.regions=c("green","red"),main="Area of Applicability")
@@ -177,7 +178,6 @@ aoa <- function (train,
     }
   }
 
-  ###!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   # if folds are not manually assigned, CV folds from the model will be used
   # to derive the threshold on the DI:
   if(is.null(folds)){
@@ -196,7 +196,6 @@ aoa <- function (train,
       message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
     }
   }
-  ###!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   #scale the distance to nearest training point by average minimum distance as observed in training data
   trainDist_min <- apply(trainDist,1,FUN=function(x){min(x,na.rm=T)})
@@ -206,9 +205,9 @@ aoa <- function (train,
   trainDist_avrgmean <- mean(trainDist_mean)
   mindist <- mindist/trainDist_avrgmean
   # define threshold for AOA:
-  AOA_train_stats <- quantile(trainDist_min/trainDist_avrgmean,probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1))
-  thres <- quantile(trainDist_min/trainDist_avrgmean,probs = thres)
-  #### Create Mask for DOA and return statistics
+  AOA_train_stats <- quantile(trainDist_min/trainDist_avrgmean,probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1),na.rm = TRUE)
+  thres <- quantile(trainDist_min/trainDist_avrgmean,probs = thres,na.rm=TRUE)
+  #### Create Mask for AOA and return statistics
   if (class(out)=="RasterLayer"){
     raster::values(out) <- mindist
     masked_result <- out
