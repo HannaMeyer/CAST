@@ -5,7 +5,7 @@
 \title{Area of Applicability}
 \usage{
 aoa(train, predictors, weight = NA, model = NA, variables = "all",
-  thres = 0.95, folds = NULL, cl = NULL)
+  thres = 0.95, folds = NULL)
 }
 \arguments{
 \item{train}{a data.frame containing the data used for model training}
@@ -24,8 +24,6 @@ of the train dataset are used. Check varImp(model).}
 
 \item{folds}{Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 Should be used if replicates are present. Only required if no model is given.}
-
-\item{cl}{Cluster object created with parallel::makeCluster. To run things in parallel.}
 }
 \value{
 A RasterStack or data.frame with the DI and AOA

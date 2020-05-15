@@ -18,7 +18,6 @@
 #' @param thres numeric vector of probability of DI in training data, with values in [0,1].
 #' @param folds Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 #' Should be used if replicates are present. Only required if no model is given.
-#' @param cl Cluster object created with parallel::makeCluster. To run things in parallel.
 #' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
 #' Interpretation of results: If a location is very similar to the properties
 #' of the training data it will have a low distance in the predictor variable space
@@ -89,8 +88,7 @@ aoa <- function (train,
                  model=NA,
                  variables="all",
                  thres=0.95,
-                 folds=NULL,
-                 cl=NULL){
+                 folds=NULL){
   ### if not specified take all variables from train dataset as default:
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
   if(length(variables)==1&&variables=="all"){
@@ -148,86 +146,98 @@ aoa <- function (train,
   }
   #### For each pixel caclculate distance to each training point and search for
   #### min distance:
-  if(!is.null(cl)){ # if parallel then use parapply:
-    parallel::clusterExport(cl=cl, varlist=c("train"))
-    mindist <- parallel::parApply(cl=cl,predictors,1,FUN=function(x){
-      tmp <- NA
-      for (i in 1:nrow(train)){
-        current_min <- dist(rbind(x,train[i,]))
-        current_min <- pmin(current_min,tmp,na.rm=T)
-        tmp <- current_min
-      }
-      return(current_min)
-    })
-  }else{ # ...if not in parallel loop over train data:
-    tmp <- NA
-    for (i in 1:nrow(train)){
-      mindist <- apply(predictors,1,function(x){dist(rbind(x,train[i,]))})
-      mindist <- pmin(mindist,tmp,na.rm=T)
-      tmp <- mindist
-    }
-  }
-  trainDist <- as.matrix(dist(train))
-  diag(trainDist) <- NA
+  # if(!is.null(cl)){ # if parallel then use parapply:
+  #   parallel::clusterExport(cl=cl, varlist=c("train"))
+  #   mindist <- parallel::parApply(cl=cl,predictors,1,FUN=function(x){
+  #     tmp <- NA
+  #     for (i in 1:nrow(train)){
+  #       current_min <- dist(rbind(x,train[i,]))
+  #       current_min <- pmin(current_min,tmp,na.rm=T)
+  #       tmp <- current_min
+  #     }
+  #     return(current_min)
+  #   })
+  # }else{ # ...if not in parallel loop over train data:
+  #   tmp <- NA
+  #   for (i in 1:nrow(train)){
+  #     mindist <- apply(predictors,1,function(x){dist(rbind(x,train[i,]))})
+  #     mindist <- pmin(mindist,tmp,na.rm=T)
+  #     tmp <- mindist
+  #   }
+  # }
 
-  # If data are highly clustered (repliates) make sure that distance to data from same
-  # cluster are excluded. Only required if no model with CV folds is given:
-  if (!is.null(folds)){
-    for (i in 1:nrow(trainDist)){
-      trainDist[i,folds==folds[i]] <- NA
-    }
-  }
-
-  # if folds are not manually assigned, CV folds from the model will be used
-  # to derive the threshold on the DI:
-  if(is.null(folds)){
-    CVfolds <- tryCatch(reshape2::melt(model$control$indexOut),
-                        error=function(e) e)
-    if(!inherits(CVfolds, "error")){
-      if (nrow(CVfolds)>nrow(trainDist)){
-        message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
-      }else{
-        CVfolds <- CVfolds[order(CVfolds$value),]
-        for (i in 1:nrow(trainDist)){
-          trainDist[i,CVfolds$L1==CVfolds$L1[i]] <- NA
-        }
-      }
+  mindist <- c()
+  for (i in 1:nrow(predictors)){
+    if(any(is.na(predictors[i,]))){
+      mindist <- c(mindist,NA)
     }else{
-      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+      tmp <- FNN::knnx.dist(t(matrix(predictors[i,])),train,k=1)
+      mindist <- c(mindist,min(tmp))
     }
   }
 
-  #scale the distance to nearest training point by average minimum distance as observed in training data
-  trainDist_min <- apply(trainDist,1,FUN=function(x){min(x,na.rm=T)})
-  trainDist_mean <- apply(trainDist,1,FUN=function(x){mean(x,na.rm=T)})
-  trainDist_avrgmin <- mean(trainDist_min)
-  trainDist_sdmin <- sd(trainDist_min)
-  trainDist_avrgmean <- mean(trainDist_mean)
-  mindist <- mindist/trainDist_avrgmean
-  # define threshold for AOA:
-  AOA_train_stats <- quantile(trainDist_min/trainDist_avrgmean,probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1),na.rm = TRUE)
-  thres <- quantile(trainDist_min/trainDist_avrgmean,probs = thres,na.rm=TRUE)
-  #### Create Mask for AOA and return statistics
-  if (class(out)=="RasterLayer"){
-    raster::values(out) <- mindist
-    masked_result <- out
-    raster::values(masked_result) <- 1
-    masked_result[out>thres] <- 0
-    masked_result <- raster::mask(masked_result,out)
-    masked_result <- raster::ratify(masked_result)
-    levels(masked_result)<- data.frame("ID"=c(0,1),levels=c("notAOA","AOA"))
-    out <- raster::stack(out,masked_result)
-  }else{
-    out <- mindist
-    masked_result <- rep(1,length(out))
-    masked_result[out>thres] <- 0
-    out <- list(out,masked_result)
+
+    trainDist <- as.matrix(dist(train))
+    diag(trainDist) <- NA
+
+    # If data are highly clustered (repliates) make sure that distance to data from same
+    # cluster are excluded. Only required if no model with CV folds is given:
+    if (!is.null(folds)){
+      for (i in 1:nrow(trainDist)){
+        trainDist[i,folds==folds[i]] <- NA
+      }
+    }
+
+    # if folds are not manually assigned, CV folds from the model will be used
+    # to derive the threshold on the DI:
+    if(is.null(folds)){
+      CVfolds <- tryCatch(reshape2::melt(model$control$indexOut),
+                          error=function(e) e)
+      if(!inherits(CVfolds, "error")){
+        if (nrow(CVfolds)>nrow(trainDist)){
+          message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+        }else{
+          CVfolds <- CVfolds[order(CVfolds$value),]
+          for (i in 1:nrow(trainDist)){
+            trainDist[i,CVfolds$L1==CVfolds$L1[i]] <- NA
+          }
+        }
+      }else{
+        message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+      }
+    }
+
+    #scale the distance to nearest training point by average minimum distance as observed in training data
+    trainDist_min <- apply(trainDist,1,FUN=function(x){min(x,na.rm=T)})
+    trainDist_mean <- apply(trainDist,1,FUN=function(x){mean(x,na.rm=T)})
+    trainDist_avrgmin <- mean(trainDist_min)
+    trainDist_sdmin <- sd(trainDist_min)
+    trainDist_avrgmean <- mean(trainDist_mean)
+    mindist <- mindist/trainDist_avrgmean
+    # define threshold for AOA:
+    AOA_train_stats <- quantile(trainDist_min/trainDist_avrgmean,probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1),na.rm = TRUE)
+    thres <- quantile(trainDist_min/trainDist_avrgmean,probs = thres,na.rm=TRUE)
+    #### Create Mask for AOA and return statistics
+    if (class(out)=="RasterLayer"){
+      raster::values(out) <- mindist
+      masked_result <- out
+      raster::values(masked_result) <- 1
+      masked_result[out>thres] <- 0
+      masked_result <- raster::mask(masked_result,out)
+      masked_result <- raster::ratify(masked_result)
+      levels(masked_result)<- data.frame("ID"=c(0,1),levels=c("notAOA","AOA"))
+      out <- raster::stack(out,masked_result)
+    }else{
+      out <- mindist
+      masked_result <- rep(1,length(out))
+      masked_result[out>thres] <- 0
+      out <- list(out,masked_result)
+    }
+    names(out) <- c("DI","AOA")
+    attributes(out)$aoa_stats <- list("AvrgMean_train"=trainDist_avrgmean,
+                                      "AvrgMin_train"=trainDist_avrgmin,
+                                      "SdMin_train"=trainDist_sdmin,
+                                      "AOA_train_stats" = AOA_train_stats,
+                                      "threshold" =thres)
+    return(out)
   }
-  names(out) <- c("DI","AOA")
-  attributes(out)$aoa_stats <- list("AvrgMean_train"=trainDist_avrgmean,
-                                    "AvrgMin_train"=trainDist_avrgmin,
-                                    "SdMin_train"=trainDist_sdmin,
-                                    "AOA_train_stats" = AOA_train_stats,
-                                    "threshold" =thres)
-  return(out)
-}
