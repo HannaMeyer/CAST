@@ -89,17 +89,20 @@ aoa <- function (train,
                  variables="all",
                  thres=0.95,
                  folds=NULL){
+
   ### if not specified take all variables from train dataset as default:
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
   if(length(variables)==1&&variables=="all"){
     variables=names(train)
   }
+
   #### Prepare output as either as RasterLayer or vector:
   out <- NA
   if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
       class(predictors)=="RasterLayer"){
     out <- predictors[[1]]
   }
+
   #### Extract weights from trained model:
   weight <- tryCatch(if(model$modelType=="Classification"){
     as.data.frame(t(apply(caret::varImp(model,scale=F)$importance,1,mean)))
@@ -113,6 +116,7 @@ aoa <- function (train,
     or no variable importance could be retrieved from the given model.
     Check caret::varImp(model)")
   }
+
   #### order data:
   if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
       class(predictors)=="RasterLayer"){
@@ -128,6 +132,7 @@ aoa <- function (train,
       message("negative weights were set to 0")
     }
   }
+
   #### Scale data and weight predictors if applicable:
   train <- scale(train)
   scaleparam <- attributes(train)
@@ -144,28 +149,9 @@ aoa <- function (train,
   if(!inherits(weight, "error")){
     predictors <- sapply(1:ncol(predictors),function(x){predictors[,x]*unlist(weight[x])})
   }
+
   #### For each pixel caclculate distance to each training point and search for
   #### min distance:
-  # if(!is.null(cl)){ # if parallel then use parapply:
-  #   parallel::clusterExport(cl=cl, varlist=c("train"))
-  #   mindist <- parallel::parApply(cl=cl,predictors,1,FUN=function(x){
-  #     tmp <- NA
-  #     for (i in 1:nrow(train)){
-  #       current_min <- dist(rbind(x,train[i,]))
-  #       current_min <- pmin(current_min,tmp,na.rm=T)
-  #       tmp <- current_min
-  #     }
-  #     return(current_min)
-  #   })
-  # }else{ # ...if not in parallel loop over train data:
-  #   tmp <- NA
-  #   for (i in 1:nrow(train)){
-  #     mindist <- apply(predictors,1,function(x){dist(rbind(x,train[i,]))})
-  #     mindist <- pmin(mindist,tmp,na.rm=T)
-  #     tmp <- mindist
-  #   }
-  # }
-
   mindist <- c()
   for (i in 1:nrow(predictors)){
     if(any(is.na(predictors[i,]))){
@@ -175,8 +161,6 @@ aoa <- function (train,
       mindist <- c(mindist,min(tmp))
     }
   }
-
-
     trainDist <- as.matrix(dist(train))
     diag(trainDist) <- NA
 
@@ -207,16 +191,17 @@ aoa <- function (train,
       }
     }
 
-    #scale the distance to nearest training point by average minimum distance as observed in training data
-    trainDist_min <- apply(trainDist,1,FUN=function(x){min(x,na.rm=T)})
+    #scale the distance to nearest training point by average distance of the training data
     trainDist_mean <- apply(trainDist,1,FUN=function(x){mean(x,na.rm=T)})
-    trainDist_avrgmin <- mean(trainDist_min)
-    trainDist_sdmin <- sd(trainDist_min)
     trainDist_avrgmean <- mean(trainDist_mean)
     mindist <- mindist/trainDist_avrgmean
+
     # define threshold for AOA:
-    AOA_train_stats <- quantile(trainDist_min/trainDist_avrgmean,probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1),na.rm = TRUE)
+    trainDist_min <- apply(trainDist,1,FUN=function(x){min(x,na.rm=T)})
+    AOA_train_stats <- quantile(trainDist_min/trainDist_avrgmean,
+                                probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1),na.rm = TRUE)
     thres <- quantile(trainDist_min/trainDist_avrgmean,probs = thres,na.rm=TRUE)
+
     #### Create Mask for AOA and return statistics
     if (class(out)=="RasterLayer"){
       raster::values(out) <- mindist
@@ -225,7 +210,7 @@ aoa <- function (train,
       masked_result[out>thres] <- 0
       masked_result <- raster::mask(masked_result,out)
       masked_result <- raster::ratify(masked_result)
-      levels(masked_result)<- data.frame("ID"=c(0,1),levels=c("notAOA","AOA"))
+      levels(masked_result) <- data.frame("ID"=c(0,1),levels=c("notAOA","AOA"))
       out <- raster::stack(out,masked_result)
     }else{
       out <- mindist
@@ -234,10 +219,8 @@ aoa <- function (train,
       out <- list(out,masked_result)
     }
     names(out) <- c("DI","AOA")
-    attributes(out)$aoa_stats <- list("AvrgMean_train"=trainDist_avrgmean,
-                                      "AvrgMin_train"=trainDist_avrgmin,
-                                      "SdMin_train"=trainDist_sdmin,
-                                      "AOA_train_stats" = AOA_train_stats,
-                                      "threshold" =thres)
+    attributes(out)$aoa_stats <- list("Mean_train" = trainDist_avrgmean,
+                                      "threshold_stats" = AOA_train_stats,
+                                      "threshold" = thres)
     return(out)
   }
