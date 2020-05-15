@@ -19,7 +19,7 @@ by analysing the similarity between new data and training data.
 'caret' Applications for Spatio-Temporal models
 }
 \author{
-Hanna Meyer, Christoph Reudenbach, Marvin Ludwig, Thomas Nauss
+Hanna Meyer
 \cr
 \emph{Maintainer:} Hanna Meyer \email{hanna.meyer@uni-muenster.de}
 }
