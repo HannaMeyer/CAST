@@ -19,7 +19,7 @@ knitr::opts_chunk$set(fig.width = 8.83)
 ---
 
 
-## Introduction
+# Introduction
 In spatial predictive mapping, models are often applied to make predictions far beyond sampling locations (i.e. field observarions used to map a variable even on a global scale), where new locations might considerably differ in their environmental properties. However, areas in the predictor space without support of training data are problematic. The model has no knowledge about these environments and predictions for such areas have to be considered highly uncertain. 
 
 Here we implement the methodology described in Meyer\&Pebesma (submitted) to estimate the "area of applicability" (AOA) of spatial prediction models. The AOA is defined as the area for which, in average, the cross-validation error of a trained model applies. To delineate the AOA, first an dissimilarity index (DI) is calculated that is based on distances to the training data in the multidimensional predictor variable space. To account for relevance of predictor variables responsible for prediction patterns we weight variables by the model-derived importance scores prior to distance calculation. The AOA is then derived by applying a threshold based on the DI observed in the training data.
@@ -35,6 +35,7 @@ library(virtualspecies)
 library(caret)
 library(raster)
 library(sp)
+library(sf)
 library(viridis)
 library(latticeExtra)
 library(gridExtra)
@@ -45,6 +46,8 @@ RMSE = function(a, b){
     sqrt(mean((a - b)^2,na.rm=T))
 }
 ```
+
+# Example 1: Using simulated data
 
 ## Get data
 
@@ -135,7 +138,7 @@ The used threshold is returned in the AOA statistics.
 
 ```{r,message = FALSE, warning=FALSE}
 grid.arrange(
-  spplot(truediff,col.regions=viridis(100),main="prediction error"),
+  spplot(truediff,col.regions=viridis(100),main="true prediction error"),
   spplot(AOA$DI,col.regions=viridis(100),main="DI"),
   spplot(prediction, col.regions=viridis(100),main="prediction for AOA")+ spplot(AOA$AOA,col.regions=c("transparent","grey")), ncol=3)
 ```
@@ -155,7 +158,7 @@ The example above had randomly distributed training samples. However, sampling l
 
  Also the threshold for the AOA is not reliable, because it is based in distance to a nearest data point within the training data (which is usually very small when data are clustered). Instead, cross-validation should be based on a leave-cluster-out approach, and the AOA estimation based on distances to a nearest data point not located in the same spatial cluster.
  
-To show how this looks like, we use 10 spatial locations and simulate 5 data points around each location.
+To show how this looks like, we use 15 spatial locations and simulate 5 data points around each location.
 
 ```{r clusteredpoints,message = FALSE, include=FALSE}
 #For a clustered sesign:
@@ -179,8 +182,8 @@ csample <- function(x,n,nclusters,maxdist,seed){
 
 
 ```{r,message = FALSE, warning=FALSE}
-set.seed(15)
-samplepoints <- csample(mask,50,10,maxdist=0.25,seed=15)
+
+samplepoints <- csample(mask,75,15,maxdist=0.20,seed=15)
 spplot(response,col.regions=viridis(100),
             sp.layout=list("sp.points", samplepoints, col = "red", first = FALSE, cex=2))
 ```
@@ -241,6 +244,88 @@ ncol=3)
 
 Note that the AOA is much larger for the spatial approach. However, the spatial cross-validation error is considerably larger, hence also the area for which this error applies is larger.
 The random cross-validation performance is very high, however, the area to which the performance applies is small.
+
+## Comparison prediction error with model error
+
+Since we used a simulated response variable, we can now compare the prediction error within the AOA with the model error, assuming that the model error applies inside the AOA but not outside.
+
+```{r,message = FALSE, warning=FALSE}
+###for the spatial CV:
+RMSE(values(prediction)[values(AOA_spatial$AOA)==1],values(response)[values(AOA_spatial$AOA)==1])
+RMSE(values(prediction)[values(AOA_spatial$AOA)==0],values(response)[values(AOA_spatial$AOA)==1])
+model$results
+
+###and for the random CV:
+RMSE(values(prediction_random)[values(AOA_random$AOA)==1],values(response)[values(AOA_random$AOA)==1])
+RMSE(values(prediction_random)[values(AOA_random$AOA)==0],values(response)[values(AOA_random$AOA)==1])
+model_random$results
+```
+
+The results indicate that there is a high agreement between the model CV error (RMSE) and the true prediction RMSE. This is the case for both, the random as well as the spatial model.
+
+# Example 2: A real-world example
+
+The example above used simulated data so that it allows to analyze the reliability of the AOA. However, a simulated area-wide response is not available in usual prediction tasks. Therefore, as a second example the AOA is estimated for a dataset that has point observations as a reference only.
+
+## Data and preprocessing
+To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251) and available via the GSIF package ([Hengl 2017](https://CRAN.R-project.org/package=GSIF)). The dataset included in CAST is a re-structured dataset. Find more details also in the vignette "Introduction to CAST".
+We will use soil moisture (VW) as response variable here. Hence, we're aiming at making a spatial continuous prediction based on limited measurements from data loggers.
+
+```{r, message = FALSE, warning=FALSE}
+dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
+# calculate average of VW for each sampling site:
+dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
+# create sf object from the data:
+pts <- st_as_sf(dat,coords=c("Easting","Northing"))
+
+##### Extract Predictors for the locations of the sampling points
+studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
+st_crs(pts) <- crs(studyArea)
+trainDat <- extract(studyArea,pts,df=TRUE)
+pts$ID <- 1:nrow(pts)
+trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
+# The final training dataset with potential predictors and VW:
+head(trainDat)
+```
+
+## Model training and prediction
+
+A set of variables is used as predictors for VW in a random Forest model. The model is validated with a leave one out cross-validation.
+Note that the model performance is very low, due to the small dataset being used here (and for this small dataset a low ability of the predictors to model VW).
+
+```{r, message = FALSE, warning=FALSE}
+predictors <- c("DEM","NDRE.Sd","TWI","Bt")
+response <- "VW"
+
+model <- train(trainDat[,predictors],trainDat[,response],
+               method="rf",tuneLength=3,importance=TRUE,
+               trControl=trainControl(method="LOOCV"))
+model
+```
+
+### Prediction 
+Next, the model is used tpo make predictions for the entire study area.
+```{r, message = FALSE, warning=FALSE}
+#Predictors:
+spplot(stretch(studyArea[[predictors]]))
+
+#prediction:
+prediction <- predict(studyArea,model)
+```
+
+## AOA estimation
+Next we're limniting the predictions to the AOA. Predictions outside the AOA should be excluded.
+
+```{r, message = FALSE, warning=FALSE}
+AOA <- aoa(trainDat,studyArea,variables=predictors,model=model)
+
+#### Plot results:
+grid.arrange(spplot(AOA$DI,col.regions=viridis(100),main="DI with sampling locations (red)")+
+               spplot(as_Spatial(pts),zcol="ID",col.regions="red"),
+  spplot(prediction, col.regions=viridis(100),main="prediction for AOA \n(LOOCV error applies)")+ spplot(AOA$AOA,col.regions=c("transparent","grey")),ncol=2)
+
+```
+
 
 ## Final notes
 * The AOA is estimated based on training data and new data (i.e. raster stack of the entire area of interest). The trainined model are only used for getting the variable importance needed to weight predictor variables. These can be given as a table either, so the approach can be used with other packages than caret as well.
