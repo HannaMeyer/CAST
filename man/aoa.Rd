@@ -26,7 +26,7 @@ of the train dataset are used. Check varImp(model).}
 Should be used if replicates are present. Only required if no model is given.}
 }
 \value{
-A RasterStack or data.frame with the DI and AOA
+A RasterStack or data.frame with the DI and AOA. AOA has values 0 (outside AOA) and 1 (inside AOA).
 }
 \description{
 This function estimates the Dissimilarity Index (DI) and the derived
@@ -45,7 +45,7 @@ will have a high DI.
 To get the AOA, a threshold to the DI is applied based on the DI in the training data.
 To calculate the DI in the training data, the minimum distance to an other training point
 (if applicable: not located in the same CV fold) is considered.
-See Meyer and Pebesma (submitted) for the full documentation of the methodology.
+See Meyer and Pebesma (2020) for the full documentation of the methodology.
 }
 \examples{
 \dontrun{
@@ -75,7 +75,7 @@ plot(pts[,1],add=TRUE,col="black")
 variables <- c("DEM","NDRE.Sd","TWI")
 AOA <- aoa(trainDat,studyArea,variables=variables)
 spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
-spplot(AOA$AOA,col.regions=c("green","red"),main="Area of Applicability")
+spplot(AOA$AOA,main="Area of Applicability")
 
 # or weight variables based on variable improtance from a trained model:
 set.seed(100)
@@ -89,12 +89,13 @@ AOA <- aoa(trainDat,studyArea,model=model,variables=variables)
 spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
 #plot predictions for the AOA only:
 spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
-spplot(AOA$AOA,col.regions=c("transparent","grey"))
+spplot(AOA$AOA,col.regions=c("grey","transparent"))
 }
 }
 \references{
-Meyer, H., Pebesma, E. (submitted): Predicting into unknown space?
+Meyer, H., Pebesma, E. (2020): Predicting into unknown space?
 Estimating the area of applicability of spatial prediction models.
+\url{https://arxiv.org/abs/2005.07939}
 }
 \author{
 Hanna Meyer

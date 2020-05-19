@@ -2,7 +2,6 @@
 * new feature:
   * vignette: tutorial introducing the "area of applicability"
   * variable threshold for aoa
-* bugfix:
   * various modifications in aoa in line with submitted paper
   
 # `CAST` 0.4.0

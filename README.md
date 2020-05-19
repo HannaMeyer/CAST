@@ -11,3 +11,5 @@ Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance of spatia
 
 and the talk from the OpenGeoHub summer school 2019:
 https://www.youtube.com/watch?v=mkHlmYEzsVQ
+
+Meyer, H., Pebesma, E. (2020): Predicting into unknown space? Estimating the area of applicability of spatial prediction models. http://arxiv.org/abs/2005.07939

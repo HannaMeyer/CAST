@@ -26,14 +26,13 @@
 #' To get the AOA, a threshold to the DI is applied based on the DI in the training data.
 #' To calculate the DI in the training data, the minimum distance to an other training point
 #' (if applicable: not located in the same CV fold) is considered.
-#' See Meyer and Pebesma (submitted) for the full documentation of the methodology.
-#' @return A RasterStack or data.frame with the DI and AOA
+#' See Meyer and Pebesma (2020) for the full documentation of the methodology.
+#' @return A RasterStack or data.frame with the DI and AOA. AOA has values 0 (outside AOA) and 1 (inside AOA).
 #' @author
 #' Hanna Meyer
-#' @references
-#' Meyer, H., Pebesma, E. (submitted): Predicting into unknown space?
+#' @references Meyer, H., Pebesma, E. (2020): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
-#'
+#' \url{https://arxiv.org/abs/2005.07939}
 #' @examples
 #' \dontrun{
 #' library(sf)
@@ -62,7 +61,7 @@
 #' variables <- c("DEM","NDRE.Sd","TWI")
 #' AOA <- aoa(trainDat,studyArea,variables=variables)
 #' spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
-#' spplot(AOA$AOA,col.regions=c("green","red"),main="Area of Applicability")
+#' spplot(AOA$AOA,main="Area of Applicability")
 #'
 #' # or weight variables based on variable improtance from a trained model:
 #' set.seed(100)
@@ -76,7 +75,7 @@
 #' spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
 #' #plot predictions for the AOA only:
 #' spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
-#' spplot(AOA$AOA,col.regions=c("transparent","grey"))
+#' spplot(AOA$AOA,col.regions=c("grey","transparent"))
 #' }
 #' @export aoa
 #' @aliases aoa
@@ -161,6 +160,9 @@ aoa <- function (train,
   })
 
   trainDist <- as.matrix(dist(train))
+# trainDist <- apply(train,1,FUN=function(x){
+# FNN::knnx.dist(t(matrix(x)),train,k=1)})
+
   diag(trainDist) <- NA
 
   # If data are highly clustered (repliates) make sure that distance to data from same
@@ -174,7 +176,7 @@ aoa <- function (train,
   # if folds are not manually assigned, CV folds from the model will be used
   # to derive the threshold on the DI:
   if(is.null(folds)){
-    CVfolds <- tryCatch(reshape2::melt(model$control$indexOut),
+    CVfolds <- tryCatch(reshape::melt(model$control$indexOut),
                         error=function(e) e)
     if(!inherits(CVfolds, "error")){
       if (nrow(CVfolds)>nrow(trainDist)){
@@ -208,8 +210,8 @@ aoa <- function (train,
     raster::values(masked_result) <- 1
     masked_result[out>thres] <- 0
     masked_result <- raster::mask(masked_result,out)
-    masked_result <- raster::ratify(masked_result)
-    levels(masked_result) <- data.frame("ID"=c(0,1),levels=c("notAOA","AOA"))
+    #masked_result <- raster::ratify(masked_result)
+    #levels(masked_result) <- data.frame("ID"=c(0,1),levels=c("notAOA","AOA"))
     out <- raster::stack(out,masked_result)
   }else{
     out <- mindist

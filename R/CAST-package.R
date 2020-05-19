@@ -13,6 +13,12 @@
 #' @docType package
 #' @title 'caret' Applications for Spatial-Temporal Models
 #' @author Hanna Meyer
+#' @references
+#' \itemize{
+#' \item Meyer, H., Pebesma, E. (2020): Predicting into unknown space? Estimating the area of applicability of spatial prediction models. \url{https://arxiv.org/abs/2005.07939}.
+#' \item Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance of spatial predictor variable selection in machine learning applications - Moving from data reproduction to spatial prediction. Ecological Modelling. 411, 108815.
+#' \item Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.
+#' }
 #' \cr
 #' \emph{Maintainer:} Hanna Meyer \email{hanna.meyer@@uni-muenster.de}
 #'
