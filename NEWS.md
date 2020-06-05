@@ -1,3 +1,7 @@
+# `CAST` 0.4.2
+* bugfix:
+  * Visualization in Vignette
+
 # `CAST` 0.4.1
 * new feature:
   * vignette: tutorial introducing the "area of applicability"

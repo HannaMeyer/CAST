@@ -140,7 +140,7 @@ The used threshold is returned in the AOA statistics.
 grid.arrange(
   spplot(truediff,col.regions=viridis(100),main="true prediction error"),
   spplot(AOA$DI,col.regions=viridis(100),main="DI"),
-  spplot(prediction, col.regions=viridis(100),main="prediction for AOA")+ spplot(AOA$AOA,col.regions=c("transparent","grey")), ncol=3)
+  spplot(prediction, col.regions=viridis(100),main="prediction for AOA")+ spplot(AOA$AOA,col.regions=c("grey","transparent")), ncol=3)
 ```
 
 The patterns in the DI are in general agreement with the true prediction error.
@@ -322,7 +322,7 @@ AOA <- aoa(trainDat,studyArea,variables=predictors,model=model)
 #### Plot results:
 grid.arrange(spplot(AOA$DI,col.regions=viridis(100),main="DI with sampling locations (red)")+
                spplot(as_Spatial(pts),zcol="ID",col.regions="red"),
-  spplot(prediction, col.regions=viridis(100),main="prediction for AOA \n(LOOCV error applies)")+ spplot(AOA$AOA,col.regions=c("transparent","grey")),ncol=2)
+  spplot(prediction, col.regions=viridis(100),main="prediction for AOA \n(LOOCV error applies)")+ spplot(AOA$AOA,col.regions=c("grey","transparent")),ncol=2)
 
 ```
 
