@@ -5,7 +5,7 @@
 \title{Create Space-time Folds}
 \usage{
 CreateSpacetimeFolds(x, spacevar = NA, timevar = NA, k = 10,
-  seed = sample(1:1000, 1))
+  class = NA, seed = sample(1:1000, 1))
 }
 \arguments{
 \item{x}{data.frame containing spatio-temporal data}
@@ -20,6 +20,8 @@ temporal units (e.g. the day of the year)}
 leave one location out or leave one time step out cv should be performed,
 set k to the number of unique spatial or temporal units.}
 
+\item{class}{Character indicating which column of x identifies a class unit (e.g. land cover)}
+
 \item{seed}{numeric. See ?seed}
 }
 \value{
@@ -29,6 +31,13 @@ caret's trainControl function
 }
 \description{
 Create spatial, temporal or spatio-temporal Folds for cross validation
+}
+\details{
+Using "class" is helpful in the case that data are clustered in space
+and are categorical. E.g This is the case for land cover classifications when
+training data come as training polygons. In this case the data should be split in a way
+that entire polygons are held back (spacevar="polygonID") but at the same time the distribution of classes
+should be similar in each fold (class="LUC").
 }
 \note{
 Standard k-fold cross-validation can lead to considerable misinterpretation in spatial-temporal modelling tasks. This function can be used to prepare a Leave-Location-Out, Leave-Time-Out or Leave-Location-and-Time-Out cross-validation as target-oriented validation strategies for spatial-temporal prediction tasks. See Meyer et al. (2018) for further information.

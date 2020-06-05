@@ -8,10 +8,16 @@
 #' @param k numeric. Number of folds. If spacevar or timevar is NA and a
 #' leave one location out or leave one time step out cv should be performed,
 #' set k to the number of unique spatial or temporal units.
+#' @param class Character indicating which column of x identifies a class unit (e.g. land cover)
 #' @param seed numeric. See ?seed
 #' @return A list that contains a list for model training and a list for
 #' model validation that can directly be used as "index" and "indexOut" in
 #' caret's trainControl function
+#' @details Using "class" is helpful in the case that data are clustered in space
+#' and are categorical. E.g This is the case for land cover classifications when
+#' training data come as training polygons. In this case the data should be split in a way
+#' that entire polygons are held back (spacevar="polygonID") but at the same time the distribution of classes
+#' should be similar in each fold (class="LUC").
 #' @note Standard k-fold cross-validation can lead to considerable misinterpretation in spatial-temporal modelling tasks. This function can be used to prepare a Leave-Location-Out, Leave-Time-Out or Leave-Location-and-Time-Out cross-validation as target-oriented validation strategies for spatial-temporal prediction tasks. See Meyer et al. (2018) for further information.
 #' @author Hanna Meyer
 #' @seealso \code{\link{trainControl}},\code{\link{ffs}}
@@ -34,8 +40,16 @@
 #' @aliases CreateSpacetimeFolds
 
 CreateSpacetimeFolds <- function(x,spacevar=NA,timevar=NA,
-                                 k=10,seed=sample(1:1000, 1)){
+                                 k=10,class=NA,seed=sample(1:1000, 1)){
   x <- data.frame(x)
+  ### if classification is used, make sure that classes are equally distributed across folds
+  if(!is.na(class)){
+    unit <- unique(x[,c(spacevar,class)])
+    unit$CAST_fold <- createFolds(unit[,which(names(unit)==class)],k = k,list=FALSE)
+    x <- merge(x,unit,by.x=c(spacevar,class),by.y=c(spacevar,class),sort=FALSE)
+    spacevar <- "CAST_fold"
+  }
+
   if(!is.na(spacevar)){
     if(k>length(unique(x[,spacevar]))){
       k <- length(unique(x[,spacevar]))
