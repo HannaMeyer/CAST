@@ -4,11 +4,19 @@
 \alias{bss}
 \title{Best subset feature selection}
 \usage{
-bss(predictors, response, method = "rf",
+bss(
+  predictors,
+  response,
+  method = "rf",
   metric = ifelse(is.factor(response), "Accuracy", "RMSE"),
   maximize = ifelse(metric == "RMSE", FALSE, TRUE),
-  trControl = caret::trainControl(), tuneLength = 3, tuneGrid = NULL,
-  seed = 100, verbose = TRUE, ...)
+  trControl = caret::trainControl(),
+  tuneLength = 3,
+  tuneGrid = NULL,
+  seed = 100,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{predictors}{see \code{\link{train}}}

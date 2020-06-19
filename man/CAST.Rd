@@ -3,7 +3,6 @@
 \docType{package}
 \name{CAST}
 \alias{CAST}
-\alias{CAST-package}
 \title{'caret' Applications for Spatial-Temporal Models}
 \description{
 Supporting functionality to run 'caret' with spatial or spatial-temporal data.

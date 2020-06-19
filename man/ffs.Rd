@@ -4,11 +4,21 @@
 \alias{ffs}
 \title{Forward feature selection}
 \usage{
-ffs(predictors, response, method = "rf",
+ffs(
+  predictors,
+  response,
+  method = "rf",
   metric = ifelse(is.factor(response), "Accuracy", "RMSE"),
-  maximize = ifelse(metric == "RMSE", FALSE, TRUE), withinSE = FALSE,
-  minVar = 2, trControl = caret::trainControl(), tuneLength = 3,
-  tuneGrid = NULL, seed = sample(1:1000, 1), verbose = TRUE, ...)
+  maximize = ifelse(metric == "RMSE", FALSE, TRUE),
+  withinSE = FALSE,
+  minVar = 2,
+  trControl = caret::trainControl(),
+  tuneLength = 3,
+  tuneGrid = NULL,
+  seed = sample(1:1000, 1),
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{predictors}{see \code{\link{train}}}

@@ -5,9 +5,17 @@
 \alias{plot_bss}
 \title{Plot results of a Forward feature selection or best subset selection}
 \usage{
-plot_ffs(ffs_model, plotType = "all", palette = rainbow,
-  reverse = FALSE, marker = "black", size = 1.5, lwd = 0.5,
-  pch = 21, ...)
+plot_ffs(
+  ffs_model,
+  plotType = "all",
+  palette = rainbow,
+  reverse = FALSE,
+  marker = "black",
+  size = 1.5,
+  lwd = 0.5,
+  pch = 21,
+  ...
+)
 }
 \arguments{
 \item{ffs_model}{Result of a forward feature selection see \code{\link{ffs}}}

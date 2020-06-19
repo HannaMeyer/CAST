@@ -4,8 +4,15 @@
 \alias{aoa}
 \title{Area of Applicability}
 \usage{
-aoa(train, predictors, weight = NA, model = NA, variables = "all",
-  thres = 0.95, folds = NULL)
+aoa(
+  train,
+  predictors,
+  weight = NA,
+  model = NA,
+  variables = "all",
+  thres = 0.95,
+  folds = NULL
+)
 }
 \arguments{
 \item{train}{a data.frame containing the data used for model training}
