@@ -32,6 +32,12 @@
 plot_ffs <- function(ffs_model,plotType="all",palette=rainbow,reverse=FALSE,
                      marker="black",size=1.5,lwd=0.5,
                      pch=21,...){
+  if (plotType=="all"&!exists('perf_all',where=ffs_model)){
+    plotType <- "selected"
+    print("warning: plotType changed to 'selected'")
+  }
+  #wenn plottype=all aber !ffs_model$perf_all dann "selected"
+
   metric <- ffs_model$metric
   if (is.null(ffs_model$type)){
     ffs_model$type <- "ffs"

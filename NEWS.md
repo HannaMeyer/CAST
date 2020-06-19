@@ -1,6 +1,7 @@
 # `CAST` 0.4.2
 * bugfix:
   * Visualization in Vignette
+  * fixed error in ffs when >170 variables are used
 
 # `CAST` 0.4.1
 * new feature:
