@@ -25,7 +25,7 @@ the model was meant to make predictions for.}
 \item{model}{A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds}
 
 \item{variables}{character vector of predictor variables. if "all" then all variables
-of the train dataset are used. Check varImp(model).}
+of the model are used or if no model is given then of the train dataset.}
 
 \item{thres}{numeric vector of probability of DI in training data, with values in [0,1].}
 
@@ -45,6 +45,8 @@ variable importance of the machine learning algorithm used for model training.
 }
 \details{
 The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
+If variables are factors, dummy variables are created prior to weighting and distance calculation.
+
 Interpretation of results: If a location is very similar to the properties
 of the training data it will have a low distance in the predictor variable space
 (DI towards 0) while locations that are very different in their properties
@@ -53,6 +55,9 @@ To get the AOA, a threshold to the DI is applied based on the DI in the training
 To calculate the DI in the training data, the minimum distance to an other training point
 (if applicable: not located in the same CV fold) is considered.
 See Meyer and Pebesma (2020) for the full documentation of the methodology.
+}
+\note{
+Note extensively tested with categorical predictors yet!
 }
 \examples{
 \dontrun{

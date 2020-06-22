@@ -14,11 +14,13 @@
 #' @param weight A data.frame containing weights for each variable. Only required if no model is given.
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
 #' @param variables character vector of predictor variables. if "all" then all variables
-#' of the train dataset are used. Check varImp(model).
+#' of the model are used or if no model is given then of the train dataset.
 #' @param thres numeric vector of probability of DI in training data, with values in [0,1].
 #' @param folds Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 #' Should be used if replicates are present. Only required if no model is given.
 #' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
+#' If variables are factors, dummy variables are created prior to weighting and distance calculation.
+#'
 #' Interpretation of results: If a location is very similar to the properties
 #' of the training data it will have a low distance in the predictor variable space
 #' (DI towards 0) while locations that are very different in their properties
@@ -27,6 +29,7 @@
 #' To calculate the DI in the training data, the minimum distance to an other training point
 #' (if applicable: not located in the same CV fold) is considered.
 #' See Meyer and Pebesma (2020) for the full documentation of the methodology.
+#' @note Note extensively tested with categorical predictors yet!
 #' @return A RasterStack or data.frame with the DI and AOA. AOA has values 0 (outside AOA) and 1 (inside AOA).
 #' @author
 #' Hanna Meyer
@@ -91,9 +94,11 @@ aoa <- function (train,
   ### if not specified take all variables from train dataset as default:
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
   if(length(variables)==1&&variables=="all"){
-    variables=names(train)
+    variables <- tryCatch(names(model$trainingData)[-length(names(model$trainingData))])
+    if(inherits(variables, "error")){
+    variables <- names(train)
   }
-
+}
   #### Prepare output as either as RasterLayer or vector:
   out <- NA
   if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
@@ -118,10 +123,12 @@ aoa <- function (train,
   #### order data:
   if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
       class(predictors)=="RasterLayer"){
-    predictors <- predictors[[na.omit(match(variables, names(predictors)))]]
-  }else{
-    predictors <- predictors[,na.omit(match(variables, names(predictors)))]
+    predictors <- raster::as.data.frame(predictors)
+    # predictors <- predictors[[na.omit(match(variables, names(predictors)))]]
   }
+  #else{
+  predictors <- predictors[,na.omit(match(variables, names(predictors)))]
+  #}
   train <- train[,na.omit(match(variables, names(train)))]
   if(!inherits(weight, "error")){
     weight <- weight[,na.omit(match(variables, names(weight)))]
@@ -130,6 +137,30 @@ aoa <- function (train,
       message("negative weights were set to 0")
     }
   }
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  #!!!!!!!!!!!!!!!!!!!!!!!!!! EXPERIMENTAL
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ## Handling of categorical predictors:
+  catvars <- names(train)[which(sapply(train[,variables], class)%in%c("factor","character"))]
+  if (length(catvars)>0){
+    for (catvar in catvars){
+      dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = train),train)
+      dvi_predictors <- predict(caret::dummyVars(paste0("~",catvar), data=predictors),predictors)
+      train <- data.frame(train,dvi_train)
+      predictors <- data.frame(predictors,dvi_predictors)
+      if(!inherits(weight, "error")){
+        addweights <- data.frame(t(rep(weight[,which(names(weight)==catvar)],
+                                       ncol(dvi_predictors))))
+        names(addweights)<- colnames(dvi_predictors)
+        weight <- data.frame(weight,addweights)
+      }
+    }
+    weight <- weight[,-which(names(weight)%in%catvars)]
+    predictors <- predictors[,-which(names(predictors)%in%catvars)]
+    train <- train[,-which(names(train)%in%catvars)]
+  }
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   #### Scale data and weight predictors if applicable:
   train <- scale(train)
@@ -137,10 +168,10 @@ aoa <- function (train,
   if(!inherits(weight, "error")){
     train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
   }
-  if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
-      class(predictors)=="RasterLayer"){
-    predictors <- raster::as.data.frame(predictors)
-  }
+  #  if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
+  #      class(predictors)=="RasterLayer"){
+  #    predictors <- raster::as.data.frame(predictors)
+  #  }
   predictors <- scale(predictors,center=scaleparam$`scaled:center`,#scaleparam$`scaled:center`
                       scale=scaleparam$`scaled:scale`)
 
@@ -160,8 +191,8 @@ aoa <- function (train,
   })
 
   trainDist <- as.matrix(dist(train))
-# trainDist <- apply(train,1,FUN=function(x){
-# FNN::knnx.dist(t(matrix(x)),train,k=1)})
+  # trainDist <- apply(train,1,FUN=function(x){
+  # FNN::knnx.dist(t(matrix(x)),train,k=1)})
 
   diag(trainDist) <- NA
 
