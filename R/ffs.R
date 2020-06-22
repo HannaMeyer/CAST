@@ -139,9 +139,9 @@ ffs <- function (predictors,
   n <- length(names(predictors))
 
   acc <- 0
-    perf_all <- data.frame(matrix(ncol=length(predictors)+3,
-                                  nrow=choose(n, minVar)+(n-minVar)*(n-minVar+1)/2))
-    names(perf_all) <- c(paste0("var",1:length(predictors)),metric,"SE","nvar")
+  perf_all <- data.frame(matrix(ncol=length(predictors)+3,
+                                nrow=choose(n, minVar)+(n-minVar)*(n-minVar+1)/2))
+  names(perf_all) <- c(paste0("var",1:length(predictors)),metric,"SE","nvar")
   if(maximize) evalfunc <- function(x){max(x,na.rm=TRUE)}
   if(!maximize) evalfunc <- function(x){min(x,na.rm=TRUE)}
   isBetter <- function (actmodelperf,bestmodelperf,
@@ -204,8 +204,8 @@ ffs <- function (predictors,
     acc <- acc+1
 
     variablenames <- names(model$trainingData)[-length(names(model$trainingData))]
-      perf_all[acc,1:length(variablenames)] <- variablenames
-      perf_all[acc,(length(predictors)+1):ncol(perf_all)] <- c(actmodelperf,actmodelperfSE,length(variablenames))
+    perf_all[acc,1:length(variablenames)] <- variablenames
+    perf_all[acc,(length(predictors)+1):ncol(perf_all)] <- c(actmodelperf,actmodelperfSE,length(variablenames))
     if(verbose){
       print(paste0("maximum number of models that still need to be trained: ",
                    round(choose(n, minVar)+(n-minVar)*(n-minVar+1)/2-acc,0)))
@@ -236,9 +236,9 @@ ffs <- function (predictors,
       bestmodel$selectedvars <- selectedvars
       bestmodel$selectedvars_perf <- selectedvars_perf[-length(selectedvars_perf)]
       bestmodel$selectedvars_perf_SE <- selectedvars_SE[-length(selectedvars_SE)] #!!!
-        bestmodel$perf_all <- perf_all
-        bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
-        bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
+      bestmodel$perf_all <- perf_all
+      bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
+      bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
       bestmodel$minVar <- minVar
       bestmodel$type <- "ffs"
       return(bestmodel)
@@ -281,9 +281,9 @@ ffs <- function (predictors,
       acc <- acc+1
 
       variablenames <- names(model$trainingData)[-length(names(model$trainingData))]
-        perf_all[acc,1:length(variablenames)] <- variablenames
-        perf_all[acc,(length(predictors)+1):ncol(
-          perf_all)] <- c(actmodelperf,actmodelperfSE,length(variablenames))
+      perf_all[acc,1:length(variablenames)] <- variablenames
+      perf_all[acc,(length(predictors)+1):ncol(
+        perf_all)] <- c(actmodelperf,actmodelperfSE,length(variablenames))
       if(verbose){
         print(paste0("maximum number of models that still need to be trained: ",
                      round(choose(n, minVar)+(n-minVar)*(n-minVar+1)/2-acc,0)))
@@ -310,10 +310,10 @@ ffs <- function (predictors,
   bestmodel$selectedvars <- selectedvars
   bestmodel$selectedvars_perf <- selectedvars_perf
   bestmodel$selectedvars_perf_SE <- selectedvars_SE
-    bestmodel$perf_all <- perf_all
-    bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
+  bestmodel$perf_all <- perf_all
+  bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
   bestmodel$minVar <- minVar
   bestmodel$type <- "ffs"
-    bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
+  bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
   return(bestmodel)
 }
