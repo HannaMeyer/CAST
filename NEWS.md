@@ -1,6 +1,7 @@
 # `CAST` 0.4.2
+* new feature:
+  * aoa now working with categorical variables
 * bugfix:
-  * Visualization in Vignette
   * fixed error in ffs when >170 variables are used
 
 # `CAST` 0.4.1
