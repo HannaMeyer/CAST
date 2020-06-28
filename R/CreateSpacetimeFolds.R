@@ -93,9 +93,6 @@ CreateSpacetimeFolds <- function(x,spacevar=NA,timevar=NA,
       cvindices_train[[i]]<- which(!x[,timevar]%in%timefolds[[i]])
     }
   }
-  print(unique(x[cvindices_test[[1]],class]))
-  print(unique(x[cvindices_test[[2]],class]))
-  print(unique(x[cvindices_test[[3]],class]))
 
   return(list("index"=cvindices_train,"indexOut"=cvindices_test))
 }
