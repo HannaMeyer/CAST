@@ -46,9 +46,9 @@ CreateSpacetimeFolds <- function(x,spacevar=NA,timevar=NA,
   if(!is.na(class)){
     unit <- unique(x[,c(spacevar,class)])
     unit$CAST_fold <- createFolds(unit[,which(names(unit)==class)],k = k,list=FALSE)
-    x <- merge(x,unit,by.x=c(spacevar,class),by.y=c(spacevar,class),sort=FALSE)
-    spacevar <- "CAST_fold"
-  }
+    #x <- merge(x,unit,by.x=c(spacevar,class),by.y=c(spacevar,class),all.x=TRUE,sort=FALSE)
+    x <- plyr::join(x,unit,by=c(spacevar,class),match="first")
+    spacevar <- "CAST_fold"  }
 
   if(!is.na(spacevar)){
     if(k>length(unique(x[,spacevar]))){
@@ -93,5 +93,9 @@ CreateSpacetimeFolds <- function(x,spacevar=NA,timevar=NA,
       cvindices_train[[i]]<- which(!x[,timevar]%in%timefolds[[i]])
     }
   }
+  print(unique(x[cvindices_test[[1]],class]))
+  print(unique(x[cvindices_test[[2]],class]))
+  print(unique(x[cvindices_test[[3]],class]))
+
   return(list("index"=cvindices_train,"indexOut"=cvindices_test))
 }

@@ -17,7 +17,7 @@ LazyData: true
 Depends: R (>= 3.1.0)
 Imports: caret, stats, utils, ggplot2, graphics
 Suggests: doParallel, GSIF, randomForest, lubridate, raster, sp, knitr, mapview,
-    rmarkdown, sf, scales, parallel, latticeExtra, virtualspecies, gridExtra, viridis, rgeos, reshape,
-    FNN
+    rmarkdown, sf, scales, parallel, latticeExtra, virtualspecies, gridExtra, 
+    viridis, rgeos, reshape,FNN,plyr
 RoxygenNote: 7.1.0
 VignetteBuilder: knitr
