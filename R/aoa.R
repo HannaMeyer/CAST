@@ -96,9 +96,9 @@ aoa <- function (train,
   if(length(variables)==1&&variables=="all"){
     variables <- tryCatch(names(model$trainingData)[-length(names(model$trainingData))])
     if(inherits(variables, "error")){
-    variables <- names(train)
+      variables <- names(train)
+    }
   }
-}
   #### Prepare output as either as RasterLayer or vector:
   out <- NA
   if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
@@ -144,18 +144,27 @@ aoa <- function (train,
   catvars <- names(train)[which(sapply(train[,variables], class)%in%c("factor","character"))]
   if (length(catvars)>0){
     for (catvar in catvars){
+      # mask all unknown levels in predictors as NA (even technically no predictions can be made)
+      train[,catvar]<-droplevels(train[,catvar])
+      predictors[,catvar] <- factor(predictors[,catvar])
+      predictors[!predictors[,catvar]%in%unique(train[,catvar]),catvar] <- NA
+      predictors[,catvar] <- droplevels(predictors[,catvar])
+      # then create dummy variables for the remaining levels in train:
       dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = train),train)
-      dvi_predictors <- predict(caret::dummyVars(paste0("~",catvar), data=predictors),predictors)
+      dvi_predictors <- predict(caret::dummyVars(paste0("~",catvar), data=train),predictors)
+      dvi_predictors[is.na(predictors[,catvar]),] <- 0
       train <- data.frame(train,dvi_train)
       predictors <- data.frame(predictors,dvi_predictors)
       if(!inherits(weight, "error")){
         addweights <- data.frame(t(rep(weight[,which(names(weight)==catvar)],
-                                       ncol(dvi_predictors))))
-        names(addweights)<- colnames(dvi_predictors)
+                                       ncol(dvi_train))))
+        names(addweights)<- colnames(dvi_train)
         weight <- data.frame(weight,addweights)
       }
     }
-    weight <- weight[,-which(names(weight)%in%catvars)]
+    if(!inherits(weight, "error")){
+      weight <- weight[,-which(names(weight)%in%catvars)]
+    }
     predictors <- predictors[,-which(names(predictors)%in%catvars)]
     train <- train[,-which(names(train)%in%catvars)]
   }
