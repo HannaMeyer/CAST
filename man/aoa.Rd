@@ -5,24 +5,24 @@
 \title{Area of Applicability}
 \usage{
 aoa(
-  train,
   predictors,
-  weight = NA,
   model = NA,
+  train = NULL,
+  weight = NA,
   variables = "all",
   thres = 0.95,
   folds = NULL
 )
 }
 \arguments{
-\item{train}{a data.frame containing the data used for model training}
-
 \item{predictors}{A RasterStack, RasterBrick or data.frame containing the data
 the model was meant to make predictions for.}
 
-\item{weight}{A data.frame containing weights for each variable. Only required if no model is given.}
-
 \item{model}{A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds}
+
+\item{train}{a data.frame containing the data used for model training. Only required when no model is given}
+
+\item{weight}{A data.frame containing weights for each variable. Only required if no model is given.}
 
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the model are used or if no model is given then of the train dataset.}
@@ -85,7 +85,7 @@ plot(pts[,1],add=TRUE,col="black")
 
 # first calculate the DI based on a set of variables with equal weights:
 variables <- c("DEM","NDRE.Sd","TWI")
-AOA <- aoa(trainDat,studyArea,variables=variables)
+AOA <- aoa(studyArea,train=trainDat,variables=variables)
 spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
 spplot(AOA$AOA,main="Area of Applicability")
 
@@ -97,7 +97,7 @@ print(model) #note that this is a quite poor prediction model
 prediction <- predict(studyArea,model)
 plot(varImp(model,scale=FALSE))
 #
-AOA <- aoa(trainDat,studyArea,model=model,variables=variables)
+AOA <- aoa(studyArea,model)
 spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
 #plot predictions for the AOA only:
 spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+

@@ -7,12 +7,11 @@
 #' used in the models) in the predictor variable space to the data used for model
 #' training. Predictors can be weighted in the ideal case based on the internal
 #' variable importance of the machine learning algorithm used for model training.
-#'
-#' @param train a data.frame containing the data used for model training
 #' @param predictors A RasterStack, RasterBrick or data.frame containing the data
 #' the model was meant to make predictions for.
-#' @param weight A data.frame containing weights for each variable. Only required if no model is given.
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
+#' @param train a data.frame containing the data used for model training. Only required when no model is given
+#' @param weight A data.frame containing weights for each variable. Only required if no model is given.
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the model are used or if no model is given then of the train dataset.
 #' @param thres numeric vector of probability of DI in training data, with values in [0,1].
@@ -62,7 +61,7 @@
 #'
 #' # first calculate the DI based on a set of variables with equal weights:
 #' variables <- c("DEM","NDRE.Sd","TWI")
-#' AOA <- aoa(trainDat,studyArea,variables=variables)
+#' AOA <- aoa(studyArea,train=trainDat,variables=variables)
 #' spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
 #' spplot(AOA$AOA,main="Area of Applicability")
 #'
@@ -74,7 +73,7 @@
 #' prediction <- predict(studyArea,model)
 #' plot(varImp(model,scale=FALSE))
 #' #
-#' AOA <- aoa(trainDat,studyArea,model=model,variables=variables)
+#' AOA <- aoa(studyArea,model)
 #' spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
 #' #plot predictions for the AOA only:
 #' spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
@@ -83,19 +82,21 @@
 #' @export aoa
 #' @aliases aoa
 
-aoa <- function (train,
-                 predictors,
-                 weight=NA,
+aoa <- function (predictors,
                  model=NA,
+                 train=NULL,
+                 weight=NA,
                  variables="all",
                  thres=0.95,
                  folds=NULL){
 
   ### if not specified take all variables from train dataset as default:
+  if(is.null(train)){train <- model$trainingData}
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
-  if(length(variables)==1&&variables=="all"){
-    variables <- tryCatch(names(model$trainingData)[-length(names(model$trainingData))])
-    if(inherits(variables, "error")){
+  if(variables=="all"){
+    if(!is.na(model)){
+    variables <- names(model$trainingData)[-length(names(model$trainingData))]
+    }else{
       variables <- names(train)
     }
   }
@@ -141,8 +142,8 @@ aoa <- function (train,
   #!!!!!!!!!!!!!!!!!!!!!!!!!! EXPERIMENTAL
   #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ## Handling of categorical predictors:
-  catvars <- names(train)[which(sapply(train[,variables], class)%in%c("factor","character"))]
-  if (length(catvars)>0){
+  catvars <- tryCatch(names(train)[which(sapply(train[,variables], class)%in%c("factor","character"))], error=function(e) e)
+  if (!inherits(catvars,"error")&length(catvars)>0){
     for (catvar in catvars){
       # mask all unknown levels in predictors as NA (even technically no predictions can be made)
       train[,catvar]<-droplevels(train[,catvar])
@@ -219,7 +220,7 @@ aoa <- function (train,
     CVfolds <- tryCatch(reshape::melt(model$control$indexOut),
                         error=function(e) e)
     if(!inherits(CVfolds, "error")){
-      if (nrow(CVfolds)>nrow(trainDist)){
+      if (nrow(CVfolds)>nrow(trainDist)||nrow(CVfolds)<nrow(trainDist)){
         message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
       }else{
         CVfolds <- CVfolds[order(CVfolds$value),]

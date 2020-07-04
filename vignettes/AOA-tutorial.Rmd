@@ -129,7 +129,7 @@ The visualization above shows the predictions made by the model. In the next ste
 The AOA calculation takes the model as input to extract the importance of the predictors, used as weights in multidimensional distance calculation. Note that the AOA can also be calculated without a trained mode (i.e. using training data and new data only). In this case all predicor variables are trated equally important (unless weights are given in form of a table).
 
 ```{r,message = FALSE, warning=FALSE}
-AOA <- aoa(trainDat,predictors, variables = names(predictors),model=model)
+AOA <- aoa(predictors, model)
 attributes(AOA)$aoa_stats
 ```
 
@@ -227,9 +227,9 @@ prediction <- predict(predictors,model)
 The AOA is then calculated (for comparison) using the model validated by random cross-validation, and second by taking the spatial clusters into account and calculating the threshold based on minimum distances to a nearest training point not located in the same cluster. This is done in the aoa function, where the folds used for cross-validation are automatically extracted from the model.
 
 ```{r,message = FALSE, warning=FALSE}
-AOA_spatial <- aoa(trainDat,predictors, variables = names(predictors),model=model)
+AOA_spatial <- aoa(predictors, model)
 
-AOA_random <- aoa(trainDat,predictors, variables = names(predictors),model=model_random)
+AOA_random <- aoa(predictors, model_random)
 ```
 
 
@@ -317,7 +317,7 @@ prediction <- predict(studyArea,model)
 Next we're limniting the predictions to the AOA. Predictions outside the AOA should be excluded.
 
 ```{r, message = FALSE, warning=FALSE}
-AOA <- aoa(trainDat,studyArea,variables=predictors,model=model)
+AOA <- aoa(studyArea,model)
 
 #### Plot results:
 grid.arrange(spplot(AOA$DI,col.regions=viridis(100),main="DI with sampling locations (red)")+
