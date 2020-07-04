@@ -94,7 +94,7 @@ aoa <- function (predictors,
   if(is.null(train)){train <- model$trainingData}
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
   if(variables=="all"){
-    if(!is.na(model)){
+    if(!is.na(model)[1]){
     variables <- names(model$trainingData)[-length(names(model$trainingData))]
     }else{
       variables <- names(train)
