@@ -64,11 +64,10 @@ To get an impression on the spatial properties of the dataset, Let's have a look
 
 ```{r, message = FALSE, warning=FALSE}
 
-library(sp)
+library(sf)
 data_sp <- unique(data[,c("SOURCEID","Easting","Northing")])
-coordinates(data_sp) <- ~Easting+Northing
-proj4string(data_sp) <- CRS("+init=epsg:26911")
-plot(data_sp,axes=T)
+data_sp <- st_as_sf(data_sp,coords=c("Easting","Northing"),crs=26911)
+plot(data_sp,axes=T,col="black")
 ```
 
 ```{r, message = FALSE, warning=FALSE, eval=user_hanna}
@@ -101,17 +100,17 @@ What we can see is that (as expected) each logger location has a unique time ser
 ## Model training and prediction
 In the following we will use this subset of the cookfarm data as an example to spatially predict soil moisture with (and without) consideration of the spatio-temporal dependencies.
 To start with, lets use this dataset to create a "default" Random Forest model that predicts soil moisture based on a hand full of predictor variables.
-To keep computation time at a minimum, we don't include hyperparameter tuning (hence we set tuneLength to 1) which is reasonable as Random Forests are comparably insensitive to tuning.
+To keep computation time at a minimum, we don't include hyperparameter tuning (hence mtry was set to 2) which is reasonable as Random Forests are comparably insensitive to tuning.
 
 ```{r, message = FALSE, warning=FALSE}
 library(caret)
-predictors <- c("DEM","BLD","TWI","Precip_cum","cday",
-                "MaxT_wrcc","Precip_wrcc",
+predictors <- c("DEM","TWI","Precip_cum","cday",
+                "MaxT_wrcc","Precip_wrcc","BLD",
                 "Northing","Easting","NDRE.M")
 set.seed(10)
 model <- train(trainDat[,predictors],trainDat$VW,
-               method="rf",tuneLength=1,importance=TRUE,
-               trControl=trainControl(method="cv",number=5))
+               method="rf",tuneGrid=data.frame("mtry"=2),importance=TRUE,ntree=50,
+               trControl=trainControl(method="cv",number=3))
 ```
 
 
@@ -160,10 +159,10 @@ Analogous to the random CV we split the data into five folds, hence five model r
 ```{r, message = FALSE, warning=FALSE}
 set.seed(10)
 indices <- CreateSpacetimeFolds(trainDat,spacevar = "SOURCEID",
-                                k=5)
+                                k=3)
 set.seed(10)
 model_LLO <- train(trainDat[,predictors],trainDat$VW,
-                   method="rf",tuneLength=1, importance=TRUE,
+                   method="rf",tuneGrid=data.frame("mtry"=2), importance=TRUE,
                    trControl=trainControl(method="cv",
                                           index = indices$index))
 model_LLO
@@ -196,7 +195,7 @@ So let's run the ffs on our case study using R² as a metric to select the optim
 ```{r, message = FALSE, warning=FALSE}
 set.seed(10)
 ffsmodel_LLO <- ffs(trainDat[,predictors],trainDat$VW,metric="Rsquared",
-                    method="rf",tuneLength=1, verbose=FALSE,
+                    method="rf",tuneGrid=data.frame("mtry"=2), verbose=FALSE,ntree=50,
                     trControl=trainControl(method="cv",
                                            index = indices$index))
 ffsmodel_LLO
@@ -224,6 +223,21 @@ spplot(prediction_ffs)
 
 We see that the variable selection does not only have an effect on the statistical performance but also the predicted spatial patterns change considerably. It is of note that the linear feature is not any more in the resulting soil moisture map most likely because "Easting" was removed from the set of predictor variables by ffs.
 
+## Area of Applicability
+Still it is requitred to analyse if the model can be applied to the entire study area of if there are lcoations that are very different in their predictor properties to what the model has learned from. See more details in the vignette on the Area of applicabiliy and 
+[Meyer and Pebesma 2020](https://arxiv.org/abs/2005.07939))
+
+```{r, message = FALSE, warning=FALSE}
+
+AOA <- aoa(predictors_sp,ffsmodel_LLO)
+
+library(latticeExtra)
+spplot(prediction_ffs,main="prediction for the AOA")+
+spplot(AOA$AOA,col.regions=c("grey","transparent"))
+
+```
+
+The figure shows ion grey areas that are outside the area of applicability, hence predictions should not be considered for these locations.
 
 ## Conclusions
 To conclude, the tutorial has shown how CAST can be used to facilitate target-oriented CV on spatial and spatio-temporal data which is crucial to obtain meaningful validation results. Using the ffs in conjunction with target-oriented validation, variables can be excluded that are counterproductive in view to the target-orineted performance due to misinterpretations by the algorithm. ffs therefore helps to select the ideal set of predictor variables for spatio-temporal prediction tasks and gives objective error estimates.
