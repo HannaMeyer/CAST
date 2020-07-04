@@ -3,6 +3,8 @@
   * aoa now working with categorical variables
 * bugfix:
   * fixed error in ffs when >170 variables are used
+* minor issues:
+  * changed order of parameters in aoa
 
 # `CAST` 0.4.1
 * new feature:
