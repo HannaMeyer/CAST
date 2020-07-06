@@ -89,7 +89,7 @@ library(lubridate)
 library(ggplot2)
 trainDat <- data[data$altitude==-0.3&
                    year(data$Date)==2012&
-                   week(data$Date)%in%c(13:14),]
+                   week(data$Date)%in%c(10:12),]
 ggplot(data = trainDat, aes(x=Date, y=VW)) +
   geom_line(aes(colour=SOURCEID))
 ```
@@ -109,7 +109,8 @@ predictors <- c("DEM","TWI","Precip_cum","cday",
                 "Northing","Easting","NDRE.M")
 set.seed(10)
 model <- train(trainDat[,predictors],trainDat$VW,
-               method="rf",tuneGrid=data.frame("mtry"=2),importance=TRUE,ntree=50,
+               method="rf",tuneGrid=data.frame("mtry"=2),
+               importance=TRUE,ntree=50,
                trControl=trainControl(method="cv",number=3))
 ```
 
@@ -142,7 +143,7 @@ To assess the performance of the model let's have a look on the output of the Ra
 model
 ```
 
-We see that soil moisture could be modelled with an R² of 0.97 which indicates a nearly perfect fit of the data. Sounds good, but unfortunately, the random k fold CV does not give us a good indication for the model performance. Random k-fold CV means that each of the five folds (with the highest certainty) contains data points from each data logger. Therefore, a random CV cannot indicate the ability of the model to make predictions beyond the location of the training data (i.e. to map soil moisture). Since our aim is to map soil moisture, we rather need to perform a target-oriented validation which validates the model in view to spatial mapping.
+We see that soil moisture could be modelled with an R² of 0.90 which indicates a nearly perfect fit of the data. Sounds good, but unfortunately, the random k fold CV does not give us a good indication for the model performance. Random k-fold CV means that each of the five folds (with the highest certainty) contains data points from each data logger. Therefore, a random CV cannot indicate the ability of the model to make predictions beyond the location of the training data (i.e. to map soil moisture). Since our aim is to map soil moisture, we rather need to perform a target-oriented validation which validates the model in view to spatial mapping.
 
 
 
@@ -152,7 +153,7 @@ We are not interested in the model performance in view to random subsets of our 
 To find this out, we need to repeatedly leave the complete time series of one or more data loggers out and use them as test data during CV.
 
 To do this we first need to create meaningful folds rather than random folds. CAST's function "CreateSpaceTimeFolds" is designed to provide index arguments used by caret's trainControl. The index defines which data points are used for model training during each model run and reversely defines which data points are held back. Hence, using the index argument we can account for the dependencies in the data by leaving the complete data from one or more data loggers out (LLO CV), from one or more time steps out (LTO CV) or from data loggers and time steps out (LLTO CV). In this example we're focusing on LLO CV, therefore we use the column "SOURCEID" to define the location of a data logger and split the data into folds using this information.
-Analogous to the random CV we split the data into five folds, hence five model runs are performed each leaving one fifth of all data loggers out for validation.
+Analog to the random CV we split the data into five folds, hence five model runs are performed each leaving one fifth of all data loggers out for validation.
 
 
 
@@ -169,7 +170,7 @@ model_LLO
 ```
 
 
-By inspecting the output of the model, we see that in view to new locations, the R² is only 0.24 so the performance is much lower than expected from the random CV (R² = 0.97).
+By inspecting the output of the model, we see that in view to new locations, the R² is only 0.16 so the performance is much lower than expected from the random CV (R² = 0.90).
 Apparently, there is considerable overfitting in the model, causing a good random performance but a poor performance in view to new locations. This might partly be attributed to the choice of variables where we must suspect that certain variables are misinterpreted by the model (see [Meyer et al 2018](https://www.sciencedirect.com/science/article/pii/S1364815217310976)).
 
 Let's have a look at the variable importance ranking of Random Forest and see if we find something suspicious:
@@ -195,14 +196,15 @@ So let's run the ffs on our case study using R² as a metric to select the optim
 ```{r, message = FALSE, warning=FALSE}
 set.seed(10)
 ffsmodel_LLO <- ffs(trainDat[,predictors],trainDat$VW,metric="Rsquared",
-                    method="rf",tuneGrid=data.frame("mtry"=2), verbose=FALSE,ntree=50,
+                    method="rf", tuneGrid=data.frame("mtry"=2),
+                    verbose=FALSE,ntree=50,
                     trControl=trainControl(method="cv",
                                            index = indices$index))
 ffsmodel_LLO
 ffsmodel_LLO$selectedvars
 ```
 
-Using the ffs with LLO CV, the R² could be increased from 0.24 to 0.36. The variables that are used for this model are "TWI","NDRE.M","BLD" and "cday". All others are removed because they have (at least in this small example) no spatial meaning or are even counterproductive.
+Using the ffs with LLO CV, the R² could be increased from 0.16 to 0.28. The variables that are used for this model are "DEM","NDRE.M" and "Northing". All others are removed because they have (at least in this small example) no spatial meaning or are even counterproductive.
 
 Using the plot$\_$ffs function we can visualize how the performance of the model changed depending on the variables being used:
 
@@ -211,7 +213,7 @@ Using the plot$\_$ffs function we can visualize how the performance of the model
 plot_ffs(ffsmodel_LLO)
 ```
 
-See that the best model using two variables led to an R² of slightly below 0.35. Using the third and forth variable could slightly increase the R². Any fifth variable could not improve the LLO performance.
+See that the best model using two variables led to an R² of slightly above 0.2. Using the third variable could slightly increase the R². Any further variable could not improve the LLO performance.
 Note that the R² features a high standard deviation regardless of the variables being used. This is due to the small dataset that was used which cannot lead to robust results.
 
 What effect does the new model has on the spatial representation of soil moisture?
@@ -228,16 +230,22 @@ Still it is requitred to analyse if the model can be applied to the entire study
 [Meyer and Pebesma 2020](https://arxiv.org/abs/2005.07939))
 
 ```{r, message = FALSE, warning=FALSE}
+library(latticeExtra)
 
+### AOA for which the spatial CV error applies:
 AOA <- aoa(predictors_sp,ffsmodel_LLO)
 
-library(latticeExtra)
-spplot(prediction_ffs,main="prediction for the AOA")+
+spplot(prediction_ffs,main="prediction for the AOA \n(spatial CV error applied)")+
 spplot(AOA$AOA,col.regions=c("grey","transparent"))
+
+### AOA for which the random CV error applies:
+AOA_random <- aoa(predictors_sp,model)
+spplot(prediction,main="prediction for the AOA \n(random CV error applied)")+
+spplot(AOA_random$AOA,col.regions=c("grey","transparent"))
 
 ```
 
-The figure shows ion grey areas that are outside the area of applicability, hence predictions should not be considered for these locations.
+The figure shows in grey areas that are outside the area of applicability, hence predictions should not be considered for these locations.
 
 ## Conclusions
 To conclude, the tutorial has shown how CAST can be used to facilitate target-oriented CV on spatial and spatio-temporal data which is crucial to obtain meaningful validation results. Using the ffs in conjunction with target-oriented validation, variables can be excluded that are counterproductive in view to the target-orineted performance due to misinterpretations by the algorithm. ffs therefore helps to select the ideal set of predictor variables for spatio-temporal prediction tasks and gives objective error estimates.
@@ -247,4 +255,10 @@ The intention of this tutorial is to describe the motivation that led to the dev
 
 The intention of showing the motivation of CAST is also the reason why the coordinates are used here as predictor variables. Though coordinates are used as predictors in quite some scientific studies they rather provide here an extreme example of how misleading variables can lead to overfitting.
 
+## Further reading
 
+* Meyer, H., Pebesma, E.: Predicting into unknown space? Estimating the area of applicability of spatial prediction models. https://arxiv.org/abs/2005.07939
+
+* Meyer H, Reudenbach C, Wöllauer S,Nauss T (2019) Importance of spatial predictor variable selection in machine learning applications–Moving from data reproduction to spatial prediction. Ecological Modelling 411: 108815 [doi:10.1016/j.ecolmodel.2019.108815]
+
+* Meyer H, Reudenbach C, Hengl T, Katurij M, Nauss T (2018) Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1–9 [doi:10.1016/j.envsoft.2017.12.001]
