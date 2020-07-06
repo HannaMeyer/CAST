@@ -15,9 +15,9 @@ URL: https://github.com/HannaMeyer/CAST
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.1.0)
-Imports: caret, stats, utils, ggplot2, graphics
+Imports: caret, stats, utils, ggplot2, graphics, reshape, FNN, plyr
 Suggests: doParallel, GSIF, randomForest, lubridate, raster, sp, knitr, mapview,
     rmarkdown, sf, scales, parallel, latticeExtra, virtualspecies, gridExtra, 
-    viridis, rgeos, reshape,FNN,plyr
+    viridis, rgeos
 RoxygenNote: 7.1.0
 VignetteBuilder: knitr
