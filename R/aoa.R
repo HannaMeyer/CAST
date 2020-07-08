@@ -124,12 +124,12 @@ aoa <- function (predictors,
   #### order data:
   if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
       class(predictors)=="RasterLayer"){
+    if (any(is.factor(predictors))){
+      predictors[[which(is.factor(predictors))]] <- deratify(predictors[[which(is.factor(predictors))]],complete = TRUE)
+    }
     predictors <- raster::as.data.frame(predictors)
-    # predictors <- predictors[[na.omit(match(variables, names(predictors)))]]
   }
-  #else{
   predictors <- predictors[,na.omit(match(variables, names(predictors)))]
-  #}
   train <- train[,na.omit(match(variables, names(train)))]
   if(!inherits(weight, "error")){
     weight <- weight[,na.omit(match(variables, names(weight)))]
@@ -138,9 +138,7 @@ aoa <- function (predictors,
       message("negative weights were set to 0")
     }
   }
-  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  #!!!!!!!!!!!!!!!!!!!!!!!!!! EXPERIMENTAL
-  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ##############################################################################
   ## Handling of categorical predictors:
   catvars <- tryCatch(names(train)[which(sapply(train[,variables], class)%in%c("factor","character"))], error=function(e) e)
   if (!inherits(catvars,"error")&length(catvars)>0){
@@ -169,19 +167,13 @@ aoa <- function (predictors,
     predictors <- predictors[,-which(names(predictors)%in%catvars)]
     train <- train[,-which(names(train)%in%catvars)]
   }
-  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+  ##############################################################################
   #### Scale data and weight predictors if applicable:
   train <- scale(train)
   scaleparam <- attributes(train)
   if(!inherits(weight, "error")){
     train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
   }
-  #  if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
-  #      class(predictors)=="RasterLayer"){
-  #    predictors <- raster::as.data.frame(predictors)
-  #  }
   predictors <- scale(predictors,center=scaleparam$`scaled:center`,#scaleparam$`scaled:center`
                       scale=scaleparam$`scaled:scale`)
 
@@ -251,8 +243,6 @@ aoa <- function (predictors,
     raster::values(masked_result) <- 1
     masked_result[out>thres] <- 0
     masked_result <- raster::mask(masked_result,out)
-    #masked_result <- raster::ratify(masked_result)
-    #levels(masked_result) <- data.frame("ID"=c(0,1),levels=c("notAOA","AOA"))
     out <- raster::stack(out,masked_result)
   }else{
     out <- mindist
