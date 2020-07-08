@@ -7,7 +7,7 @@
 #' used in the models) in the predictor variable space to the data used for model
 #' training. Predictors can be weighted in the ideal case based on the internal
 #' variable importance of the machine learning algorithm used for model training.
-#' @param predictors A RasterStack, RasterBrick or data.frame containing the data
+#' @param newdata A RasterStack, RasterBrick or data.frame containing the data
 #' the model was meant to make predictions for.
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
 #' @param train a data.frame containing the data used for model training. Only required when no model is given
@@ -82,7 +82,7 @@
 #' @export aoa
 #' @aliases aoa
 
-aoa <- function (predictors,
+aoa <- function (newdata,
                  model=NA,
                  train=NULL,
                  weight=NA,
@@ -102,9 +102,9 @@ aoa <- function (predictors,
   }
   #### Prepare output as either as RasterLayer or vector:
   out <- NA
-  if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
-      class(predictors)=="RasterLayer"){
-    out <- predictors[[1]]
+  if (class(newdata)=="RasterStack"|class(newdata)=="RasterBrick"|
+      class(newdata)=="RasterLayer"){
+    out <- newdata[[1]]
   }
 
   #### Extract weights from trained model:
@@ -122,14 +122,14 @@ aoa <- function (predictors,
   }
 
   #### order data:
-  if (class(predictors)=="RasterStack"|class(predictors)=="RasterBrick"|
-      class(predictors)=="RasterLayer"){
-    if (any(is.factor(predictors))){
-      predictors[[which(is.factor(predictors))]] <- deratify(predictors[[which(is.factor(predictors))]],complete = TRUE)
+  if (class(newdata)=="RasterStack"|class(newdata)=="RasterBrick"|
+      class(newdata)=="RasterLayer"){
+    if (any(is.factor(newdata))){
+      newdata[[which(is.factor(newdata))]] <- deratify(newdata[[which(is.factor(newdata))]],complete = TRUE)
     }
-    predictors <- raster::as.data.frame(predictors)
+    newdata <- raster::as.data.frame(newdata)
   }
-  predictors <- predictors[,na.omit(match(variables, names(predictors)))]
+  newdata <- newdata[,na.omit(match(variables, names(newdata)))]
   train <- train[,na.omit(match(variables, names(train)))]
   if(!inherits(weight, "error")){
     weight <- weight[,na.omit(match(variables, names(weight)))]
@@ -143,17 +143,17 @@ aoa <- function (predictors,
   catvars <- tryCatch(names(train)[which(sapply(train[,variables], class)%in%c("factor","character"))], error=function(e) e)
   if (!inherits(catvars,"error")&length(catvars)>0){
     for (catvar in catvars){
-      # mask all unknown levels in predictors as NA (even technically no predictions can be made)
+      # mask all unknown levels in newdata as NA (even technically no predictions can be made)
       train[,catvar]<-droplevels(train[,catvar])
-      predictors[,catvar] <- factor(predictors[,catvar])
-      predictors[!predictors[,catvar]%in%unique(train[,catvar]),catvar] <- NA
-      predictors[,catvar] <- droplevels(predictors[,catvar])
+      newdata[,catvar] <- factor(newdata[,catvar])
+      newdata[!newdata[,catvar]%in%unique(train[,catvar]),catvar] <- NA
+      newdata[,catvar] <- droplevels(newdata[,catvar])
       # then create dummy variables for the remaining levels in train:
       dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = train),train)
-      dvi_predictors <- predict(caret::dummyVars(paste0("~",catvar), data=train),predictors)
-      dvi_predictors[is.na(predictors[,catvar]),] <- 0
+      dvi_newdata <- predict(caret::dummyVars(paste0("~",catvar), data=train),newdata)
+      dvi_newdata[is.na(newdata[,catvar]),] <- 0
       train <- data.frame(train,dvi_train)
-      predictors <- data.frame(predictors,dvi_predictors)
+      newdata <- data.frame(newdata,dvi_newdata)
       if(!inherits(weight, "error")){
         addweights <- data.frame(t(rep(weight[,which(names(weight)==catvar)],
                                        ncol(dvi_train))))
@@ -164,26 +164,26 @@ aoa <- function (predictors,
     if(!inherits(weight, "error")){
       weight <- weight[,-which(names(weight)%in%catvars)]
     }
-    predictors <- predictors[,-which(names(predictors)%in%catvars)]
+    newdata <- newdata[,-which(names(newdata)%in%catvars)]
     train <- train[,-which(names(train)%in%catvars)]
   }
   ##############################################################################
-  #### Scale data and weight predictors if applicable:
+  #### Scale data and weight data if applicable:
   train <- scale(train)
   scaleparam <- attributes(train)
   if(!inherits(weight, "error")){
     train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
   }
-  predictors <- scale(predictors,center=scaleparam$`scaled:center`,#scaleparam$`scaled:center`
+  newdata <- scale(newdata,center=scaleparam$`scaled:center`,#scaleparam$`scaled:center`
                       scale=scaleparam$`scaled:scale`)
 
   if(!inherits(weight, "error")){
-    predictors <- sapply(1:ncol(predictors),function(x){predictors[,x]*unlist(weight[x])})
+    newdata <- sapply(1:ncol(newdata),function(x){newdata[,x]*unlist(weight[x])})
   }
 
   #### For each pixel caclculate distance to each training point and search for
   #### min distance:
-  mindist <- apply(predictors,1,FUN=function(x){
+  mindist <- apply(newdata,1,FUN=function(x){
     if(any(is.na(x))){
       return(NA)
     }else{
