@@ -1,5 +1,4 @@
 #' 'caret' Applications for Spatio-Temporal models
-#'
 #' @description Supporting functionality to run 'caret' with spatial or spatial-temporal data.
 #' 'caret' is a frequently used package for model training and prediction using machine learning.
 #' CAST includes functions to improve spatial-temporal modelling tasks using 'caret'.
@@ -8,7 +7,7 @@
 #' in view to their contribution to the spatial model performance.
 #' CAST further includes functionality to estimate the (spatial) area of applicability of prediction models
 #' by analysing the similarity between new data and training data.
-
+#'
 #' @name CAST
 #' @docType package
 #' @title 'caret' Applications for Spatial-Temporal Models

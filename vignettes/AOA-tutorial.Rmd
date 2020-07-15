@@ -26,7 +26,7 @@ Here we implement the methodology described in [Meyer\&Pebesma (2020)](http://ar
  
 This tutorial shows an example of how to estimate the area of applicability of spatial prediction models. 
 
-For further information see: Meyer, H., Pebesma, E. (2020): Predicting into unknown space? Estimating the area of applicability of spatial prediction models. https://arxiv.org/abs/2005.07939
+For further information see: Meyer, H., Pebesma, E. (2020): Predicting into unknown space? Estimating the area of applicability of spatial prediction models. [https://arxiv.org/abs/2005.07939]
 
 ### Getting started
 ```{r, message = FALSE, warning=FALSE}

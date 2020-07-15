@@ -91,21 +91,19 @@ trainDat$VW,method="rf",importance=TRUE,tuneLength=1,trControl=trainControl(meth
 print(model) #note that this is a quite poor prediction model
 prediction <- predict(studyArea,model)
 plot(varImp(model,scale=FALSE))
-#
+
 #...then calculate the AOA of the trained model for the study area:
 AOA <- aoa(studyArea,model)
 spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
 #plot predictions for the AOA only:
 spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
 spplot(AOA$AOA,col.regions=c("grey","transparent"))
-#
+
 #The AOA can also be calculated without a trained model.
 #All variables are weighted equally in this case:
 AOA <- aoa(studyArea,train=trainDat,variables=variables)
 spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
 spplot(AOA$AOA,main="Area of Applicability")
-
-
 }
 }
 \references{

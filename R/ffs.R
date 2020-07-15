@@ -48,7 +48,7 @@
 #' See \href{https://doi.org/10.1016/j.envsoft.2017.12.001}{Meyer et al. (2018)}
 #' and \href{https://doi.org/10.1016/j.ecolmodel.2019.108815}{Meyer et al. (2019)}
 #' for further details.
-
+#'
 #' @author Hanna Meyer
 #' @seealso \code{\link{train}},\code{\link{bss}},
 #' \code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}}
