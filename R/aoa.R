@@ -80,9 +80,9 @@
 #' ####
 #' library(doParallel)
 #' library(parallel)
-#' cl <- makeCluster(6)
+#' cl <- makeCluster(4)
 #' registerDoParallel(cl)
-#' AOA <- aoa(studyArea,model)
+#' AOA <- aoa(studyArea,model,cl=cl)
 #'
 #' ####
 #' #The AOA can also be calculated without a trained model.
