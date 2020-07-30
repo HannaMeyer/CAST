@@ -1,3 +1,6 @@
+# `CAST` 0.4.3
+* new feature: AOA can run in parallel
+
 # `CAST` 0.4.2
 * new feature:
   * aoa now working with categorical variables

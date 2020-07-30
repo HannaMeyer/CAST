@@ -9,7 +9,7 @@
 #' @param newdata A RasterStack, RasterBrick or data.frame containing the data
 #' the model was meant to make predictions for.
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
-#' @cl A cluster object e.g. created with doParallel
+#' @param cl A cluster object e.g. created with doParallel
 #' @param train A data.frame containing the data used for model training. Only required when no model is given
 #' @param weight A data.frame containing weights for each variable. Only required if no model is given.
 #' @param variables character vector of predictor variables. if "all" then all variables
@@ -75,8 +75,19 @@
 #' spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
 #' spplot(AOA$AOA,col.regions=c("grey","transparent"))
 #'
+#' ####
+#' # Calculating the AOA might be time consuming. Consider running it in parallel:
+#' ####
+#' library(doParallel)
+#' library(parallel)
+#' cl <- makeCluster(6)
+#' registerDoParallel(cl)
+#' AOA <- aoa(studyArea,model)
+#'
+#' ####
 #' #The AOA can also be calculated without a trained model.
 #' #All variables are weighted equally in this case:
+#' ####
 #' AOA <- aoa(studyArea,train=trainDat,variables=variables)
 #' spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
 #' spplot(AOA$AOA,main="Area of Applicability")
