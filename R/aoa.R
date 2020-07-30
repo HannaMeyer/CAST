@@ -9,7 +9,8 @@
 #' @param newdata A RasterStack, RasterBrick or data.frame containing the data
 #' the model was meant to make predictions for.
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
-#' @param train a data.frame containing the data used for model training. Only required when no model is given
+#' @cl A cluster object e.g. created with doParallel
+#' @param train A data.frame containing the data used for model training. Only required when no model is given
 #' @param weight A data.frame containing weights for each variable. Only required if no model is given.
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the model are used or if no model is given then of the train dataset.
@@ -85,6 +86,7 @@
 
 aoa <- function (newdata,
                  model=NA,
+                 cl=NULL,
                  train=NULL,
                  weight=NA,
                  variables="all",
@@ -96,7 +98,7 @@ aoa <- function (newdata,
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
   if(variables=="all"){
     if(!is.na(model)[1]){
-    variables <- names(model$trainingData)[-length(names(model$trainingData))]
+      variables <- names(model$trainingData)[-length(names(model$trainingData))]
     }else{
       variables <- names(train)
     }
@@ -176,7 +178,7 @@ aoa <- function (newdata,
     train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
   }
   newdata <- scale(newdata,center=scaleparam$`scaled:center`,#scaleparam$`scaled:center`
-                      scale=scaleparam$`scaled:scale`)
+                   scale=scaleparam$`scaled:scale`)
 
   if(!inherits(weight, "error")){
     newdata <- sapply(1:ncol(newdata),function(x){newdata[,x]*unlist(weight[x])})
@@ -184,14 +186,24 @@ aoa <- function (newdata,
 
   #### For each pixel caclculate distance to each training point and search for
   #### min distance:
-  mindist <- apply(newdata,1,FUN=function(x){
+  #mindist <- apply(newdata,1,FUN=function(x){
+
+
+  distfun <- function(x){
     if(any(is.na(x))){
       return(NA)
     }else{
       tmp <- FNN::knnx.dist(t(matrix(x)),train,k=1)
       return(min(tmp))
     }
-  })
+  }
+  if (!is.null(cl)){ #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    mindist <- parApply(cl=cl,X=newdata,MARGIN=1,FUN=distfun)
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  }else{
+    mindist <- apply(newdata,1,FUN=distfun)
+  }
+
 
   trainDist <- as.matrix(dist(train))
   # trainDist <- apply(train,1,FUN=function(x){
