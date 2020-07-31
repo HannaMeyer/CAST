@@ -184,6 +184,9 @@ aoa <- function (newdata,
   ##############################################################################
   #### Scale data and weight data if applicable:
   train <- scale(train)
+  if (any(apply(train, 2, FUN=function(x){all(is.na(x))}))){
+    stop("some variables in train seem to have no variance")
+  }
   scaleparam <- attributes(train)
   if(!inherits(weight, "error")){
     train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
@@ -208,13 +211,11 @@ aoa <- function (newdata,
       return(min(tmp))
     }
   }
-  if (!is.null(cl)){ #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  if (!is.null(cl)){
     mindist <- parApply(cl=cl,X=newdata,MARGIN=1,FUN=distfun)
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   }else{
     mindist <- apply(newdata,1,FUN=distfun)
   }
-
 
   trainDist <- as.matrix(dist(train))
   # trainDist <- apply(train,1,FUN=function(x){
