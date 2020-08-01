@@ -9,7 +9,7 @@
 #' @param newdata A RasterStack, RasterBrick or data.frame containing the data
 #' the model was meant to make predictions for.
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
-#' @param cl A cluster object e.g. created with doParallel
+#' @param cl A cluster object e.g. created with doParallel. Should only be used if newdata is large.
 #' @param train A data.frame containing the data used for model training. Only required when no model is given
 #' @param weight A data.frame containing weights for each variable. Only required if no model is given.
 #' @param variables character vector of predictor variables. if "all" then all variables
