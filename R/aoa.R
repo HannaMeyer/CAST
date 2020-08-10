@@ -95,14 +95,14 @@
 #' @export aoa
 #' @aliases aoa
 
-aoa <- function (newdata,
+aoa <- function(newdata,
                  model=NA,
                  cl=NULL,
                  train=NULL,
                  weight=NA,
                  variables="all",
                  thres=0.95,
-                 folds=NULL){
+                 folds=NULL) {
 
   ### if not specified take all variables from train dataset as default:
   if(is.null(train)){train <- model$trainingData}
@@ -114,12 +114,17 @@ aoa <- function (newdata,
       variables <- names(train)
     }
   }
+  as_stars <- FALSE
+  if (inherits(newdata, "stars")) {
+    if (!requireNamespace("stars", quietly = TRUE))
+      stop("package stars required: install that first")
+    newdata = as(newdata, "Raster")
+    as_stars <- TRUE
+  }
   #### Prepare output as either as RasterLayer or vector:
   out <- NA
-  if (class(newdata)=="RasterStack"|class(newdata)=="RasterBrick"|
-      class(newdata)=="RasterLayer"){
+  if (inherits(newdata, "Raster"))
     out <- newdata[[1]]
-  }
 
   #### Extract weights from trained model:
   weight <- tryCatch(if(model$modelType=="Classification"){
@@ -136,8 +141,7 @@ aoa <- function (newdata,
   }
 
   #### order data:
-  if (class(newdata)=="RasterStack"|class(newdata)=="RasterBrick"|
-      class(newdata)=="RasterLayer"){
+  if (inherits(newdata, "Raster")){
     if (any(is.factor(newdata))){
       newdata[[which(is.factor(newdata))]] <- raster::deratify(newdata[[which(is.factor(newdata))]],complete = TRUE)
     }
@@ -262,13 +266,15 @@ aoa <- function (newdata,
   thres <- quantile(trainDist_min/trainDist_avrgmean,probs = thres,na.rm=TRUE)
 
   #### Create Mask for AOA and return statistics
-  if (class(out)=="RasterLayer"){
+  if (inherits(out, "RasterLayer")){
     raster::values(out) <- mindist
     masked_result <- out
     raster::values(masked_result) <- 1
     masked_result[out>thres] <- 0
     masked_result <- raster::mask(masked_result,out)
     out <- raster::stack(out,masked_result)
+    if (as_stars)
+      out <- split(stars::st_as_stars(out), "band")
   }else{
     out <- mindist
     masked_result <- rep(1,length(out))
