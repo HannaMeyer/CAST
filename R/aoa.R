@@ -28,7 +28,6 @@
 #' To calculate the DI in the training data, the minimum distance to an other training point
 #' (if applicable: not located in the same CV fold) is considered.
 #' See Meyer and Pebesma (2020) for the full documentation of the methodology.
-#' @note Note extensively tested with categorical predictors yet!
 #' @return A RasterStack or data.frame with the DI and AOA. AOA has values 0 (outside AOA) and 1 (inside AOA).
 #' @author
 #' Hanna Meyer
@@ -70,7 +69,7 @@
 #'
 #' #...then calculate the AOA of the trained model for the study area:
 #' AOA <- aoa(studyArea,model)
-#' spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
+#' spplot(AOA$DI, col.regions=viridis(100),main="Dissimilarity Index")
 #' #plot predictions for the AOA only:
 #' spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
 #' spplot(AOA$AOA,col.regions=c("grey","transparent"))
@@ -89,25 +88,25 @@
 #' #All variables are weighted equally in this case:
 #' ####
 #' AOA <- aoa(studyArea,train=trainDat,variables=variables)
-#' spplot(AOA$DI, col.regions=viridis(100),main="Applicability Index")
+#' spplot(AOA$DI, col.regions=viridis(100),main="Dissimilarity Index")
 #' spplot(AOA$AOA,main="Area of Applicability")
 #' }
 #' @export aoa
 #' @aliases aoa
 
 aoa <- function(newdata,
-                 model=NA,
-                 cl=NULL,
-                 train=NULL,
-                 weight=NA,
-                 variables="all",
-                 thres=0.95,
-                 folds=NULL) {
+                model=NA,
+                cl=NULL,
+                train=NULL,
+                weight=NA,
+                variables="all",
+                thres=0.95,
+                folds=NULL) {
 
   ### if not specified take all variables from train dataset as default:
   if(is.null(train)){train <- model$trainingData}
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
-  if(variables=="all"){
+  if(length(variables)==1&&variables=="all"){
     if(!is.na(model)[1]){
       variables <- names(model$trainingData)[-length(names(model$trainingData))]
     }else{
@@ -204,8 +203,6 @@ aoa <- function(newdata,
 
   #### For each pixel caclculate distance to each training point and search for
   #### min distance:
-  #mindist <- apply(newdata,1,FUN=function(x){
-
 
   distfun <- function(x){
     if(any(is.na(x))){
@@ -221,46 +218,44 @@ aoa <- function(newdata,
     mindist <- apply(newdata,1,FUN=distfun)
   }
 
-  trainDist <- as.matrix(dist(train))
-  # trainDist <- apply(train,1,FUN=function(x){
-  # FNN::knnx.dist(t(matrix(x)),train,k=1)})
-
-  diag(trainDist) <- NA
-
-  # If data are highly clustered (repliates) make sure that distance to data from same
-  # cluster are excluded. Only required if no model with CV folds is given:
-  if (!is.null(folds)){
-    for (i in 1:nrow(trainDist)){
-      trainDist[i,folds==folds[i]] <- NA
+  if(!is.null(model)&is.null(folds)){
+    CVfolds <- tryCatch(reshape::melt(model$control$indexOut),
+                        error=function(e) e)
+    if(inherits(CVfolds, "error")){
+      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+    }else{
+      CVfolds <- CVfolds[order(CVfolds$value),]
     }
   }
 
-  # if folds are not manually assigned, CV folds from the model will be used
-  # to derive the threshold on the DI:
-  if(is.null(folds)){
-    CVfolds <- tryCatch(reshape::melt(model$control$indexOut),
-                        error=function(e) e)
-    if(!inherits(CVfolds, "error")){
-      if (nrow(CVfolds)>nrow(trainDist)||nrow(CVfolds)<nrow(trainDist)){
-        message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
-      }else{
-        CVfolds <- CVfolds[order(CVfolds$value),]
-        for (i in 1:nrow(trainDist)){
-          trainDist[i,CVfolds$L1==CVfolds$L1[i]] <- NA
-        }
-      }
-    }else{
-      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+  trainDist_mean <- c()
+  trainDist_min <- c()
+  for (i in 1:nrow(train)){
+    #calculate distance to other training data:
+    trainDist <- FNN::knnx.dist(t(matrix(train[i,])),train,k=1)
+    trainDist[i] <- NA
+
+    # If data are highly clustered (repliates) make sure that distance to data from same
+    # cluster are excluded. Only required if no model with CV folds is given:
+    if (!is.null(folds)){
+      trainDist[folds==folds[i]] <- NA
     }
+
+    # if folds are not manually assigned, CV folds from the model will be used
+    # to derive the threshold on the DI:
+    if(!is.na(model[1])){
+      trainDist[CVfolds$L1==CVfolds$L1[i]] <- NA
+    }
+    # get minimum and mean distance to other training locations:
+    trainDist_mean <- c(trainDist_mean,mean(trainDist,na.rm=T))
+    trainDist_min <- c(trainDist_min,min(trainDist,na.rm=T))
   }
 
   #scale the distance to nearest training point by average distance of the training data
-  trainDist_mean <- apply(trainDist,1,FUN=function(x){mean(x,na.rm=T)})
   trainDist_avrgmean <- mean(trainDist_mean)
   mindist <- mindist/trainDist_avrgmean
 
   # define threshold for AOA:
-  trainDist_min <- apply(trainDist,1,FUN=function(x){min(x,na.rm=T)})
   AOA_train_stats <- quantile(trainDist_min/trainDist_avrgmean,
                               probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1),na.rm = TRUE)
   thres <- quantile(trainDist_min/trainDist_avrgmean,probs = thres,na.rm=TRUE)

@@ -1,5 +1,7 @@
 # `CAST` 0.4.3
 * new feature: AOA can run in parallel
+* bugfix:
+  * aoa will work now with large training sets
 
 # `CAST` 0.4.2
 * new feature:
