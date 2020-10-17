@@ -17,6 +17,7 @@
 #' @param thres numeric vector of probability of DI in training data, with values in [0,1].
 #' @param folds Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 #' Should be used if replicates are present. Only required if no model is given.
+#' @param returnTrainDI A logical: should the DI value of the cross-validated training data be returned as a attribute?
 #' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
 #'
@@ -101,7 +102,8 @@ aoa <- function(newdata,
                 weight=NA,
                 variables="all",
                 thres=0.95,
-                folds=NULL) {
+                folds=NULL,
+                returnTrainDI=FALSE) {
 
   ### if not specified take all variables from train dataset as default:
   if(is.null(train)){train <- model$trainingData}
@@ -256,9 +258,10 @@ aoa <- function(newdata,
   mindist <- mindist/trainDist_avrgmean
 
   # define threshold for AOA:
-  AOA_train_stats <- quantile(trainDist_min/trainDist_avrgmean,
+  TrainDI <- trainDist_min/trainDist_avrgmean
+  AOA_train_stats <- quantile(TrainDI,
                               probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1),na.rm = TRUE)
-  thres <- quantile(trainDist_min/trainDist_avrgmean,probs = thres,na.rm=TRUE)
+  thres <- quantile(TrainDI,probs = thres,na.rm=TRUE)
 
   #### Create Mask for AOA and return statistics
   if (inherits(out, "RasterLayer")){
@@ -280,5 +283,8 @@ aoa <- function(newdata,
   attributes(out)$aoa_stats <- list("Mean_train" = trainDist_avrgmean,
                                     "threshold_stats" = AOA_train_stats,
                                     "threshold" = thres)
+  if(returnTrainDI){
+    attributes(out)$TrainDI <- TrainDI
+  }
   return(out)
 }

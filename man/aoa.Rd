@@ -12,7 +12,8 @@ aoa(
   weight = NA,
   variables = "all",
   thres = 0.95,
-  folds = NULL
+  folds = NULL,
+  returnTrainDI = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ of the model are used or if no model is given then of the train dataset.}
 
 \item{folds}{Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 Should be used if replicates are present. Only required if no model is given.}
+
+\item{returnTrainDI}{A logical: should the DI value of the cross-validated training data be returned as a attribute?}
 }
 \value{
 A RasterStack or data.frame with the DI and AOA. AOA has values 0 (outside AOA) and 1 (inside AOA).
