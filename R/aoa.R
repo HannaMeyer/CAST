@@ -64,7 +64,7 @@
 #' set.seed(100)
 #' variables <- c("DEM","NDRE.Sd","TWI")
 #' model <- train(trainDat[,which(names(trainDat)%in%variables)],
-#' trainDat$VW,method="rf",importance=TRUE,tuneLength=1,trControl=trainControl(method="cv",number=5))
+#' trainDat$VW,method="rf",importance=TRUE,tuneLength=1,trControl=trainControl(method="cv",number=5,savePredictions=T))
 #' print(model) #note that this is a quite poor prediction model
 #' prediction <- predict(studyArea,model)
 #' plot(varImp(model,scale=FALSE))
@@ -104,7 +104,7 @@ aoa <- function(newdata,
                 variables="all",
                 thres=NULL,
                 folds=NULL,
-                returnTrainDI=FALSE) {
+                returnTrainDI=TRUE) {
 
   ### if not specified take all variables from train dataset as default:
   if(is.null(train)){train <- model$trainingData}
