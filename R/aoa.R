@@ -284,7 +284,8 @@ aoa <- function(newdata,
                                     "threshold_stats" = AOA_train_stats,
                                     "threshold" = thres)
   if(returnTrainDI){
-    attributes(out)$TrainDI <- TrainDI
+    attributes(out)$TrainDI <- data.frame("DI"=TrainDI,
+    "meanDist"=trainDist_mean)
   }
   return(out)
 }
