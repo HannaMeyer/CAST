@@ -11,7 +11,7 @@ aoa(
   train = NULL,
   weight = NA,
   variables = "all",
-  thres = 0.95,
+  thres = NULL,
   folds = NULL,
   returnTrainDI = FALSE
 )
@@ -31,7 +31,8 @@ the model was meant to make predictions for.}
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the model are used or if no model is given then of the train dataset.}
 
-\item{thres}{numeric vector of probability of DI in training data, with values in [0,1].}
+\item{thres}{optional. numeric vector of probability of DI in training data, with values in [0,1] used to define the AOA.
+If not specified the DI threshold is 1,5×IQR of the DI of the training data.}
 
 \item{folds}{Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 Should be used if replicates are present. Only required if no model is given.}
