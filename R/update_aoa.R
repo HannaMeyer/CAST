@@ -52,6 +52,7 @@
 #' @aliases update_aoa
 
 update_aoa <- function(AOA,model,proficiency=NULL,showplot=TRUE){
+  ### Get cross-validated predictions from the model:
   preds <- model$pred
   for (i in 1:length(model$bestTune)){
     tunevar <- names(model$bestTune[i])
@@ -59,12 +60,14 @@ update_aoa <- function(AOA,model,proficiency=NULL,showplot=TRUE){
   }
   preds <- preds[order(preds$rowIndex),]
 
+  ### Estimate the error~DI relationship:
   if(is.null(preds)){message("no cross-predictions can be retrieved from the model. Train with savePredictions=TRUE")}
   absError <- abs(preds$pred-preds$obs)
   th_orig <- attributes(AOA)$aoa_stats$threshold
   TrainDI <- attributes(AOA)$TrainDI$DI
   errormodel <- lm(absError~TrainDI)
 
+  ### Get the threshold for the proficiency value:
   if(is.null(proficiency)){
     proficiency <-  predict(errormodel,data.frame("TrainDI"=th_orig))
   }
@@ -73,25 +76,29 @@ update_aoa <- function(AOA,model,proficiency=NULL,showplot=TRUE){
     AOAthres <- 0
     message(paste0("Warning: This proficiency cannot be reached. Best proficiency is ",
                    predict(errormodel,data.frame("TrainDI"=AOAthres))," at a DI-threshold of ",AOAthres))
-    }
+  }
+
+  ### Update the AOA
   AOA$AOA[AOA$DI>AOAthres] <- 0
   AOA$AOA[AOA$DI<=AOAthres] <- 1
   attributes(AOA)$aoa_stats$threshold <- AOAthres
 
+  ### Check if the new threshold is based on extrapolation:
   if(AOAthres>max(TrainDI)){message("Warning: new threshold > maximum DI of the training data. Assumptions about the threshold are made based on extrapolation.")}
- dat <- data.frame(TrainDI,absError)
+  dat <- data.frame(TrainDI,absError)
 
- if(showplot){
-  plt <- ggplot(dat, aes(x = TrainDI, y = absError))+geom_point(aes(TrainDI,absError,colour="Training data"))+
-    scale_color_manual(name="",values = c("Training data" = 'black'))+
-    xlab("DI")+ylab("absolute error")+
-    xlim(0, max(TrainDI,AOAthres,na.rm=T))+
-    stat_smooth(method="lm", fullrange=TRUE)+
-    geom_vline(aes(xintercept=th_orig,linetype="original threshold"),col="red")+
-    geom_vline(aes(xintercept=AOAthres,linetype="new threshold"),col="red")+
-    scale_linetype_manual(name="",values=c("original threshold"="dashed",
-                                           "new threshold"="solid"))
-  suppressMessages(print(plt))
+  ### Plot the error~DI relationship and the new threshold
+  if(showplot){
+    plt <- ggplot(dat, aes(x = TrainDI, y = absError))+geom_point(aes(TrainDI,absError,colour="Training data"))+
+      scale_color_manual(name="",values = c("Training data" = 'black'))+
+      xlab("DI")+ylab("absolute error")+
+      xlim(0, max(TrainDI,AOAthres,na.rm=T))+
+      stat_smooth(method="lm", fullrange=TRUE)+
+      geom_vline(aes(xintercept=th_orig,linetype="original threshold"),col="red")+
+      geom_vline(aes(xintercept=AOAthres,linetype="new threshold"),col="red")+
+      scale_linetype_manual(name="",values=c("original threshold"="dashed",
+                                             "new threshold"="solid"))
+    suppressMessages(print(plt))
   }
   return(AOA)
 }

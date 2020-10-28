@@ -1,5 +1,7 @@
 # `CAST` 0.4.3
-* new feature: AOA can run in parallel
+* new feature: 
+  * AOA can run in parallel
+  * estimate teh AOA based on user-defined proficiency
 * bugfix:
   * aoa will work now with large training sets
 * modifications:
