@@ -87,13 +87,11 @@ update_aoa <- function(AOA,model,proficiency=NULL,showplot=TRUE){
     xlab("DI")+ylab("absolute error")+
     xlim(0, max(TrainDI,AOAthres,na.rm=T))+
     stat_smooth(method="lm", fullrange=TRUE)+
-    geom_abline(intercept = coefficients(summary(errormodel))[1],
-                slope =coefficients(summary(errormodel))[2],col="blue")+
     geom_vline(aes(xintercept=th_orig,linetype="original threshold"),col="red")+
     geom_vline(aes(xintercept=AOAthres,linetype="new threshold"),col="red")+
     scale_linetype_manual(name="",values=c("original threshold"="dashed",
                                            "new threshold"="solid"))
-    print(plt)
+  suppressMessages(print(plt))
   }
   return(AOA)
 }
