@@ -111,7 +111,7 @@ aoa <- function(newdata,
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
   if(length(variables)==1&&variables=="all"){
     if(!is.na(model)[1]){
-      variables <- names(model$trainingData)[-length(names(model$trainingData))]
+      variables <- names(model$trainingData)[-which(names(model$trainingData)==".outcome")]
     }else{
       variables <- names(train)
     }
