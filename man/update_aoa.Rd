@@ -4,19 +4,30 @@
 \alias{update_aoa}
 \title{Update the AOA based on a user-defined proficiency value}
 \usage{
-update_aoa(AOA, model, proficiency = NULL, showplot = TRUE)
+update_aoa(
+  AOA,
+  model,
+  testdata = NULL,
+  response = NULL,
+  proficiency = NULL,
+  showplot = TRUE
+)
 }
 \arguments{
 \item{AOA}{the result of ?aoa}
 
 \item{model}{the model used to get the AOA}
 
+\item{response}{character. Name of the response variable used in the model and present in testdat. Only required when testdat are given.}
+
 \item{proficiency}{numeric. error accepted for the AOA. To first get an overview leave it to NA and select it after inspecting the plot}
 
 \item{showplot}{Logical. Show visualization oder not?}
+
+\item{testdat}{Optional. Data frame containing a new set of predictor and response values#}
 }
 \value{
-rasterStack which contains the original DI and the updated AOA
+rasterStack which contains the original DI and the updated AOA. The new threshold is stored in the attributes.
 }
 \description{
 Update the AOA based on a user-defined proficiency value
@@ -46,11 +57,12 @@ dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOU
 pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 pts$ID <- 1:nrow(pts)
 studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
-trainDat <- extract(studyArea,pts,df=TRUE)
-trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
+dat <- extract(studyArea,pts,df=TRUE)
+dat <- merge(dat,pts,by.x="ID",by.y="ID")
+trainDat <- dat[dat$ID\%in\%1:25,]
 
 # train a model:
-variables <- c("DEM","cdayt","TWI")
+variables <- c("DEM","NDRE.Sd","TWI")
 set.seed(100)
 model <- train(trainDat[,which(names(trainDat)\%in\%variables)],
   trainDat$VW,method="rf",importance=TRUE,tuneLength=1,
@@ -61,6 +73,12 @@ AOA <- aoa(studyArea,model)
 
 AOA_new <- update_aoa(AOA,model,proficiency=0.06)
 spplot(stack(AOA$AOA,AOA_new$AOA),main=c("original","new"))
+
+
+####example with new testdata:
+testdat <- dat[dat$ID\%in\%25:30,]
+AOA_new <- update_aoa(AOA,model,testdata=testdat,response="VW",proficiency=0.06)
+
 }
 }
 \seealso{
