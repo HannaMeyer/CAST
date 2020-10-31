@@ -3,14 +3,16 @@
 #' @param AOA the result of ?aoa
 #' @param model the model used to get the AOA
 #' @param proficiency numeric. error accepted for the AOA. To first get an overview leave it to NA and select it after inspecting the plot
-#' @param testdat Optional. Data frame containing a new set of predictor and response values#
-#' @param response character. Name of the response variable used in the model and present in testdat. Only required when testdat are given.
+#' @param calibration Optional. Data frame containing a new set of predictor and response values#
+#' @param response character. Name of the response variable used in the model and present in the calibration data frame. Only required when calibration data are given.
 #' @param showplot Logical. Show visualization oder not?
 #' @details The AOA is the area to which the model can be applied (because it has seen it) and where the reliability of predictions is expected to be comparable to the cross-validation error of the model.
 #' However, it might be desireable to limit predictions to an area with a user-defined error.
 #' This function allows for this based on the relationship of the DI an the absolute prediction error derived from cross-validation during model training.
 #' Based on the selected proficiency, the new DI-threshold is derived from the linear model between the DI and the error.
 #' Note that this is only recommended for proficiency values that lead to DI-thresholds smaller than the maximum DI of the training data.
+#'
+#' The error-DI relationship can also be estimated by providing new
 #' @return rasterStack which contains the original DI and the updated AOA. The new threshold is stored in the attributes.
 #' @author
 #' Hanna Meyer
@@ -51,16 +53,16 @@
 #' spplot(stack(AOA$AOA,AOA_new$AOA),main=c("original","new"))
 #'
 #'
-#' ####example with new testdata:
+#' ####example with new calibration data:
 #' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
-#' testdat <- dat[sample(1:nrow(dat),100),]
-#' AOA_new <- update_aoa(AOA,model,proficiency=0.06,testdata=testdat,response="VW")
+#' calibration <- dat[sample(1:nrow(dat),100),]
+#' AOA_new <- update_aoa(AOA,model,proficiency=0.06,calibration=calibration,response="VW")
 #'
 #' }
 #' @export update_aoa
 #' @aliases update_aoa
 
-update_aoa <- function(AOA,model,testdata=NULL,response=NULL,proficiency=NULL,showplot=TRUE){
+update_aoa <- function(AOA,model,calibration=NULL,response=NULL,proficiency=NULL,showplot=TRUE){
   ### Get cross-validated predictions from the model:
   preds <- model$pred
   for (i in 1:length(model$bestTune)){
@@ -70,14 +72,14 @@ update_aoa <- function(AOA,model,testdata=NULL,response=NULL,proficiency=NULL,sh
   preds <- preds[order(preds$rowIndex),]
 
   ### Estimate the error~DI relationship:
-  if(is.null(preds)&is.null(testdata)){
-    stop("no cross-predictions can be retrieved from the model. Train with savePredictions=TRUE or provide testdata")
+  if(is.null(preds)&is.null(calibration)){
+    stop("no cross-predictions can be retrieved from the model. Train with savePredictions=TRUE or provide calibration data")
   }
-  if(!is.null(testdata)){
-    predictions <- predict(model,testdata)
-    testDI <- aoa(testdata,model)$DI
+  if(!is.null(calibration)){
+    predictions <- predict(model,calibration)
+    testDI <- aoa(calibration,model)$DI
     preds <- data.frame("pred"=predictions,
-                       "obs"=testdata[,response])
+                       "obs"=calibration[,response])
 
 
   }  else{

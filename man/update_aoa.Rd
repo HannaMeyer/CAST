@@ -7,7 +7,7 @@
 update_aoa(
   AOA,
   model,
-  testdata = NULL,
+  calibration = NULL,
   response = NULL,
   proficiency = NULL,
   showplot = TRUE
@@ -18,13 +18,13 @@ update_aoa(
 
 \item{model}{the model used to get the AOA}
 
-\item{response}{character. Name of the response variable used in the model and present in testdat. Only required when testdat are given.}
+\item{calibration}{Optional. Data frame containing a new set of predictor and response values#}
+
+\item{response}{character. Name of the response variable used in the model and present in the calibration data frame. Only required when calibration data are given.}
 
 \item{proficiency}{numeric. error accepted for the AOA. To first get an overview leave it to NA and select it after inspecting the plot}
 
 \item{showplot}{Logical. Show visualization oder not?}
-
-\item{testdat}{Optional. Data frame containing a new set of predictor and response values#}
 }
 \value{
 rasterStack which contains the original DI and the updated AOA. The new threshold is stored in the attributes.
@@ -38,6 +38,8 @@ However, it might be desireable to limit predictions to an area with a user-defi
 This function allows for this based on the relationship of the DI an the absolute prediction error derived from cross-validation during model training.
 Based on the selected proficiency, the new DI-threshold is derived from the linear model between the DI and the error.
 Note that this is only recommended for proficiency values that lead to DI-thresholds smaller than the maximum DI of the training data.
+
+The error-DI relationship can also be estimated by providing new
 }
 \examples{
 \dontrun{
@@ -58,8 +60,7 @@ pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 pts$ID <- 1:nrow(pts)
 studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
 dat <- extract(studyArea,pts,df=TRUE)
-dat <- merge(dat,pts,by.x="ID",by.y="ID")
-trainDat <- dat[dat$ID\%in\%1:25,]
+trainDat <- merge(dat,pts,by.x="ID",by.y="ID")
 
 # train a model:
 variables <- c("DEM","NDRE.Sd","TWI")
@@ -75,9 +76,10 @@ AOA_new <- update_aoa(AOA,model,proficiency=0.06)
 spplot(stack(AOA$AOA,AOA_new$AOA),main=c("original","new"))
 
 
-####example with new testdata:
-testdat <- dat[dat$ID\%in\%25:30,]
-AOA_new <- update_aoa(AOA,model,testdata=testdat,response="VW",proficiency=0.06)
+####example with new calibration data:
+dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
+calibration <- dat[sample(1:nrow(dat),100),]
+AOA_new <- update_aoa(AOA,model,proficiency=0.06,calibration=calibration,response="VW")
 
 }
 }
