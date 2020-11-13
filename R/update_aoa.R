@@ -112,7 +112,6 @@ update_aoa <- function(AOA,model,calibration=NULL,response=NULL,proficiency=NULL
   dat <- data.frame(testDI,absError)
 
   ### Plot the error~DI relationship and the new threshold
-  if(showplot){
     plt <- ggplot(dat, aes(x = testDI, y = absError))+geom_point(aes(testDI,absError,colour="Training data"))+
       scale_color_manual(name="",values = c("Training data" = 'black'))+
       xlab("DI")+ylab("absolute error")+
@@ -121,9 +120,12 @@ update_aoa <- function(AOA,model,calibration=NULL,response=NULL,proficiency=NULL
       geom_vline(aes(xintercept=th_orig,linetype="original threshold"),col="red")+
       geom_vline(aes(xintercept=AOAthres,linetype="new threshold"),col="red")+
       scale_linetype_manual(name="",values=c("original threshold"="dashed",
-                                             "new threshold"="solid"))
+                                             "new threshold"="solid"))+
+      theme_bw()
+    if(showplot){
     suppressMessages(print(plt))
   }
+  attributes(AOA)$update_aoa <- plt
   return(AOA)
 }
 
