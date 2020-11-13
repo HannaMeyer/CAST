@@ -5,7 +5,7 @@
 * bugfix:
   * aoa will work now with large training sets
 * modifications:
-  * default threshold of AOA
+  * default threshold of AOA changed
 
 # `CAST` 0.4.2
 * new feature:
