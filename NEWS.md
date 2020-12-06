@@ -1,7 +1,7 @@
 # `CAST` 0.4.3
 * new feature: 
   * AOA can run in parallel
-  * estimate teh AOA based on user-defined proficiency
+  * calibration of the AOA (calibrate_aoa)
 * bugfix:
   * aoa will work now with large training sets
 * modifications:

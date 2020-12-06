@@ -14,8 +14,6 @@
 #' @param weight A data.frame containing weights for each variable. Only required if no model is given.
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the model are used or if no model is given then of the train dataset.
-#' @param thres optional. numeric vector of probability of DI in training data, with values in [0,1] used to define the AOA.
-#' If not specified the DI threshold is 1,5×IQR of the DI of the training data.
 #' @param folds Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 #' Should be used if replicates are present. Only required if no model is given.
 #' @param returnTrainDI A logical: should the DI value of the cross-validated training data be returned as a attribute?
@@ -29,6 +27,7 @@
 #' To get the AOA, a threshold to the DI is applied based on the DI in the training data.
 #' To calculate the DI in the training data, the minimum distance to an other training point
 #' (if applicable: not located in the same CV fold) is considered.
+#' The DI threshold is 1,5×IQR of the DI of the training data.
 #' See Meyer and Pebesma (2020) for the full documentation of the methodology.
 #' @return A RasterStack or data.frame with the DI and AOA. AOA has values 0 (outside AOA) and 1 (inside AOA).
 #' @author
@@ -102,7 +101,6 @@ aoa <- function(newdata,
                 train=NULL,
                 weight=NA,
                 variables="all",
-                thres=NULL,
                 folds=NULL,
                 returnTrainDI=TRUE) {
 
@@ -256,37 +254,51 @@ aoa <- function(newdata,
 
   #scale the distance to nearest training point by average distance of the training data
   trainDist_avrgmean <- mean(trainDist_mean)
-  mindist <- mindist/trainDist_avrgmean
+  DI_out <- mindist/trainDist_avrgmean
 
   # define threshold for AOA:
   TrainDI <- trainDist_min/trainDist_avrgmean
   AOA_train_stats <- quantile(TrainDI,
                               probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1),na.rm = TRUE)
-  if(is.null(thres)){
+#  if(is.null(thres)){
     thres <- boxplot.stats(TrainDI)$stats[5]
-  }else{
-    thres <- quantile(TrainDI,probs = thres,na.rm=TRUE)
-  }
+    lower_thres <- boxplot.stats(TrainDI)$stats[1]
+#  }else{
+#    thres <- quantile(TrainDI,probs = thres,na.rm=TRUE)
+#  }
   #### Create Mask for AOA and return statistics
   if (inherits(out, "RasterLayer")){
-    raster::values(out) <- mindist
-    masked_result <- out
-    raster::values(masked_result) <- 1
-    masked_result[out>thres] <- 0
-    masked_result <- raster::mask(masked_result,out)
-    out <- raster::stack(out,masked_result)
+    raster::values(out) <- DI_out
+
+    AOA <- out
+    raster::values(AOA) <- 1
+    AOA[out>thres] <- 0
+    AOA <- raster::mask(AOA,out)
+
+    CVA <- out
+    raster::values(CVA) <- 1
+    CVA[out>thres|out<lower_thres] <- 0
+    CVA <- raster::mask(CVA,out)
+
+
+    out <- raster::stack(out,AOA,CVA)
     if (as_stars)
       out <- split(stars::st_as_stars(out), "band")
   }else{
-    out <- mindist
-    masked_result <- rep(1,length(out))
-    masked_result[out>thres] <- 0
-    out <- list(out,masked_result)
+    out <- DI_out
+    AOA <- rep(1,length(out))
+    AOA[out>thres] <- 0
+
+    CVA <- rep(1,length(out))
+    CVA[out>thres|out<lower_thres] <- 0
+
+    out <- list(out,AOA,CVA)
   }
-  names(out) <- c("DI","AOA")
+  names(out) <- c("DI","AOA","CVA")
   attributes(out)$aoa_stats <- list("Mean_train" = trainDist_avrgmean,
                                     "threshold_stats" = AOA_train_stats,
-                                    "threshold" = thres)
+                                    "threshold" = thres,
+                                    "lower_threshold"=lower_thres)
   if(returnTrainDI){
     attributes(out)$TrainDI <- data.frame("DI"=TrainDI,
     "meanDist"=trainDist_mean)
