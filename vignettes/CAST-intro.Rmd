@@ -13,7 +13,7 @@ vignette: >
 ---
 
 ```{r setup, echo=FALSE}
-knitr::opts_chunk$set(fig.width = 8.83)
+knitr::opts_chunk$set(fig.width = 8.83,cache = TRUE)
 user_hanna <- Sys.getenv("USER") %in% c("hanna")
 ```
 
@@ -72,9 +72,9 @@ plot(data_sp,axes=T,col="black")
 
 ```{r, message = FALSE, warning=FALSE, eval=user_hanna}
 #...or plot the data with mapview (recommended!):
-library(mapview)
-mapviewOptions(basemaps = c("Esri.WorldImagery"))
-mapview(data_sp)
+#library(mapview)
+#mapviewOptions(basemaps = c("Esri.WorldImagery"))
+#mapview(data_sp)
 ```
 
 We see that the data are taken at 42 locations (SOURCEID) over the field. The loggers recorded data between 2007 and 2013. The data are given here on a daily basis.
