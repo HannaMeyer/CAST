@@ -1,18 +1,18 @@
 #' Calibrate the AOA based on the relationship between the DI and the prediction error
-#' @description
+#' @description Performance metrics are calculated for moving windows of DI values of cross-validated training data
 #' @param AOA the result of ?aoa
 #' @param model the model used to get the AOA
-#' @param calibration Optional. Data frame containing a new set of predictor and response values.
-#' @param response character. Name of the response variable used in the model and present in the calibration data frame. Only required when calibration data are given.
-#' @param showplot Logical. Show visualization oder not?
+#' @param window.size Numeric. Size of the moving window. See ?zoo::rollapply
+#' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
+#' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
+#' @param maskAOA Logical. Should areas ouside the AOA set to NA?
 #' @details The AOA is the area to which the model can be applied and where the reliability of predictions is expected to be comparable to the cross-validation error of the model.
 #' However, it might be desireable to limit predictions to an area with a user-defined error.
-#' This function allows for this based on the relationship of the DI an the absolute prediction error derived from cross-validation during model training.
-#'
-#' The error-DI relationship can also be estimated by providing new external calibration data points.
-#' In this case the DI is calculated from these data and the error~DI relationship is derived.
+#' This function allows for this based on the relationship of the DI and the prediction error derived from cross-validation during model training.
+#' If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
+#' ranging from three clusters to LOOCV.
 #' If the AOA threshold based on the calibration data is larger than the original AOA threshold, the AOA is updated accordingly.
-#' @return rasterStack which contains the original DI and the AOA (whoch might be updated if new test data indicate this option), as well as the expected error.
+#' @return rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected error based on the relationship. Data used for calibration are stored in the attributes.
 #'
 #' @author
 #' Hanna Meyer
@@ -51,109 +51,124 @@
 # '#...or get the area for a user-defined performance
 #' AOA_new <- calibrate_aoa(AOA,model)
 #' plot(AOA_new$expectedError)
-#'
-#'
-#' ####example with new calibration data:
-#' #...to do
-#'
 #' }
 #' @export calibrate_aoa
 #' @aliases calibrate_aoa
 
-calibrate_aoa <- function(AOA,model,calibration=NULL,response=NULL,showplot=TRUE){
-  ### Get cross-validated predictions from the model:
-  preds <- model$pred
-  for (i in 1:length(model$bestTune)){
-    tunevar <- names(model$bestTune[i])
-    preds <- preds[preds[,tunevar]==model$bestTune[,tunevar],]
+calibrate_aoa <- function(AOA,model, window.size=20, multiCV=FALSE, length.out = 5, maskAOA=TRUE){
+
+  if(multiCV){
+    preds_all <- data.frame()
+    train_predictors <- model$trainingData[,-which(names(model$trainingData)==".outcome")]
+    train_response <- model$trainingData$.outcome
+
+    for (nclst in round(seq(3,nrow(train_predictors),length.out = length.out))){
+      # define clusters in predictor space used for CV:
+      clstrID <- tryCatch({kmeans(train_predictors,nclst)$cluster},
+                          error=function(e)e)
+      if(inherits(clstrID,"error")){next}
+      clstrID <- clstrID
+      folds <- CreateSpacetimeFolds(data.frame("clstrID"=clstrID), spacevar="clstrID",k=nclst)
+
+      # update model call with new CV strategy:
+      mcall <- as.list(model$call)
+      mcall <- mcall[-which(names(mcall)%in%c("form","data","","x","y","","trControl"))]
+      mcall$x <- quote(train_predictors)
+      mcall$y <- quote(train_response)
+      mcall$trControl <- trainControl(method="cv",index=folds$index,savePredictions = TRUE)
+      mcall$tuneGrid <- model$bestTune
+
+      # retrain model and calculate AOA
+      model_new <- do.call(caret::train,mcall)
+      AOA_new <- aoa(train_predictors,model_new)
+
+      # get cross-validated predictions, order them  and use only those located in the AOA
+      preds <- model_new$pred
+      preds <- preds[order(preds$rowIndex),c("pred","obs")]
+      preds_dat_tmp <- data.frame(preds,"DI"=attributes(AOA_new)$TrainDI$DI)
+      preds_dat_tmp <-  preds_dat_tmp[preds_dat_tmp$DI<=attributes(AOA_new)$aoa_stats$threshold,]
+      preds_all <- rbind(preds_all,preds_dat_tmp)
+    }
   }
-  preds <- preds[order(preds$rowIndex),]
+
+
+  ### Get cross-validated predictions from the model:
+  if(!multiCV){
+    # Get cross-validated predictions:
+    preds_all <- model$pred
+    for (i in 1:length(model$bestTune)){
+      tunevar <- names(model$bestTune[i])
+      preds_all <- preds_all[preds_all[,tunevar]==model$bestTune[,tunevar],]
+    }
+    preds_all <- preds_all[order(preds_all$rowIndex),c("pred","obs")]
+    preds_all$DI <- attributes(AOA)$TrainDI$DI
+
+    ## only take predictions from inside the AOA:
+    preds_all <-  preds_all[preds_all$DI<=attributes(AOA)$aoa_stats$threshold,]
+  }
+
 
   ### Estimate the error~DI relationship:
-  if(is.null(preds)&is.null(calibration)){
+  if(is.null(preds_all)){
     stop("no cross-predictions can be retrieved from the model. Train with savePredictions=TRUE or provide calibration data")
   }
-  if(!is.null(calibration)){
-    predictions <- predict(model,calibration)
-    DI <- aoa(calibration,model)$DI
-    preds <- data.frame("pred"=predictions,
-                       "obs"=calibration[,response])
-
-
-  }  else{
-
-    DI <- attributes(AOA)$TrainDI$DI
+  ## use performance metric from the model:
+  evalfunc <- function(pred,obs){
+    eval(parse(text=paste0(tolower(model$metric),"(pred,obs)")))
   }
 
-  error <- abs(preds$pred-preds$obs)
-  #error <- sqrt((preds$pred-preds$obs)^2)
+  # order data according to DI:
+  performance <- preds_all[order(preds_all$DI),]
 
-  errormodel <- lm(error~DI)
+  # calculate performance for moving window:
+  performance$metric <- zoo::rollapply(performance[,1:2], window.size,
+                                FUN=function(x){evalfunc(x[,1],x[,2])},
+                    by.column=F,align = "center",fill=NA)
 
-#  ### Get the threshold for the proficiency value:
-#  if(is.null(proficiency)){
-#    proficiency <-  predict(errormodel,data.frame("DI"=th_orig))
-#  }
-#  AOAthres <- (-coefficients(summary(errormodel))[1]+proficiency)/coefficients(summary(errormodel))[2]
-#  if (AOAthres<0){
-#    AOAthres <- 0
-#    message(paste0("Warning: This proficiency cannot be reached. Best proficiency is ",
-#                   predict(errormodel,data.frame("DI"=AOAthres))," at a DI-threshold of ",AOAthres))
-#  }
+  #####################################
 
-  ### Update the AOA
-#  AOA$AOA[AOA$DI>AOAthres] <- 0
- # AOA$AOA[AOA$DI<=AOAthres] <- 1
-  #attributes(AOA)$aoa_stats$threshold <- AOAthres
+  #errors <-c()
+  #for (i in unique(preds_all$group)){
+  #  errors <- c(errors, evalfunc(preds_all$pred[preds_all$group==i],
+  #                         preds_all$obs[preds_all$group==i]))
 
-  if(!is.null(calibration)){
-    AOAthres <- boxplot.stats(DI)$stats[5]
-  }else{
-    AOAthres <- attributes(AOA)$aoa_stats$threshold
-  }
+  #}
 
-  if(!is.null(calibration)&AOAthres>attributes(AOA)$aoa_stats$threshold){
-    attributes(AOA)$aoa_stats$threshold <- AOAthres
-    AOA$AOA[AOA$DI>AOAthres] <- 0
-    AOA$AOA[AOA$DI<=AOAthres] <- 1
-    message("AOA was updated according to the new training data")
-  }
+ # grouped_res <- data.frame("group"=unique(preds_all$group),"performance"=errors)
+ # min_max <- unlist(strsplit(gsub("(?![,.])[[:punct:]]", "", as.character(grouped_res$group), perl=TRUE), ","))
+ # recl <- data.frame("min"=as.numeric(min_max[seq(1, length(min_max), by=2)]),
+   #                  "max"=as.numeric(min_max[seq(2, length(min_max), by=2)]),
+   #                  "perf"= grouped_res$performance)
+ # recl$DI <- rowMeans(recl[,c("min","max")])
+
+
+  ### Update AOA:
+  if (multiCV){
+  AOA$AOA <- 0
+  AOA$AOA[AOA$DI<=max(performance$DI,na.rm=T)] <- 1
+  AOA$AOA <- mask(AOA$AOA,AOA$DI)
+}
+
+  ### Estimate Error:
+  errormodel <- lm(metric~DI,performance)  ###NONLINEAR!!!!??
+  #errormodel <- smooth.spline(performance$DI,performance$metric)
+  attributes(AOA)$calib$model <- errormodel
+
   AOA$expectedError <- raster::predict(AOA$DI,errormodel)
-  #AOA$expectedError[AOA$AOA==0] <- NA
-
-
-#  if (inherits(AOA$DI, "Raster")){
-#  RMSEv <- predict(AOA$DI,errormodel)
-#  RMSEv <- sqrt(mean(values(RMSEv)^2,na.rm=TRUE))
-#  }else{
-#    RMSEv <- predict(errormodel,AOA$DI)
-#    RMSEv <- sqrt(mean(RMSEv^2,na.rm=TRUE))
-#  }
-
-  ### Check if the new threshold is based on extrapolation:
- # if(AOAthres>max(DI)){message("Warning: new threshold > maximum DI of the training data. Assumptions about the threshold are made based on extrapolation.")}
-  dat <- data.frame(DI,error)
-
-  ### Plot the error~DI relationship and the new threshold
-    plt <- ggplot(dat, aes(x = DI, y = error))+geom_point(aes(DI,error,colour="Training data"))+
-      scale_color_manual(name="",values = c("Training data" = 'black'))+
-      xlab("DI")+ylab("absolute error")+
-      xlim(0, max(DI,AOAthres,na.rm=T))+
-      stat_smooth(method="lm", fullrange=TRUE)+
-      geom_vline(aes(xintercept=attributes(AOA)$aoa_stats$threshold,
-                     linetype="AOA threshold"),col="red")+
-     # geom_vline(aes(xintercept=AOAthres,linetype="new threshold"),col="red")+
-      #scale_linetype_manual(name="",values=c("original threshold"="dashed",
-      #                                       "new threshold"="solid"))+
-      scale_linetype_manual(name="",values=c("AOA threshold"="dashed"))+
-      theme_bw()
-    if(showplot){
-    suppressMessages(print(plt))
+  if(maskAOA){
+    AOA$expectedError <-  raster::mask(AOA$expectedError,AOA$AOA,maskvalue=0)
   }
-  attributes(AOA)$calibrate_aoa <- plt
-#  attributes(AOA)$expectedRMSE <- RMSEv
-#  message(paste0("Using the selected proficiency value will lead to an expected RMSE within the AOA of ",
- #                RMSEv))
+
+  ### Plot result:
+
+  plot(performance$DI,performance$metric,
+       xlab="DI",ylab=model$metric,type="l")
+  lines(seq(0,max(performance$DI),0.01),
+        predict(errormodel,data.frame("DI"=seq(0,max(performance$DI),0.01))),
+        col="red")
+
+  names(performance)[which(names(performance)=="metric")] <- model$metric
+  attributes(AOA)$calib$group_stats <- performance
   return(AOA)
 }
 

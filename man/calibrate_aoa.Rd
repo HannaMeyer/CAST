@@ -4,32 +4,40 @@
 \alias{calibrate_aoa}
 \title{Calibrate the AOA based on the relationship between the DI and the prediction error}
 \usage{
-calibrate_aoa(AOA, model, calibration = NULL, response = NULL, showplot = TRUE)
+calibrate_aoa(
+  AOA,
+  model,
+  window.size = 20,
+  multiCV = FALSE,
+  length.out = 5,
+  maskAOA = TRUE
+)
 }
 \arguments{
 \item{AOA}{the result of ?aoa}
 
 \item{model}{the model used to get the AOA}
 
-\item{calibration}{Optional. Data frame containing a new set of predictor and response values.}
+\item{window.size}{Numeric. Size of the moving window. See ?zoo::rollapply}
 
-\item{response}{character. Name of the response variable used in the model and present in the calibration data frame. Only required when calibration data are given.}
+\item{multiCV}{Logical. Re-run model fitting and validation with different CV strategies. See details.}
 
-\item{showplot}{Logical. Show visualization oder not?}
+\item{length.out}{Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.}
+
+\item{maskAOA}{Logical. Should areas ouside the AOA set to NA?}
 }
 \value{
-rasterStack which contains the original DI and the AOA (whoch might be updated if new test data indicate this option), as well as the expected error.
+rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected error based on the relationship. Data used for calibration are stored in the attributes.
 }
 \description{
-Calibrate the AOA based on the relationship between the DI and the prediction error
+Performance metrics are calculated for moving windows of DI values of cross-validated training data
 }
 \details{
 The AOA is the area to which the model can be applied and where the reliability of predictions is expected to be comparable to the cross-validation error of the model.
 However, it might be desireable to limit predictions to an area with a user-defined error.
-This function allows for this based on the relationship of the DI an the absolute prediction error derived from cross-validation during model training.
-
-The error-DI relationship can also be estimated by providing new external calibration data points.
-In this case the DI is calculated from these data and the error~DI relationship is derived.
+This function allows for this based on the relationship of the DI and the prediction error derived from cross-validation during model training.
+If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
+ranging from three clusters to LOOCV.
 If the AOA threshold based on the calibration data is larger than the original AOA threshold, the AOA is updated accordingly.
 }
 \examples{
@@ -65,11 +73,6 @@ AOA <- aoa(studyArea,model)
 
 AOA_new <- calibrate_aoa(AOA,model)
 plot(AOA_new$expectedError)
-
-
-####example with new calibration data:
-#...to do
-
 }
 }
 \seealso{
