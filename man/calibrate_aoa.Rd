@@ -10,7 +10,8 @@ calibrate_aoa(
   window.size = 20,
   multiCV = FALSE,
   length.out = 5,
-  maskAOA = TRUE
+  maskAOA = TRUE,
+  showPlot = TRUE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ calibrate_aoa(
 \item{length.out}{Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.}
 
 \item{maskAOA}{Logical. Should areas ouside the AOA set to NA?}
+
+\item{showPlot}{Logical}
 }
 \value{
 rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected error based on the relationship. Data used for calibration are stored in the attributes.

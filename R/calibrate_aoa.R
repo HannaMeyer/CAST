@@ -6,6 +6,7 @@
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
 #' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
 #' @param maskAOA Logical. Should areas ouside the AOA set to NA?
+#' @param showPlot Logical
 #' @details The AOA is the area to which the model can be applied and where the reliability of predictions is expected to be comparable to the cross-validation error of the model.
 #' However, it might be desireable to limit predictions to an area with a user-defined error.
 #' This function allows for this based on the relationship of the DI and the prediction error derived from cross-validation during model training.
@@ -55,7 +56,7 @@
 #' @export calibrate_aoa
 #' @aliases calibrate_aoa
 
-calibrate_aoa <- function(AOA,model, window.size=20, multiCV=FALSE, length.out = 5, maskAOA=TRUE){
+calibrate_aoa <- function(AOA,model, window.size=20, multiCV=FALSE, length.out = 5, maskAOA=TRUE, showPlot=TRUE){
 
   if(multiCV){
     preds_all <- data.frame()
