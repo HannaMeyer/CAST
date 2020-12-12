@@ -126,6 +126,8 @@ calibrate_aoa <- function(AOA,model, window.size=20, multiCV=FALSE, length.out =
                                 FUN=function(x){evalfunc(x[,1],x[,2])},
                     by.column=F,align = "center",fill=NA)
 
+  performance$ll <- data.table::shift(performance$DI,window.size/2)
+  performance$ul <- data.table::shift(performance$DI,-round(window.size/2),0)
   #####################################
 
   #errors <-c()
@@ -151,12 +153,34 @@ calibrate_aoa <- function(AOA,model, window.size=20, multiCV=FALSE, length.out =
 }
 
   ### Estimate Error:
-  errormodel <- lm(metric~DI,performance)  ###NONLINEAR!!!!??
-  #errormodel <- smooth.spline(performance$DI,performance$metric)
+#  f <- function(y0,DI, a, b) {y0 + a * exp(b * DI)}
+#  errormodel <-  tryCatch(nls(metric~f(y0,DI,a,b),data = performance,
+#                              start = list(y0=0, a = 1, b = 1)),
+#                          error = function(e)e)
+  # if it's not exponential use a linear model:
+#  if(inherits(errormodel,"error")){
+#    errormodel <- lm(metric~DI,performance)
+#  }
+
+  #errormodel <- lm(metric ~ DI + I(DI^2), data = performance)
+
+  errormodel <- scam::scam(metric~s(DI, k=5, bs="mpi", m=2),
+                    data=performance,
+                    family=gaussian(link="identity"))
+
+
+
   attributes(AOA)$calib$model <- errormodel
 
-  AOA$expectedError <- raster::predict(AOA$DI,errormodel)
-  if(maskAOA){
+  DI_pred <- AOA$DI
+
+  # predict and make sure it's not going beyond min observed values
+  values(DI_pred)[values(AOA$DI)<min(performance$DI,na.rm=TRUE)] <- min(performance$DI,na.rm=TRUE)
+  AOA$expectedError <- raster::predict(DI_pred,errormodel)
+
+
+
+    if(maskAOA){
     AOA$expectedError <-  raster::mask(AOA$expectedError,AOA$AOA,maskvalue=0)
   }
 
