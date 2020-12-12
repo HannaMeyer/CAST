@@ -229,7 +229,17 @@ aoa <- function(newdata,
     }
   }
 
-  trainDist_mean <- c()
+  # calculate average mean distance between training data
+
+  trainDist_avrg <-  apply(train,1,FUN=function(x){
+    mean(FNN::knnx.dist(train, t(data.frame(x)),
+                   k=nrow(train))[-1],na.rm=TRUE)
+
+  })
+  trainDist_avrgmean <- mean(trainDist_avrg,na.rm=TRUE)
+
+
+ # trainDist_mean <- c()
   trainDist_min <- c()
   for (i in 1:nrow(train)){
     #calculate distance to other training data:
@@ -248,12 +258,12 @@ aoa <- function(newdata,
       trainDist[CVfolds$L1==CVfolds$L1[i]] <- NA
     }
     # get minimum and mean distance to other training locations:
-    trainDist_mean <- c(trainDist_mean,mean(trainDist,na.rm=T))
+   # trainDist_mean <- c(trainDist_mean,mean(trainDist,na.rm=T))
     trainDist_min <- c(trainDist_min,min(trainDist,na.rm=T))
   }
 
   #scale the distance to nearest training point by average distance of the training data
-  trainDist_avrgmean <- mean(trainDist_mean)
+  #trainDist_avrgmean <- mean(trainDist_mean)
   DI_out <- mindist/trainDist_avrgmean
 
   # define threshold for AOA:
@@ -300,8 +310,7 @@ aoa <- function(newdata,
                                     "threshold" = thres,
                                     "lower_threshold"=lower_thres)
   if(returnTrainDI){
-    attributes(out)$TrainDI <- data.frame("DI"=TrainDI,
-    "meanDist"=trainDist_mean)
+    attributes(out)$TrainDI <- TrainDI
   }
   return(out)
 }
