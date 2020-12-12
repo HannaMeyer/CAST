@@ -86,7 +86,7 @@ calibrate_aoa <- function(AOA,model, window.size=20, multiCV=FALSE, length.out =
       # get cross-validated predictions, order them  and use only those located in the AOA
       preds <- model_new$pred
       preds <- preds[order(preds$rowIndex),c("pred","obs")]
-      preds_dat_tmp <- data.frame(preds,"DI"=attributes(AOA_new)$TrainDI$DI)
+      preds_dat_tmp <- data.frame(preds,"DI"=attributes(AOA_new)$TrainDI)
       preds_dat_tmp <-  preds_dat_tmp[preds_dat_tmp$DI<=attributes(AOA_new)$aoa_stats$threshold,]
       preds_all <- rbind(preds_all,preds_dat_tmp)
     }
@@ -102,7 +102,7 @@ calibrate_aoa <- function(AOA,model, window.size=20, multiCV=FALSE, length.out =
       preds_all <- preds_all[preds_all[,tunevar]==model$bestTune[,tunevar],]
     }
     preds_all <- preds_all[order(preds_all$rowIndex),c("pred","obs")]
-    preds_all$DI <- attributes(AOA)$TrainDI$DI
+    preds_all$DI <- attributes(AOA)$TrainDI
 
     ## only take predictions from inside the AOA:
     preds_all <-  preds_all[preds_all$DI<=attributes(AOA)$aoa_stats$threshold,]
