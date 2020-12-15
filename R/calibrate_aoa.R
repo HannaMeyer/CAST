@@ -3,6 +3,7 @@
 #' @param AOA the result of ?aoa
 #' @param model the model used to get the AOA
 #' @param window.size Numeric. Size of the moving window. See ?zoo::rollapply
+#' @param calib Character. Function to model the DI~performance relationship. Currently lm and scam are supported
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
 #' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
 #' @param maskAOA Logical. Should areas ouside the AOA set to NA?
@@ -56,7 +57,8 @@
 #' @export calibrate_aoa
 #' @aliases calibrate_aoa
 
-calibrate_aoa <- function(AOA,model, window.size=20, multiCV=FALSE, length.out = 5, maskAOA=TRUE, showPlot=TRUE){
+calibrate_aoa <- function(AOA,model, window.size=20, calib="lm",multiCV=FALSE,
+                          length.out = 5, maskAOA=TRUE, showPlot=TRUE){
 
   if(multiCV){
     preds_all <- data.frame()
@@ -101,6 +103,7 @@ calibrate_aoa <- function(AOA,model, window.size=20, multiCV=FALSE, length.out =
       tunevar <- names(model$bestTune[i])
       preds_all <- preds_all[preds_all[,tunevar]==model$bestTune[,tunevar],]
     }
+
     preds_all <- preds_all[order(preds_all$rowIndex),c("pred","obs")]
     preds_all$DI <- attributes(AOA)$TrainDI
 
@@ -153,21 +156,14 @@ calibrate_aoa <- function(AOA,model, window.size=20, multiCV=FALSE, length.out =
 }
 
   ### Estimate Error:
-#  f <- function(y0,DI, a, b) {y0 + a * exp(b * DI)}
-#  errormodel <-  tryCatch(nls(metric~f(y0,DI,a,b),data = performance,
-#                              start = list(y0=0, a = 1, b = 1)),
-#                          error = function(e)e)
-  # if it's not exponential use a linear model:
-#  if(inherits(errormodel,"error")){
-#    errormodel <- lm(metric~DI,performance)
-#  }
-
-  #errormodel <- lm(metric ~ DI + I(DI^2), data = performance)
-
+if(calib=="lm"){
+  errormodel <- lm(metric ~ DI + I(DI^2), data = performance)
+}
+  if(calib=="scam"){
   errormodel <- scam::scam(metric~s(DI, k=5, bs="mpi", m=2),
                     data=performance,
                     family=gaussian(link="identity"))
-
+}
 
 
   attributes(AOA)$calib$model <- errormodel

@@ -8,6 +8,7 @@ calibrate_aoa(
   AOA,
   model,
   window.size = 20,
+  calib = "lm",
   multiCV = FALSE,
   length.out = 5,
   maskAOA = TRUE,
@@ -20,6 +21,8 @@ calibrate_aoa(
 \item{model}{the model used to get the AOA}
 
 \item{window.size}{Numeric. Size of the moving window. See ?zoo::rollapply}
+
+\item{calib}{Character. Function to model the DI~performance relationship. Currently lm and scam are supported}
 
 \item{multiCV}{Logical. Re-run model fitting and validation with different CV strategies. See details.}
 
