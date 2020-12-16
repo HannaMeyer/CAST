@@ -157,7 +157,7 @@ calibrate_aoa <- function(AOA,model, window.size=20, calib="scam",multiCV=FALSE,
 
   ### Estimate Error:
 if(calib=="lm"){
-  errormodel <- lm(metric ~ DI + I(DI^2), data = performance)
+  errormodel <- lm(metric ~ DI, data = performance)
 }
   if(calib=="scam"){
   errormodel <- scam::scam(metric~s(DI, k=5, bs="mpi", m=2),
