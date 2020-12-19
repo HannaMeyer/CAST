@@ -57,8 +57,8 @@
 #' @export calibrate_aoa
 #' @aliases calibrate_aoa
 
-calibrate_aoa <- function(AOA,model, window.size=20, calib="scam",multiCV=FALSE,
-                          length.out = 5, maskAOA=TRUE, showPlot=TRUE){
+calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
+                          length.out = 10, maskAOA=TRUE, showPlot=TRUE){
 
   if(multiCV){
     preds_all <- data.frame()

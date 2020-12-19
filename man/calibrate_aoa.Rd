@@ -7,10 +7,10 @@
 calibrate_aoa(
   AOA,
   model,
-  window.size = 20,
-  calib = "lm",
+  window.size = 5,
+  calib = "scam",
   multiCV = FALSE,
-  length.out = 5,
+  length.out = 10,
   maskAOA = TRUE,
   showPlot = TRUE
 )
