@@ -152,7 +152,11 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   if (multiCV){
   AOA$AOA <- 0
   AOA$AOA[AOA$DI<=max(performance$DI,na.rm=T)] <- 1
-  AOA$AOA <- mask(AOA$AOA,AOA$DI)
+  if(class(AOA$AOA)=="Raster"){
+  AOA$AOA <- raster::mask(AOA$AOA,AOA$DI)
+  }else{
+    AOA$AOA[is.na(AOA$DI)] <- NA
+  }
 }
 
   ### Estimate Error:
