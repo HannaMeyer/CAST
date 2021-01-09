@@ -29,7 +29,8 @@
 #' (if applicable: not located in the same CV fold) is considered.
 #' The DI threshold is 1,5×IQR of the DI of the training data.
 #' See Meyer and Pebesma (2020) for the full documentation of the methodology.
-#' @return A RasterStack or data.frame with the DI and AOA. AOA has values 0 (outside AOA) and 1 (inside AOA).
+#' @return A RasterStack or data.frame with the DI, AOA and CVA (cross-validation-area).
+#' AOA has values 0 (outside AOA) and 1 (inside AOA). Same applies to CVA
 #' @author
 #' Hanna Meyer
 #' @references Meyer, H., Pebesma, E. (2020): Predicting into unknown space?

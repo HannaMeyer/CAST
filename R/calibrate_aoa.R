@@ -171,13 +171,21 @@ if(calib=="lm"){
   DI_pred <- AOA$DI
 
   # predict and make sure it's not going beyond min observed values
-  values(DI_pred)[values(AOA$DI)<min(performance$DI,na.rm=TRUE)] <- min(performance$DI,na.rm=TRUE)
+  if(class(DI_pred)=="Raster"){
+  raster::values(DI_pred)[raster::values(AOA$DI)<min(performance$DI,na.rm=TRUE)] <- min(performance$DI,na.rm=TRUE)
   AOA$expectedError <- raster::predict(DI_pred,errormodel)
+  }else{
+    DI_pred[AOA$DI<min(performance$DI,na.rm=TRUE)] <- min(performance$DI,na.rm=TRUE)
+    AOA$expectedError <- predict(errormodel,data.frame("DI"=DI_pred))
+}
 
 
-
-    if(maskAOA){
-    AOA$expectedError <-  raster::mask(AOA$expectedError,AOA$AOA,maskvalue=0)
+  if(maskAOA){
+    if(class( AOA$expectedError)=="Raster"){
+      AOA$expectedError <-  raster::mask(AOA$expectedError,AOA$AOA,maskvalue=0)
+    }else{
+      AOA$expectedError[AOA$AOA==0] <- NA
+    }
   }
 
   ### Plot result:
