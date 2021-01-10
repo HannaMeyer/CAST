@@ -36,7 +36,8 @@ Should be used if replicates are present. Only required if no model is given.}
 \item{returnTrainDI}{A logical: should the DI value of the cross-validated training data be returned as a attribute?}
 }
 \value{
-A RasterStack or data.frame with the DI and AOA. AOA has values 0 (outside AOA) and 1 (inside AOA).
+A RasterStack or data.frame with the DI, AOA and CVA (cross-validation-area).
+AOA has values 0 (outside AOA) and 1 (inside AOA). Same applies to CVA
 }
 \description{
 This function estimates the Dissimilarity Index (DI) and the derived
