@@ -117,6 +117,16 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     stop("no cross-predictions can be retrieved from the model. Train with savePredictions=TRUE or provide calibration data")
   }
   ## use performance metric from the model:
+  rmse <- function(pred,obs){sqrt( mean((pred - obs)^2, na.rm = TRUE) )}
+  rsquared <-  function(pred,obs){summary(lm(pred~obs))$r.squared}
+  mae <- function(pred,obs){MAE(pred,obs)}
+  kappa <- function(pred,obs){confusionMatrix(pred, obs)$overall["Kappa"]}
+  accuracy <- function(pred,obs){confusionMatrix(pred, obs)$overall["Accuracy"]}
+  if(!tolower(model$metric)%in%c("rmse","rsquared","mae","kappa","accuracy")){
+    message("Model metric not yet included in this function")
+    stop()
+  }
+
   evalfunc <- function(pred,obs){
     eval(parse(text=paste0(tolower(model$metric),"(pred,obs)")))
   }
@@ -154,7 +164,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   if (multiCV){
     AOA$AOA <- 0
     AOA$AOA[AOA$DI<=max(performance$DI,na.rm=T)] <- 1
-    if(class(AOA$AOA)=="Raster"){
+    if(inherits(AOA$AOA,"Raster")){
       AOA$AOA <- raster::mask(AOA$AOA,AOA$DI)
     }else{
       AOA$AOA[is.na(AOA$DI)] <- NA
@@ -177,7 +187,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   DI_pred <- AOA$DI
 
   # predict and make sure it's not going beyond min observed values
-  if(class(DI_pred)=="Raster"){
+  if(inherits(DI_pred,"Raster")){
     raster::values(DI_pred)[raster::values(AOA$DI)<min(performance$DI,na.rm=TRUE)] <- min(performance$DI,na.rm=TRUE)
     AOA$expectedError <- raster::predict(DI_pred,errormodel)
   }else{
@@ -187,7 +197,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
 
   if(maskAOA){
-    if(class( AOA$expectedError)=="Raster"){
+    if(inherits(AOA$expectedError,"Raster")){
       AOA$expectedError <-  raster::mask(AOA$expectedError,AOA$AOA,maskvalue=0)
     }else{
       AOA$expectedError[AOA$AOA==0] <- NA
