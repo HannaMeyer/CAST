@@ -7,11 +7,8 @@
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
 #' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
 #' @param maskAOA Logical. Should areas ouside the AOA set to NA?
-#' @param showPlot Logical
-#' @details The AOA is the area to which the model can be applied and where the reliability of predictions is expected to be comparable to the cross-validation error of the model.
-#' However, it might be desireable to limit predictions to an area with a user-defined error.
-#' This function allows for this based on the relationship of the DI and the prediction error derived from cross-validation during model training.
-#' If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
+#' @param showPlot Logical.
+#' @details If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
 #' ranging from three clusters to LOOCV.
 #' If the AOA threshold based on the calibration data is larger than the original AOA threshold, the AOA is updated accordingly.
 #' @return rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected error based on the relationship. Data used for calibration are stored in the attributes.
@@ -83,13 +80,13 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
       # retrain model and calculate AOA
       model_new <- do.call(caret::train,mcall)
-      AOA_new <- aoa(train_predictors,model_new)
+      AOA <- aoa(train_predictors,model_new)
 
       # get cross-validated predictions, order them  and use only those located in the AOA
       preds <- model_new$pred
       preds <- preds[order(preds$rowIndex),c("pred","obs")]
-      preds_dat_tmp <- data.frame(preds,"DI"=attributes(AOA_new)$TrainDI)
-      preds_dat_tmp <-  preds_dat_tmp[preds_dat_tmp$DI<=attributes(AOA_new)$aoa_stats$threshold,]
+      preds_dat_tmp <- data.frame(preds,"DI"=attributes(AOA)$TrainDI)
+      preds_dat_tmp <-  preds_dat_tmp[preds_dat_tmp$DI<=attributes(AOA)$aoa_stats$threshold,]
       preds_all <- rbind(preds_all,preds_dat_tmp)
     }
   }
@@ -143,22 +140,6 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   performance$ul <- data.table::shift(performance$DI,-round(window.size/2),0)
 
   performance <- performance[!is.na(performance$metric),]
-  #####################################
-
-  #errors <-c()
-  #for (i in unique(preds_all$group)){
-  #  errors <- c(errors, evalfunc(preds_all$pred[preds_all$group==i],
-  #                         preds_all$obs[preds_all$group==i]))
-
-  #}
-
-  # grouped_res <- data.frame("group"=unique(preds_all$group),"performance"=errors)
-  # min_max <- unlist(strsplit(gsub("(?![,.])[[:punct:]]", "", as.character(grouped_res$group), perl=TRUE), ","))
-  # recl <- data.frame("min"=as.numeric(min_max[seq(1, length(min_max), by=2)]),
-  #                  "max"=as.numeric(min_max[seq(2, length(min_max), by=2)]),
-  #                  "perf"= grouped_res$performance)
-  # recl$DI <- rowMeans(recl[,c("min","max")])
-
 
   ### Update AOA:
   if (multiCV){
@@ -205,12 +186,6 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   }
 
   ### Plot result:
-
-  #  plot(performance$DI,performance$metric,
-  #       xlab="DI",ylab=model$metric)
-  #  lines(seq(0,max(performance$DI),0.01),
-  #        predict(errormodel,data.frame("DI"=seq(0,max(performance$DI),0.01))),
-  #        col="red")
 
   if(showPlot){
 
