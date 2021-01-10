@@ -126,11 +126,13 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
   # calculate performance for moving window:
   performance$metric <- zoo::rollapply(performance[,1:2], window.size,
-                                FUN=function(x){evalfunc(x[,1],x[,2])},
-                    by.column=F,align = "center",fill=NA)
+                                       FUN=function(x){evalfunc(x[,1],x[,2])},
+                                       by.column=F,align = "center",fill=NA)
 
   performance$ll <- data.table::shift(performance$DI,window.size/2)
   performance$ul <- data.table::shift(performance$DI,-round(window.size/2),0)
+
+  performance <- performance[!is.na(performance$metric),]
   #####################################
 
   #errors <-c()
@@ -140,34 +142,34 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
   #}
 
- # grouped_res <- data.frame("group"=unique(preds_all$group),"performance"=errors)
- # min_max <- unlist(strsplit(gsub("(?![,.])[[:punct:]]", "", as.character(grouped_res$group), perl=TRUE), ","))
- # recl <- data.frame("min"=as.numeric(min_max[seq(1, length(min_max), by=2)]),
-   #                  "max"=as.numeric(min_max[seq(2, length(min_max), by=2)]),
-   #                  "perf"= grouped_res$performance)
- # recl$DI <- rowMeans(recl[,c("min","max")])
+  # grouped_res <- data.frame("group"=unique(preds_all$group),"performance"=errors)
+  # min_max <- unlist(strsplit(gsub("(?![,.])[[:punct:]]", "", as.character(grouped_res$group), perl=TRUE), ","))
+  # recl <- data.frame("min"=as.numeric(min_max[seq(1, length(min_max), by=2)]),
+  #                  "max"=as.numeric(min_max[seq(2, length(min_max), by=2)]),
+  #                  "perf"= grouped_res$performance)
+  # recl$DI <- rowMeans(recl[,c("min","max")])
 
 
   ### Update AOA:
   if (multiCV){
-  AOA$AOA <- 0
-  AOA$AOA[AOA$DI<=max(performance$DI,na.rm=T)] <- 1
-  if(class(AOA$AOA)=="Raster"){
-  AOA$AOA <- raster::mask(AOA$AOA,AOA$DI)
-  }else{
-    AOA$AOA[is.na(AOA$DI)] <- NA
+    AOA$AOA <- 0
+    AOA$AOA[AOA$DI<=max(performance$DI,na.rm=T)] <- 1
+    if(class(AOA$AOA)=="Raster"){
+      AOA$AOA <- raster::mask(AOA$AOA,AOA$DI)
+    }else{
+      AOA$AOA[is.na(AOA$DI)] <- NA
+    }
   }
-}
 
   ### Estimate Error:
-if(calib=="lm"){
-  errormodel <- lm(metric ~ DI, data = performance)
-}
+  if(calib=="lm"){
+    errormodel <- lm(metric ~ DI, data = performance)
+  }
   if(calib=="scam"){
-  errormodel <- scam::scam(metric~s(DI, k=5, bs="mpi", m=2),
-                    data=performance,
-                    family=gaussian(link="identity"))
-}
+    errormodel <- scam::scam(metric~s(DI, k=5, bs="mpi", m=2),
+                             data=performance,
+                             family=gaussian(link="identity"))
+  }
 
 
   attributes(AOA)$calib$model <- errormodel
@@ -176,12 +178,12 @@ if(calib=="lm"){
 
   # predict and make sure it's not going beyond min observed values
   if(class(DI_pred)=="Raster"){
-  raster::values(DI_pred)[raster::values(AOA$DI)<min(performance$DI,na.rm=TRUE)] <- min(performance$DI,na.rm=TRUE)
-  AOA$expectedError <- raster::predict(DI_pred,errormodel)
+    raster::values(DI_pred)[raster::values(AOA$DI)<min(performance$DI,na.rm=TRUE)] <- min(performance$DI,na.rm=TRUE)
+    AOA$expectedError <- raster::predict(DI_pred,errormodel)
   }else{
     DI_pred[AOA$DI<min(performance$DI,na.rm=TRUE)] <- min(performance$DI,na.rm=TRUE)
     AOA$expectedError <- predict(errormodel,data.frame("DI"=DI_pred))
-}
+  }
 
 
   if(maskAOA){
@@ -194,11 +196,30 @@ if(calib=="lm"){
 
   ### Plot result:
 
-  plot(performance$DI,performance$metric,
-       xlab="DI",ylab=model$metric,type="l")
-  lines(seq(0,max(performance$DI),0.01),
-        predict(errormodel,data.frame("DI"=seq(0,max(performance$DI),0.01))),
-        col="red")
+  #  plot(performance$DI,performance$metric,
+  #       xlab="DI",ylab=model$metric)
+  #  lines(seq(0,max(performance$DI),0.01),
+  #        predict(errormodel,data.frame("DI"=seq(0,max(performance$DI),0.01))),
+  #        col="red")
+
+  if(showPlot){
+
+    loc <- "topleft"
+    if(model$maximize){
+      loc <- "topright"
+    }
+
+    plot(performance$DI,performance$metric,xlab="DI",
+         ylab=model$metric)
+    legend(loc,lty=c(NA,2),lwd=c(NA,1),pch=c(1,NA),col=c("black","black"),
+           legend=c("CV","model"),bty="n")
+    lines(seq(0,max(performance$DI, na.rm=TRUE),0.01),
+          predict(attributes(AOA)$calib$model,
+                  data.frame("DI"=seq(0, max(performance$DI,na.rm=TRUE),0.01))),lwd=1,lty=2,col="black")
+  }
+
+
+
 
   names(performance)[which(names(performance)=="metric")] <- model$metric
   attributes(AOA)$calib$group_stats <- performance
