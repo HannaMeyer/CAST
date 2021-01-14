@@ -80,15 +80,19 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
       # retrain model and calculate AOA
       model_new <- do.call(caret::train,mcall)
-      AOA <- aoa(train_predictors,model_new)
+      AOA_new <- aoa(train_predictors,model_new)
 
       # get cross-validated predictions, order them  and use only those located in the AOA
       preds <- model_new$pred
       preds <- preds[order(preds$rowIndex),c("pred","obs")]
-      preds_dat_tmp <- data.frame(preds,"DI"=attributes(AOA)$TrainDI)
-      preds_dat_tmp <-  preds_dat_tmp[preds_dat_tmp$DI<=attributes(AOA)$aoa_stats$threshold,]
+      preds_dat_tmp <- data.frame(preds,"DI"=attributes(AOA_new)$TrainDI)
+      preds_dat_tmp <-  preds_dat_tmp[preds_dat_tmp$DI<=attributes(AOA_new)$aoa_stats$threshold,]
       preds_all <- rbind(preds_all,preds_dat_tmp)
+
+
     }
+   attributes(AOA)$aoa_stats$threshold <- max(preds_all$DI)
+   attributes(AOA)$TrainDI <- preds_all$DI
   }
 
 
