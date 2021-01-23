@@ -8,6 +8,8 @@
 #' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
 #' @param maskAOA Logical. Should areas ouside the AOA set to NA?
 #' @param showPlot Logical.
+#' @param k Numeric. See mgcv::s
+#' @param m Numeric. See mgcv::s
 #' @details If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
 #' ranging from three clusters to LOOCV.
 #' If the AOA threshold based on the calibration data is larger than the original AOA threshold, the AOA is updated accordingly.
@@ -55,7 +57,16 @@
 #' @aliases calibrate_aoa
 
 calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
-                          length.out = 10, maskAOA=TRUE, showPlot=TRUE){
+                          length.out = 10, maskAOA=TRUE, showPlot=TRUE,k=5,m=2){
+  as_stars <- FALSE
+  if (inherits(AOA, "stars")) {
+    if (!requireNamespace("stars", quietly = TRUE))
+      stop("package stars required: install that first")
+    attr <- attributes(AOA)[c("aoa_stats","TrainDI")]
+    AOA <- as(AOA, "Raster")
+    attributes(AOA)<- c(attributes(AOA),attr)
+    as_stars <- TRUE
+  }
 
   if(multiCV){
     preds_all <- data.frame()
@@ -91,8 +102,8 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
 
     }
-   attributes(AOA)$aoa_stats$threshold <- max(preds_all$DI)
-   attributes(AOA)$TrainDI <- preds_all$DI
+    attributes(AOA)$aoa_stats$threshold <- max(preds_all$DI)
+    attributes(AOA)$TrainDI <- preds_all$DI
   }
 
 
@@ -121,8 +132,27 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   rmse <- function(pred,obs){sqrt( mean((pred - obs)^2, na.rm = TRUE) )}
   rsquared <-  function(pred,obs){summary(lm(pred~obs))$r.squared}
   mae <- function(pred,obs){MAE(pred,obs)}
-  kappa <- function(pred,obs){confusionMatrix(pred, obs)$overall["Kappa"]}
-  accuracy <- function(pred,obs){confusionMatrix(pred, obs)$overall["Accuracy"]}
+  kappa <- function(pred,obs){
+    pred <- factor(pred)
+    obs <- factor(obs)
+    lev <- unique(c(levels(pred), levels(obs)))
+    pred <- factor(pred, levels = lev)
+    obs <- factor(obs, levels = lev)
+    result <- tryCatch( confusionMatrix(pred, obs)$overall["Kappa"], error = function(e)e)
+    if(inherits(result, "error")){result <- 0} # 0 not right value!!! adjust!!!
+    return(unname(result))
+  }
+
+  accuracy <- function(pred,obs){
+    pred <- factor(pred)
+    obs <- factor(obs)
+    lev <- unique(c(levels(pred), levels(obs)))
+    pred <- factor(pred, levels = lev)
+    obs <- factor(obs, levels = lev)
+    result <- tryCatch(confusionMatrix(pred, obs)$overall["Accuracy"], error = function(e)e)
+    if(inherits(result, "error")){result <- 0}
+    return(unname(result))
+  }
   if(!tolower(model$metric)%in%c("rmse","rsquared","mae","kappa","accuracy")){
     message("Model metric not yet included in this function")
     stop()
@@ -161,7 +191,8 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     errormodel <- lm(metric ~ DI, data = performance)
   }
   if(calib=="scam"){
-    errormodel <- scam::scam(metric~s(DI, k=5, bs="mpi", m=2),
+    errormodel <- scam::scam(metric~s(DI, k=k, bs="mpi", m=m),
+                             #errormodel <- scam::scam(metric~s(DI,bs="mpi"),
                              data=performance,
                              family=gaussian(link="identity"))
   }
@@ -170,7 +201,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   attributes(AOA)$calib$model <- errormodel
 
   DI_pred <- AOA$DI
-
+  attr <- attributes(AOA)[c("aoa_stats","TrainDI","calib")]
   # predict and make sure it's not going beyond min observed values
   if(inherits(DI_pred,"Raster")){
     raster::values(DI_pred)[raster::values(AOA$DI)<min(performance$DI,na.rm=TRUE)] <- min(performance$DI,na.rm=TRUE)
@@ -189,6 +220,9 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     }
   }
 
+  names(performance)[which(names(performance)=="metric")] <- model$metric
+  attr$calib$group_stats <- performance
+  attributes(AOA)<- c(attributes(AOA),attr)
   ### Plot result:
 
   if(showPlot){
@@ -198,7 +232,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
       loc <- "topright"
     }
 
-    plot(performance$DI,performance$metric,xlab="DI",
+    plot(performance$DI,performance[,metric],xlab="DI",
          ylab=model$metric)
     legend(loc,lty=c(NA,2),lwd=c(NA,1),pch=c(1,NA),col=c("black","black"),
            legend=c("CV","model"),bty="n")
@@ -208,10 +242,12 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   }
 
 
+  if (as_stars){
+    AOA <- split(stars::st_as_stars(AOA), "band")
+    attributes(AOA)<- c(attributes(AOA),attr)
+  }
 
-
-  names(performance)[which(names(performance)=="metric")] <- model$metric
-  attributes(AOA)$calib$group_stats <- performance
   return(AOA)
 }
+
 

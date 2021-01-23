@@ -30,7 +30,7 @@ calibrate_aoa(
 
 \item{maskAOA}{Logical. Should areas ouside the AOA set to NA?}
 
-\item{showPlot}{Logical}
+\item{showPlot}{Logical.}
 }
 \value{
 rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected error based on the relationship. Data used for calibration are stored in the attributes.
@@ -39,9 +39,6 @@ rasterStack which contains the original DI and the AOA (which might be updated i
 Performance metrics are calculated for moving windows of DI values of cross-validated training data
 }
 \details{
-The AOA is the area to which the model can be applied and where the reliability of predictions is expected to be comparable to the cross-validation error of the model.
-However, it might be desireable to limit predictions to an area with a user-defined error.
-This function allows for this based on the relationship of the DI and the prediction error derived from cross-validation during model training.
 If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
 ranging from three clusters to LOOCV.
 If the AOA threshold based on the calibration data is larger than the original AOA threshold, the AOA is updated accordingly.
