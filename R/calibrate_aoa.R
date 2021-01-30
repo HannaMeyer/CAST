@@ -6,7 +6,7 @@
 #' @param calib Character. Function to model the DI~performance relationship. Currently lm and scam are supported
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
 #' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
-#' @param maskAOA Logical. Should areas ouside the AOA set to NA?
+#' @param maskAOA Logical. Should areas outside the AOA set to NA?
 #' @param showPlot Logical.
 #' @param k Numeric. See mgcv::s
 #' @param m Numeric. See mgcv::s
@@ -57,7 +57,7 @@
 #' @aliases calibrate_aoa
 
 calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
-                          length.out = 10, maskAOA=TRUE, showPlot=TRUE,k=5,m=2){
+                          length.out = 10, maskAOA=TRUE, showPlot=TRUE,k=6,m=2){
   as_stars <- FALSE
   if (inherits(AOA, "stars")) {
     if (!requireNamespace("stars", quietly = TRUE))
@@ -232,7 +232,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
       loc <- "topright"
     }
 
-    plot(performance$DI,performance[,metric],xlab="DI",
+    plot(performance$DI,performance$metric,xlab="DI",
          ylab=model$metric)
     legend(loc,lty=c(NA,2),lwd=c(NA,1),pch=c(1,NA),col=c("black","black"),
            legend=c("CV","model"),bty="n")
