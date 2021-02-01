@@ -191,8 +191,13 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     errormodel <- lm(metric ~ DI, data = performance)
   }
   if(calib=="scam"){
-    errormodel <- scam::scam(metric~s(DI, k=k, bs="mpi", m=m),
-                             #errormodel <- scam::scam(metric~s(DI,bs="mpi"),
+    if (model$maximize){ # e.g. accuracy, kappa, r2
+      bs="mpd"
+    }else{
+    bs="mpi" #e.g. RMSE
+}
+
+    errormodel <- scam::scam(metric~s(DI, k=k, bs=bs, m=m),
                              data=performance,
                              family=gaussian(link="identity"))
   }
