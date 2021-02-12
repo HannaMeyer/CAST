@@ -18,11 +18,11 @@ calibrate_aoa(
 )
 }
 \arguments{
-\item{AOA}{the result of ?aoa}
+\item{AOA}{the result of \code{\link{aoa}}}
 
 \item{model}{the model used to get the AOA}
 
-\item{window.size}{Numeric. Size of the moving window. See ?zoo::rollapply}
+\item{window.size}{Numeric. Size of the moving window. See \code{\link{rollapply}}.}
 
 \item{calib}{Character. Function to model the DI~performance relationship. Currently lm and scam are supported}
 
@@ -39,7 +39,8 @@ calibrate_aoa(
 \item{m}{Numeric. See mgcv::s}
 }
 \value{
-rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected error based on the relationship. Data used for calibration are stored in the attributes.
+rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected performance based on the relationship.
+Data used for calibration are stored in the attributes.
 }
 \description{
 Performance metrics are calculated for moving windows of DI values of cross-validated training data
@@ -47,7 +48,8 @@ Performance metrics are calculated for moving windows of DI values of cross-vali
 \details{
 If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
 ranging from three clusters to LOOCV.
-If the AOA threshold based on the calibration data is larger than the original AOA threshold, the AOA is updated accordingly.
+If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold, the AOA is updated accordingly.
+See Meyer and Pebesma (2020) for the full documentation of the methodology.
 }
 \examples{
 \dontrun{
@@ -81,8 +83,13 @@ model <- train(trainDat[,which(names(trainDat)\%in\%variables)],
 AOA <- aoa(studyArea,model)
 
 AOA_new <- calibrate_aoa(AOA,model)
-plot(AOA_new$expectedError)
+plot(AOA_new[[3]])
 }
+}
+\references{
+Meyer, H., Pebesma, E. (2020): Predicting into unknown space?
+Estimating the area of applicability of spatial prediction models.
+\url{https://arxiv.org/abs/2005.07939}
 }
 \seealso{
 \code{\link{aoa}}

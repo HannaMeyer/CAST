@@ -36,16 +36,18 @@ Should be used if replicates are present. Only required if no model is given.}
 \item{returnTrainDI}{A logical: should the DI value of the cross-validated training data be returned as a attribute?}
 }
 \value{
-A RasterStack or data.frame with the DI, AOA and CVA (cross-validation-area).
-AOA has values 0 (outside AOA) and 1 (inside AOA). Same applies to CVA
+A RasterStack or data.frame with the DI and AOA
+AOA has values 0 (outside AOA) and 1 (inside AOA).
 }
 \description{
 This function estimates the Dissimilarity Index (DI) and the derived
 Area of Applicability (AOA) of spatial prediction models by
 considering the distance of new data (i.e. a Raster Stack of spatial predictors
 used in the models) in the predictor variable space to the data used for model
-training. Predictors can be weighted in the ideal case based on the internal
+training. Predictors can be weighted based on the internal
 variable importance of the machine learning algorithm used for model training.
+The AOA is derived by applying a threshold on the DI which is the (outlier-removed)
+maximum DI of the cross-validated training data.
 }
 \details{
 The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
@@ -55,11 +57,12 @@ Interpretation of results: If a location is very similar to the properties
 of the training data it will have a low distance in the predictor variable space
 (DI towards 0) while locations that are very different in their properties
 will have a high DI.
-To get the AOA, a threshold to the DI is applied based on the DI in the training data.
-To calculate the DI in the training data, the minimum distance to an other training point
-(if applicable: not located in the same CV fold) is considered.
-The DI threshold is 1,5×IQR of the DI of the training data.
 See Meyer and Pebesma (2020) for the full documentation of the methodology.
+}
+\note{
+If classification models are used, currently the variable importance can only
+be automatically retrieved if models were traiend via train(predictors,response) and not via the formula-interface.
+Will be fixed.
 }
 \examples{
 \dontrun{
@@ -123,6 +126,9 @@ spplot(AOA$AOA,main="Area of Applicability")
 Meyer, H., Pebesma, E. (2020): Predicting into unknown space?
 Estimating the area of applicability of spatial prediction models.
 \url{https://arxiv.org/abs/2005.07939}
+}
+\seealso{
+\code{\link{calibrate_aoa}}
 }
 \author{
 Hanna Meyer

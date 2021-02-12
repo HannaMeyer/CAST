@@ -1,22 +1,26 @@
 #' Calibrate the AOA based on the relationship between the DI and the prediction error
 #' @description Performance metrics are calculated for moving windows of DI values of cross-validated training data
-#' @param AOA the result of ?aoa
+#' @param AOA the result of \code{\link{aoa}}
 #' @param model the model used to get the AOA
-#' @param window.size Numeric. Size of the moving window. See ?zoo::rollapply
+#' @param window.size Numeric. Size of the moving window. See \code{\link{rollapply}}.
 #' @param calib Character. Function to model the DI~performance relationship. Currently lm and scam are supported
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
 #' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
 #' @param maskAOA Logical. Should areas outside the AOA set to NA?
-#' @param showPlot Logical.
 #' @param k Numeric. See mgcv::s
 #' @param m Numeric. See mgcv::s
+#' @param showPlot Logical.
 #' @details If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
 #' ranging from three clusters to LOOCV.
-#' If the AOA threshold based on the calibration data is larger than the original AOA threshold, the AOA is updated accordingly.
-#' @return rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected error based on the relationship. Data used for calibration are stored in the attributes.
-#'
+#' If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold, the AOA is updated accordingly.
+#' See Meyer and Pebesma (2020) for the full documentation of the methodology.
+#' @return rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected performance based on the relationship.
+#' Data used for calibration are stored in the attributes.
 #' @author
 #' Hanna Meyer
+#' @references Meyer, H., Pebesma, E. (2020): Predicting into unknown space?
+#' Estimating the area of applicability of spatial prediction models.
+#' \url{https://arxiv.org/abs/2005.07939}
 #' @seealso \code{\link{aoa}}
 #' @examples
 #' \dontrun{
@@ -49,9 +53,9 @@
 #' #...then calculate the AOA of the trained model for the study area:
 #' AOA <- aoa(studyArea,model)
 #'
-# '#...or get the area for a user-defined performance
+# '# and get the expected performance on a pixel-level:
 #' AOA_new <- calibrate_aoa(AOA,model)
-#' plot(AOA_new$expectedError)
+#' plot(AOA_new[[3]])
 #' }
 #' @export calibrate_aoa
 #' @aliases calibrate_aoa
@@ -63,7 +67,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     if (!requireNamespace("stars", quietly = TRUE))
       stop("package stars required: install that first")
     attr <- attributes(AOA)[c("aoa_stats","TrainDI")]
-    AOA <- as(AOA, "Raster")
+    AOA <- methods::as(AOA, "Raster")
     attributes(AOA)<- c(attributes(AOA),attr)
     as_stars <- TRUE
   }
@@ -75,7 +79,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
     for (nclst in round(seq(3,nrow(train_predictors),length.out = length.out))){
       # define clusters in predictor space used for CV:
-      clstrID <- tryCatch({kmeans(train_predictors,nclst)$cluster},
+      clstrID <- tryCatch({stats::kmeans(train_predictors,nclst)$cluster},
                           error=function(e)e)
       if(inherits(clstrID,"error")){next}
       clstrID <- clstrID
@@ -199,7 +203,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
     errormodel <- scam::scam(metric~s(DI, k=k, bs=bs, m=m),
                              data=performance,
-                             family=gaussian(link="identity"))
+                             family=stats::gaussian(link="identity"))
   }
 
 
@@ -239,9 +243,9 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
     plot(performance$DI,performance$metric,xlab="DI",
          ylab=model$metric)
-    legend(loc,lty=c(NA,2),lwd=c(NA,1),pch=c(1,NA),col=c("black","black"),
+    graphics::legend(loc,lty=c(NA,2),lwd=c(NA,1),pch=c(1,NA),col=c("black","black"),
            legend=c("CV","model"),bty="n")
-    lines(seq(0,max(performance$DI, na.rm=TRUE),0.01),
+    graphics::lines(seq(0,max(performance$DI, na.rm=TRUE),0.01),
           predict(attributes(AOA)$calib$model,
                   data.frame("DI"=seq(0, max(performance$DI,na.rm=TRUE),0.01))),lwd=1,lty=2,col="black")
   }
@@ -251,7 +255,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     AOA <- split(stars::st_as_stars(AOA), "band")
     attributes(AOA)<- c(attributes(AOA),attr)
   }
-
+  names(AOA)[names(AOA)=="expectedError"] <- paste0("expected_",model$metric)
   return(AOA)
 }
 

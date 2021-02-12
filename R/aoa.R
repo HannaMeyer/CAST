@@ -4,8 +4,10 @@
 #' Area of Applicability (AOA) of spatial prediction models by
 #' considering the distance of new data (i.e. a Raster Stack of spatial predictors
 #' used in the models) in the predictor variable space to the data used for model
-#' training. Predictors can be weighted in the ideal case based on the internal
+#' training. Predictors can be weighted based on the internal
 #' variable importance of the machine learning algorithm used for model training.
+#' The AOA is derived by applying a threshold on the DI which is the (outlier-removed)
+#' maximum DI of the cross-validated training data.
 #' @param newdata A RasterStack, RasterBrick or data.frame containing the data
 #' the model was meant to make predictions for.
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
@@ -24,18 +26,18 @@
 #' of the training data it will have a low distance in the predictor variable space
 #' (DI towards 0) while locations that are very different in their properties
 #' will have a high DI.
-#' To get the AOA, a threshold to the DI is applied based on the DI in the training data.
-#' To calculate the DI in the training data, the minimum distance to an other training point
-#' (if applicable: not located in the same CV fold) is considered.
-#' The DI threshold is 1,5×IQR of the DI of the training data.
 #' See Meyer and Pebesma (2020) for the full documentation of the methodology.
-#' @return A RasterStack or data.frame with the DI, AOA and CVA (cross-validation-area).
-#' AOA has values 0 (outside AOA) and 1 (inside AOA). Same applies to CVA
+#' @note If classification models are used, currently the variable importance can only
+#' be automatically retrieved if models were traiend via train(predictors,response) and not via the formula-interface.
+#' Will be fixed.
+#' @return A RasterStack or data.frame with the DI and AOA
+#' AOA has values 0 (outside AOA) and 1 (inside AOA).
 #' @author
 #' Hanna Meyer
 #' @references Meyer, H., Pebesma, E. (2020): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
 #' \url{https://arxiv.org/abs/2005.07939}
+#' @seealso \code{\link{calibrate_aoa}}
 #' @examples
 #' \dontrun{
 #' library(sf)
@@ -119,7 +121,7 @@ aoa <- function(newdata,
   if (inherits(newdata, "stars")) {
     if (!requireNamespace("stars", quietly = TRUE))
       stop("package stars required: install that first")
-    newdata = as(newdata, "Raster")
+    newdata = methods::as(newdata, "Raster")
     as_stars <- TRUE
   }
   #### Prepare output as either as RasterLayer or vector:
@@ -215,7 +217,7 @@ aoa <- function(newdata,
     }
   }
   if (!is.null(cl)){
-    mindist <- parApply(cl=cl,X=newdata,MARGIN=1,FUN=distfun)
+    mindist <- parallel::parApply(cl=cl,X=newdata,MARGIN=1,FUN=distfun)
   }else{
     mindist <- apply(newdata,1,FUN=distfun)
   }
@@ -272,8 +274,8 @@ aoa <- function(newdata,
   AOA_train_stats <- quantile(TrainDI,
                               probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1),na.rm = TRUE)
 #  if(is.null(thres)){
-    thres <- boxplot.stats(TrainDI)$stats[5]
-    lower_thres <- boxplot.stats(TrainDI)$stats[1]
+    thres <- grDevices::boxplot.stats(TrainDI)$stats[5]
+    lower_thres <- grDevices::boxplot.stats(TrainDI)$stats[1]
 #  }else{
 #    thres <- quantile(TrainDI,probs = thres,na.rm=TRUE)
 #  }
@@ -286,13 +288,14 @@ aoa <- function(newdata,
     AOA[out>thres] <- 0
     AOA <- raster::mask(AOA,out)
 
-    CVA <- out
-    raster::values(CVA) <- 1
-    CVA[out>thres|out<lower_thres] <- 0
-    CVA <- raster::mask(CVA,out)
+    #CVA <- out
+    #raster::values(CVA) <- 1
+    #CVA[out>thres|out<lower_thres] <- 0
+    #CVA <- raster::mask(CVA,out)
+    #out <- raster::stack(out,AOA,CVA)
 
 
-    out <- raster::stack(out,AOA,CVA)
+    out <- raster::stack(out,AOA)
     if (as_stars)
       out <- split(stars::st_as_stars(out), "band")
   }else{
@@ -303,9 +306,11 @@ aoa <- function(newdata,
     CVA <- rep(1,length(out))
     CVA[out>thres|out<lower_thres] <- 0
 
-    out <- list(out,AOA,CVA)
+    #out <- list(out,AOA,CVA)
+    out <- list(out,AOA)
   }
-  names(out) <- c("DI","AOA","CVA")
+  #names(out) <- c("DI","AOA","CVA")
+  names(out) <- c("DI","AOA")
   attributes(out)$aoa_stats <- list("Mean_train" = trainDist_avrgmean,
                                     "threshold_stats" = AOA_train_stats,
                                     "threshold" = thres,
