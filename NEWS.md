@@ -1,4 +1,4 @@
-# `CAST` 0.4.3
+# `CAST` 0.5.0
 * new feature: 
   * AOA can run in parallel
   * calibration of the DI (calibrate_aoa)

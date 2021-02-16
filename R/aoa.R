@@ -66,7 +66,8 @@
 #' set.seed(100)
 #' variables <- c("DEM","NDRE.Sd","TWI")
 #' model <- train(trainDat[,which(names(trainDat)%in%variables)],
-#' trainDat$VW,method="rf",importance=TRUE,tuneLength=1,trControl=trainControl(method="cv",number=5,savePredictions=T))
+#' trainDat$VW, method="rf", importance=TRUE, tuneLength=1,
+#' trControl=trainControl(method="cv",number=5,savePredictions=T))
 #' print(model) #note that this is a quite poor prediction model
 #' prediction <- predict(studyArea,model)
 #' plot(varImp(model,scale=FALSE))
