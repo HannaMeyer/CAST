@@ -241,13 +241,14 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
       loc <- "topright"
     }
 
-    plot(performance$DI,performance$metric,xlab="DI",
+    plot(attr$calib$group_stats$DI,attr$calib$group_stats[,model$metric],xlab="DI",
          ylab=model$metric)
     graphics::legend(loc,lty=c(NA,2),lwd=c(NA,1),pch=c(1,NA),col=c("black","black"),
            legend=c("CV","model"),bty="n")
-    graphics::lines(seq(0,max(performance$DI, na.rm=TRUE),0.01),
+    graphics::lines(seq(0,max(attr$calib$group_stats$DI, na.rm=TRUE),max(attr$calib$group_stats$DI, na.rm=TRUE)/100),
           predict(attributes(AOA)$calib$model,
-                  data.frame("DI"=seq(0, max(performance$DI,na.rm=TRUE),0.01))),lwd=1,lty=2,col="black")
+                  data.frame("DI"=seq(0, max(attr$calib$group_stats$DI,na.rm=TRUE),
+                                      max(attr$calib$group_stats$DI, na.rm=TRUE)/100))),lwd=1,lty=2,col="black")
   }
 
 
