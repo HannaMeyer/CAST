@@ -226,7 +226,7 @@ spplot(prediction_ffs)
 We see that the variable selection does not only have an effect on the statistical performance but also the predicted spatial patterns change considerably. It is of note that the linear feature is not any more in the resulting soil moisture map most likely because "Easting" was removed from the set of predictor variables by ffs.
 
 ## Area of Applicability
-Still it is requitred to analyse if the model can be applied to the entire study area of if there are lcoations that are very different in their predictor properties to what the model has learned from. See more details in the vignette on the Area of applicabiliy and 
+Still it is required to analyse if the model can be applied to the entire study area of if there are lcoations that are very different in their predictor properties to what the model has learned from. See more details in the vignette on the Area of applicabiliy and 
 [Meyer and Pebesma 2020](https://arxiv.org/abs/2005.07939).
 
 ```{r, message = FALSE, warning=FALSE}
