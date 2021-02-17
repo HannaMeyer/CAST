@@ -14,8 +14,8 @@
 #' ranging from three clusters to LOOCV.
 #' If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold, the AOA is updated accordingly.
 #' See Meyer and Pebesma (2020) for the full documentation of the methodology.
-#' @return rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected performance based on the relationship.
-#' Data used for calibration are stored in the attributes.
+#' @return A list of length 2 with the elements "AOA": rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected performance based on the relationship.
+#' Data used for calibration are stored in the attributes. The second element is a plot showing the relationship.
 #' @author
 #' Hanna Meyer
 #' @references Meyer, H., Pebesma, E. (2020): Predicting into unknown space?
@@ -55,7 +55,7 @@
 #'
 # '# and get the expected performance on a pixel-level:
 #' AOA_new <- calibrate_aoa(AOA,model)
-#' plot(AOA_new[[3]])
+#' plot(AOA_new$AOA[[3]])
 #' }
 #' @export calibrate_aoa
 #' @aliases calibrate_aoa
@@ -234,21 +234,35 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   attributes(AOA)<- c(attributes(AOA),attr)
   ### Plot result:
 
-  if(showPlot){
+ # if(showPlot){
 
-    loc <- "topleft"
-    if(model$maximize){
-      loc <- "topright"
-    }
+    # loc <- "topleft"
+    # if(model$maximize){
+    #   loc <- "topright"
+    # }
+    #
+    # plot(attr$calib$group_stats$DI,attr$calib$group_stats[,model$metric],xlab="DI",
+    #      ylab=model$metric)
+    # graphics::legend(loc,lty=c(NA,2),lwd=c(NA,1),pch=c(1,NA),col=c("black","black"),
+    #        legend=c("CV","model"),bty="n")
+    # graphics::lines(seq(0,max(attr$calib$group_stats$DI, na.rm=TRUE),max(attr$calib$group_stats$DI, na.rm=TRUE)/100),
+    #       predict(attributes(AOA)$calib$model,
+    #               data.frame("DI"=seq(0, max(attr$calib$group_stats$DI,na.rm=TRUE),
+    #                                  max(attr$calib$group_stats$DI, na.rm=TRUE)/100))),lwd=1,lty=2,col="black")
 
-    plot(attr$calib$group_stats$DI,attr$calib$group_stats[,model$metric],xlab="DI",
-         ylab=model$metric)
-    graphics::legend(loc,lty=c(NA,2),lwd=c(NA,1),pch=c(1,NA),col=c("black","black"),
-           legend=c("CV","model"),bty="n")
-    graphics::lines(seq(0,max(attr$calib$group_stats$DI, na.rm=TRUE),max(attr$calib$group_stats$DI, na.rm=TRUE)/100),
-          predict(attributes(AOA)$calib$model,
-                  data.frame("DI"=seq(0, max(attr$calib$group_stats$DI,na.rm=TRUE),
-                                      max(attr$calib$group_stats$DI, na.rm=TRUE)/100))),lwd=1,lty=2,col="black")
+
+    p <- lattice::xyplot(attr$calib$group_stats[,model$metric]~attr$calib$group_stats$DI,xlab="DI",
+           ylab=model$metric,col="black",
+           key=list(columns=2,
+                    text=list(lab=c("cross-validation","model")),
+                    points=list(pch=c(1,NA), col="black"),
+                    lines=list(lty=c(0,2), lwd=2, col="black")),panel = function(x, y, ...) {
+                      lattice::panel.xyplot(x, y, ...)
+                      lattice::llines(x, predict(attr$calib$model), col="black", lwd=2, lty=2)
+                    })
+
+    if(showPlot){
+     print(p)
   }
 
 
@@ -257,7 +271,12 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     attributes(AOA)<- c(attributes(AOA),attr)
   }
   names(AOA)[names(AOA)=="expectedError"] <- paste0("expected_",model$metric)
-  return(AOA)
+  #return(AOA)
+
+    return(list(AOA = AOA,
+                plot = p))
+
+
 }
 
 

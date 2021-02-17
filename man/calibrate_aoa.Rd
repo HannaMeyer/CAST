@@ -39,8 +39,8 @@ calibrate_aoa(
 \item{m}{Numeric. See mgcv::s}
 }
 \value{
-rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected performance based on the relationship.
-Data used for calibration are stored in the attributes.
+A list of length 2 with the elements "AOA": rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected performance based on the relationship.
+Data used for calibration are stored in the attributes. The second element is a plot showing the relationship.
 }
 \description{
 Performance metrics are calculated for moving windows of DI values of cross-validated training data
@@ -83,7 +83,7 @@ model <- train(trainDat[,which(names(trainDat)\%in\%variables)],
 AOA <- aoa(studyArea,model)
 
 AOA_new <- calibrate_aoa(AOA,model)
-plot(AOA_new[[3]])
+plot(AOA_new$AOA[[3]])
 }
 }
 \references{
