@@ -269,8 +269,9 @@ The relationship between error and DI can be used to limit predictioons to an ar
 This can be done using the result of calibrate_aoa which used the relationship analyzed in a window of DI values. The corresponding model (here: shape constrained additive models which is the default: Monotone increasing P-splines with the dimension of the basis used to represent the smooth term is 6 and a 2nd order penalty.) can be used to estimate the performance on a pixel level, which then allows limiting predictions using a threshold. Note that we used a multi-purpose CV to estimate the relationship between the DI and the RMSE here (see details in the paper).
 
 ```{r,message = FALSE, warning=FALSE}
-AOA <- calibrate_aoa(AOA_spatial,model,window.size = 5,length.out = 3, multiCV=TRUE,showPlot=TRUE)
-spplot(AOA[[3]],col.regions=viridis(100),main="expected RMSE")+
+AOA_calib <- calibrate_aoa(AOA_spatial,model,window.size = 5,length.out = 5, multiCV=TRUE,showPlot=FALSE)
+AOA_calib$plot
+spplot(AOA_calib$AOA$expected_RMSE,col.regions=viridis(100),main="expected RMSE")+
  spplot(AOA$AOA,col.regions=c("grey","transparent"))
 ```
 

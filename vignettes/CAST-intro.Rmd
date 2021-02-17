@@ -77,7 +77,7 @@ mapviewOptions(basemaps = c("Esri.WorldImagery"))
 mapview(data_sp)
 ```
 
-We see that the data are taken at 42 locations (SOURCEID) over the field. The loggers recorded data between 2007 and 2013. The data are given here on a daily basis.
+We see that the data are taken at 42 locations (SOURCEID) over the field. The loggers recorded data between 2007 and 2013 (the dataset here only contains the data from 2010 on). The data are given here on a daily basis.
 
 
 ### Data subsetting
