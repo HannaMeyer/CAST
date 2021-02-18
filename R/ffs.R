@@ -45,9 +45,7 @@
 #' @note This validation is particulary suitable for spatial
 #' leave-location-out cross validations where variable selection
 #' MUST be based on the performance of the model on the hold out station.
-#' See \href{https://doi.org/10.1016/j.envsoft.2017.12.001}{Meyer et al. (2018)}
-#' and \href{https://doi.org/10.1016/j.ecolmodel.2019.108815}{Meyer et al. (2019)}
-#' for further details.
+#' See Meyer et al. (2018) and Meyer et al. (2019) for further details.
 #'
 #' @author Hanna Meyer
 #' @seealso \code{\link{train}},\code{\link{bss}},
@@ -55,8 +53,8 @@
 #' @references
 #' \itemize{
 #' \item Gasch, C.K., Hengl, T., Gräler, B., Meyer, H., Magney, T., Brown, D.J. (2015): Spatio-temporal interpolation of soil water, temperature, and electrical conductivity in 3D+T: the Cook Agronomy Farm data set. Spatial Statistics 14: 70-90.
-#' \item Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.
-#' \item Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance of spatial predictor variable selection in machine learning applications - Moving from data reproduction to spatial prediction. Ecological Modelling. 411, 108815.
+#' \item Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.  \doi{10.1016/j.envsoft.2017.12.001}
+#' \item Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance of spatial predictor variable selection in machine learning applications - Moving from data reproduction to spatial prediction. Ecological Modelling. 411, 108815. \doi{10.1016/j.ecolmodel.2019.108815}
 #' }
 #' @examples
 #' \dontrun{
