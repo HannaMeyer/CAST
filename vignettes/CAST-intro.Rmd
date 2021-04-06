@@ -227,7 +227,7 @@ We see that the variable selection does not only have an effect on the statistic
 
 ## Area of Applicability
 Still it is required to analyse if the model can be applied to the entire study area of if there are lcoations that are very different in their predictor properties to what the model has learned from. See more details in the vignette on the Area of applicability and 
-[Meyer and Pebesma 2020](https://arxiv.org/abs/2005.07939/).
+[Meyer and Pebesma 2020](https://arxiv.org/abs/2005.07939).
 
 ```{r, message = FALSE, warning=FALSE}
 library(latticeExtra)
@@ -257,7 +257,7 @@ The intention of showing the motivation of CAST is also the reason why the coord
 
 ## Further reading
 
-* Meyer, H., Pebesma, E.: Predicting into unknown space? Estimating the area of applicability of spatial prediction models. [https://arxiv.org/abs/2005.07939/]
+* Meyer, H., Pebesma, E.: Predicting into unknown space? Estimating the area of applicability of spatial prediction models. [https://arxiv.org/abs/2005.07939]
 
 * Meyer H, Reudenbach C, Wöllauer S,Nauss T (2019) Importance of spatial predictor variable selection in machine learning applications–Moving from data reproduction to spatial prediction. Ecological Modelling 411: 108815 [https://doi.org/10.1016/j.ecolmodel.2019.108815]
 

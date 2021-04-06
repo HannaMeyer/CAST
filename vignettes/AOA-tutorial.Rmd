@@ -22,11 +22,11 @@ knitr::opts_chunk$set(fig.width = 8.83)
 # Introduction
 In spatial predictive mapping, models are often applied to make predictions far beyond sampling locations (i.e. field observarions used to map a variable even on a global scale), where new locations might considerably differ in their environmental properties. However, areas in the predictor space without support of training data are problematic. The model has no knowledge about these environments and predictions for such areas have to be considered highly uncertain. 
 
-Here we implement the methodology described in [Meyer\&Pebesma (2020)](https://arxiv.org/abs/2005.07939/) to estimate the "area of applicability" (AOA) of spatial prediction models. The AOA is defined as the area where we enabled the model to learn about relationships based on the training data, and where the estimated cross-validation performance holds. To delineate the AOA, first an dissimilarity index (DI) is calculated that is based on distances to the training data in the multidimensional predictor variable space. To account for relevance of predictor variables responsible for prediction patterns we weight variables by the model-derived importance scores prior to distance calculation. The AOA is then derived by applying a threshold based on the DI observed in the training data using cross-validation.
+Here we implement the methodology described in [Meyer\&Pebesma (2020)](https://arxiv.org/abs/2005.07939) to estimate the "area of applicability" (AOA) of spatial prediction models. The AOA is defined as the area where we enabled the model to learn about relationships based on the training data, and where the estimated cross-validation performance holds. To delineate the AOA, first an dissimilarity index (DI) is calculated that is based on distances to the training data in the multidimensional predictor variable space. To account for relevance of predictor variables responsible for prediction patterns we weight variables by the model-derived importance scores prior to distance calculation. The AOA is then derived by applying a threshold based on the DI observed in the training data using cross-validation.
  
 This tutorial shows an example of how to estimate the area of applicability of spatial prediction models. 
 
-For further information see: Meyer, H., Pebesma, E. (2020): Predicting into unknown space? Estimating the area of applicability of spatial prediction models. [https://arxiv.org/abs/2005.07939/]
+For further information see: Meyer, H., Pebesma, E. (2020): Predicting into unknown space? Estimating the area of applicability of spatial prediction models. [https://arxiv.org/abs/2005.07939]
 
 ### Getting started
 ```{r, message = FALSE, warning=FALSE}
@@ -280,7 +280,7 @@ spplot(AOA_calib$AOA$expected_RMSE,col.regions=viridis(100),main="expected RMSE"
 The example above used simulated data so that it allows to analyze the reliability of the AOA. However, a simulated area-wide response is not available in usual prediction tasks. Therefore, as a second example the AOA is estimated for a dataset that has point observations as a reference only.
 
 ## Data and preprocessing
-To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251/) and available via the GSIF package ([Hengl 2017](https://CRAN.R-project.org/package=GSIF/)). The dataset included in CAST is a re-structured dataset. Find more details also in the vignette "Introduction to CAST".
+To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251/). The dataset included in CAST is a re-structured dataset. Find more details also in the vignette "Introduction to CAST".
 We will use soil moisture (VW) as response variable here. Hence, we're aiming at making a spatial continuous prediction based on limited measurements from data loggers.
 
 ```{r, message = FALSE, warning=FALSE}

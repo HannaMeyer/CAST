@@ -1,2 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^.*CAST-intro_files
+^.*CAST-intro_cache
+vignettes/CAST-intro_cache
+vignettes/CAST-intro_files

@@ -65,8 +65,7 @@
 #'}
 #'
 #' # or perform model with target-oriented validation (LLO CV)
-#' #the example is taken from the GSIF package and is described
-#' #in Gasch et al. (2015). The ffs approach for this dataset is described in
+#' #the example is described in Gasch et al. (2015). The ffs approach for this dataset is described in
 #' #Meyer et al. (2018). Due to high computation time needed, only a small and thus not robust example
 #' #is shown here.
 #'

@@ -1,3 +1,6 @@
+# `CAST` 0.5.1
+* bugfix: fix problem that GSIF package became unavailable on CRAN 
+
 # `CAST` 0.5.0
 * new feature: 
   * AOA can run in parallel

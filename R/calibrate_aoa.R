@@ -195,6 +195,10 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     errormodel <- lm(metric ~ DI, data = performance)
   }
   if(calib=="scam"){
+    if (!requireNamespace("scam", quietly = TRUE)) {
+      stop("Package \"scam\" needed for this function to work. Please install it.",
+           call. = FALSE)
+    }
     if (model$maximize){ # e.g. accuracy, kappa, r2
       bs="mpd"
     }else{

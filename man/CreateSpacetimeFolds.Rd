@@ -49,17 +49,16 @@ should be similar in each fold (class="LUC").
 Standard k-fold cross-validation can lead to considerable misinterpretation in spatial-temporal modelling tasks. This function can be used to prepare a Leave-Location-Out, Leave-Time-Out or Leave-Location-and-Time-Out cross-validation as target-oriented validation strategies for spatial-temporal prediction tasks. See Meyer et al. (2018) for further information.
 }
 \examples{
-library(GSIF)
-data(cookfarm)
+dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 ### Prepare for 10-fold Leave-Location-and-Time-Out cross validation
-indices <- CreateSpacetimeFolds(cookfarm$readings,"SOURCEID","Date")
+indices <- CreateSpacetimeFolds(dat,"SOURCEID","Date")
 str(indices)
 ### Prepare for 10-fold Leave-Location-Out cross validation
-indices <- CreateSpacetimeFolds(cookfarm$readings,spacevar="SOURCEID")
+indices <- CreateSpacetimeFolds(dat,spacevar="SOURCEID")
 str(indices)
 ### Prepare for leave-One-Location-Out cross validation
-indices <- CreateSpacetimeFolds(cookfarm$readings,spacevar="SOURCEID",
-k=length(unique(cookfarm$readings$SOURCEID)))
+indices <- CreateSpacetimeFolds(dat,spacevar="SOURCEID",
+k=length(unique(dat$SOURCEID)))
 str(indices)
 }
 \references{
