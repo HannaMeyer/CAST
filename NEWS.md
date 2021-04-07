@@ -1,5 +1,5 @@
 # `CAST` 0.5.1
-* bugfix: fix problem that GSIF package became unavailable on CRAN 
+* resolved dependence on package "GSIF" which was removed from the CRAN repository  
 
 # `CAST` 0.5.0
 * new feature: 
