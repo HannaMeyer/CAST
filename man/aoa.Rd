@@ -16,7 +16,7 @@ aoa(
 )
 }
 \arguments{
-\item{newdata}{A RasterStack, RasterBrick or data.frame containing the data
+\item{newdata}{A RasterStack, RasterBrick, SpatRaster or data.frame containing the data
 the model was meant to make predictions for.}
 
 \item{model}{A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds}

@@ -8,7 +8,7 @@
 #' variable importance of the machine learning algorithm used for model training.
 #' The AOA is derived by applying a threshold on the DI which is the (outlier-removed)
 #' maximum DI of the cross-validated training data.
-#' @param newdata A RasterStack, RasterBrick or data.frame containing the data
+#' @param newdata A RasterStack, RasterBrick, SpatRaster or data.frame containing the data
 #' the model was meant to make predictions for.
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
 #' @param cl A cluster object e.g. created with doParallel. Should only be used if newdata is large.
@@ -119,11 +119,19 @@ aoa <- function(newdata,
     }
   }
   as_stars <- FALSE
+  as_terra <- FALSE
   if (inherits(newdata, "stars")) {
     if (!requireNamespace("stars", quietly = TRUE))
       stop("package stars required: install that first")
     newdata = methods::as(newdata, "Raster")
     as_stars <- TRUE
+  }
+
+  if (inherits(newdata, "SpatRaster")) {
+    if (!requireNamespace("terra", quietly = TRUE))
+      stop("package terra required: install that first")
+    newdata = methods::as(newdata, "Raster")
+    as_terra <- TRUE
   }
   #### Prepare output as either as RasterLayer or vector:
   out <- NA
@@ -299,6 +307,8 @@ aoa <- function(newdata,
     out <- raster::stack(out,AOA)
     if (as_stars)
       out <- split(stars::st_as_stars(out), "band")
+    if(as_terra)
+      out = methods::as(out, "SpatRaster")
   }else{
     out <- DI_out
     AOA <- rep(1,length(out))
