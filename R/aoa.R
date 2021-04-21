@@ -8,7 +8,7 @@
 #' variable importance of the machine learning algorithm used for model training.
 #' The AOA is derived by applying a threshold on the DI which is the (outlier-removed)
 #' maximum DI of the cross-validated training data.
-#' @param newdata A RasterStack, RasterBrick, SpatRaster or data.frame containing the data
+#' @param newdata A RasterStack, RasterBrick, stars object, SpatRaster or data.frame containing the data
 #' the model was meant to make predictions for.
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
 #' @param cl A cluster object e.g. created with doParallel. Should only be used if newdata is large.
