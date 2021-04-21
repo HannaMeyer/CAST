@@ -18,6 +18,6 @@ Depends: R (>= 3.5.0)
 Imports: caret, stats, utils, ggplot2, graphics, reshape, FNN, plyr, zoo, methods, grDevices, data.table, lattice
 Suggests: doParallel, randomForest, lubridate, raster, sp, knitr, mapview,
     rmarkdown, sf, scales, parallel, latticeExtra, virtualspecies, gridExtra, 
-    viridis, rgeos, stars, scam
-RoxygenNote: 7.1.0
+    viridis, rgeos, stars, scam, terra
+RoxygenNote: 7.1.1
 VignetteBuilder: knitr
