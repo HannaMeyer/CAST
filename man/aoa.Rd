@@ -12,11 +12,12 @@ aoa(
   weight = NA,
   variables = "all",
   folds = NULL,
-  returnTrainDI = TRUE
+  returnTrainDI = TRUE,
+  distcalc = "FNN"
 )
 }
 \arguments{
-\item{newdata}{A RasterStack, RasterBrick, SpatRaster or data.frame containing the data
+\item{newdata}{A RasterStack, RasterBrick, stars object, SpatRaster or data.frame containing the data
 the model was meant to make predictions for.}
 
 \item{model}{A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds}
@@ -34,6 +35,8 @@ of the model are used or if no model is given then of the train dataset.}
 Should be used if replicates are present. Only required if no model is given.}
 
 \item{returnTrainDI}{A logical: should the DI value of the cross-validated training data be returned as a attribute?}
+
+\item{distcalc}{A string: use "FNN" (default) or "Rfast" package for distance calculation}
 }
 \value{
 A RasterStack or data.frame with the DI and AOA

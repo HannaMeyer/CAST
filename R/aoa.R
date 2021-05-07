@@ -19,6 +19,7 @@
 #' @param folds Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 #' Should be used if replicates are present. Only required if no model is given.
 #' @param returnTrainDI A logical: should the DI value of the cross-validated training data be returned as a attribute?
+#' @param distcalc A string: use "FNN" (default) or "Rfast" package for distance calculation
 #' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
 #'
@@ -106,7 +107,8 @@ aoa <- function(newdata,
                 weight=NA,
                 variables="all",
                 folds=NULL,
-                returnTrainDI=TRUE) {
+                returnTrainDI=TRUE,
+                distcalc = "FNN") {
 
   ### if not specified take all variables from train dataset as default:
   if(is.null(train)){train <- model$trainingData}
@@ -217,62 +219,114 @@ aoa <- function(newdata,
   #### For each pixel caclculate distance to each training point and search for
   #### min distance:
 
-  distfun <- function(x){
-    if(any(is.na(x))){
-      return(NA)
+
+  # distcalc FNN --------------
+  if(distcalc == "FNN"){
+
+    distfun <- function(x){
+      if(any(is.na(x))){
+        return(NA)
+      }else{
+        tmp <- FNN::knnx.dist(t(matrix(x)),train,k=1)
+        return(min(tmp))
+      }
+    }
+    if (!is.null(cl)){
+      mindist <- parallel::parApply(cl=cl,X=newdata,MARGIN=1,FUN=distfun)
     }else{
-      tmp <- FNN::knnx.dist(t(matrix(x)),train,k=1)
-      return(min(tmp))
-    }
-  }
-  if (!is.null(cl)){
-    mindist <- parallel::parApply(cl=cl,X=newdata,MARGIN=1,FUN=distfun)
-  }else{
-    mindist <- apply(newdata,1,FUN=distfun)
-  }
-
-  if(!is.null(model)&is.null(folds)){
-    CVfolds <- tryCatch(reshape::melt(model$control$indexOut),
-                        error=function(e) e)
-    if(inherits(CVfolds, "error")){
-      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
-    }else{
-      CVfolds <- CVfolds[order(CVfolds$value),]
-    }
-  }
-
-  # calculate average mean distance between training data
-
-  trainDist_avrg <-  apply(train,1,FUN=function(x){
-    mean(FNN::knnx.dist(train, t(data.frame(x)),
-                   k=nrow(train))[-1],na.rm=TRUE)
-
-  })
-  trainDist_avrgmean <- mean(trainDist_avrg,na.rm=TRUE)
-
-
- # trainDist_mean <- c()
-  trainDist_min <- c()
-  for (i in 1:nrow(train)){
-    #calculate distance to other training data:
-    trainDist <- FNN::knnx.dist(t(matrix(train[i,])),train,k=1)
-    trainDist[i] <- NA
-
-    # If data are highly clustered (repliates) make sure that distance to data from same
-    # cluster are excluded. Only required if no model with CV folds is given:
-    if (!is.null(folds)){
-      trainDist[folds==folds[i]] <- NA
+      mindist <- apply(newdata,1,FUN=distfun)
     }
 
-    # if folds are not manually assigned, CV folds from the model will be used
-    # to derive the threshold on the DI:
-    if(!is.na(model[1])){
-      trainDist[CVfolds$L1==CVfolds$L1[i]] <- NA
+    if(!is.null(model)&is.null(folds)){
+      CVfolds <- tryCatch(reshape::melt(model$control$indexOut),
+                          error=function(e) e)
+      if(inherits(CVfolds, "error")){
+        message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+      }else{
+        CVfolds <- CVfolds[order(CVfolds$value),]
+      }
     }
-    # get minimum and mean distance to other training locations:
-   # trainDist_mean <- c(trainDist_mean,mean(trainDist,na.rm=T))
-    trainDist_min <- c(trainDist_min,min(trainDist,na.rm=T))
+
+    # calculate average mean distance between training data
+
+    trainDist_avrg <-  apply(train,1,FUN=function(x){
+      mean(FNN::knnx.dist(train, t(data.frame(x)),
+                          k=nrow(train))[-1],na.rm=TRUE)
+
+    })
+    trainDist_avrgmean <- mean(trainDist_avrg,na.rm=TRUE)
+
+
+    # trainDist_mean <- c()
+    trainDist_min <- c()
+    for (i in 1:nrow(train)){
+      #calculate distance to other training data:
+      trainDist <- FNN::knnx.dist(t(matrix(train[i,])),train,k=1)
+      trainDist[i] <- NA
+
+      # If data are highly clustered (repliates) make sure that distance to data from same
+      # cluster are excluded. Only required if no model with CV folds is given:
+      if (!is.null(folds)){
+        trainDist[folds==folds[i]] <- NA
+      }
+
+      # if folds are not manually assigned, CV folds from the model will be used
+      # to derive the threshold on the DI:
+      if(!is.na(model[1])){
+        trainDist[CVfolds$L1==CVfolds$L1[i]] <- NA
+      }
+      # get minimum and mean distance to other training locations:
+      # trainDist_mean <- c(trainDist_mean,mean(trainDist,na.rm=T))
+      trainDist_min <- c(trainDist_min,min(trainDist,na.rm=T))
+    }
+
+
   }
+
+
+  # distcalc Rfast ------------
+  if(distcalc == "Rfast"){
+
+    mindist = as.numeric(Rfast::dista(xnew = newdata, x = train, type = "euclidean", k = 1))
+
+    if (!is.null(model) & is.null(folds)) {
+      CVfolds <- tryCatch(reshape::melt(model$control$indexOut),
+                          error = function(e) e)
+      if (inherits(CVfolds, "error")) {
+        message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+      }
+      else {
+        CVfolds <- CVfolds[order(CVfolds$value), ]
+      }
+    }
+
+    # calculate distance matrix of train
+    trainDist <- Rfast::dista(xnew = train, x = train, type = "euclidean")
+
+    # mask diagonal
+    trainDist[row(trainDist) == col(trainDist)] <- NA
+
+    # average distance between training data
+    trainDist_avrgmean <- mean(trainDist, na.rm = TRUE)
+
+
+    # mask folds
+    # change NA to Inf for minimum to exclude from minimum calculation
+    trainDist[is.na(trainDist)] <- Inf
+    for (i in 1:nrow(trainDist)) {
+      if (!is.null(folds)) {
+        trainDist[i,folds == folds[i]] <- Inf
+      }
+      if (!is.na(model[1])) {
+        trainDist[i,CVfolds$L1 == CVfolds$L1[i]] <- Inf
+      }
+    }
+
+    trainDist_min = Rfast::rowMins(trainDist, value = TRUE)
+
+  }
+
+
 
   #scale the distance to nearest training point by average distance of the training data
   #trainDist_avrgmean <- mean(trainDist_mean)
