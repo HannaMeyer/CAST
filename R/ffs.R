@@ -169,6 +169,14 @@ ffs <- function (predictors,
         print(paste0("note: maximum ncomp is ", minVar))
       }
     }
+    #adaptations for tuning of ranger:
+    if(method=="ranger"&!is.null(tuneGrid)&any(tuneGrid$mtry>minVar)){
+      tuneGrid$mtry <- minVar
+      if(verbose){
+        print("invalid value for mtry. Reset to valid range.")
+      }
+    }
+
     #train model:
     model <- caret::train(predictors[,minGrid[i,]],
                           response,
@@ -178,9 +186,8 @@ ffs <- function (predictors,
                           tuneLength = tuneLength,
                           tuneGrid = tuneGrid,
                           ...)
-    if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>minVar)){
-      tuneGrid <- tuneGrid_orig
-    }
+
+    tuneGrid <- tuneGrid_orig
 
     ### compare the model with the currently best model
     actmodelperf <- evalfunc(model$results[,names(model$results)==metric])
@@ -247,6 +254,7 @@ ffs <- function (predictors,
         print(paste0("model using additional variable ",nextvars[i], " will be trained now..." ))
       }
       set.seed(seed)
+
       #adaptation for pls:
       tuneGrid_orig <- tuneGrid
       if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>ncol(predictors[,c(startvars,nextvars[i])]))){
@@ -254,6 +262,15 @@ ffs <- function (predictors,
         if(verbose){
           print(paste0("note: maximum ncomp is ", ncol(predictors[,c(startvars,nextvars[i])])))
         }}
+      #adaptation for ranger:
+      if(method=="ranger"&!is.null(tuneGrid)&any(tuneGrid$mtry>ncol(predictors[,c(startvars,nextvars[i])]))){
+        tuneGrid$mtry[tuneGrid$mtry>ncol(predictors[,c(startvars,nextvars[i])])] <- ncol(predictors[,c(startvars,nextvars[i])])
+        if(verbose){
+          print("invalid value for mtry. Reset to valid range.")
+        }
+      }
+
+
 
       model <- caret::train(predictors[,c(startvars,nextvars[i])],
                             response,

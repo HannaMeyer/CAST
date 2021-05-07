@@ -63,6 +63,7 @@
 calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
                           length.out = 10, maskAOA=TRUE, showPlot=TRUE,k=6,m=2){
   as_stars <- FALSE
+  as_terra <- FALSE
   if (inherits(AOA, "stars")) {
     if (!requireNamespace("stars", quietly = TRUE))
       stop("package stars required: install that first")
@@ -70,6 +71,15 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     AOA <- methods::as(AOA, "Raster")
     attributes(AOA)<- c(attributes(AOA),attr)
     as_stars <- TRUE
+  }
+
+  if (inherits(AOA, "SpatRaster")) {
+    if (!requireNamespace("terra", quietly = TRUE))
+      stop("package terra required: install that first")
+    attr <- attributes(AOA)[c("aoa_stats","TrainDI")]
+    AOA <- methods::as(AOA, "Raster")
+    attributes(AOA)<- c(attributes(AOA),attr)
+    as_terra <- TRUE
   }
 
   if(multiCV){
@@ -272,6 +282,11 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
   if (as_stars){
     AOA <- split(stars::st_as_stars(AOA), "band")
+    attributes(AOA)<- c(attributes(AOA),attr)
+  }
+
+  if(as_terra){
+    AOA <- methods::as(AOA, "SpatRaster")
     attributes(AOA)<- c(attributes(AOA),attr)
   }
   names(AOA)[names(AOA)=="expectedError"] <- paste0("expected_",model$metric)
