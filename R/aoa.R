@@ -118,6 +118,11 @@ aoa <- function(newdata,
       variables <- names(train)
     }
   }
+
+  if(any(variables%in%names(newdata)==FALSE)){
+    stop("names of newdata don't match names of train data in the model")
+  }
+
   as_stars <- FALSE
   as_terra <- FALSE
   if (inherits(newdata, "stars")) {
@@ -207,7 +212,7 @@ aoa <- function(newdata,
   if(!inherits(weight, "error")){
     train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
   }
-  newdata <- scale(newdata,center=scaleparam$`scaled:center`,#scaleparam$`scaled:center`
+  newdata <- scale(newdata,center=scaleparam$`scaled:center`,
                    scale=scaleparam$`scaled:scale`)
 
   if(!inherits(weight, "error")){
@@ -245,13 +250,13 @@ aoa <- function(newdata,
 
   trainDist_avrg <-  apply(train,1,FUN=function(x){
     mean(FNN::knnx.dist(train, t(data.frame(x)),
-                   k=nrow(train))[-1],na.rm=TRUE)
+                        k=nrow(train))[-1],na.rm=TRUE)
 
   })
   trainDist_avrgmean <- mean(trainDist_avrg,na.rm=TRUE)
 
 
- # trainDist_mean <- c()
+  # trainDist_mean <- c()
   trainDist_min <- c()
   for (i in 1:nrow(train)){
     #calculate distance to other training data:
@@ -270,7 +275,7 @@ aoa <- function(newdata,
       trainDist[CVfolds$L1==CVfolds$L1[i]] <- NA
     }
     # get minimum and mean distance to other training locations:
-   # trainDist_mean <- c(trainDist_mean,mean(trainDist,na.rm=T))
+    # trainDist_mean <- c(trainDist_mean,mean(trainDist,na.rm=T))
     trainDist_min <- c(trainDist_min,min(trainDist,na.rm=T))
   }
 
@@ -282,12 +287,12 @@ aoa <- function(newdata,
   TrainDI <- trainDist_min/trainDist_avrgmean
   AOA_train_stats <- quantile(TrainDI,
                               probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1),na.rm = TRUE)
-#  if(is.null(thres)){
-    thres <- grDevices::boxplot.stats(TrainDI)$stats[5]
-    lower_thres <- grDevices::boxplot.stats(TrainDI)$stats[1]
-#  }else{
-#    thres <- quantile(TrainDI,probs = thres,na.rm=TRUE)
-#  }
+  #  if(is.null(thres)){
+  thres <- grDevices::boxplot.stats(TrainDI)$stats[5]
+  lower_thres <- grDevices::boxplot.stats(TrainDI)$stats[1]
+  #  }else{
+  #    thres <- quantile(TrainDI,probs = thres,na.rm=TRUE)
+  #  }
   #### Create Mask for AOA and return statistics
   if (inherits(out, "RasterLayer")){
     raster::values(out) <- DI_out
