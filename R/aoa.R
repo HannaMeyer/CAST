@@ -111,13 +111,13 @@ aoa <- function(newdata,
                 returnTrainDI=TRUE) {
 
   # if not provided, compute train DI
-  if(is.na(trainDI)){
-    print("No trainDI provided.")
-    print("Computing DI of training data...")
+  if(!inherits(trainDI, "trainDI")){
+    message("No trainDI provided.")
+    message("Computing DI of training data...")
     trainDI = trainDI(model, train, variables, weight, folds, returnTrainDI)
   }
 
-  print("Computing DI of newdata...")
+  message("Computing DI of newdata...")
 
 
   # check if variables are in newdata
@@ -225,7 +225,7 @@ aoa <- function(newdata,
   DI_out <- mindist/trainDI$trainDist_avrgmean
 
 
-  print("Computing AOA...")
+  message("Computing AOA...")
 
   #### Create Mask for AOA and return statistics
   if (inherits(out, "RasterLayer")){

@@ -15,6 +15,7 @@
 #'
 #' @seealso \code{\link{aoa}}
 #' @importFrom graphics boxplot
+#' @import ggplot2
 #'
 #' @return A trainDI object
 #' @export trainDI
@@ -141,21 +142,44 @@ trainDI = function(model,
 }
 
 
+#' Print TrainDI
+#' @title Print TrainDI
+#' @param x trainDI object
+#' @param ... other params
+#' @export
 
+print.trainDI = function(x, ...){
+  cat(paste0("DI of ", nrow(x$train), " observation \n"))
+  cat(paste0("Predictors used:"), x$variables, "\n")
 
-print.trainDI = function(x){
-  cat("AOA Threshold \n")
+  cat("\nAOA Threshold \n")
   cat(x$thres)
 }
 
 
-show.trainDI = function(x){
+#' Show TrainDI
+#' @title Show TrainID
+#' @param x trainDI object
+#' @param ... other params
+#' @export
+
+show.trainDI = function(x, ...){
   print.trainDI(x)
 }
 
+#' Plot TrainDI
+#' @title Plot TrainDI
+#' @param x trainDI object
+#' @param ... other params
+#' @export
 
-plot.trainDI = function(x){
-  boxplot(x$TrainDI)
+plot.trainDI = function(x, ...){
+  ggplot(data.frame(TrainDI = x$TrainDI), aes_string(x = "TrainDI"))+
+    geom_density()+
+    geom_vline(xintercept = x$lower_thres, linetype = "dashed")+
+    geom_vline(xintercept = x$thres, linetype = "dashed")+
+    theme_bw()
+
 }
 
 

@@ -1,0 +1,107 @@
+---
+title: "AOA Code Improvements"
+author: "Marvin Ludwig"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_document:
+    toc: true
+    theme: united
+vignette: >
+  %\VignetteIndexEntry{CAST - Code updates}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+```{r, message = FALSE, warning=FALSE}
+library(CAST)
+library(virtualspecies)
+library(caret)
+library(raster)
+library(sp)
+library(sf)
+library(viridis)
+library(latticeExtra)
+library(gridExtra)
+```
+
+
+# Example Data
+
+Using the same setup as AOA Tutorial. Look there for details.
+
+
+```{r, message = FALSE, warning=FALSE}
+predictors <- stack(system.file("extdata","bioclim.grd",package="CAST"))
+response <- generateSpFromPCA(predictors,
+                              means = c(3,1),sds = c(2,2), plot=F)$suitab.raster
+
+
+# Simulating sampling locations
+mask <- predictors[[1]]
+values(mask)[!is.na(values(mask))] <- 1
+mask <- rasterToPolygons(mask)
+set.seed(15)
+samplepoints <- spsample(mask,20,"random")
+
+
+# Generate Training Data
+trainDat <- extract(predictors,samplepoints,df=TRUE)
+trainDat$response <- extract (response,samplepoints)
+trainDat <- trainDat[complete.cases(trainDat),]
+```
+
+### Train the model
+
+```{r,message = FALSE, warning=FALSE}
+set.seed(10)
+model <- train(trainDat[,names(predictors)],
+               trainDat$response,
+               method="rf",
+               importance=TRUE,
+               trControl = trainControl(method="cv"))
+```
+
+
+
+## AOA Calculation
+
+The aoa function works out of the box like previously, however the structure of the output changed slightly. The function now returns an object of class `aoa` which is just a list with two entries: 1. object of class `trainDI` and 2. the output raster or data.frame with the actual AOA results. In addition, there are now generic functions for plotting and printing the aoa.
+
+```{r,message = FALSE, warning=FALSE}
+AOA <- aoa(predictors, model)
+class(AOA)
+names(AOA)
+```
+
+
+## TrainDI
+
+The first list entry of the aoa output is the result of the new function `trainDI`. This function computes the Dissimilarity Index (DI) of the data used for model training which is needed for the DI threshold used for the AOA estimation. Since this threshold is only dependent on the training data it can be computed from the model alone and reused for different predictions later on. In addition, there are now generic functions for plotting and printing the DI.
+
+
+```{r, message = FALSE, warning = FALSE}
+DI = trainDI(model, returnTrainDI = TRUE)
+class(DI)
+str(DI)
+print(DI)
+plot(DI)
+```
+
+
+## Use TrainDI in aoa function
+
+Once the trainDI is computed, it can be reused for multiple predictions. This makes it much easier and faster to e.g. compute the AOA for multiple raster tiles in parallel. 
+
+```{r}
+
+DI = trainDI(model, returnTrainDI = TRUE)
+
+aoa1 = aoa(newdata = predictors, model = model, trainDI = DI)
+
+```
+
