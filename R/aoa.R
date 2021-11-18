@@ -11,6 +11,7 @@
 #' @param newdata A RasterStack, RasterBrick, stars object, SpatRaster or data.frame containing the data
 #' the model was meant to make predictions for.
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
+#' @param trainDI A trainDI object. Optional if \code{\link{trainDI}} was calculated beforehand.
 #' @param cl A cluster object e.g. created with doParallel. Should only be used if newdata is large.
 #' @param train A data.frame containing the data used for model training. Only required when no model is given
 #' @param weight A data.frame containing weights for each variable. Only required if no model is given.
@@ -101,6 +102,7 @@
 
 aoa <- function(newdata,
                 model=NA,
+                trainDI = NA,
                 cl=NULL,
                 train=NULL,
                 weight=NA,
@@ -108,21 +110,23 @@ aoa <- function(newdata,
                 folds=NULL,
                 returnTrainDI=TRUE) {
 
-  ### if not specified take all variables from train dataset as default:
-  if(is.null(train)){train <- model$trainingData}
-  if(nrow(train)<=1){stop("at least two training points need to be specified")}
-  if(length(variables)==1&&variables=="all"){
-    if(!is.na(model)[1]){
-      variables <- names(model$trainingData)[-which(names(model$trainingData)==".outcome")]
-    }else{
-      variables <- names(train)
-    }
+  # if not provided, compute train DI
+  if(is.na(trainDI)){
+    print("No trainDI provided.")
+    print("Computing DI of training data...")
+    trainDI = trainDI(model, train, variables, weight, folds, returnTrainDI)
   }
 
-  if(any(variables%in%names(newdata)==FALSE)){
+  print("Computing DI of newdata...")
+
+
+  # check if variables are in newdata
+  if(any(trainDI$variables %in% names(newdata)==FALSE)){
     stop("names of newdata don't match names of train data in the model")
   }
 
+
+  # handling of different raster formats
   as_stars <- FALSE
   as_terra <- FALSE
   if (inherits(newdata, "stars")) {
@@ -138,24 +142,16 @@ aoa <- function(newdata,
     newdata = methods::as(newdata, "Raster")
     as_terra <- TRUE
   }
-  #### Prepare output as either as RasterLayer or vector:
-  out <- NA
-  if (inherits(newdata, "Raster"))
-    out <- newdata[[1]]
 
-  #### Extract weights from trained model:
-  weight <- tryCatch(if(model$modelType=="Classification"){
-    as.data.frame(t(apply(caret::varImp(model,scale=F)$importance,1,mean)))
-  }else{
-    as.data.frame(t(caret::varImp(model,scale=F)$importance[,"Overall"]))
-  }, error=function(e) e)
-  if(!inherits(weight, "error")){
-    names(weight)<- rownames(caret::varImp(model,scale=F)$importance)
-  }else{
-    message("note: variables were not weighted either because no weights or model were given,
-    or no variable importance could be retrieved from the given model.
-    Check caret::varImp(model)")
+
+
+  # Prepare output as either as RasterLayer or vector:
+  out <- NA
+  if (inherits(newdata, "Raster")){
+    out <- newdata[[1]]
   }
+
+
 
   #### order data:
   if (inherits(newdata, "Raster")){
@@ -164,69 +160,57 @@ aoa <- function(newdata,
     }
     newdata <- raster::as.data.frame(newdata)
   }
-  newdata <- newdata[,na.omit(match(variables, names(newdata)))]
-  train <- train[,na.omit(match(variables, names(train)))]
-  if(!inherits(weight, "error")){
-    weight <- weight[,na.omit(match(variables, names(weight)))]
-    if (any(weight<0)){
-      weight[weight<0]<-0
-      message("negative weights were set to 0")
-    }
-  }
-  ##############################################################################
+  newdata <- newdata[,na.omit(match(trainDI$variables, names(newdata)))]
+
+
+
   ## Handling of categorical predictors:
-  catvars <- tryCatch(names(train)[which(sapply(train[,variables], class)%in%c("factor","character"))], error=function(e) e)
+  catvars <- trainDI$catvars
   if (!inherits(catvars,"error")&length(catvars)>0){
     for (catvar in catvars){
       # mask all unknown levels in newdata as NA (even technically no predictions can be made)
-      train[,catvar]<-droplevels(train[,catvar])
+      trainDI$train[,catvar]<-droplevels(trainDI$train[,catvar])
       newdata[,catvar] <- factor(newdata[,catvar])
-      newdata[!newdata[,catvar]%in%unique(train[,catvar]),catvar] <- NA
+      newdata[!newdata[,catvar]%in%unique(trainDI$train[,catvar]),catvar] <- NA
       newdata[,catvar] <- droplevels(newdata[,catvar])
       # then create dummy variables for the remaining levels in train:
-      dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = train),train)
-      dvi_newdata <- predict(caret::dummyVars(paste0("~",catvar), data=train),newdata)
+      dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = trainDI$train),trainDI$train)
+      dvi_newdata <- predict(caret::dummyVars(paste0("~",catvar), data=trainDI$train),newdata)
       dvi_newdata[is.na(newdata[,catvar]),] <- 0
-      train <- data.frame(train,dvi_train)
+      trainDI$train <- data.frame(trainDI$train,dvi_train)
       newdata <- data.frame(newdata,dvi_newdata)
-      if(!inherits(weight, "error")){
-        addweights <- data.frame(t(rep(weight[,which(names(weight)==catvar)],
-                                       ncol(dvi_train))))
-        names(addweights)<- colnames(dvi_train)
-        weight <- data.frame(weight,addweights)
-      }
-    }
-    if(!inherits(weight, "error")){
-      weight <- weight[,-which(names(weight)%in%catvars)]
+
     }
     newdata <- newdata[,-which(names(newdata)%in%catvars)]
-    train <- train[,-which(names(train)%in%catvars)]
-  }
-  ##############################################################################
-  #### Scale data and weight data if applicable:
-  train <- scale(train)
-  if (any(apply(train, 2, FUN=function(x){all(is.na(x))}))){
-    stop("some variables in train seem to have no variance")
-  }
-  scaleparam <- attributes(train)
-  if(!inherits(weight, "error")){
-    train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
-  }
-  newdata <- scale(newdata,center=scaleparam$`scaled:center`,
-                   scale=scaleparam$`scaled:scale`)
-
-  if(!inherits(weight, "error")){
-    newdata <- sapply(1:ncol(newdata),function(x){newdata[,x]*unlist(weight[x])})
+    trainDI$train <- trainDI$train[,-which(names(trainDI$train)%in%catvars)]
   }
 
-  #### For each pixel caclculate distance to each training point and search for
-  #### min distance:
+
+  newdata <- scale(newdata,center=trainDI$scaleparam$`scaled:center`,
+                   scale=trainDI$scaleparam$`scaled:scale`)
+
+  if(!inherits(trainDI$weight, "error")){
+    newdata <- sapply(1:ncol(newdata),function(x){newdata[,x]*unlist(trainDI$weight[x])})
+  }
+
+
+
+  # Distance Calculation ---------
+
 
   distfun <- function(x){
     if(any(is.na(x))){
       return(NA)
     }else{
-      tmp <- FNN::knnx.dist(t(matrix(x)),train,k=1)
+
+      # rescale and reweight train data
+      train_scaled = scale(trainDI$train,
+                           center = trainDI$scaleparam$`scaled:center`,
+                           scale = trainDI$scaleparam$`scaled:scale`)
+
+      train_scaled <- sapply(1:ncol(train_scaled),function(x){train_scaled[,x]*unlist(trainDI$weight[x])})
+
+      tmp <- FNN::knnx.dist(t(matrix(x)), train_scaled, k=1)
       return(min(tmp))
     }
   }
@@ -236,70 +220,20 @@ aoa <- function(newdata,
     mindist <- apply(newdata,1,FUN=distfun)
   }
 
-  if(!is.null(model)&is.null(folds)){
-    CVfolds <- tryCatch(reshape::melt(model$control$indexOut),
-                        error=function(e) e)
-    if(inherits(CVfolds, "error")){
-      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
-    }else{
-      CVfolds <- CVfolds[order(CVfolds$value),]
-    }
-  }
-
-  # calculate average mean distance between training data
-
-  trainDist_avrg <-  apply(train,1,FUN=function(x){
-    mean(FNN::knnx.dist(train, t(data.frame(x)),
-                        k=nrow(train))[-1],na.rm=TRUE)
-
-  })
-  trainDist_avrgmean <- mean(trainDist_avrg,na.rm=TRUE)
 
 
-  # trainDist_mean <- c()
-  trainDist_min <- c()
-  for (i in 1:nrow(train)){
-    #calculate distance to other training data:
-    trainDist <- FNN::knnx.dist(t(matrix(train[i,])),train,k=1)
-    trainDist[i] <- NA
+  DI_out <- mindist/trainDI$trainDist_avrgmean
 
-    # If data are highly clustered (repliates) make sure that distance to data from same
-    # cluster are excluded. Only required if no model with CV folds is given:
-    if (!is.null(folds)){
-      trainDist[folds==folds[i]] <- NA
-    }
 
-    # if folds are not manually assigned, CV folds from the model will be used
-    # to derive the threshold on the DI:
-    if(!is.na(model[1])){
-      trainDist[CVfolds$L1==CVfolds$L1[i]] <- NA
-    }
-    # get minimum and mean distance to other training locations:
-    # trainDist_mean <- c(trainDist_mean,mean(trainDist,na.rm=T))
-    trainDist_min <- c(trainDist_min,min(trainDist,na.rm=T))
-  }
+  print("Computing AOA...")
 
-  #scale the distance to nearest training point by average distance of the training data
-  #trainDist_avrgmean <- mean(trainDist_mean)
-  DI_out <- mindist/trainDist_avrgmean
-
-  # define threshold for AOA:
-  TrainDI <- trainDist_min/trainDist_avrgmean
-  AOA_train_stats <- quantile(TrainDI,
-                              probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1),na.rm = TRUE)
-  #  if(is.null(thres)){
-  thres <- grDevices::boxplot.stats(TrainDI)$stats[5]
-  lower_thres <- grDevices::boxplot.stats(TrainDI)$stats[1]
-  #  }else{
-  #    thres <- quantile(TrainDI,probs = thres,na.rm=TRUE)
-  #  }
   #### Create Mask for AOA and return statistics
   if (inherits(out, "RasterLayer")){
     raster::values(out) <- DI_out
 
     AOA <- out
     raster::values(AOA) <- 1
-    AOA[out>thres] <- 0
+    AOA[out>trainDI$thres] <- 0
     AOA <- raster::mask(AOA,out)
 
     #CVA <- out
@@ -310,29 +244,50 @@ aoa <- function(newdata,
 
 
     out <- raster::stack(out,AOA)
+
+
+    # handling of different raster formats
+
     if (as_stars)
       out <- split(stars::st_as_stars(out), "band")
     if(as_terra)
       out = methods::as(out, "SpatRaster")
+
+
+
   }else{
     out <- DI_out
     AOA <- rep(1,length(out))
-    AOA[out>thres] <- 0
+    AOA[out>trainDI$thres] <- 0
 
     CVA <- rep(1,length(out))
-    CVA[out>thres|out<lower_thres] <- 0
+    CVA[out>trainDI$thres|out<trainDI$lower_thres] <- 0
 
     #out <- list(out,AOA,CVA)
     out <- list(out,AOA)
   }
-  #names(out) <- c("DI","AOA","CVA")
+
   names(out) <- c("DI","AOA")
-  attributes(out)$aoa_stats <- list("Mean_train" = trainDist_avrgmean,
-                                    "threshold_stats" = AOA_train_stats,
-                                    "threshold" = thres,
-                                    "lower_threshold"=lower_thres)
+
+  attributes(out)$aoa_stats <- list("Mean_train" = trainDI$trainDist_avrgmean,
+                                    "threshold_stats" = trainDI$AOA_train_stats,
+                                    "threshold" = trainDI$thres,
+                                    "lower_threshold" = trainDI$lower_thres)
+
+
   if(returnTrainDI){
-    attributes(out)$TrainDI <- TrainDI
+    attributes(out)$TrainDI <- trainDI$TrainDI
   }
-  return(out)
+
+
+
+
+
+  outout = list(trainDI = trainDI,
+                predictionAOA = out)
+
+  class(outout) = "aoa"
+  return(outout)
+
+
 }

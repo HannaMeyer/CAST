@@ -118,7 +118,7 @@ plot(varImp(model,scale = F),col="black")
 ### Predict and calculate error
 The trainined model is then used to make predictions for the entire area of interest. Since a simulated area-wide response is used, it's possible in this tutorial to compare the predictions with the true reference.
 ```{r,message = FALSE, warning=FALSE}
-prediction <- predict(predictors,model)
+prediction <- raster::predict(predictors,model)
 truediff <- abs(prediction-response)
 spplot(stack(prediction,response),main=c("prediction","reference"))
 ```
@@ -130,6 +130,7 @@ The AOA calculation takes the model as input to extract the importance of the pr
 
 ```{r,message = FALSE, warning=FALSE}
 AOA <- aoa(predictors, model)
+AOA <- AOA$predictionAOA
 attributes(AOA)$aoa_stats
 ```
 
@@ -204,7 +205,7 @@ model_random <- train(trainDat[,names(predictors)],
                method="rf",
                importance=TRUE,
                trControl = trainControl(method="cv"))
-prediction_random <- predict(predictors,model_random)
+prediction_random <- raster::predict(predictors,model_random)
 print(model_random)
 ```
 
@@ -220,7 +221,7 @@ model <- train(trainDat[,names(predictors)],
                  trControl = trainControl(method="cv",index=folds$index))
   print(model)
   
-prediction <- predict(predictors,model)
+prediction <- raster::predict(predictors,model)
 ```
 
 
@@ -228,8 +229,10 @@ The AOA is then calculated (for comparison) using the model validated by random 
 
 ```{r,message = FALSE, warning=FALSE}
 AOA_spatial <- aoa(predictors, model)
+AOA_spatial <- AOA_spatial$predictionAOA
 
 AOA_random <- aoa(predictors, model_random)
+AOA_random <- AOA_random$predictionAOA
 ```
 
 
@@ -330,7 +333,7 @@ Next we're limniting the predictions to the AOA. Predictions outside the AOA sho
 
 ```{r, message = FALSE, warning=FALSE}
 AOA <- aoa(studyArea,model)
-
+AOA <- AOA$predictionAOA
 #### Plot results:
 grid.arrange(spplot(AOA$DI,col.regions=viridis(100),main="DI with sampling locations (red)")+
                spplot(as_Spatial(pts),zcol="ID",col.regions="red"),

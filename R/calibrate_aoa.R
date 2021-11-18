@@ -62,6 +62,7 @@
 
 calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
                           length.out = 10, maskAOA=TRUE, showPlot=TRUE,k=6,m=2){
+
   as_stars <- FALSE
   as_terra <- FALSE
   if (inherits(AOA, "stars")) {
@@ -106,6 +107,10 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
       # retrain model and calculate AOA
       model_new <- do.call(caret::train,mcall)
       AOA_new <- aoa(train_predictors,model_new)
+
+      # legacy change (very dirty, change this as soon as possible)
+      AOA_new <- AOA_new$predictionAOA
+
 
       # get cross-validated predictions, order them  and use only those located in the AOA
       preds <- model_new$pred

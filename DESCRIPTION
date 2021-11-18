@@ -19,5 +19,5 @@ Imports: caret, stats, utils, ggplot2, graphics, reshape, FNN, plyr, zoo, method
 Suggests: doParallel, randomForest, lubridate, raster, sp, knitr, mapview,
     rmarkdown, sf, scales, parallel, latticeExtra, virtualspecies, gridExtra, 
     viridis, rgeos, stars, scam, terra
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 VignetteBuilder: knitr

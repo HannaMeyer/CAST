@@ -234,12 +234,14 @@ library(latticeExtra)
 
 ### AOA for which the spatial CV error applies:
 AOA <- aoa(predictors_sp,ffsmodel_LLO)
+AOA <- AOA$predictionAOA
 
 spplot(prediction_ffs,main="prediction for the AOA \n(spatial CV error applied)")+
 spplot(AOA$AOA,col.regions=c("grey","transparent"))
 
 ### AOA for which the random CV error applies:
 AOA_random <- aoa(predictors_sp,model)
+AOA_random <- AOA_random$predictionAOA
 spplot(prediction,main="prediction for the AOA \n(random CV error applied)")+
 spplot(AOA_random$AOA,col.regions=c("grey","transparent"))
 
