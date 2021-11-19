@@ -4,14 +4,7 @@
 \alias{trainDI}
 \title{Dissimilarity Index}
 \usage{
-trainDI(
-  model,
-  train = NULL,
-  variables = "all",
-  weight = NA,
-  folds = NULL,
-  returnTrainDI = TRUE
-)
+trainDI(model, train = NULL, variables = "all", weight = NA, folds = NULL)
 }
 \arguments{
 \item{model}{A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds}
@@ -25,8 +18,6 @@ of the model are used or if no model is given then of the train dataset.}
 
 \item{folds}{Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 Should be used if replicates are present. Only required if no model is given.}
-
-\item{returnTrainDI}{A logical: should the DI value of the cross-validated training data be returned as a attribute?}
 }
 \value{
 A trainDI object

@@ -30,6 +30,10 @@ library(gridExtra)
 ```
 
 
+This vignette goes over recent changes (November 2021) of the Area of Applicability (AOA). The main change is the split of the AOA function in `trainDI` and `aoa`. This was mainly done for easier future developments and parallel computations.
+
+
+
 # Example Data
 
 Using the same setup as AOA Tutorial. Look there for details.
@@ -53,11 +57,8 @@ samplepoints <- spsample(mask,20,"random")
 trainDat <- extract(predictors,samplepoints,df=TRUE)
 trainDat$response <- extract (response,samplepoints)
 trainDat <- trainDat[complete.cases(trainDat),]
-```
 
-### Train the model
-
-```{r,message = FALSE, warning=FALSE}
+# Train the model
 set.seed(10)
 model <- train(trainDat[,names(predictors)],
                trainDat$response,
@@ -70,7 +71,7 @@ model <- train(trainDat[,names(predictors)],
 
 ## AOA Calculation
 
-The aoa function works out of the box like previously, however the structure of the output changed slightly. The function now returns an object of class `aoa` which is just a list with two entries: 1. object of class `trainDI` and 2. the output raster or data.frame with the actual AOA results. In addition, there are now generic functions for plotting and printing the aoa.
+The aoa function works out of the box like previously, however the structure of the output changed slightly. The function now returns an object of class `aoa` which is just a list with two entries: 1. object of class `trainDI` and 2. the output raster or data.frame with the actual AOA results.
 
 ```{r,message = FALSE, warning=FALSE}
 AOA <- aoa(predictors, model)
@@ -85,23 +86,20 @@ The first list entry of the aoa output is the result of the new function `trainD
 
 
 ```{r, message = FALSE, warning = FALSE}
-DI = trainDI(model, returnTrainDI = TRUE)
+DI = trainDI(model)
 class(DI)
 str(DI)
 print(DI)
 plot(DI)
 ```
 
-
-## Use TrainDI in aoa function
-
-Once the trainDI is computed, it can be reused for multiple predictions. This makes it much easier and faster to e.g. compute the AOA for multiple raster tiles in parallel. 
+Once the trainDI is computed, it can be reused for multiple predictions. This makes it much easier and faster to e.g. compute the AOA for multiple raster tiles in parallel. In addition the aoa also has a generic plotting function, displaying the distribution of the DIs from the training and prediction data.
 
 ```{r}
-
-DI = trainDI(model, returnTrainDI = TRUE)
-
+DI = trainDI(model)
 aoa1 = aoa(newdata = predictors, model = model, trainDI = DI)
-
+plot(aoa1)
 ```
+
+
 

@@ -11,7 +11,6 @@
 #' of the model are used or if no model is given then of the train dataset.
 #' @param folds Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 #' Should be used if replicates are present. Only required if no model is given.
-#' @param returnTrainDI A logical: should the DI value of the cross-validated training data be returned as a attribute?
 #'
 #' @seealso \code{\link{aoa}}
 #' @importFrom graphics boxplot
@@ -32,8 +31,7 @@ trainDI = function(model,
                    train = NULL,
                    variables = "all",
                    weight = NA,
-                   folds = NULL,
-                   returnTrainDI = TRUE){
+                   folds = NULL){
 
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
@@ -132,58 +130,12 @@ trainDI = function(model,
     #trainDist_min = trainDist_min,
     AOA_train_stats = AOA_train_stats,
     thres = thres,
-    lower_thres = lower_thres
+    lower_thres = lower_thres,
+    TrainDI = TrainDI
   )
-  if(returnTrainDI){aoa_results$TrainDI = TrainDI}
 
   class(aoa_results) = "trainDI"
 
   return(aoa_results)
 }
-
-
-#' Print TrainDI
-#' @title Print TrainDI
-#' @param x trainDI object
-#' @param ... other params
-#' @export
-
-print.trainDI = function(x, ...){
-  cat(paste0("DI of ", nrow(x$train), " observation \n"))
-  cat(paste0("Predictors used:"), x$variables, "\n")
-
-  cat("\nAOA Threshold \n")
-  cat(x$thres)
-}
-
-
-#' Show TrainDI
-#' @title Show TrainID
-#' @param x trainDI object
-#' @param ... other params
-#' @export
-
-show.trainDI = function(x, ...){
-  print.trainDI(x)
-}
-
-#' Plot TrainDI
-#' @title Plot TrainDI
-#' @param x trainDI object
-#' @param ... other params
-#' @export
-
-plot.trainDI = function(x, ...){
-  ggplot(data.frame(TrainDI = x$TrainDI), aes_string(x = "TrainDI"))+
-    geom_density()+
-    geom_vline(xintercept = x$lower_thres, linetype = "dashed")+
-    geom_vline(xintercept = x$thres, linetype = "dashed")+
-    theme_bw()
-
-}
-
-
-
-
-
 

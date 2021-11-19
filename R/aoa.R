@@ -19,7 +19,6 @@
 #' of the model are used or if no model is given then of the train dataset.
 #' @param folds Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 #' Should be used if replicates are present. Only required if no model is given.
-#' @param returnTrainDI A logical: should the DI value of the cross-validated training data be returned as a attribute?
 #' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
 #'
@@ -107,14 +106,13 @@ aoa <- function(newdata,
                 train=NULL,
                 weight=NA,
                 variables="all",
-                folds=NULL,
-                returnTrainDI=TRUE) {
+                folds=NULL) {
 
   # if not provided, compute train DI
   if(!inherits(trainDI, "trainDI")){
     message("No trainDI provided.")
     message("Computing DI of training data...")
-    trainDI = trainDI(model, train, variables, weight, folds, returnTrainDI)
+    trainDI = trainDI(model, train, variables, weight, folds)
   }
 
   message("Computing DI of newdata...")
@@ -273,12 +271,7 @@ aoa <- function(newdata,
                                     "threshold_stats" = trainDI$AOA_train_stats,
                                     "threshold" = trainDI$thres,
                                     "lower_threshold" = trainDI$lower_thres)
-
-
-  if(returnTrainDI){
-    attributes(out)$TrainDI <- trainDI$TrainDI
-  }
-
+  attributes(out)$TrainDI = trainDI$TrainDI
 
 
 
