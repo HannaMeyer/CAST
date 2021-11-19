@@ -17,6 +17,11 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 
+This vignette goes over recent changes (November 2021) of the Area of Applicability (AOA). The main change is the split of the AOA function into `trainDI` and `aoa`. This was mainly done for easier future developments and parallel computations. But the update also includes some new visualization methods for a better interpretation of the AOA.
+
+
+# Generate Example Data
+
 ```{r, message = FALSE, warning=FALSE}
 library(CAST)
 library(virtualspecies)
@@ -29,14 +34,7 @@ library(latticeExtra)
 library(gridExtra)
 ```
 
-
-This vignette goes over recent changes (November 2021) of the Area of Applicability (AOA). The main change is the split of the AOA function in `trainDI` and `aoa`. This was mainly done for easier future developments and parallel computations.
-
-
-
-# Example Data
-
-Using the same setup as AOA Tutorial. Look there for details.
+We will use the same data setup as the vignette "Area of applicability of spatial prediction models". Please have a look there for a general introduction to the AOA and the details about the example data generation.
 
 
 ```{r, message = FALSE, warning=FALSE}
@@ -45,38 +43,85 @@ response <- generateSpFromPCA(predictors,
                               means = c(3,1),sds = c(2,2), plot=F)$suitab.raster
 
 
-# Simulating sampling locations
 mask <- predictors[[1]]
 values(mask)[!is.na(values(mask))] <- 1
 mask <- rasterToPolygons(mask)
-set.seed(15)
-samplepoints <- spsample(mask,20,"random")
+
+# Generate Clustered Training Samples
+csample <- function(x,n,nclusters,maxdist,seed){
+  set.seed(seed)
+  cpoints <- sp::spsample(x, n = nclusters, type="random")
+  result <- cpoints
+  result$clstrID <- 1:length(cpoints)
+  for (i in 1:length(cpoints)){
+    ext <- rgeos::gBuffer(cpoints[i,], width = maxdist)
+    newsamples <- sp::spsample(ext, n = (n-nclusters)/nclusters, 
+                               type="random")
+    newsamples$clstrID <- rep(i,length(newsamples))
+    result <- rbind(result,newsamples)
+    
+  }
+  result$ID <- 1:nrow(result)
+  return(result)
+}
 
 
-# Generate Training Data
+samplepoints <- csample(mask,75,15,maxdist=0.20,seed=15)
+
+
 trainDat <- extract(predictors,samplepoints,df=TRUE)
 trainDat$response <- extract (response,samplepoints)
+trainDat <- merge(trainDat,samplepoints,by.x="ID",by.y="ID")
 trainDat <- trainDat[complete.cases(trainDat),]
+```
 
-# Train the model
+
+We first train a model with (in this case) inappropriate random cross-validation...
+```{r,message = FALSE, warning=FALSE}
 set.seed(10)
-model <- train(trainDat[,names(predictors)],
+model_random <- train(trainDat[,names(predictors)],
                trainDat$response,
                method="rf",
                importance=TRUE,
                trControl = trainControl(method="cv"))
+prediction_random <- raster::predict(predictors,model_random)
 ```
 
+...and a model based on leave-cluster-out cross-validation.
+```{r,message = FALSE, warning=FALSE}
+folds <- CreateSpacetimeFolds(trainDat, spacevar="clstrID",k=10)
+set.seed(15)
+model <- train(trainDat[,names(predictors)],
+                 trainDat$response,
+                     method="rf",
+                 importance=TRUE,
+                 tuneGrid = expand.grid(mtry = c(2:length(names(predictors)))),
+                 trControl = trainControl(method="cv",index=folds$index))
+
+prediction <- raster::predict(predictors,model)
+```
 
 
 ## AOA Calculation
 
-The aoa function works out of the box like previously, however the structure of the output changed slightly. The function now returns an object of class `aoa` which is just a list with two entries: 1. object of class `trainDI` and 2. the output raster or data.frame with the actual AOA results.
+The aoa function works out of the box like previously, however the structure of the output changed slightly. The function now returns an object of class `aoa` which is just a list with two entries: 1. object of class `trainDI` and 2. the output raster or data.frame with the actual AOA results. Note that plotting the results now requires you to access the list entry `predictionAOA`.
+
 
 ```{r,message = FALSE, warning=FALSE}
-AOA <- aoa(predictors, model)
-class(AOA)
-names(AOA)
+AOA_random <- aoa(predictors, model_random)
+
+class(AOA_random)
+names(AOA_random)
+```
+
+
+```{r,message = FALSE, warning=FALSE}
+grid.arrange(spplot(response,col.regions=viridis(100),
+            sp.layout=list("sp.points", samplepoints, col = "red", first = FALSE, cex=2), main = "Sampling Locations"),
+            spplot(AOA_random$predictionAOA$DI,col.regions=viridis(100),main="DI"),
+  spplot(prediction_random, col.regions=viridis(100),main="prediction for AOA \n(random CV error applies)")+
+         spplot(AOA_random$predictionAOA$AOA,col.regions=c("grey","transparent")),
+ncol=3)
 ```
 
 
@@ -86,20 +131,27 @@ The first list entry of the aoa output is the result of the new function `trainD
 
 
 ```{r, message = FALSE, warning = FALSE}
-DI = trainDI(model)
-class(DI)
-str(DI)
-print(DI)
-plot(DI)
+DI_spatial = trainDI(model)
+class(DI_spatial)
+str(DI_spatial)
+print(DI_spatial)
 ```
 
-Once the trainDI is computed, it can be reused for multiple predictions. This makes it much easier and faster to e.g. compute the AOA for multiple raster tiles in parallel. In addition the aoa also has a generic plotting function, displaying the distribution of the DIs from the training and prediction data.
+Plotting a trainDI object displays the distribution of the DI of the training data together with the lower and upper AOA thresholds (vertical lines).
+
+```{r, message = FALSE, warning = FALSE}
+plot(DI_spatial)
+```
+
+Once the trainDI is computed, it can be reused for multiple predictions. This makes it much easier and faster to e.g. compute the AOA for multiple raster tiles in parallel. In addition the aoa also has a generic plotting function, displaying the distribution of the DIs from the training and prediction data. Lets use it to compare the spatial and random CV models again.
 
 ```{r}
-DI = trainDI(model)
-aoa1 = aoa(newdata = predictors, model = model, trainDI = DI)
-plot(aoa1)
+AOA_spatial = aoa(newdata = predictors, model = model, trainDI = DI_spatial)
+
+grid.arrange(plot(AOA_spatial) + ggplot2::ggtitle("Spatial CV"),
+             plot(AOA_random) + ggplot2::ggtitle("Random CV"), ncol = 2)
+
 ```
 
-
+This makes the difference between spatial and random cross validation folds for clustered training samples very apparent. Using spatial CV, the DI of new locations (predictionDI) lied well within the DI of the training samples. Random CV on the other hand leads to many predictions outside the AOA thresholds.
 
