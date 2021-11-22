@@ -72,7 +72,7 @@ aoa_get_weights = function(model, variables){
 
 aoa_get_train <- function(model){
 
-  train <- model$trainingData
+  train <- as.data.frame(model$trainingData)
   return(train)
 
 
