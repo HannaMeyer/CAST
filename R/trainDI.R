@@ -25,9 +25,56 @@
 #' @references Meyer, H., Pebesma, E. (2020): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
 #' \url{https://arxiv.org/abs/2005.07939}
+#'
+#'
+#' @examples
+#' \dontrun{
+#' library(sf)
+#' library(raster)
+#' library(caret)
+#' library(viridis)
+#' library(latticeExtra)
+#' library(ggplot2)
+#'
+#' # prepare sample data:
+#' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
+#' dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
+#' pts <- st_as_sf(dat,coords=c("Easting","Northing"))
+#' pts$ID <- 1:nrow(pts)
+#' set.seed(100)
+#' pts <- pts[1:30,]
+#' studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
+#' trainDat <- extract(studyArea,pts,df=TRUE)
+#' trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
+#'
+#' # visualize data spatially:
+#' spplot(scale(studyArea))
+#' plot(studyArea$DEM)
+#' plot(pts[,1],add=TRUE,col="black")
+#'
+#' # train a model:
+#' set.seed(100)
+#' variables <- c("DEM","NDRE.Sd","TWI")
+#' model <- train(trainDat[,which(names(trainDat)%in%variables)],
+#' trainDat$VW, method="rf", importance=TRUE, tuneLength=1,
+#' trControl=trainControl(method="cv",number=5,savePredictions=T))
+#' print(model) #note that this is a quite poor prediction model
+#' prediction <- predict(studyArea,model)
+#' plot(varImp(model,scale=FALSE))
+#'
+#' #...then calculate the DI of the trained model:
+#' DI = trainDI(model=model)
+#' plot(DI)
+#'
+#' # the DI can now be used to compute the AOA:
+#' AOA = aoa(studyArea, model = model, trainDI = DI)
+#' print(AOA)
+#' plot(AOA)
+#' }
+#'
 
 
-trainDI = function(model,
+trainDI = function(model = NA,
                    train = NULL,
                    variables = "all",
                    weight = NA,
@@ -35,7 +82,11 @@ trainDI = function(model,
 
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
-  if(variables == "all"){variables = aoa_get_variables(variables, model, train)}
+  if(length(variables) == 1){
+    if(variables == "all"){
+      variables = aoa_get_variables(variables, model, train)
+    }
+  }
   if(is.na(weight)){weight = aoa_get_weights(model, variables = variables)}
   if(is.null(folds)){folds = aoa_get_folds(model, folds)}
 

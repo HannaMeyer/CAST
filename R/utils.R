@@ -49,6 +49,9 @@ aoa_get_weights = function(model, variables){
   if(!inherits(weight, "error")){
     names(weight)<- rownames(caret::varImp(model,scale=F)$importance)
   }else{
+    # set all weights to 1
+    weight <- as.data.frame(t(rep(1, length(variables))))
+    names(weight) = variables
     message("note: variables were not weighted either because no weights or model were given,
     or no variable importance could be retrieved from the given model.
     Check caret::varImp(model)")
@@ -103,11 +106,13 @@ aoa_get_folds <- function(model, folds){
 
 aoa_get_variables <- function(variables, model, train){
 
-  if(length(variables) == 1 && variables=="all"){
-    if(!is.na(model)[1]){
-      variables <- names(model$trainingData)[-which(names(model$trainingData)==".outcome")]
-    }else{
-      variables <- names(train)
+  if(length(variables) == 1){
+    if(variables == "all"){
+      if(!is.na(model)[1]){
+        variables <- names(model$trainingData)[-which(names(model$trainingData)==".outcome")]
+      }else{
+        variables <- names(train)
+      }
     }
   }
   return(variables)

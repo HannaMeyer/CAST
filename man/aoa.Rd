@@ -100,10 +100,10 @@ plot(varImp(model,scale=FALSE))
 
 #...then calculate the AOA of the trained model for the study area:
 AOA <- aoa(studyArea,model)
-spplot(AOA$DI, col.regions=viridis(100),main="Dissimilarity Index")
+spplot(AOA$predictionAOA$DI, col.regions=viridis(100),main="Dissimilarity Index")
 #plot predictions for the AOA only:
 spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
-spplot(AOA$AOA,col.regions=c("grey","transparent"))
+spplot(AOA$predictionAOA$AOA,col.regions=c("grey","transparent"))
 
 ####
 # Calculating the AOA might be time consuming. Consider running it in parallel:
@@ -119,8 +119,8 @@ AOA <- aoa(studyArea,model,cl=cl)
 #All variables are weighted equally in this case:
 ####
 AOA <- aoa(studyArea,train=trainDat,variables=variables)
-spplot(AOA$DI, col.regions=viridis(100),main="Dissimilarity Index")
-spplot(AOA$AOA,main="Area of Applicability")
+spplot(AOA$predictionAOA$DI, col.regions=viridis(100),main="Dissimilarity Index")
+spplot(AOA$predictionAOA$AOA,main="Area of Applicability")
 }
 }
 \references{
