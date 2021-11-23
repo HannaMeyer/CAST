@@ -20,7 +20,17 @@ of the model are used or if no model is given then of the train dataset.}
 Should be used if replicates are present. Only required if no model is given.}
 }
 \value{
-A trainDI object
+A list of class \code{trainDI} containing:
+ \item{train}{A data frame containing the training data}
+ \item{weight}{A data frame with weights based on the variable importance.}
+ \item{variables}{Names of the used variables}
+ \item{catvars}{Which variables are categorial}
+ \item{scaleparam}{Scaling parameters. Output from \code{scale}}
+ \item{trainDist_avrg}{A data frame with the average eucildean distance of each training point to every other point}
+ \item{trainDist_avrgmean}{The mean of trainDist_avrg. Used for normalizing the DI}
+ \item{trainDI}{Dissimilarity Index of the training data}
+ \item{threshold}{The DI threshold used for inside/outside AOA}
+ \item{lower_threshold}{The lower DI threshold. Currently unused.}
 }
 \description{
 This function estimates the Dissimilarity Index (DI) of

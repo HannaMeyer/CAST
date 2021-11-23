@@ -130,8 +130,7 @@ The AOA calculation takes the model as input to extract the importance of the pr
 
 ```{r,message = FALSE, warning=FALSE}
 AOA <- aoa(predictors, model)
-AOA <- AOA$predictionAOA
-attributes(AOA)$aoa_stats
+attributes(AOA$AOA)$aoa_stats
 ```
 
 The output of the aoa function are two raster data: The first is the DI that is the normalized and weighted minimum distance to a nearest training data point divided by the average distance within the training data. The AOA is derived from the DI by using a threshold. The threshold is the (outlier-removed) maximum DI observed in the training data where the DI of the training data is calculated by considering the cross-validation folds.
@@ -219,7 +218,7 @@ model <- train(trainDat[,names(predictors)],
                  importance=TRUE,
                  tuneGrid = expand.grid(mtry = c(2:length(names(predictors)))),
                  trControl = trainControl(method="cv",index=folds$index))
-  print(model)
+print(model)
   
 prediction <- raster::predict(predictors,model)
 ```
@@ -229,10 +228,7 @@ The AOA is then calculated (for comparison) using the model validated by random 
 
 ```{r,message = FALSE, warning=FALSE}
 AOA_spatial <- aoa(predictors, model)
-AOA_spatial <- AOA_spatial$predictionAOA
-
 AOA_random <- aoa(predictors, model_random)
-AOA_random <- AOA_random$predictionAOA
 ```
 
 

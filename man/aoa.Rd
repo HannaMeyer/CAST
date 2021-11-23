@@ -36,8 +36,11 @@ of the model are used or if no model is given then of the train dataset.}
 Should be used if replicates are present. Only required if no model is given.}
 }
 \value{
-A RasterStack or data.frame with the DI and AOA
-AOA has values 0 (outside AOA) and 1 (inside AOA).
+A list of class \code{aoa} containing:
+ \item{parameters}{trainDI parameters. see \code{\link{trainDI}}}
+ \item{DI}{raster or data frame. Dissimilarity index of newdata}
+ \item{AOA}{raster or data frame. Area of Applicability of newdata.
+  AOA has values 0 (outside AOA) and 1 (inside AOA)}
 }
 \description{
 This function estimates the Dissimilarity Index (DI) and the derived

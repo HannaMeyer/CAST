@@ -33,11 +33,16 @@ show.trainDI = function(x, ...){
 
 print.aoa = function(x, ...){
 
-print(x$trainDI)
+  print(x$parameters)
 
-cat("\n....................\n\n$predictionAOA\n")
+  cat("\n....................\n\n$DI\n")
 
-print(x$predictionAOA)
+  print(x$DI)
+
+
+  cat("\n....................\n\n$AOA\n")
+
+  print(x$AOA)
 
 }
 

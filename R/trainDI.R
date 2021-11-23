@@ -16,7 +16,20 @@
 #' @importFrom graphics boxplot
 #' @import ggplot2
 #'
-#' @return A trainDI object
+#' @return A list of class \code{trainDI} containing:
+#'  \item{train}{A data frame containing the training data}
+#'  \item{weight}{A data frame with weights based on the variable importance.}
+#'  \item{variables}{Names of the used variables}
+#'  \item{catvars}{Which variables are categorial}
+#'  \item{scaleparam}{Scaling parameters. Output from \code{scale}}
+#'  \item{trainDist_avrg}{A data frame with the average eucildean distance of each training point to every other point}
+#'  \item{trainDist_avrgmean}{The mean of trainDist_avrg. Used for normalizing the DI}
+#'  \item{trainDI}{Dissimilarity Index of the training data}
+#'  \item{threshold}{The DI threshold used for inside/outside AOA}
+#'  \item{lower_threshold}{The lower DI threshold. Currently unused.}
+#'
+#'
+#'
 #' @export trainDI
 #'
 #' @author
@@ -161,14 +174,13 @@ trainDI = function(model = NA,
 
   # Train Dissimilarity Index -----
   TrainDI <- trainDist_min/trainDist_avrgmean
-  AOA_train_stats <- quantile(TrainDI,
-                              probs = c(0.25,0.5,0.75,0.9,0.95,0.99,1),na.rm = TRUE)
+
 
   # AOA Threshold ----
   thres <- grDevices::boxplot.stats(TrainDI)$stats[5]
   lower_thres <- grDevices::boxplot.stats(TrainDI)$stats[1]
 
-  # Return: AOA Object -------
+  # Return: trainDI Object -------
 
   aoa_results = list(
     train = train_backup,
@@ -176,13 +188,11 @@ trainDI = function(model = NA,
     variables = variables,
     catvars = catupdate$catvars,
     scaleparam = scaleparam,
-    #trainDist_avrg = trainDist_avrg,
+    trainDist_avrg = trainDist_avrg,
     trainDist_avrgmean = trainDist_avrgmean,
-    #trainDist_min = trainDist_min,
-    AOA_train_stats = AOA_train_stats,
-    thres = thres,
-    lower_thres = lower_thres,
-    TrainDI = TrainDI
+    trainDI = TrainDI,
+    threshold = thres,
+    lower_threshold = lower_thres
   )
 
   class(aoa_results) = "trainDI"

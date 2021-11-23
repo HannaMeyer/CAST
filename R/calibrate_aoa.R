@@ -109,7 +109,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
       AOA_new <- aoa(train_predictors,model_new)
 
       # legacy change (very dirty, change this as soon as possible)
-      AOA_new <- AOA_new$predictionAOA
+      AOA_new <- AOA_new$AOA
 
 
       # get cross-validated predictions, order them  and use only those located in the AOA
@@ -196,7 +196,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
   ### Update AOA:
   if (multiCV){
-    AOA$AOA <- 0
+    AOA$AOA <- raster::setValues(AOA$AOA, 0)
     AOA$AOA[AOA$DI<=max(performance$DI,na.rm=T)] <- 1
     if(inherits(AOA$AOA,"Raster")){
       AOA$AOA <- raster::mask(AOA$AOA,AOA$DI)

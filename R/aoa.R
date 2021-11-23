@@ -30,8 +30,12 @@
 #' @note If classification models are used, currently the variable importance can only
 #' be automatically retrieved if models were traiend via train(predictors,response) and not via the formula-interface.
 #' Will be fixed.
-#' @return A RasterStack or data.frame with the DI and AOA
-#' AOA has values 0 (outside AOA) and 1 (inside AOA).
+#' @return A list of class \code{aoa} containing:
+#'  \item{parameters}{trainDI parameters. see \code{\link{trainDI}}}
+#'  \item{DI}{raster or data frame. Dissimilarity index of newdata}
+#'  \item{AOA}{raster or data frame. Area of Applicability of newdata.
+#'   AOA has values 0 (outside AOA) and 1 (inside AOA)}
+#'
 #' @author
 #' Hanna Meyer
 #' @references Meyer, H., Pebesma, E. (2020): Predicting into unknown space?
@@ -241,43 +245,51 @@ aoa <- function(newdata,
     #out <- raster::stack(out,AOA,CVA)
 
 
-    out <- raster::stack(out,AOA)
 
 
-    # handling of different raster formats
 
-    if (as_stars)
-      out <- split(stars::st_as_stars(out), "band")
-    if(as_terra)
+    # handling of different raster formats. Eventually outsource to full method.
+
+    if (as_stars){
+      out <- stars::st_as_stars(out)
+      AOA <- stars::st_as_stars(AOA)
+    }
+
+    if(as_terra){
       out = methods::as(out, "SpatRaster")
+      AOA = methods::as(AOA, "SpatRaster")
+    }
+
 
 
 
   }else{
-    out <- DI_out
-    AOA <- rep(1,length(out))
+    out <- data.frame(DI = DI_out)
+    AOA <- rep(1,nrow(out))
     AOA[out>trainDI$thres] <- 0
+    AOA <- as.data.frame(AOA)
 
-    CVA <- rep(1,length(out))
-    CVA[out>trainDI$thres|out<trainDI$lower_thres] <- 0
+    #CVA <- rep(1,length(out))
+    #CVA[out>trainDI$thres|out<trainDI$lower_thres] <- 0
 
     #out <- list(out,AOA,CVA)
-    out <- list(out,AOA)
+
   }
 
-  names(out) <- c("DI","AOA")
 
-  attributes(out)$aoa_stats <- list("Mean_train" = trainDI$trainDist_avrgmean,
+  # eventually remove this
+  attributes(AOA)$aoa_stats <- list("Mean_train" = trainDI$trainDist_avrgmean,
                                     "threshold_stats" = trainDI$AOA_train_stats,
                                     "threshold" = trainDI$thres,
                                     "lower_threshold" = trainDI$lower_thres)
-  attributes(out)$TrainDI = trainDI$TrainDI
+  attributes(AOA)$TrainDI = trainDI$trainDI
 
 
 
 
-  outout = list(trainDI = trainDI,
-                predictionAOA = out)
+  outout = list(parameters = trainDI,
+                DI = out,
+                AOA = AOA)
 
   class(outout) = "aoa"
   return(outout)

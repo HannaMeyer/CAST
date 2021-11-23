@@ -6,10 +6,10 @@
 #' @export
 
 plot.trainDI = function(x, ...){
-  ggplot(data.frame(TrainDI = x$TrainDI), aes_string(x = "TrainDI"))+
+  ggplot(data.frame(TrainDI = x$trainDI), aes_string(x = "TrainDI"))+
     geom_density()+
-    geom_vline(xintercept = x$lower_thres, linetype = "dashed")+
-    geom_vline(xintercept = x$thres, linetype = "dashed")+
+    geom_vline(xintercept = x$lower_threshold, linetype = "dashed")+
+    geom_vline(xintercept = x$threshold, linetype = "dashed")+
     theme_bw()
 
 }
@@ -36,15 +36,15 @@ plot.trainDI = function(x, ...){
 plot.aoa = function(x, samplesize = 1000, ...){
 
 
-  trainDI = data.frame(DI = x$trainDI$TrainDI,
+  trainDI = data.frame(DI = x$parameters,
                        what = "trainDI")
 
-  if(inherits(x$predictionAOA, "RasterStack")){
-    targetDI = raster::sampleRegular(x$predictionAOA$DI, size = samplesize)
+  if(inherits(x$AOA, "RasterLayer")){
+    targetDI = raster::sampleRegular(x$DI, size = samplesize)
     targetDI = data.frame(DI = targetDI,
                           what = "predictionDI")
   }else{
-    targetDI = data.frame(DI = sample(x$predictionAOA$DI, size = samplesize),
+    targetDI = data.frame(DI = sample(x$DI, size = samplesize),
                           what = "predictionDI")
   }
 
@@ -56,7 +56,7 @@ plot.aoa = function(x, samplesize = 1000, ...){
   ggplot(dfDI, aes_string(x = "DI", group = "what", fill = "what"))+
     geom_density(adjust=1.5, alpha=.4)+
     scale_fill_discrete(name = "Set")+
-    geom_vline(xintercept = x$trainDI$thres, linetype = "dashed")+
+    geom_vline(xintercept = x$parameters$threshold, linetype = "dashed")+
     theme_bw()+
     theme(legend.position = "bottom")
 
