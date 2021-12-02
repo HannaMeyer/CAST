@@ -1,7 +1,7 @@
 Package: CAST
 Type: Package
 Title: 'caret' Applications for Spatial-Temporal Models
-Version: 0.5.1
+Version: 0.5.2
 Authors@R: c(person("Hanna", "Meyer", email = "hanna.meyer@uni-muenster.de", role = c("cre", "aut")),
              person("Chris", "Reudenbach", role = c("ctb")),
              person("Marvin", "Ludwig", role = c("ctb")),
@@ -19,5 +19,5 @@ Imports: caret, stats, utils, ggplot2, graphics, reshape, FNN, plyr, zoo, method
 Suggests: doParallel, randomForest, lubridate, raster, sp, knitr, mapview,
     rmarkdown, sf, scales, parallel, latticeExtra, virtualspecies, gridExtra, 
     viridis, rgeos, stars, scam, terra
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 VignetteBuilder: knitr

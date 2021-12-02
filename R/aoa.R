@@ -143,7 +143,9 @@ aoa <- function(newdata,
   if (inherits(newdata, "Raster"))
     out <- newdata[[1]]
 
-  #### Extract weights from trained model:
+  #### Extract weights from trained model (if not specified manually):
+
+  if(is.na(weight)[1]){
   weight <- tryCatch(if(model$modelType=="Classification"){
     as.data.frame(t(apply(caret::varImp(model,scale=F)$importance,1,mean)))
   }else{
@@ -155,6 +157,7 @@ aoa <- function(newdata,
     message("note: variables were not weighted either because no weights or model were given,
     or no variable importance could be retrieved from the given model.
     Check caret::varImp(model)")
+  }
   }
 
   #### order data:
