@@ -1,5 +1,8 @@
 # `CAST` 0.5.2
-* error in manual assignment of weights fixed
+* new feature: 
+  * function global_validation added
+* bugfix:
+  * error in manual assignment of weights fixed
 
 # `CAST` 0.5.1
 * resolved dependence on package "GSIF" which was removed from the CRAN repository  
