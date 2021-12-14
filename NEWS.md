@@ -1,6 +1,7 @@
 # `CAST` 0.5.2
 * new feature: 
   * function global_validation added
+  * ffs and bss can be used with global_validation
 * bugfix:
   * error in manual assignment of weights fixed
 

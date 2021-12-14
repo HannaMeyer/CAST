@@ -10,7 +10,7 @@ global_validation(model)
 \item{model}{an object of class \code{\link{train}}}
 }
 \value{
-an object of class confusionMatrix for classification models, or otherwise a data.frame containing regression statistics.
+a data.frame containing regression or classification statistics.
 }
 \description{
 calculate validation metric using all held back predictions at once
@@ -19,7 +19,7 @@ calculate validation metric using all held back predictions at once
 Relevant when folds are not representative for the entire area of interest.
 In this case, metrics like R2 are not meaningful since it doesn't reflect the general ability of
 the model to explain the entire gradient of the response.
-Comparable to LOOCV predictions from all held back folds are used together to calculate validation statistics.
+Comparable to LOOCV, predictions from all held back folds are used here together to calculate validation statistics.
 }
 \examples{
 dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
@@ -28,9 +28,6 @@ indices <- CreateSpacetimeFolds(dat,"SOURCEID","Date")
 ctrl <- caret::trainControl(method="cv",index = indices$index,savePredictions="final")
 model <- caret::train(dat[,c("DEM","TWI","BLD")],dat$VW, method="rf", trControl=ctrl, ntree=10)
 global_validation(model)
-}
-\references{
-
 }
 \seealso{
 \code{\link{CreateSpacetimeFolds}}

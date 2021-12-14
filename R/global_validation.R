@@ -1,14 +1,13 @@
 #' evaluate 'global' cross-validation
 #' @description calculate validation metric using all held back predictions at once
 #' @param model an object of class \code{\link{train}}
-#' @return an object of class confusionMatrix for classification models, or otherwise a data.frame containing regression statistics.
+#' @return a data.frame containing regression or classification statistics.
 #' @details Relevant when folds are not representative for the entire area of interest.
 #' In this case, metrics like R2 are not meaningful since it doesn't reflect the general ability of
 #' the model to explain the entire gradient of the response.
-#' Comparable to LOOCV predictions from all held back folds are used together to calculate validation statistics.
+#' Comparable to LOOCV, predictions from all held back folds are used here together to calculate validation statistics.
 #' @author Hanna Meyer
 #' @seealso \code{\link{CreateSpacetimeFolds}}
-#' @references
 #' @examples
 #' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 #' dat <- dat[sample(1:nrow(dat),500),]
@@ -35,7 +34,7 @@ global_validation <- function(model){
   if(model$modelType=="Regression"){
     out <- caret::postResample(pred = pred, obs = obs)
   }else{
-    out <- caret::confusionMatrix(pred, obs)
+    out <- caret::confusionMatrix(pred, obs)$overall
   }
   return(out)
 }

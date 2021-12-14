@@ -10,6 +10,7 @@ bss(
   method = "rf",
   metric = ifelse(is.factor(response), "Accuracy", "RMSE"),
   maximize = ifelse(metric == "RMSE", FALSE, TRUE),
+  globalval = FALSE,
   trControl = caret::trainControl(),
   tuneLength = 3,
   tuneGrid = NULL,
@@ -28,6 +29,8 @@ bss(
 \item{metric}{see \code{\link{train}}}
 
 \item{maximize}{see \code{\link{train}}}
+
+\item{globalval}{Logical. Should models be evaluated based on 'global' performance? See \code{\link{global_validation}}}
 
 \item{trControl}{see \code{\link{train}}}
 
