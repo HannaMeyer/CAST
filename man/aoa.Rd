@@ -25,7 +25,7 @@ the model was meant to make predictions for.}
 
 \item{train}{A data.frame containing the data used for model training. Only required when no model is given}
 
-\item{weight}{A data.frame containing weights for each variable. Only required if no model is given.}
+\item{weight}{A data.frame (one row, N columns with N is the number of variables) containing weights for each variable (column names required!). Only required if no model is given.}
 
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the model are used or if no model is given then of the train dataset.}

@@ -13,7 +13,7 @@
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
 #' @param cl A cluster object e.g. created with doParallel. Should only be used if newdata is large.
 #' @param train A data.frame containing the data used for model training. Only required when no model is given
-#' @param weight A data.frame containing weights for each variable. Only required if no model is given.
+#' @param weight A data.frame (one row, N columns with N is the number of variables) containing weights for each variable (column names required!). Only required if no model is given.
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the model are used or if no model is given then of the train dataset.
 #' @param folds Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
@@ -158,6 +158,11 @@ aoa <- function(newdata,
     or no variable importance could be retrieved from the given model.
     Check caret::varImp(model)")
   }
+  }else{ #check if manually given weights are correct:
+    if(nrow(weight)!=1||ncol(weight)!=length(variables)){
+      message("variable weights are not correctly specified and will be ignored. See ?aoa")
+      weight <- simpleError("error")
+    }
   }
 
   #### order data:
