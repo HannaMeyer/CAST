@@ -62,6 +62,7 @@
 
 calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
                           length.out = 10, maskAOA=TRUE, showPlot=TRUE,k=6,m=2){
+
   as_stars <- FALSE
   as_terra <- FALSE
   if (inherits(AOA, "stars")) {
@@ -107,17 +108,21 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
       model_new <- do.call(caret::train,mcall)
       AOA_new <- aoa(train_predictors,model_new)
 
+      # legacy change (very dirty, change this as soon as possible)
+      #AOA_new <- AOA_new$AOA
+
+
       # get cross-validated predictions, order them  and use only those located in the AOA
       preds <- model_new$pred
       preds <- preds[order(preds$rowIndex),c("pred","obs")]
-      preds_dat_tmp <- data.frame(preds,"DI"=attributes(AOA_new)$TrainDI)
-      preds_dat_tmp <-  preds_dat_tmp[preds_dat_tmp$DI<=attributes(AOA_new)$aoa_stats$threshold,]
+      preds_dat_tmp <- data.frame(preds,"DI"=AOA_new$parameters$trainDI)
+      preds_dat_tmp <-  preds_dat_tmp[preds_dat_tmp$DI<=AOA_new$parameters$threshold,]
       preds_all <- rbind(preds_all,preds_dat_tmp)
 
 
     }
-    attributes(AOA)$aoa_stats$threshold <- max(preds_all$DI)
-    attributes(AOA)$TrainDI <- preds_all$DI
+    AOA$parameters$threshold <- max(preds_all$DI)
+    AOA$parameters$trainDI <- preds_all$DI
   }
 
 
@@ -131,10 +136,10 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     }
 
     preds_all <- preds_all[order(preds_all$rowIndex),c("pred","obs")]
-    preds_all$DI <- attributes(AOA)$TrainDI
+    preds_all$DI <- AOA$parameters$trainDI
 
     ## only take predictions from inside the AOA:
-    preds_all <-  preds_all[preds_all$DI<=attributes(AOA)$aoa_stats$threshold,]
+    preds_all <-  preds_all[preds_all$DI<=AOA$parameters$threshold,]
   }
 
 
@@ -191,7 +196,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
   ### Update AOA:
   if (multiCV){
-    AOA$AOA <- 0
+    AOA$AOA <- raster::setValues(AOA$AOA, 0)
     AOA$AOA[AOA$DI<=max(performance$DI,na.rm=T)] <- 1
     if(inherits(AOA$AOA,"Raster")){
       AOA$AOA <- raster::mask(AOA$AOA,AOA$DI)
@@ -212,8 +217,8 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     if (model$maximize){ # e.g. accuracy, kappa, r2
       bs="mpd"
     }else{
-    bs="mpi" #e.g. RMSE
-}
+      bs="mpi" #e.g. RMSE
+    }
 
     errormodel <- scam::scam(metric~s(DI, k=k, bs=bs, m=m),
                              data=performance,
@@ -248,35 +253,35 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   attributes(AOA)<- c(attributes(AOA),attr)
   ### Plot result:
 
- # if(showPlot){
+  # if(showPlot){
 
-    # loc <- "topleft"
-    # if(model$maximize){
-    #   loc <- "topright"
-    # }
-    #
-    # plot(attr$calib$group_stats$DI,attr$calib$group_stats[,model$metric],xlab="DI",
-    #      ylab=model$metric)
-    # graphics::legend(loc,lty=c(NA,2),lwd=c(NA,1),pch=c(1,NA),col=c("black","black"),
-    #        legend=c("CV","model"),bty="n")
-    # graphics::lines(seq(0,max(attr$calib$group_stats$DI, na.rm=TRUE),max(attr$calib$group_stats$DI, na.rm=TRUE)/100),
-    #       predict(attributes(AOA)$calib$model,
-    #               data.frame("DI"=seq(0, max(attr$calib$group_stats$DI,na.rm=TRUE),
-    #                                  max(attr$calib$group_stats$DI, na.rm=TRUE)/100))),lwd=1,lty=2,col="black")
+  # loc <- "topleft"
+  # if(model$maximize){
+  #   loc <- "topright"
+  # }
+  #
+  # plot(attr$calib$group_stats$DI,attr$calib$group_stats[,model$metric],xlab="DI",
+  #      ylab=model$metric)
+  # graphics::legend(loc,lty=c(NA,2),lwd=c(NA,1),pch=c(1,NA),col=c("black","black"),
+  #        legend=c("CV","model"),bty="n")
+  # graphics::lines(seq(0,max(attr$calib$group_stats$DI, na.rm=TRUE),max(attr$calib$group_stats$DI, na.rm=TRUE)/100),
+  #       predict(attributes(AOA)$calib$model,
+  #               data.frame("DI"=seq(0, max(attr$calib$group_stats$DI,na.rm=TRUE),
+  #                                  max(attr$calib$group_stats$DI, na.rm=TRUE)/100))),lwd=1,lty=2,col="black")
 
 
-    p <- lattice::xyplot(attr$calib$group_stats[,model$metric]~attr$calib$group_stats$DI,xlab="DI",
-           ylab=model$metric,col="black",
-           key=list(columns=2,
-                    text=list(lab=c("cross-validation","model")),
-                    points=list(pch=c(1,NA), col="black"),
-                    lines=list(lty=c(0,2), lwd=2, col="black")),panel = function(x, y, ...) {
-                      lattice::panel.xyplot(x, y, ...)
-                      lattice::llines(x, predict(attr$calib$model), col="black", lwd=2, lty=2)
-                    })
+  p <- lattice::xyplot(attr$calib$group_stats[,model$metric]~attr$calib$group_stats$DI,xlab="DI",
+                       ylab=model$metric,col="black",
+                       key=list(columns=2,
+                                text=list(lab=c("cross-validation","model")),
+                                points=list(pch=c(1,NA), col="black"),
+                                lines=list(lty=c(0,2), lwd=2, col="black")),panel = function(x, y, ...) {
+                                  lattice::panel.xyplot(x, y, ...)
+                                  lattice::llines(x, predict(attr$calib$model), col="black", lwd=2, lty=2)
+                                })
 
-    if(showPlot){
-     print(p)
+  if(showPlot){
+    print(p)
   }
 
 
@@ -292,8 +297,8 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   names(AOA)[names(AOA)=="expectedError"] <- paste0("expected_",model$metric)
   #return(AOA)
 
-    return(list(AOA = AOA,
-                plot = p))
+  return(list(AOA = AOA,
+              plot = p))
 
 
 }
