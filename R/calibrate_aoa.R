@@ -18,9 +18,9 @@
 #' Data used for calibration are stored in the attributes. The second element is a plot showing the relationship.
 #' @author
 #' Hanna Meyer
-#' @references Meyer, H., Pebesma, E. (2020): Predicting into unknown space?
+#' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
-#' \url{https://arxiv.org/abs/2005.07939}
+#' \doi{10.1111/2041-210X.13650}
 #' @seealso \code{\link{aoa}}
 #' @examples
 #' \dontrun{
@@ -196,7 +196,11 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
   ### Update AOA:
   if (multiCV){
-    AOA$AOA <- raster::setValues(AOA$AOA, 0)
+    if(inherits(AOA$AOA,"Raster")){
+      AOA$AOA <- raster::setValues(AOA$AOA, 0)
+    }else{
+      AOA$AOA <- 0
+    }
     AOA$AOA[AOA$DI<=max(performance$DI,na.rm=T)] <- 1
     if(inherits(AOA$AOA,"Raster")){
       AOA$AOA <- raster::mask(AOA$AOA,AOA$DI)
