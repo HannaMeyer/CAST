@@ -40,9 +40,9 @@
 #' @author
 #' Hanna Meyer, Marvin Ludwig
 #'
-#' @references Meyer, H., Pebesma, E. (2020): Predicting into unknown space?
+#' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
-#' \url{https://arxiv.org/abs/2005.07939}
+#' \doi{10.1111/2041-210X.13650}
 #'
 #'
 #' @examples
