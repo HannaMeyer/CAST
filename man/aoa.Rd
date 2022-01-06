@@ -60,7 +60,7 @@ Interpretation of results: If a location is very similar to the properties
 of the training data it will have a low distance in the predictor variable space
 (DI towards 0) while locations that are very different in their properties
 will have a high DI.
-See Meyer and Pebesma (2020) for the full documentation of the methodology.
+See Meyer and Pebesma (2021) for the full documentation of the methodology.
 }
 \note{
 If classification models are used, currently the variable importance can only
@@ -127,9 +127,9 @@ spplot(AOA$AOA,main="Area of Applicability")
 }
 }
 \references{
-Meyer, H., Pebesma, E. (2020): Predicting into unknown space?
+Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 Estimating the area of applicability of spatial prediction models.
-\url{https://arxiv.org/abs/2005.07939}
+\doi{10.1111/2041-210X.13650}
 }
 \seealso{
 \code{\link{calibrate_aoa}}, \code{\link{trainDI}}
