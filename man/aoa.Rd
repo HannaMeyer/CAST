@@ -7,12 +7,12 @@
 aoa(
   newdata,
   model = NA,
+  trainDI = NA,
   cl = NULL,
   train = NULL,
   weight = NA,
   variables = "all",
-  folds = NULL,
-  returnTrainDI = TRUE
+  folds = NULL
 )
 }
 \arguments{
@@ -21,23 +21,26 @@ the model was meant to make predictions for.}
 
 \item{model}{A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds}
 
+\item{trainDI}{A trainDI object. Optional if \code{\link{trainDI}} was calculated beforehand.}
+
 \item{cl}{A cluster object e.g. created with doParallel. Should only be used if newdata is large.}
 
 \item{train}{A data.frame containing the data used for model training. Only required when no model is given}
 
-\item{weight}{A data.frame (one row, N columns with N is the number of variables) containing weights for each variable (column names required!). Only required if no model is given.}
+\item{weight}{A data.frame containing weights for each variable. Only required if no model is given.}
 
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the model are used or if no model is given then of the train dataset.}
 
 \item{folds}{Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 Should be used if replicates are present. Only required if no model is given.}
-
-\item{returnTrainDI}{A logical: should the DI value of the cross-validated training data be returned as a attribute?}
 }
 \value{
-A RasterStack or data.frame with the DI and AOA
-AOA has values 0 (outside AOA) and 1 (inside AOA).
+A list of class \code{aoa} containing:
+ \item{parameters}{trainDI parameters. see \code{\link{trainDI}}}
+ \item{DI}{raster or data frame. Dissimilarity index of newdata}
+ \item{AOA}{raster or data frame. Area of Applicability of newdata.
+  AOA has values 0 (outside AOA) and 1 (inside AOA)}
 }
 \description{
 This function estimates the Dissimilarity Index (DI) and the derived
@@ -129,7 +132,7 @@ Estimating the area of applicability of spatial prediction models.
 \url{https://arxiv.org/abs/2005.07939}
 }
 \seealso{
-\code{\link{calibrate_aoa}}
+\code{\link{calibrate_aoa}}, \code{\link{trainDI}}
 }
 \author{
 Hanna Meyer
