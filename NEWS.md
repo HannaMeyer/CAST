@@ -1,6 +1,7 @@
 # `CAST` 0.5.2
 * new feature: 
   * trainDI allows to calculate the DI of the training dataset separately from the aoa function
+  * plot and print functions for the AOA
   * function global_validation added
   * ffs and bss can be used with global_validation
 * modifications
