@@ -10,7 +10,8 @@
 #' maximum DI of the cross-validated training data.
 #' @param newdata A RasterStack, RasterBrick, stars object, SpatRaster or data.frame containing the data
 #' the model was meant to make predictions for.
-#' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
+#' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds.
+#' See examples for the case that no model is available or for models trained via e.g. mlr3.
 #' @param trainDI A trainDI object. Optional if \code{\link{trainDI}} was calculated beforehand.
 #' @param cl A cluster object e.g. created with doParallel. Should only be used if newdata is large.
 #' @param train A data.frame containing the data used for model training. Only required when no model is given
@@ -99,6 +100,38 @@
 #' AOA <- aoa(studyArea,train=trainDat,variables=variables)
 #' spplot(AOA$DI, col.regions=viridis(100),main="Dissimilarity Index")
 #' spplot(AOA$AOA,main="Area of Applicability")
+#'
+#'
+#' ####
+#' # The AOA can also be used for models trained via mlr3 (parameters have to be assigned manually):
+#' ####
+#'
+#' library(mlr3)
+#' library(mlr3learners)
+#' library(mlr3spatial)
+#' library(mlr3spatiotempcv)
+#' library(mlr3extralearners)
+#'
+#' # initiate and train model:
+#' train_df <- trainDat[, c("DEM","NDRE.Sd","TWI", "VW")]
+#' backend <- as_data_backend(train_df)
+#' task <- as_task_regr(backend, target = "VW")
+#' lrn <- lrn("regr.randomForest", importance = "mse")
+#' lrn$train(task)
+#'
+#' # cross-validation folds
+#' rsmp_cv <- rsmp("cv", folds = 5L)$instantiate(task)
+#'
+#' ## predict:
+#' prediction <- predict(studyArea,lrn$model)
+#'
+#' ### Estimate AOA
+#' AOA <- aoa(studyArea,
+#'            train = as.data.frame(task$data()),
+#'            variables = task$feature_names,
+#'            weight = data.frame(t(lrn$importance())),
+#'            folds = rsmp_cv$instance[order(row_id)]$fold)
+#'
 #' }
 #' @export aoa
 #' @aliases aoa
