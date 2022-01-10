@@ -116,7 +116,7 @@ plot(varImp(model,scale = F),col="black")
 ```
 
 ### Predict and calculate error
-The trainined model is then used to make predictions for the entire area of interest. Since a simulated area-wide response is used, it's possible in this tutorial to compare the predictions with the true reference.
+The trained model is then used to make predictions for the entire area of interest. Since a simulated area-wide response is used, it's possible in this tutorial to compare the predictions with the true reference.
 ```{r,message = FALSE, warning=FALSE}
 prediction <- predict(predictors,model)
 truediff <- abs(prediction-response)
@@ -126,15 +126,17 @@ spplot(stack(prediction,response),main=c("prediction","reference"))
 ## AOA Calculation
 The visualization above shows the predictions made by the model. In the next step, the DI and AOA will be calculated.
 
-The AOA calculation takes the model as input to extract the importance of the predictors, used as weights in multidimensional distance calculation. Note that the AOA can also be calculated without a trained model (i.e. using training data and new data only). In this case all predicor variables are trated equally important (unless weights are given in form of a table).
+The AOA calculation takes the model as input to extract the importance of the predictors, used as weights in multidimensional distance calculation. Note that the AOA can also be calculated without a trained model (i.e. using training data and new data only). In this case all predictor variables are treated equally important (unless weights are given in form of a table).
 
 ```{r,message = FALSE, warning=FALSE}
 AOA <- aoa(predictors, model)
-attributes(AOA)$aoa_stats
+class(AOA)
+names(AOA)
+print(AOA)
 ```
 
-The output of the aoa function are two raster data: The first is the DI that is the normalized and weighted minimum distance to a nearest training data point divided by the average distance within the training data. The AOA is derived from the DI by using a threshold. The threshold is the (outlier-removed) maximum DI observed in the training data where the DI of the training data is calculated by considering the cross-validation folds.
-The used threshold is returned in the AOA statistics.
+The output of the `aoa` function are two raster data: The first is the DI that is the normalized and weighted minimum distance to a nearest training data point divided by the average distance within the training data. The AOA is derived from the DI by using a threshold. The threshold is the (outlier-removed) maximum DI observed in the training data where the DI of the training data is calculated by considering the cross-validation folds.
+The used threshold and all relevant information about the training data DI is returned in the `parameters` list entry.
 
 ```{r,message = FALSE, warning=FALSE}
 grid.arrange(
@@ -145,6 +147,25 @@ grid.arrange(
 
 The patterns in the DI are in general agreement with the true prediction error.
 Very high values are present in the Alps, as they have not been covered by training data but feature very distinct environmental conditions. Since the DI values for these areas are above the threshold, we regard this area as outside the AOA.
+
+
+## TrainDI
+
+The `parameters` of the aoa output are the result of the function `trainDI` which is called internally by `aoa` but can also be computed independently. It calculates the Dissimilarity Index (DI) of the data used for model training which is needed to determine the DI threshold used for the AOA estimation. 
+
+```{r, message = FALSE, warning = FALSE}
+TDI = trainDI(model)
+class(AOA$parameters)
+class(TDI)
+names(TDI)
+print(TDI)
+```
+
+Plotting a trainDI object displays the distribution of the DI of the training data together with the lower and upper AOA thresholds (vertical lines).
+
+```{r, message = FALSE, warning = FALSE}
+plot(TDI)
+```
 
 
 ## AOA for spatially clustered data?
@@ -243,7 +264,15 @@ ncol=3)
 ```
 
 Note that the AOA is much larger for the spatial approach. However, the spatial cross-validation error is considerably larger, hence also the area for which this error applies is larger.
-The random cross-validation performance is very high, however, the area to which the performance applies is small.
+The random cross-validation performance is very high, however, the area to which the performance applies is small. This fact is also apparent if you plot the `aoa` objects which will display the distributions of the DI of the training data as well as the DI of the new data. For random CV most of the predictionDI is larger than the AOA threshold determined by the trainDI. Using spatial CV, the predictionDI is well within the DI of the training samples.
+
+```{r, message = FALSE, warning=FALSE}
+grid.arrange(plot(AOA_spatial) + ggplot2::ggtitle("Spatial CV"),
+             plot(AOA_random) + ggplot2::ggtitle("Random CV"), ncol = 2)
+```
+
+
+
 
 ## Comparison prediction error with model error
 
@@ -265,7 +294,7 @@ The results indicate that there is a high agreement between the model CV error (
 
 ## Relationship between the DI and the performance measure
 
-The relationship between error and DI can be used to limit predictioons to an area (within the AOA) where a required performance (e.g. RMSE, R2, Kappa, Accuracy) applies.
+The relationship between error and DI can be used to limit predictions to an area (within the AOA) where a required performance (e.g. RMSE, R2, Kappa, Accuracy) applies.
 This can be done using the result of calibrate_aoa which used the relationship analyzed in a window of DI values. The corresponding model (here: shape constrained additive models which is the default: Monotone increasing P-splines with the dimension of the basis used to represent the smooth term is 6 and a 2nd order penalty.) can be used to estimate the performance on a pixel level, which then allows limiting predictions using a threshold. Note that we used a multi-purpose CV to estimate the relationship between the DI and the RMSE here (see details in the paper).
 
 ```{r,message = FALSE, warning=FALSE}
