@@ -266,6 +266,7 @@ aoa <- function(newdata,
     raster::values(AOA) <- 1
     AOA[out>trainDI$thres] <- 0
     AOA <- raster::mask(AOA,out)
+    names(AOA) = "AOA"
 
 
     # handling of different raster formats.
