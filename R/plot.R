@@ -56,12 +56,9 @@ plot.aoa = function(x, samplesize = 1000, ...){
   ggplot(dfDI, aes_string(x = "DI", group = "what", fill = "what"))+
     geom_density(adjust=1.5, alpha=.4)+
     scale_fill_discrete(name = "Set")+
-    geom_vline(xintercept = x$parameters$threshold, linetype = "dashed")+
+    geom_vline(aes(xintercept = x$parameters$threshold, linetype = "AOA_threshold"))+
+    scale_linetype_manual(name = "", values = c(AOA_threshold = "dashed"))+
     theme_bw()+
     theme(legend.position = "bottom")
-
-
 }
-
-
 
