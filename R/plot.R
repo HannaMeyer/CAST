@@ -8,8 +8,6 @@
 plot.trainDI = function(x, ...){
   ggplot(data.frame(TrainDI = x$trainDI), aes_string(x = "TrainDI"))+
     geom_density()+
-#    geom_vline(xintercept = x$lower_threshold, linetype = "dashed")+
-   # geom_vline(xintercept = x$threshold, linetype = "dashed")+
     geom_vline(aes(xintercept = x$threshold, linetype = "AOA_threshold"))+
     scale_linetype_manual(name = "", values = c(AOA_threshold = "dashed"))+
     theme_bw()+
