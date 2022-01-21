@@ -38,7 +38,7 @@ Should be used if replicates are present. Only required if no model is given.}
 }
 \value{
 A list of class \code{aoa} containing:
- \item{parameters}{trainDI parameters. see \code{\link{trainDI}}}
+ \item{parameters}{object of class trainDI. see \code{\link{trainDI}}}
  \item{DI}{raster or data frame. Dissimilarity index of newdata}
  \item{AOA}{raster or data frame. Area of Applicability of newdata.
   AOA has values 0 (outside AOA) and 1 (inside AOA)}
