@@ -40,7 +40,7 @@
 #'
 #' ########### Distance between training data, new data and CV folds:
 #' folds <- createFolds(1:nrow(pts_train),k=3,returnTrain=FALSE)
-#' plot_geodist(x=pts,modeldomain=ext,cvfolds=folds)
+#' plot_geodist(x=pts,modeldomain=studyArea,cvfolds=folds)
 #' }
 #'
 #'
