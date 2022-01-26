@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_geodist.R
 \name{plot_geodist}
 \alias{plot_geodist}
-\title{Plot euclidean nearest neighbor distances in geographic space}
+\title{Plot euclidean nearest neighbor distances in geographic space or feature space}
 \usage{
 plot_geodist(
   x,
@@ -11,13 +11,14 @@ plot_geodist(
   cvfolds = NULL,
   testdata = NULL,
   scale = TRUE,
-  distance = "geo"
+  distance = "geo",
+  variables = NULL
 )
 }
 \arguments{
 \item{x}{object of class sf, training data locations}
 
-\item{modeldomain}{sf or raster object defining the prediction area (see Details)}
+\item{modeldomain}{raster or sf object defining the prediction area (see Details)}
 
 \item{samplesize}{numeric. How many random prediction samples should be used? Only required if modeldomain is a raster (see Details)}
 
@@ -27,19 +28,21 @@ plot_geodist(
 
 \item{scale}{logical. Present distances on log scale?}
 
-\item{distance}{"geo" or "feature". Should the distance be computed in geographic space or in the multivariate predictor space (see Details)}
+\item{distance}{"geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)}
+
+\item{variables}{character vector defining the predictor variables used if distance="feature. If not provided all variables included in modeldomain are used.}
 }
 \value{
-A plot and a data.frame containing the spatial/feature distances
+A plot and a data.frame containing the distances
 }
 \description{
-Density plot of geographic nearest neighbor distances between training data as well as between training data and prediction locations.
+Density plot of nearest neighbor distances in geographic space or feature space between training data as well as between training data and prediction locations.
 Optional, the nearest neighbor distances between training data and test data or between training data and CV iterations is shown.
 The plot can be used to check the suitability of a chosen CV method to be representative to estimate map accuracy. Alternatively distances can also be calculated in the multivariate feature space.
 }
 \details{
-The modeldomain is a set of spatial points (sf points) that represent a sample of the prediction locations. If a raster is provided as modeldomain, the function takes a regular point sample (amount defined by samplesize) from the raster extent.
-    If distance = "feature", the arguments x, modeldomain and testdata have to include predictors. In this case, if you provide a raster as the model domain, the regular sample also  extracts the values from the raster layers.
+The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
+    If distance = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster. If not provided they are extracted from the modeldomain rasterStack.
 }
 \examples{
 \dontrun{
@@ -48,7 +51,8 @@ library(raster)
 library(caret)
 ########### prepare sample data:
 dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
-dat <- aggregate(dat[,c("DEM","TWI", "NDRE.M", "NDRE.Sd", "Bt", "Easting", "Northing")],by=list(as#' .character(dat$SOURCEID)),mean)
+dat <- aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing")],
+by=list(as.character(dat$SOURCEID)),mean)
 pts <- dat[,-1]
 pts <- st_as_sf(pts,coords=c("Easting","Northing"))
 st_crs(pts) <- 26911
@@ -66,13 +70,11 @@ folds <- createFolds(1:nrow(pts_train),k=3,returnTrain=FALSE)
 plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds=folds)
 
 # with feature space distance
-plot_geodist(x=pts_train, modeldomain=studyArea, distance = "feature")
-plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds = folds, testdata = pts_test,distance = "feature")
+plot_geodist(x=pts_train, modeldomain=studyArea,
+distance = "feature",variables=c("DEM","TWI", "NDRE.M"))
+plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds = folds, testdata = pts_test,
+distance = "feature",variables=c("DEM","TWI", "NDRE.M"))
 }
-
-
-
-
 }
 \author{
 Hanna Meyer, Edzer Pebesma, Marvin Ludwig
