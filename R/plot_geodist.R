@@ -49,16 +49,222 @@
 #'
 #' @export
 
-
 plot_geodist <- function(x,modeldomain,samplesize=2000,
-                         cvfolds=NULL,testdata=NULL,scale=TRUE){
+                         cvfolds=NULL,testdata=NULL,scale=TRUE,distance = "geo"){
   x <- sf::st_transform(x,4326)
 
   ##### Distance within training data:
-  sf::sf_use_s2(TRUE)
-  d = sf::st_distance(x)
-  diag(d) = Inf
-  min_d = apply(d, 1, min)
+
+  s2s = sample2sample(x, distance)
+
+
+  # here if raster
+  #####
+
+  s2p = sample2prediction(x, modeldomain, distance, samplesize)
+
+
+
+
+  ##### Compile data:
+  dists = rbind(s2s, s2p)
+
+  ##### Distance to test data:
+
+  if(!is.null(testdata)){
+    s2t = sample2test(x, testdata, distance)
+    dists = rbind(dists, s2t)
+  }
+
+  ##### Distance to CV data:
+  if(!is.null(cvfolds)){
+    cvd = cvdistance(x, cvfolds, distance)
+    dists = rbind(dists, cvd)
+  }
+
+  ##### Compile and plot data:
+
+  p <- ggplot2::ggplot(data=dists, aes(x=dist, group=what, fill=what)) +
+    ggplot2::geom_density(adjust=1.5, alpha=.4) +
+    ggplot2::scale_fill_discrete(name = "distance function") + xlab(paste0("distance (", distance,")")) +
+    ggplot2::theme(legend.position="bottom")
+
+  if(scale){
+    p <- p+scale_x_log10(labels=round)
+  }
+
+  print(p)
+  return(dists)
+}
+
+
+
+
+# Sample to Sample Distance
+
+sample2sample = function(x, distance){
+
+  if(distance == "geo"){
+
+    sf::sf_use_s2(TRUE)
+    d = sf::st_distance(x)
+    diag(d) = Inf
+    min_d = apply(d, 1, min)
+    sampletosample = data.frame(dist = min_d,
+                                  what = factor("sample-to-sample"),
+                                  type = "geo")
+
+
+  }else if(distance == "feature"){
+
+    x = st_drop_geometry(x)
+    scaleparam = attributes(scale(x))
+    x = data.frame(scale(x))
+
+    # sample to sample feature distance
+    d <- c()
+    for (i in 1:nrow(x)){
+      trainDist <- FNN::knnx.dist(x[i,],x,k=1)
+      trainDist[i] <- NA
+      d <- c(d,min(trainDist,na.rm=T))
+    }
+    sampletosample = data.frame(dist = d,
+                                what = factor("sample-to-sample"),
+                                type = "feature")
+
+  }
+  return(sampletosample)
+}
+
+
+# Sample to Prediction
+
+
+sample2prediction = function(x, modeldomain, distance, samplesize){
+
+  if(distance == "geo"){
+
+    modeldomain = st_transform(modeldomain, st_crs(x))
+    sf::sf_use_s2(TRUE)
+    d0 <- sf::st_distance(modeldomain, x)
+    min_d0 <- apply(d0, 1, min)
+    sampletoprediction = data.frame(dist = min_d0,
+                                what = factor("sample-to-prediction"),
+                                type = "geo")
+
+  }else if(distance == "feature"){
+
+    x = st_drop_geometry(x)
+    scaleparam = attributes(scale(x))
+    x = data.frame(scale(x))
+
+    modeldomain = st_drop_geometry(modeldomain)
+    modeldomain <- data.frame(scale(modeldomain,center=scaleparam$`scaled:center`,
+                                    scale=scaleparam$`scaled:scale`))
+
+
+    target_dist_feature <- c()
+    for (i in 1:nrow(modeldomain)){
+      trainDist <- FNN::knnx.dist(modeldomain[i,],x,k=1)
+      target_dist_feature <- c(target_dist_feature,min(trainDist,na.rm=T))
+    }
+    sampletoprediction = data.frame(dist = target_dist_feature,
+                                    what = "sample-to-prediction",
+                                    type = "feature")
+  }
+
+  return(sampletoprediction)
+}
+
+
+# sample to test
+
+
+sample2test = function(x, testdata, distance){
+
+  if(distance == "geo"){
+
+
+      testdata <- sf::st_transform(testdata,4326)
+      d_test <- sf::st_distance(testdata, x)
+      min_d_test <- apply(d_test, 1, min)
+
+      dists_test <- data.frame(dist = min_d_test,
+                               what = factor("sample-to-test"),
+                               type = "geo")
+
+
+  }else if(distance == "feature"){
+
+    x = st_drop_geometry(x)
+    scaleparam = attributes(scale(x))
+    x = data.frame(scale(x))
+
+    testdata = st_drop_geometry(testdata)
+    testdata <- data.frame(scale(testdata,center=scaleparam$`scaled:center`,
+                                    scale=scaleparam$`scaled:scale`))
+
+
+    test_dist_feature <- c()
+    for (i in 1:nrow(testdata)){
+      testDist <- FNN::knnx.dist(testdata[i,],x,k=1)
+      test_dist_feature <- c(test_dist_feature,min(testDist,na.rm=T))
+    }
+    dists_test = data.frame(dist = test_dist_feature,
+                                    what = "sample-to-test",
+                                    type = "feature")
+
+
+  }
+  return(dists_test)
+}
+
+
+
+# between folds
+
+
+
+cvdistance = function(x, cvfolds, distance){
+
+  if(distance == "geo"){
+    d_cv <- c()
+    for (i in 1:length(cvfolds)){
+      d_cv_tmp <- sf::st_distance(x[cvfolds[[i]],], x[-cvfolds[[i]],])
+      d_cv <-c(d_cv,apply(d_cv_tmp, 1, min))
+    }
+
+    dists_cv <- data.frame(dist = d_cv,
+                           what = factor("CV-distances"),
+                           type = "geo")
+
+
+  }else if(distance == "feature"){
+
+
+    x = st_drop_geometry(x)
+    x = data.frame(scale(x))
+
+
+    d_cv <- c()
+    for(i in 1:length(cvfolds)){
+      d_cv_tmp <- FNN::knnx.dist(x[cvfolds[[i]],], x[-cvfolds[[i]],],k=1)
+      d_cv <- c(d_cv, min(d_cv_tmp, na.rm = T))
+    }
+    dists_cv <- data.frame(dist = d_cv,
+                           what = factor("CV-distances"),
+                           type = "feature")
+
+  }
+  return(dists_cv)
+}
+
+
+
+
+
+sampleRaster = function(modeldomain, samplesize){
+
 
   ##### Distance to prediction locations:
   # regularly spread points (prediction locations):
@@ -70,64 +276,19 @@ plot_geodist <- function(x,modeldomain,samplesize=2000,
       message(paste0("samplesize for new data shouldn't be larger than number of pixels.
               Samplesize was reduced to ",raster::ncell(modeldomain)))
     }
-    modeldomain <- sf::st_as_sf(sf::st_as_sfc(sf::st_bbox(modeldomain)))
+    modeldomainextent <- sf::st_as_sf(sf::st_as_sfc(sf::st_bbox(modeldomain)))
 
-  }
-  sf::sf_use_s2(FALSE)
-  sf::st_as_sf(modeldomain) |>
-    sf::st_transform(4326) -> bb
-  methods::as(bb, "Spatial") |>
-    sp::spsample(n =samplesize, type = "regular")  |>
-    sf::st_as_sfc() |>
-    sf::st_set_crs(4326) -> predictionloc
-
-  sf::sf_use_s2(TRUE)
-  d0 <- sf::st_distance(predictionloc, x)
-  min_d0 <- apply(d0, 1, min)
-
-  ##### Compile data:
-  what <- c()
-  dists <- data.frame(dist = c(min_d, min_d0), what = c(rep("sample-to-sample", length(min_d)), rep("sample-to-predition", length(min_d0))))
-  dists$what <- factor(dists$what, levels = c("sample-to-sample", "sample-to-predition"))
-
-
-  ##### Distance to test data:
-  if(!is.null(testdata)){
-    testdata <- sf::st_transform(testdata,4326)
-    d_test <- sf::st_distance(testdata, x)
-    min_d_test <- apply(d_test, 1, min)
-
-    dists_test <- data.frame(dist = min_d_test, what = rep("sample-to-test", length(min_d_test)))
-    dists_test$what <- factor(dists_test$what, levels = c("sample-to-test"))
-    dists = rbind(dists, dists_test)
-
-  }
-  ##### Distance to CV data:
-  if(!is.null(cvfolds)){
-    d_cv <- c()
-    for (i in 1:length(cvfolds)){
-      d_cv_tmp <- sf::st_distance(x[cvfolds[[i]],], x[-cvfolds[[i]],])
-      d_cv <-c(d_cv,apply(d_cv_tmp, 1, min))
-    }
-
-    dists_cv <- data.frame(dist = d_cv, what = rep("CV-distances", length(d_cv)))
-    dists_cv$what <- factor(dists_cv$what, levels = c("CV-distances"))
-    dists <- rbind(dists, dists_cv)
-
+    sf::sf_use_s2(FALSE)
+    sf::st_as_sf(modeldomainextent) |>
+      sf::st_transform(4326) -> bb
+    methods::as(bb, "Spatial") |>
+      sp::spsample(n =samplesize, type = "regular")  |>
+      sf::st_as_sfc() |>
+      sf::st_set_crs(4326) -> predictionloc
+  }else if(inherits(modeldomain, "sf")){
+    predictionloc = modeldomain
   }
 
-  ##### Compile and plot data:
 
-  p <- ggplot2::ggplot(data=dists, aes(x=dist, group=what, fill=what)) +
-    ggplot2::geom_density(adjust=1.5, alpha=.4) +
-    ggplot2::scale_fill_discrete(name = "distance function") + xlab("distance (m)") +
-    ggplot2::theme(legend.position="bottom")
-
-  if(scale){
-    p <- p+scale_x_log10(labels=round)
-  }
-
-  print(p)
-  return(dists)
 }
 
