@@ -1,9 +1,0 @@
-pandoc: 2.11.4
-pkgdown: 2.0.2
-pkgdown_sha: ~
-articles:
-  cast01-CAST-intro: cast01-CAST-intro.html
-  cast02-AOA-tutorial: cast02-AOA-tutorial.html
-  cast03-AOA-parallel: cast03-AOA-parallel.html
-last_built: 2022-01-27T12:00Z
-
