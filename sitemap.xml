@@ -1,78 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>/404.html</loc>
+    <loc>https://hannameyer.github.io/CAST/404.html</loc>
   </url>
   <url>
-    <loc>/articles/cast01-CAST-intro.html</loc>
+    <loc>https://hannameyer.github.io/CAST/articles/cast01-CAST-intro.html</loc>
   </url>
   <url>
-    <loc>/articles/cast02-AOA-tutorial.html</loc>
+    <loc>https://hannameyer.github.io/CAST/articles/cast02-AOA-tutorial.html</loc>
   </url>
   <url>
-    <loc>/articles/cast03-AOA-parallel.html</loc>
+    <loc>https://hannameyer.github.io/CAST/articles/cast03-AOA-parallel.html</loc>
   </url>
   <url>
-    <loc>/articles/index.html</loc>
+    <loc>https://hannameyer.github.io/CAST/articles/index.html</loc>
   </url>
   <url>
-    <loc>/authors.html</loc>
+    <loc>https://hannameyer.github.io/CAST/authors.html</loc>
   </url>
   <url>
-    <loc>/index.html</loc>
+    <loc>https://hannameyer.github.io/CAST/index.html</loc>
   </url>
   <url>
-    <loc>/news/index.html</loc>
+    <loc>https://hannameyer.github.io/CAST/news/index.html</loc>
   </url>
   <url>
-    <loc>/reference/CAST.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/CAST.html</loc>
   </url>
   <url>
-    <loc>/reference/CreateSpacetimeFolds.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/CreateSpacetimeFolds.html</loc>
   </url>
   <url>
-    <loc>/reference/aoa.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/aoa.html</loc>
   </url>
   <url>
-    <loc>/reference/bss.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/bss.html</loc>
   </url>
   <url>
-    <loc>/reference/calibrate_aoa.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/calibrate_aoa.html</loc>
   </url>
   <url>
-    <loc>/reference/ffs.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/ffs.html</loc>
   </url>
   <url>
-    <loc>/reference/global_validation.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/global_validation.html</loc>
   </url>
   <url>
-    <loc>/reference/index.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/index.html</loc>
   </url>
   <url>
-    <loc>/reference/plot.aoa.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/plot.aoa.html</loc>
   </url>
   <url>
-    <loc>/reference/plot.trainDI.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/plot.trainDI.html</loc>
   </url>
   <url>
-    <loc>/reference/plot_ffs.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/plot_ffs.html</loc>
   </url>
   <url>
-    <loc>/reference/plot_geodist.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/plot_geodist.html</loc>
   </url>
   <url>
-    <loc>/reference/print.aoa.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/print.aoa.html</loc>
   </url>
   <url>
-    <loc>/reference/print.trainDI.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/print.trainDI.html</loc>
   </url>
   <url>
-    <loc>/reference/show.aoa.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/show.aoa.html</loc>
   </url>
   <url>
-    <loc>/reference/show.trainDI.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/show.trainDI.html</loc>
   </url>
   <url>
-    <loc>/reference/trainDI.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/trainDI.html</loc>
   </url>
 </urlset>
