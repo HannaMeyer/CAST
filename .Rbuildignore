@@ -7,3 +7,4 @@ vignettes/CAST-intro_files
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^\.github$
