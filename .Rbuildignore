@@ -4,3 +4,6 @@
 ^.*CAST-intro_cache
 vignettes/CAST-intro_cache
 vignettes/CAST-intro_files
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
