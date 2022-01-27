@@ -27,6 +27,7 @@
 #' library(sf)
 #' library(raster)
 #' library(caret)
+#'
 #' ########### prepare sample data:
 #' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 #' dat <- aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing")],
@@ -38,18 +39,22 @@
 #' pts_test <- pts[30:42,]
 #' studyArea <- raster::stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
 #' studyArea = studyArea[[c("DEM","TWI", "NDRE.M", "NDRE.Sd", "Bt")]]
+#'
 #' ########### Distance between training data and new data:
 #' dist <- plot_geodist(pts_train,studyArea)
+#'
 #' ########### Distance between training data, new data and test data:
 #' mapview(pts_train,col.regions="blue")+mapview(pts_test,col.regions="red")
 #' dist <- plot_geodist(pts_train,studyArea,testdata=pts_test)
+#'
 #' ########### Distance between training data, new data and CV folds:
 #' folds <- createFolds(1:nrow(pts_train),k=3,returnTrain=FALSE)
 #' plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds=folds)
 #'
-#' # with feature space distance
+#' ########### Distances in the feature space:
 #' plot_geodist(x=pts_train, modeldomain=studyArea,
 #' distance = "feature",variables=c("DEM","TWI", "NDRE.M"))
+#'
 #' plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds = folds, testdata = pts_test,
 #' distance = "feature",variables=c("DEM","TWI", "NDRE.M"))
 #' }
