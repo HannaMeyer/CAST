@@ -1,5 +1,5 @@
 ---
-title: "Area of applicability of spatial prediction models"
+title: "2. Area of applicability of spatial prediction models"
 author: "Hanna Meyer"
 date: "`r Sys.Date()`"
 output:

@@ -1,5 +1,5 @@
 ---
-title: 'Tutorial: AOA in Parallel'
+title: '3. AOA in Parallel'
 author: "Marvin Ludwig"
 date: "`r Sys.Date()`"
 output:
