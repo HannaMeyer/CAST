@@ -6,4 +6,6 @@ inst/doc
 vignettes/*.html
 vignettes/*.pdf
 vignettes/*.R
-docs
+*_cache/
+*_files/
+/cache/
