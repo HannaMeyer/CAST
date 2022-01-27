@@ -7,5 +7,5 @@ vignettes/*.html
 vignettes/*.pdf
 vignettes/*.R
 *_cache/
-*_files/
 /cache/
+docs
