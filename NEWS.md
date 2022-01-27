@@ -2,6 +2,7 @@
 * new feature: 
   * trainDI allows to calculate the DI of the training dataset separately from the aoa function
   * plot and print functions for the AOA
+  * function to plot distance distributions in geographic and feature space
   * function global_validation added
   * ffs and bss can be used with global_validation
 * modifications
