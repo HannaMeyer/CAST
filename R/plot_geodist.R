@@ -44,7 +44,7 @@
 #' dist <- plot_geodist(pts_train,studyArea)
 #'
 #' ########### Distance between training data, new data and test data:
-#' mapview(pts_train,col.regions="blue")+mapview(pts_test,col.regions="red")
+#' #mapview(pts_train,col.regions="blue")+mapview(pts_test,col.regions="red")
 #' dist <- plot_geodist(pts_train,studyArea,testdata=pts_test)
 #'
 #' ########### Distance between training data, new data and CV folds:
@@ -65,24 +65,29 @@ plot_geodist <- function(x,
                          samplesize=2000,
                          cvfolds=NULL,
                          testdata=NULL,
-                         scale=TRUE,
+                         scale=FALSE,
                          distance = "geo",
                          variables=NULL){
 
 
   # input formatting ------------
-  x <- sf::st_transform(x,4326) # not sure if thus is needed
+  x <- sf::st_transform(x,4326)
+
 
   if(distance == "feature"){
     if(is.null(variables)){
       variables <- names(modeldomain)
     }
-    if(!any(names(x)%in%variables)){
+    if(any(!variables%in%names(x))){ # extract variable values of raster:
+      x <- sf::st_transform(x,sf::st_crs(modeldomain))
       x <- sf::st_as_sf(raster::extract(modeldomain, x, df = TRUE, sp = TRUE))
+      x <- sf::st_transform(x,4326)
     }
     if(!is.null(testdata)){
-      if(!any(names(testdata)%in%variables)){
+      if(any(!variables%in%names(testdata))){# extract variable values of raster:
+        testdata <- sf::st_transform(testdata,sf::st_crs(modeldomain))
         testdata <- sf::st_as_sf(raster::extract(modeldomain, testdata, df = TRUE, sp = TRUE))
+        testdata <- sf::st_transform(testdata,4326)
       }
     }
   }
@@ -113,8 +118,8 @@ plot_geodist <- function(x,
   }
 
   # Compile and plot data ----
-  xlabs <- "geographic distance (m)"
-  if(distance=="feature"){ xlab <- "feature space distance"}
+  xlabs <- "geographic distances (m)"
+  if(distance=="feature"){ xlabs <- "feature space distances"}
   what <- "" #just to avoid check note
   if (distance=="feature"){unit ="unitless"}
   p <- ggplot2::ggplot(data=dists, aes(x=dist, group=what, fill=what)) +
@@ -324,10 +329,6 @@ sampleFromArea <- function(modeldomain, samplesize, distance,variables){
   predictionloc <- sf::st_as_sf(predictionloc)
 
   if(distance == "feature"){
-
-    if(!any(names(x)%in%variables)){
-      x <- sf::st_as_sf(raster::extract(modeldomain, x, df = TRUE, sp = TRUE))
-    }
     predictionloc <- sf::st_as_sf(raster::extract(modeldomain, predictionloc, df = TRUE, sp = TRUE))
     predictionloc <- na.omit(predictionloc)
   }

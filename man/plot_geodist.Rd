@@ -10,7 +10,7 @@ plot_geodist(
   samplesize = 2000,
   cvfolds = NULL,
   testdata = NULL,
-  scale = TRUE,
+  scale = FALSE,
   distance = "geo",
   variables = NULL
 )
@@ -48,6 +48,7 @@ The modeldomain is a sf polygon or a raster that defines the prediction area. Th
 \dontrun{
 library(sf)
 library(raster)
+library(rgdal)
 library(caret)
 
 ########### prepare sample data:
@@ -66,7 +67,7 @@ studyArea = studyArea[[c("DEM","TWI", "NDRE.M", "NDRE.Sd", "Bt")]]
 dist <- plot_geodist(pts_train,studyArea)
 
 ########### Distance between training data, new data and test data:
-mapview(pts_train,col.regions="blue")+mapview(pts_test,col.regions="red")
+#mapview(pts_train,col.regions="blue")+mapview(pts_test,col.regions="red")
 dist <- plot_geodist(pts_train,studyArea,testdata=pts_test)
 
 ########### Distance between training data, new data and CV folds:
