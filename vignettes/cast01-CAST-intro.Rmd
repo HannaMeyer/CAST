@@ -81,7 +81,7 @@ We see that the data are taken at 42 locations (SOURCEID) over the field. The lo
 
 
 ### Data subsetting
-To reduce the data to an amount that can be handeld in a tutorial, let's restrict the data to the depth of -0.3 and to two weeks of the year 2012. After subsetting let's have an overview on the soil moisture time series measured by teh data loggers.
+To reduce the data to an amount that can be handled in a tutorial, let's restrict the data to the depth of -0.3 and to two weeks of the year 2012. After subsetting let's have an overview on the soil moisture time series measured by the data loggers.
 
 
 ```{r, message = FALSE, warning=FALSE}
@@ -226,7 +226,7 @@ spplot(prediction_ffs)
 We see that the variable selection does not only have an effect on the statistical performance but also the predicted spatial patterns change considerably. It is of note that the linear feature is not any more in the resulting soil moisture map most likely because "Easting" was removed from the set of predictor variables by ffs.
 
 ## Area of Applicability
-Still it is required to analyse if the model can be applied to the entire study area of if there are lcoations that are very different in their predictor properties to what the model has learned from. See more details in the vignette on the Area of applicability and 
+Still it is required to analyse if the model can be applied to the entire study area of if there are locations that are very different in their predictor properties to what the model has learned from. See more details in the vignette on the Area of applicability and 
 [Meyer and Pebesma 2020](https://arxiv.org/abs/2005.07939).
 
 ```{r, message = FALSE, warning=FALSE}
