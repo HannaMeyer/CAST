@@ -20,7 +20,7 @@ knitr::opts_chunk$set(fig.width = 8.83)
 
 
 # Introduction
-In spatial predictive mapping, models are often applied to make predictions far beyond sampling locations (i.e. field observarions used to map a variable even on a global scale), where new locations might considerably differ in their environmental properties. However, areas in the predictor space without support of training data are problematic. The model has no knowledge about these environments and predictions for such areas have to be considered highly uncertain. 
+In spatial predictive mapping, models are often applied to make predictions far beyond sampling locations (i.e. field observations used to map a variable even on a global scale), where new locations might considerably differ in their environmental properties. However, areas in the predictor space without support of training data are problematic. The model has no knowledge about these environments and predictions for such areas have to be considered highly uncertain. 
 
 Here we implement the methodology described in [Meyer\&Pebesma (2021)](https://doi.org/10.1111/2041-210X.13650) to estimate the "area of applicability" (AOA) of spatial prediction models. The AOA is defined as the area where we enabled the model to learn about relationships based on the training data, and where the estimated cross-validation performance holds. To delineate the AOA, first an dissimilarity index (DI) is calculated that is based on distances to the training data in the multidimensional predictor variable space. To account for relevance of predictor variables responsible for prediction patterns we weight variables by the model-derived importance scores prior to distance calculation. The AOA is then derived by applying a threshold based on the DI observed in the training data using cross-validation.
  
@@ -151,7 +151,7 @@ Very high values are present in the Alps, as they have not been covered by train
 
 ## Training data DI Calculation
 
-The `parameters` of the aoa output are the result of the function `trainDI` which is called internally by `aoa` but can also be computed independently. It calculates the Dissimilarity Index (DI) of the data used for model training which is needed to determine the DI threshold used for the AOA estimation. 
+The `parameters` of the AOA output are the result of the function `trainDI` which is called internally by `aoa` but can also be computed independently. It calculates the Dissimilarity Index (DI) of the data used for model training which is needed to determine the DI threshold used for the AOA estimation. 
 
 ```{r, message = FALSE, warning = FALSE}
 TDI = trainDI(model)
@@ -345,7 +345,7 @@ model
 ```
 
 ### Prediction 
-Next, the model is used tpo make predictions for the entire study area.
+Next, the model is used to make predictions for the entire study area.
 ```{r, message = FALSE, warning=FALSE}
 #Predictors:
 spplot(stretch(studyArea[[predictors]]))
@@ -355,7 +355,7 @@ prediction <- predict(studyArea,model)
 ```
 
 ## AOA estimation
-Next we're limniting the predictions to the AOA. Predictions outside the AOA should be excluded.
+Next we're limiting the predictions to the AOA. Predictions outside the AOA should be excluded.
 
 ```{r, message = FALSE, warning=FALSE}
 AOA <- aoa(studyArea,model)
@@ -370,6 +370,6 @@ grid.arrange(spplot(AOA$DI,col.regions=viridis(100),main="DI with sampling locat
 
 # Final notes
 
-* The AOA is estimated based on training data and new data (i.e. raster stack of the entire area of interest). The trainined model are only used for getting the variable importance needed to weight predictor variables. These can be given as a table either, so the approach can be used with other packages than caret as well.
+* The AOA is estimated based on training data and new data (i.e. raster stack of the entire area of interest). The trained model are only used for getting the variable importance needed to weight predictor variables. These can be given as a table either, so the approach can be used with other packages than caret as well.
 * Knowledge on the AOA is important when predictions are used as a baseline for decision making or subsequent environmental modelling. 
 * We suggest that the AOA should be provided alongside the prediction map and complementary to the communication of validation performances. 
