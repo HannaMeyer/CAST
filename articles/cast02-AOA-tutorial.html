@@ -75,7 +75,7 @@
       <img src="" class="logo" alt=""><h1>2. Area of applicability of spatial prediction models</h1>
                         <h4 data-toc-skip class="author">Hanna Meyer</h4>
             
-            <h4 data-toc-skip class="date">2022-01-28</h4>
+            <h4 data-toc-skip class="date">2022-02-15</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast02-AOA-tutorial.Rmd" class="external-link"><code>vignettes/cast02-AOA-tutorial.Rmd</code></a></small>
       <div class="d-none name"><code>cast02-AOA-tutorial.Rmd</code></div>
@@ -87,7 +87,7 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>In spatial predictive mapping, models are often applied to make predictions far beyond sampling locations (i.e. field observarions used to map a variable even on a global scale), where new locations might considerably differ in their environmental properties. However, areas in the predictor space without support of training data are problematic. The model has no knowledge about these environments and predictions for such areas have to be considered highly uncertain.</p>
+<p>In spatial predictive mapping, models are often applied to make predictions far beyond sampling locations (i.e. field observations used to map a variable even on a global scale), where new locations might considerably differ in their environmental properties. However, areas in the predictor space without support of training data are problematic. The model has no knowledge about these environments and predictions for such areas have to be considered highly uncertain.</p>
 <p>Here we implement the methodology described in <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link">Meyer&amp;Pebesma (2021)</a> to estimate the “area of applicability” (AOA) of spatial prediction models. The AOA is defined as the area where we enabled the model to learn about relationships based on the training data, and where the estimated cross-validation performance holds. To delineate the AOA, first an dissimilarity index (DI) is calculated that is based on distances to the training data in the multidimensional predictor variable space. To account for relevance of predictor variables responsible for prediction patterns we weight variables by the model-derived importance scores prior to distance calculation. The AOA is then derived by applying a threshold based on the DI observed in the training data using cross-validation.</p>
 <p>This tutorial shows an example of how to estimate the area of applicability of spatial prediction models.</p>
 <p>For further information see: Meyer, H., &amp; Pebesma, E. (2021). Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution, 12, 1620– 1633. [<a href="https://doi.org/10.1111/2041-210X.13650" class="external-link uri">https://doi.org/10.1111/2041-210X.13650</a>]</p>
@@ -261,7 +261,7 @@
 <div class="section level3">
 <h3 id="training-data-di-calculation">Training data DI Calculation<a class="anchor" aria-label="anchor" href="#training-data-di-calculation"></a>
 </h3>
-<p>The <code>parameters</code> of the aoa output are the result of the function <code>trainDI</code> which is called internally by <code>aoa</code> but can also be computed independently. It calculates the Dissimilarity Index (DI) of the data used for model training which is needed to determine the DI threshold used for the AOA estimation.</p>
+<p>The <code>parameters</code> of the AOA output are the result of the function <code>trainDI</code> which is called internally by <code>aoa</code> but can also be computed independently. It calculates the Dissimilarity Index (DI) of the data used for model training which is needed to determine the DI threshold used for the AOA estimation.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">TDI</span> <span class="op">=</span> <span class="fu"><a href="../reference/trainDI.html">trainDI</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">parameters</span><span class="op">)</span></code></pre></div>
@@ -505,7 +505,7 @@ ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span><
 <div class="section level4">
 <h4 id="prediction">Prediction<a class="anchor" aria-label="anchor" href="#prediction"></a>
 </h4>
-<p>Next, the model is used tpo make predictions for the entire study area.</p>
+<p>Next, the model is used to make predictions for the entire study area.</p>
 <div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">#Predictors:</span>
 <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/strech.html" class="external-link">stretch</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">[[</span><span class="va">predictors</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></code></pre></div>
@@ -518,7 +518,7 @@ ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span><
 <div class="section level3">
 <h3 id="aoa-estimation">AOA estimation<a class="anchor" aria-label="anchor" href="#aoa-estimation"></a>
 </h3>
-<p>Next we’re limniting the predictions to the AOA. Predictions outside the AOA should be excluded.</p>
+<p>Next we’re limiting the predictions to the AOA. Predictions outside the AOA should be excluded.</p>
 <div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span><span class="op">)</span>
 
@@ -533,7 +533,7 @@ ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span><
 <h2 id="final-notes">Final notes<a class="anchor" aria-label="anchor" href="#final-notes"></a>
 </h2>
 <ul>
-<li>The AOA is estimated based on training data and new data (i.e. raster stack of the entire area of interest). The trainined model are only used for getting the variable importance needed to weight predictor variables. These can be given as a table either, so the approach can be used with other packages than caret as well.</li>
+<li>The AOA is estimated based on training data and new data (i.e. raster stack of the entire area of interest). The trained model are only used for getting the variable importance needed to weight predictor variables. These can be given as a table either, so the approach can be used with other packages than caret as well.</li>
 <li>Knowledge on the AOA is important when predictions are used as a baseline for decision making or subsequent environmental modelling.</li>
 <li>We suggest that the AOA should be provided alongside the prediction map and complementary to the communication of validation performances.</li>
 </ul>
