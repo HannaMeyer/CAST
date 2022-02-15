@@ -92,9 +92,10 @@ plot_geodist <- function(x,
     }
   }
 
-  if(inherits(modeldomain, "Raster")){
+## Sample prediction location from the study area:
+#  if(inherits(modeldomain, "Raster")){
     modeldomain <- sampleFromArea(modeldomain, samplesize, distance,variables)
-  }
+#  }
 
 
   # required steps ----
