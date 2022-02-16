@@ -9,7 +9,7 @@
 #' @param cvfolds optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?createSpaceTimeFolds
 #' @param testdata optional. object of class sf: Data used for independent validation
 #' @param samplesize numeric. How many random prediction samples should be used? Only required if modeldomain is a raster (see Details)
-#' @param type character. See code{\link{spsample}}
+#' @param type character. See \link[sp]{spsample}
 #' @param scale logical. Present distances on log scale?
 #' @param distance "geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)
 #' @param variables character vector defining the predictor variables used if distance="feature. If not provided all variables included in modeldomain are used.

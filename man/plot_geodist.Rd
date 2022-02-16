@@ -7,9 +7,10 @@
 plot_geodist(
   x,
   modeldomain,
-  samplesize = 2000,
   cvfolds = NULL,
   testdata = NULL,
+  samplesize = 2000,
+  type = "regular",
   scale = FALSE,
   distance = "geo",
   variables = NULL
@@ -20,11 +21,13 @@ plot_geodist(
 
 \item{modeldomain}{raster or sf object defining the prediction area (see Details)}
 
-\item{samplesize}{numeric. How many random prediction samples should be used? Only required if modeldomain is a raster (see Details)}
-
 \item{cvfolds}{optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?createSpaceTimeFolds}
 
 \item{testdata}{optional. object of class sf: Data used for independent validation}
+
+\item{samplesize}{numeric. How many random prediction samples should be used? Only required if modeldomain is a raster (see Details)}
+
+\item{type}{character. See \link[sp]{spsample}}
 
 \item{scale}{logical. Present distances on log scale?}
 
@@ -48,7 +51,6 @@ The modeldomain is a sf polygon or a raster that defines the prediction area. Th
 \dontrun{
 library(sf)
 library(raster)
-library(rgdal)
 library(caret)
 
 ########### prepare sample data:
@@ -80,6 +82,7 @@ distance = "feature",variables=c("DEM","TWI", "NDRE.M"))
 
 plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds = folds, testdata = pts_test,
 distance = "feature",variables=c("DEM","TWI", "NDRE.M"))
+
 }
 }
 \author{
