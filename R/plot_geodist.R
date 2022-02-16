@@ -9,6 +9,7 @@
 #' @param cvfolds optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?createSpaceTimeFolds
 #' @param testdata optional. object of class sf: Data used for independent validation
 #' @param samplesize numeric. How many random prediction samples should be used? Only required if modeldomain is a raster (see Details)
+#' @param type character. See code{\link{spsample}}
 #' @param scale logical. Present distances on log scale?
 #' @param distance "geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)
 #' @param variables character vector defining the predictor variables used if distance="feature. If not provided all variables included in modeldomain are used.
@@ -57,14 +58,16 @@
 #'
 #' plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds = folds, testdata = pts_test,
 #' distance = "feature",variables=c("DEM","TWI", "NDRE.M"))
+#'
 #' }
 #' @export
 
 plot_geodist <- function(x,
                          modeldomain,
-                         samplesize=2000,
                          cvfolds=NULL,
                          testdata=NULL,
+                         samplesize=2000,
+                         type = "regular",
                          scale=FALSE,
                          distance = "geo",
                          variables=NULL){
@@ -94,7 +97,7 @@ plot_geodist <- function(x,
 
 ## Sample prediction location from the study area:
 #  if(inherits(modeldomain, "Raster")){
-    modeldomain <- sampleFromArea(modeldomain, samplesize, distance,variables)
+    modeldomain <- sampleFromArea(modeldomain, samplesize, distance,variables,type)
 #  }
 
 
@@ -150,7 +153,7 @@ sample2sample <- function(x, distance,variables){
     min_d <- apply(d, 1, min)
     sampletosample <- data.frame(dist = min_d,
                                  what = factor("sample-to-sample"),
-                                 type = "geo")
+                                 dist_type = "geo")
 
 
   }else if(distance == "feature"){
@@ -168,7 +171,7 @@ sample2sample <- function(x, distance,variables){
     }
     sampletosample <- data.frame(dist = d,
                                  what = factor("sample-to-sample"),
-                                 type = "feature")
+                                 dist_type = "feature")
 
   }
   return(sampletosample)
@@ -187,7 +190,7 @@ sample2prediction = function(x, modeldomain, distance, samplesize,variables){
     min_d0 <- apply(d0, 1, min)
     sampletoprediction <- data.frame(dist = min_d0,
                                      what = factor("sample-to-prediction"),
-                                     type = "geo")
+                                     dist_type = "geo")
 
   }else if(distance == "feature"){
     x <- x[,variables]
@@ -207,7 +210,7 @@ sample2prediction = function(x, modeldomain, distance, samplesize,variables){
     }
     sampletoprediction <- data.frame(dist = target_dist_feature,
                                      what = "sample-to-prediction",
-                                     type = "feature")
+                                     dist_type = "feature")
   }
 
   return(sampletoprediction)
@@ -226,7 +229,7 @@ sample2test <- function(x, testdata, distance,variables){
 
     dists_test <- data.frame(dist = min_d_test,
                              what = factor("sample-to-test"),
-                             type = "geo")
+                             dist_type = "geo")
 
 
   }else if(distance == "feature"){
@@ -248,7 +251,7 @@ sample2test <- function(x, testdata, distance,variables){
     }
     dists_test <- data.frame(dist = test_dist_feature,
                              what = "sample-to-test",
-                             type = "feature")
+                             dist_type = "feature")
 
 
   }
@@ -270,7 +273,7 @@ cvdistance <- function(x, cvfolds, distance,variables){
 
     dists_cv <- data.frame(dist = d_cv,
                            what = factor("CV-distances"),
-                           type = "geo")
+                           dist_type = "geo")
 
 
   }else if(distance == "feature"){
@@ -293,7 +296,7 @@ cvdistance <- function(x, cvfolds, distance,variables){
 
     dists_cv <- data.frame(dist = d_cv,
                            what = factor("CV-distances"),
-                           type = "feature")
+                           dist_type = "feature")
 
   }
   return(dists_cv)
@@ -303,7 +306,7 @@ cvdistance <- function(x, cvfolds, distance,variables){
 
 
 
-sampleFromArea <- function(modeldomain, samplesize, distance,variables){
+sampleFromArea <- function(modeldomain, samplesize, distance,variables,type){
 
   ##### Distance to prediction locations:
   # regularly spread points (prediction locations):
@@ -323,11 +326,14 @@ sampleFromArea <- function(modeldomain, samplesize, distance,variables){
   sf::st_as_sf(modeldomainextent) |>
     sf::st_transform(4326) -> bb
   methods::as(bb, "Spatial") |>
-    sp::spsample(n =samplesize, type = "regular")  |>
+    sp::spsample(n =samplesize, type = type)  |>
+    #sp::spsample(n =samplesize, type = "Fibonacci")  |>
     sf::st_as_sfc() |>
     sf::st_set_crs(4326) -> predictionloc
 
+
   predictionloc <- sf::st_as_sf(predictionloc)
+
 
   if(distance == "feature"){
     predictionloc <- sf::st_as_sf(raster::extract(modeldomain, predictionloc, df = TRUE, sp = TRUE))
