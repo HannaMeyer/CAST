@@ -65,7 +65,7 @@ See Meyer and Pebesma (2021) for the full documentation of the methodology.
 }
 \note{
 If classification models are used, currently the variable importance can only
-be automatically retrieved if models were traiend via train(predictors,response) and not via the formula-interface.
+be automatically retrieved if models were trained via train(predictors,response) and not via the formula-interface.
 Will be fixed.
 }
 \examples{
