@@ -68,9 +68,10 @@ The plot can be used to check the suitability of a chosen CV method to be repres
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">plot_geodist</span><span class="op">(</span>
   <span class="va">x</span>,
   <span class="va">modeldomain</span>,
-  samplesize <span class="op">=</span> <span class="fl">2000</span>,
   cvfolds <span class="op">=</span> <span class="cn">NULL</span>,
   testdata <span class="op">=</span> <span class="cn">NULL</span>,
+  samplesize <span class="op">=</span> <span class="fl">2000</span>,
+  type <span class="op">=</span> <span class="st">"regular"</span>,
   scale <span class="op">=</span> <span class="cn">FALSE</span>,
   distance <span class="op">=</span> <span class="st">"geo"</span>,
   variables <span class="op">=</span> <span class="cn">NULL</span>
@@ -83,12 +84,14 @@ The plot can be used to check the suitability of a chosen CV method to be repres
 <dd><p>object of class sf, training data locations</p></dd>
 <dt>modeldomain</dt>
 <dd><p>raster or sf object defining the prediction area (see Details)</p></dd>
-<dt>samplesize</dt>
-<dd><p>numeric. How many random prediction samples should be used? Only required if modeldomain is a raster (see Details)</p></dd>
 <dt>cvfolds</dt>
 <dd><p>optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?createSpaceTimeFolds</p></dd>
 <dt>testdata</dt>
 <dd><p>optional. object of class sf: Data used for independent validation</p></dd>
+<dt>samplesize</dt>
+<dd><p>numeric. How many random prediction samples should be used? Only required if modeldomain is a raster (see Details)</p></dd>
+<dt>type</dt>
+<dd><p>character. See <a href="https://rdrr.io/pkg/sp/man/spsample.html" class="external-link">spsample</a></p></dd>
 <dt>scale</dt>
 <dd><p>logical. Present distances on log scale?</p></dd>
 <dt>distance</dt>
@@ -115,7 +118,6 @@ The plot can be used to check the suitability of a chosen CV method to be repres
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
 <span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
 <span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/raster" class="external-link">raster</a></span><span class="op">)</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://rgdal.r-forge.r-project.org" class="external-link">rgdal</a></span><span class="op">)</span></span>
 <span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/topepo/caret/" class="external-link">caret</a></span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co">########### prepare sample data:</span></span>
@@ -147,6 +149,7 @@ The plot can be used to check the suitability of a chosen CV method to be repres
 <span class="r-in"></span>
 <span class="r-in"><span class="fu">plot_geodist</span><span class="op">(</span>x<span class="op">=</span><span class="va">pts_train</span>, modeldomain<span class="op">=</span><span class="va">studyArea</span>, cvfolds <span class="op">=</span> <span class="va">folds</span>, testdata <span class="op">=</span> <span class="va">pts_test</span>,</span>
 <span class="r-in">distance <span class="op">=</span> <span class="st">"feature"</span>,variables<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DEM"</span>,<span class="st">"TWI"</span>, <span class="st">"NDRE.M"</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"></span>
 <span class="r-in"><span class="op">}</span></span>
 </code></pre></div>
     </div>
