@@ -1,4 +1,4 @@
-# `CAST` 0.5.2
+# `CAST` 0.6.0
 * new feature: 
   * trainDI allows to calculate the DI of the training dataset separately from the aoa function
   * plot and print functions for the AOA
