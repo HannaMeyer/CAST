@@ -3,9 +3,8 @@ title: '3. AOA in Parallel'
 author: "Marvin Ludwig"
 date: "`r Sys.Date()`"
 output:
-  rmarkdown::html_document:
+  rmarkdown::html_vignette:
     toc: true
-    theme: united
 vignette: >
   %\VignetteIndexEntry{CAST - Code updates}
   %\VignetteEngine{knitr::rmarkdown}

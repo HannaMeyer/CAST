@@ -3,9 +3,8 @@ title: "1. Introduction to CAST"
 author: "Hanna Meyer"
 date: "`r Sys.Date()`"
 output:
-  rmarkdown::html_document:
+  rmarkdown::html_vignette:
     toc: true
-    theme: united
 vignette: >
   %\VignetteIndexEntry{Introduction to CAST}
   %\VignetteEngine{knitr::rmarkdown}

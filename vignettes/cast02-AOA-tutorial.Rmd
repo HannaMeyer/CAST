@@ -3,9 +3,8 @@ title: "2. Area of applicability of spatial prediction models"
 author: "Hanna Meyer"
 date: "`r Sys.Date()`"
 output:
-  rmarkdown::html_document:
+  rmarkdown::html_vignette:
     toc: true
-    theme: united
 vignette: >
   %\VignetteIndexEntry{Area of applicability of spatial prediction models}
   %\VignetteEngine{knitr::rmarkdown}
