@@ -15,13 +15,10 @@
 #' @param variables character vector defining the predictor variables used if distance="feature. If not provided all variables included in modeldomain are used.
 #' @param showPlot logical
 #' @return A list including the plot and the corresponding data.frame containing the distances
-#'
-#'
-#'
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
 #'     If distance = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster. If not provided they are extracted from the modeldomain rasterStack.
 #'
-#'     @note See Meyer and Pebesma (2022) for an application of this plotting function
+#' @note See Meyer and Pebesma (2022) for an application of this plotting function
 #'
 #' @import ggplot2
 #'
@@ -67,7 +64,6 @@
 #'library(sf)
 #'library(rnaturalearth)
 #'library(ggplot2)
-#'library(gridExtra)
 #'
 #'### Define prediction area (here: global):
 #'ee <- st_crs("+proj=eqearth")
@@ -78,17 +74,15 @@
 #'### (alternatively replace pts_random by a real sampling dataset (see Meyer and Pebesma 2022):
 #'sf_use_s2(FALSE)
 #'pts_random <- st_sample(co, 2000)
-#'p1 <- plot_geodist(pts_random,co,scale=T)
 #'
 #'### See points on the map:
-#'p2 <- ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
+#'ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 #'      geom_sf(data = pts_random, color = "#F8766D",size=0.5, shape=3) +
 #'      guides(fill = FALSE, col = FALSE) +
-#'      theme(plot.margin=unit(c(-2,0.2,0.2,0.2),"cm"))+
 #'      labs(x = NULL, y = NULL)
 #'
-#'### combined figure:
-#'grid.arrange(p2,p1[[1]],ncol=2)
+#'### plot distances:
+#'plot_geodist(pts_random,co,scale=T)
 #'
 #' }
 #' @export
