@@ -164,7 +164,10 @@ plot_geodist <- function(x,
   if(showPlot){
   print(p)
   }
-  return(list(p,dists))
+
+  out <- list(p,dists)
+  names(out) <- c("plot","distances")
+  return(out)
 }
 
 
