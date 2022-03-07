@@ -110,12 +110,22 @@ plot_geodist <- function(x,
     if(any(!variables%in%names(x))){ # extract variable values of raster:
       x <- sf::st_transform(x,sf::st_crs(modeldomain))
       x <- sf::st_as_sf(raster::extract(modeldomain, x, df = TRUE, sp = TRUE))
+      if(any(is.na(x))){
+        x <- na.omit(x)
+        message("some samples of x were removed because of NA in extracted predictor values")
+      }
       x <- sf::st_transform(x,4326)
     }
     if(!is.null(testdata)){
       if(any(!variables%in%names(testdata))){# extract variable values of raster:
         testdata <- sf::st_transform(testdata,sf::st_crs(modeldomain))
         testdata <- sf::st_as_sf(raster::extract(modeldomain, testdata, df = TRUE, sp = TRUE))
+
+        if(any(is.na(testdata))){
+          testdata <- na.omit(testdata)
+          message("some test data were removed because of NA in extracted predictor values")
+        }
+
         testdata <- sf::st_transform(testdata,4326)
       }
     }
