@@ -109,6 +109,11 @@ plot_geodist <- function(x,
     }
     if(any(!variables%in%names(x))){ # extract variable values of raster:
       x <- sf::st_transform(x,sf::st_crs(modeldomain))
+
+      if(class(x)=="sfc_POINT"){
+        x <- st_as_sf(x)
+      }
+
       x <- sf::st_as_sf(raster::extract(modeldomain, x, df = TRUE, sp = TRUE))
       if(any(is.na(x))){
         x <- na.omit(x)
