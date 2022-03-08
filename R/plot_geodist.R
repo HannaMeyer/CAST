@@ -110,15 +110,11 @@ plot_geodist <- function(x,
     if(any(!variables%in%names(x))){ # extract variable values of raster:
       x <- sf::st_transform(x,sf::st_crs(modeldomain))
 
-      if(class(x)=="sfc_POINT"){
+      if(class(x)[1]=="sfc_POINT"){
         x <- st_as_sf(x)
       }
 
       x <- sf::st_as_sf(raster::extract(modeldomain, x, df = TRUE, sp = TRUE))
-      if(any(is.na(x))){
-        x <- na.omit(x)
-        message("some samples of x were removed because of NA in extracted predictor values")
-      }
       x <- sf::st_transform(x,4326)
     }
     if(!is.null(testdata)){
@@ -207,11 +203,13 @@ sample2sample <- function(x, distance,variables){
     x <- sf::st_drop_geometry(x)
     scaleparam <- attributes(scale(x))
     x <- data.frame(scale(x))
-
+    x_clean <- x[complete.cases(x),]
     # sample to sample feature distance
     d <- c()
-    for (i in 1:nrow(x)){
-      trainDist <- FNN::knnx.dist(x[i,],x,k=1)
+    for (i in 1:nrow(x_clean)){
+
+      trainDist <-  FNN::knnx.dist(x_clean[i,],x_clean,k=1)
+
       trainDist[i] <- NA
       d <- c(d,min(trainDist,na.rm=T))
     }
@@ -243,6 +241,7 @@ sample2prediction = function(x, modeldomain, distance, samplesize,variables){
     x <- sf::st_drop_geometry(x)
     scaleparam <- attributes(scale(x))
     x <- data.frame(scale(x))
+    x_clean <- x[complete.cases(x),]
 
     modeldomain <- modeldomain[,variables]
     modeldomain <- sf::st_drop_geometry(modeldomain)
@@ -251,7 +250,8 @@ sample2prediction = function(x, modeldomain, distance, samplesize,variables){
 
     target_dist_feature <- c()
     for (i in 1:nrow(modeldomain)){
-      trainDist <- FNN::knnx.dist(modeldomain[i,],x,k=1)
+
+      trainDist <-  FNN::knnx.dist(modeldomain[i,],x_clean,k=1)
       target_dist_feature <- c(target_dist_feature,min(trainDist,na.rm=T))
     }
     sampletoprediction <- data.frame(dist = target_dist_feature,
@@ -283,7 +283,7 @@ sample2test <- function(x, testdata, distance,variables){
     x <- sf::st_drop_geometry(x)
     scaleparam <- attributes(scale(x))
     x <- data.frame(scale(x))
-
+    x_clean <- x[complete.cases(x),]
     testdata <- testdata[,variables]
     testdata <- sf::st_drop_geometry(testdata)
     testdata <- data.frame(scale(testdata,center=scaleparam$`scaled:center`,
@@ -292,7 +292,8 @@ sample2test <- function(x, testdata, distance,variables){
 
     test_dist_feature <- c()
     for (i in 1:nrow(testdata)){
-      testDist <- FNN::knnx.dist(testdata[i,],x,k=1)
+
+      testDist <- FNN::knnx.dist(testdata[i,],x_clean,k=1)
       test_dist_feature <- c(test_dist_feature,min(testDist,na.rm=T))
     }
     dists_test <- data.frame(dist = test_dist_feature,
@@ -327,13 +328,19 @@ cvdistance <- function(x, cvfolds, distance,variables){
     x <- sf::st_drop_geometry(x)
     x <- data.frame(scale(x))
 
+
     d_cv <- c()
     for(i in 1:length(cvfolds)){
       testdata_i <- x[cvfolds[[i]],]
       traindata_i <- x[-cvfolds[[i]],]
 
+      testdata_i <- testdata_i[complete.cases(testdata_i),]
+      traindata_i <- traindata_i[complete.cases(traindata_i),]
+
       for (k in 1:nrow(testdata_i)){
-        trainDist <- FNN::knnx.dist(testdata_i[k,],traindata_i,k=1)
+
+        trainDist <-  FNN::knnx.dist(testdata_i[k,],traindata_i,k=1)
+
         trainDist[k] <- NA
         d_cv <- c(d_cv,min(trainDist,na.rm=T))
       }
