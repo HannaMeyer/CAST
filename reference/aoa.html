@@ -104,21 +104,21 @@ See examples for the case that no model is available or for models trained via e
 <dt>trainDI</dt>
 <dd><p>A trainDI object. Optional if <code><a href="trainDI.html">trainDI</a></code> was calculated beforehand.</p></dd>
 <dt>cl</dt>
-<dd><p>A cluster object e.g. created with doParallel. Should only be used if newdata is large.</p></dd>
+<dd><p>A cluster object e.g. created with doParallel. Optional. Should only be used if newdata is large.</p></dd>
 <dt>train</dt>
-<dd><p>A data.frame containing the data used for model training. Only required when no model is given</p></dd>
+<dd><p>A data.frame containing the data used for model training. Optional. Only required when no model is given</p></dd>
 <dt>weight</dt>
-<dd><p>A data.frame containing weights for each variable. Only required if no model is given.</p></dd>
+<dd><p>A data.frame containing weights for each variable. Optional. Only required if no model is given.</p></dd>
 <dt>variables</dt>
 <dd><p>character vector of predictor variables. if "all" then all variables
 of the model are used or if no model is given then of the train dataset.</p></dd>
 <dt>folds</dt>
-<dd><p>Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
+<dd><p>Numeric or character. Optional. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 Should be used if replicates are present. Only required if no model is given.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list of class <code>aoa</code> containing:</p>
+    <p>An object of class <code>aoa</code> containing:</p>
 <dl><dt>parameters</dt>
 <dd><p>object of class trainDI. see <code><a href="trainDI.html">trainDI</a></code></p></dd>
 <dt>DI</dt>
@@ -147,7 +147,7 @@ Will be fixed.</p>
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 Estimating the area of applicability of spatial prediction models.
-doi: <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link">10.1111/2041-210X.13650</a></p>
+Methods in Ecology and Evolution 12: 1620-1633. doi: <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link">10.1111/2041-210X.13650</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -195,6 +195,7 @@ doi: <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link">10.
 <span class="r-in"></span>
 <span class="r-in"><span class="co">#...then calculate the AOA of the trained model for the study area:</span></span>
 <span class="r-in"><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu">aoa</span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>, col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"Dissimilarity Index"</span><span class="op">)</span></span>
 <span class="r-in"><span class="co">#plot predictions for the AOA only:</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction</span>, col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for the AOA"</span><span class="op">)</span><span class="op">+</span></span>
