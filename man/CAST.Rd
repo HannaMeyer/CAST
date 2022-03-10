@@ -26,6 +26,6 @@ by analysing the similarity between new data and training data.
 }
 }
 \author{
-Hanna Meyer
+Hanna Meyer, Marvin Ludwig
 }
 \keyword{package}

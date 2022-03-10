@@ -11,7 +11,7 @@
 #' @name CAST
 #' @docType package
 #' @title 'caret' Applications for Spatial-Temporal Models
-#' @author Hanna Meyer
+#' @author Hanna Meyer, Marvin Ludwig
 #' @references
 #' \itemize{
 #' \item Meyer, H., Pebesma, E. (2022):Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications. Accepted.
@@ -21,7 +21,7 @@
 #' }
 #'
 #' @import caret
-#' @importFrom stats sd dist na.omit lm predict quantile na.exclude
+#' @importFrom stats sd dist na.omit lm predict quantile na.exclude complete.cases
 #' @importFrom utils combn
 #' @importFrom grDevices rainbow
 #' @importFrom graphics axis plot segments
