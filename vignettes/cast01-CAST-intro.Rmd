@@ -257,7 +257,7 @@ The intention of showing the motivation of CAST is also the reason why the coord
 
 ## Further reading
 
-*  Meyer, H., & Pebesma, E. (2021). Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution, 12, 1620– 1633. https://doi.org/10.1111/2041-210X.13650 
+*  Meyer, H., & Pebesma, E. (2021). Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution, 12, 1620– 1633. [https://doi.org/10.1111/2041-210X.13650] 
 
 * Meyer H, Reudenbach C, Wöllauer S,Nauss T (2019) Importance of spatial predictor variable selection in machine learning applications–Moving from data reproduction to spatial prediction. Ecological Modelling 411: 108815 [https://doi.org/10.1016/j.ecolmodel.2019.108815]
 
