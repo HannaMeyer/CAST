@@ -13,12 +13,12 @@
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds.
 #' See examples for the case that no model is available or for models trained via e.g. mlr3.
 #' @param trainDI A trainDI object. Optional if \code{\link{trainDI}} was calculated beforehand.
-#' @param cl A cluster object e.g. created with doParallel. Should only be used if newdata is large.
-#' @param train A data.frame containing the data used for model training. Only required when no model is given
-#' @param weight A data.frame containing weights for each variable. Only required if no model is given.
+#' @param cl A cluster object e.g. created with doParallel. Optional. Should only be used if newdata is large.
+#' @param train A data.frame containing the data used for model training. Optional. Only required when no model is given
+#' @param weight A data.frame containing weights for each variable. Optional. Only required if no model is given.
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the model are used or if no model is given then of the train dataset.
-#' @param folds Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
+#' @param folds Numeric or character. Optional. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 #' Should be used if replicates are present. Only required if no model is given.
 #' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
@@ -31,7 +31,7 @@
 #' @note If classification models are used, currently the variable importance can only
 #' be automatically retrieved if models were trained via train(predictors,response) and not via the formula-interface.
 #' Will be fixed.
-#' @return A list of class \code{aoa} containing:
+#' @return An object of class \code{aoa} containing:
 #'  \item{parameters}{object of class trainDI. see \code{\link{trainDI}}}
 #'  \item{DI}{raster or data frame. Dissimilarity index of newdata}
 #'  \item{AOA}{raster or data frame. Area of Applicability of newdata.
@@ -41,7 +41,7 @@
 #' Hanna Meyer
 #' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
-#' \doi{10.1111/2041-210X.13650}
+#' Methods in Ecology and Evolution 12: 1620-1633. \doi{10.1111/2041-210X.13650}
 #' @seealso \code{\link{calibrate_aoa}}, \code{\link{trainDI}}
 #' @examples
 #' \dontrun{
@@ -79,6 +79,7 @@
 #'
 #' #...then calculate the AOA of the trained model for the study area:
 #' AOA <- aoa(studyArea,model)
+#' plot(AOA)
 #' spplot(AOA$DI, col.regions=viridis(100),main="Dissimilarity Index")
 #' #plot predictions for the AOA only:
 #' spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
