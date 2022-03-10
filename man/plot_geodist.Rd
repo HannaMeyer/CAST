@@ -94,7 +94,6 @@ distance = "feature",variables=c("DEM","TWI", "NDRE.M"))
 library(sf)
 library(rnaturalearth)
 library(ggplot2)
-library(gridExtra)
 
 ### Define prediction area (here: global):
 ee <- st_crs("+proj=eqearth")

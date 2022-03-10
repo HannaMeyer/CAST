@@ -145,7 +145,6 @@ model
 We see that soil moisture could be modelled with an R² of 0.90 which indicates a nearly perfect fit of the data. Sounds good, but unfortunately, the random k fold CV does not give us a good indication for the model performance. Random k-fold CV means that each of the five folds (with the highest certainty) contains data points from each data logger. Therefore, a random CV cannot indicate the ability of the model to make predictions beyond the location of the training data (i.e. to map soil moisture). Since our aim is to map soil moisture, we rather need to perform a target-oriented validation which validates the model in view to spatial mapping.
 
 
-
 ### Target-oriented validation
 
 We are not interested in the model performance in view to random subsets of our data loggers, but we need to know how well the model is able to make predictions for areas without data loggers.
@@ -226,19 +225,21 @@ We see that the variable selection does not only have an effect on the statistic
 
 ## Area of Applicability
 Still it is required to analyse if the model can be applied to the entire study area of if there are locations that are very different in their predictor properties to what the model has learned from. See more details in the vignette on the Area of applicability and 
-[Meyer and Pebesma 2020](https://arxiv.org/abs/2005.07939).
+[Meyer and Pebesma 2021](https://doi.org/10.1111/2041-210X.13650).
 
 ```{r, message = FALSE, warning=FALSE}
 library(latticeExtra)
 
 ### AOA for which the spatial CV error applies:
 AOA <- aoa(predictors_sp,ffsmodel_LLO)
+plot(AOA)
 
 spplot(prediction_ffs,main="prediction for the AOA \n(spatial CV error applied)")+
 spplot(AOA$AOA,col.regions=c("grey","transparent"))
 
 ### AOA for which the random CV error applies:
 AOA_random <- aoa(predictors_sp,model)
+plot(AOA_random)
 spplot(prediction,main="prediction for the AOA \n(random CV error applied)")+
 spplot(AOA_random$AOA,col.regions=c("grey","transparent"))
 
@@ -256,7 +257,7 @@ The intention of showing the motivation of CAST is also the reason why the coord
 
 ## Further reading
 
-* Meyer, H., Pebesma, E.: Predicting into unknown space? Estimating the area of applicability of spatial prediction models. [https://arxiv.org/abs/2005.07939]
+*  Meyer, H., & Pebesma, E. (2021). Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution, 12, 1620– 1633. https://doi.org/10.1111/2041-210X.13650 
 
 * Meyer H, Reudenbach C, Wöllauer S,Nauss T (2019) Importance of spatial predictor variable selection in machine learning applications–Moving from data reproduction to spatial prediction. Ecological Modelling 411: 108815 [https://doi.org/10.1016/j.ecolmodel.2019.108815]
 

@@ -111,7 +111,7 @@ plot_geodist <- function(x,
       x <- sf::st_transform(x,sf::st_crs(modeldomain))
 
       if(class(x)[1]=="sfc_POINT"){
-        x <- st_as_sf(x)
+        x <- sf::st_as_sf(x)
       }
 
       x <- sf::st_as_sf(raster::extract(modeldomain, x, df = TRUE, sp = TRUE))
