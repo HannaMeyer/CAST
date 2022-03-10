@@ -158,13 +158,13 @@ See that this fits the nearest neighbor distribution of the prediction area much
 So far we compared nearest neighbor distances in geographic space. We can also do so in feature space. Therefore we download bioclimatic variables here to use them as features (i.e. predictors) in this virtual prediction task. 
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
-predictors_global <- raster::getData('worldclim', var='bio', res=10)
+predictors_global <- stack(system.file("extdata","bioclim_global.grd",package="CAST"))
 
 # use random CV:
-dist_clstr_rCV <- plot_geodist(pts_clustered,predictors_global,distance = "feature", variables = c("bio2","bio5","bio12","bio15","bio19"),cvfolds = randomfolds,scale=T, showPlot=FALSE)
+dist_clstr_rCV <- plot_geodist(pts_clustered,predictors_global,distance = "feature",cvfolds = randomfolds,scale=T, showPlot=FALSE)
 
 # use spatial CV:
-dist_clstr_sCV <- plot_geodist(pts_clustered,predictors_global,distance = "feature", variables = c("bio2","bio5","bio12","bio15","bio19"),cvfolds = spatialfolds$indexOut, scale =TRUE, showPlot=FALSE)
+dist_clstr_sCV <- plot_geodist(pts_clustered,predictors_global,distance = "feature", cvfolds = spatialfolds$indexOut, scale =TRUE, showPlot=FALSE)
 
 # Plot results:
 dist_clstr_rCV$plot+ggtitle("Clustered reference data and random CV")
