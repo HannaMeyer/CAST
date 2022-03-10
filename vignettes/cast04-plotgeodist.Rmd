@@ -1,0 +1,179 @@
+---
+title: "4. Visualization of geographic- and feature space distances"
+author: "Hanna Meyer"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Visualization of geographic- and feature space distances}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=6.1, fig.height=3.5)
+
+```
+
+## Introduction
+This tutorial shows how euclidean nearest neighbor distances in the geographic space or feature space can be calculated and visualized.
+This type of visualization allows to assess whether training data feature a representative coverage of the prediction area and if cross-validation (CV) folds (or independent test data) are adequately chosen to be representative for the prediction locations.
+
+See e.g. Meyer and Pebesma (2022) and Mila et al. (2022) for further discussion on this topic.
+
+## Sample data
+
+As example data, we use two different sets of global virtual reference data: One is a spatial random sample and in the second example, reference data are clustered in geographic space (see Meyer and Pebesma (2022) for more discussions on this).
+
+```{r, message = FALSE, warning=FALSE}
+library(CAST)
+library(caret)
+library(raster)
+library(sf)
+library(rnaturalearth)
+library(ggplot2)
+```
+
+### Prediction area
+The prediction area is the entire global land area, i.e. we could imagine a prediction task where we aim at making global predictions based on the set of reference data.
+```{r,message = FALSE, warning=FALSE}
+ee <- st_crs("+proj=eqearth")
+co <- ne_countries(returnclass = "sf")
+co.ee <- st_transform(co, ee)
+```
+
+### Spatial random sample
+
+Then, we simulate the random sample and visualize the data on the entire global prediction area.
+
+```{r,message = FALSE, warning=FALSE, results='hide'}
+sf_use_s2(FALSE)
+set.seed(10)
+pts_random <- st_sample(co, 1000)
+### See points on the map:
+ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
+  geom_sf(data = pts_random, color = "#F8766D",size=0.5, shape=3) +
+  guides(fill = FALSE, col = FALSE) +
+  labs(x = NULL, y = NULL)
+
+```
+
+### Clustered sample
+
+As second data set we use a clustered design of the same size.
+
+```{r,message = FALSE, include=FALSE}
+# adjusted from from https://github.com/carlesmila/NNDMpaper/blob/main/code/sim_utils.R
+clustered_sample <- function(sarea, nsamples, nparents, radius){
+
+  # Number of offspring per parent
+  nchildren <- round((nsamples-nparents)/nparents, 0)
+
+  # Simulate parents
+  parents <- st_sf(geometry=st_sample(sarea, nparents, type="random"))
+  res <- parents
+  res$parent <- 1:nrow(parents)
+
+  # Simulate offspring
+  for(i in 1:nrow(parents)){
+
+    # Generate buffer and cut parts outside of the area of study
+    buf <- st_buffer(parents[i,], dist=radius)
+    buf <- st_intersection(buf, sarea)
+
+    # Simulate children
+    children <- st_sf(geometry=st_sample(buf, nchildren, type="random"))
+      children$parent <- i
+    res <- rbind(res, children)
+  }
+
+  return(res)
+}
+```
+
+```{r,message = FALSE, warning=FALSE, results='hide'}
+#For a clustered sesign:
+set.seed(10)
+sf_use_s2(FALSE)
+pts_clustered <- clustered_sample(co, 1000, 20, 8)
+
+ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
+  geom_sf(data = pts_clustered, color = "#F8766D",size=0.5, shape=3) +
+  guides(fill = FALSE, col = FALSE) +
+  labs(x = NULL, y = NULL)
+
+```
+
+
+## Distances in geographic space
+
+Then we can plot the distributions of the spatial distances of reference
+data to their nearest neighbor ("sample-to-sample") with the distribution of distances from all points of the global land surface to the nearest reference data point ("sample-to-prediction"):
+
+```{r,message = FALSE, warning=FALSE, results='hide'}
+dist_random <- plot_geodist(pts_random,co,scale=T,showPlot = FALSE)
+dist_clstr <- plot_geodist(pts_clustered,co,scale=T,showPlot = FALSE)
+
+dist_random$plot+ggtitle("Randomly distributed reference data")
+dist_clstr$plot+ggtitle("Clustered reference data")
+             
+```
+
+Note that for the random data set the nearest neighbor distance distribution of the training data is quasi identical to the nearest neighbor distance distribution of the prediction area.
+In comparison, the second data set has the same number of training data but these are heavily clustered in geographic space. We therefore see that the nearest neighbor distances within the reference data is rather small. Prediction locations, however, are on average much further away.
+
+
+### Accounting for cross-validation folds and/or test sets
+
+Lets's use the clustered data set to show how the distribution of spatial nearest neighbor distances during cross-validation can be visualized as well. Therefore, we first use the "default" way of a random 10-fold cross validation (see Meyer et al., 2018 and 2019 to see why this might not be a good idea).
+
+```{r,message = FALSE, warning=FALSE, results='hide'}
+randomfolds <- caret::createFolds(pts_clustered)
+
+dist_clstr <- plot_geodist(pts_clustered,co,cvfolds= randomfolds, scale=T,showPlot = FALSE)
+
+dist_clstr$plot
+             
+```
+
+
+Obviously the CV folds are not representative for the prediction locations (at least not in terms of distance to a nearest training data point). I.e. when these folds are used for performance assessment of a model, we can expect overly opimistic estimates because we only validate predictions in close promxity to the reference data.
+
+This, however, should not be the case but the CV performance should be regarded as representative for the prediction task. Therefore, we use a spatial CV instead. Here, we use a leave-cluster-out CV, which means that in each iteration, one of the spatial clusters is held back.
+
+```{r,message = FALSE, warning=FALSE, results='hide'}
+spatialfolds <- CreateSpacetimeFolds(pts_clustered,spacevar="parent",k=length(unique(pts_clustered$parent)))
+
+dist_clstr <- plot_geodist(pts_clustered,co,cvfolds= spatialfolds$indexOut, scale=T,showPlot = FALSE)
+
+dist_clstr$plot
+             
+```
+
+See that this fits the nearest neighbor distribution of the prediction area much better (See Mila et al. (2022) for a better idea to do the spatial CV).
+
+## Distances in feature space
+
+So far we compared nearest neighbor distances in geographic space. We can also do so in feature space. Therefore we download bioclimatic variables here to use them as features (i.e. predictors) in this virtual prediction task. 
+
+```{r,message = FALSE, warning=FALSE, results='hide'}
+predictors_global <- raster::getData('worldclim', var='bio', res=10)
+
+# use random CV:
+dist_clstr_rCV <- plot_geodist(pts_clustered,predictors_global,distance = "feature", variables = c("bio2","bio5","bio12","bio15","bio19"),cvfolds = randomfolds,scale=T, showPlot=FALSE)
+
+# use spatial CV:
+dist_clstr_sCV <- plot_geodist(pts_clustered,predictors_global,distance = "feature", variables = c("bio2","bio5","bio12","bio15","bio19"),cvfolds = spatialfolds$indexOut, scale =TRUE, showPlot=FALSE)
+
+# Plot results:
+dist_clstr_rCV$plot+ggtitle("Clustered reference data and random CV")
+dist_clstr_sCV$plot+ggtitle("Clustered reference data and spatial CV")
+```
+
+With regard to the chosen predictor variables we see that again the nearest neighbor distance of the clustered training data is rather small, compared to what is required during prediction. Again the random CV is not representative for the prediction locations while the spatial CV is doing a better job.
+
+
+### References
+* Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications. Accepted.
+* Mila, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution. Accepted.
