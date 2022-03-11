@@ -52,10 +52,7 @@
     <loc>https://hannameyer.github.io/CAST/reference/index.html</loc>
   </url>
   <url>
-    <loc>https://hannameyer.github.io/CAST/reference/plot.aoa.html</loc>
-  </url>
-  <url>
-    <loc>https://hannameyer.github.io/CAST/reference/plot.trainDI.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/plot.html</loc>
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/reference/plot_ffs.html</loc>
@@ -64,16 +61,7 @@
     <loc>https://hannameyer.github.io/CAST/reference/plot_geodist.html</loc>
   </url>
   <url>
-    <loc>https://hannameyer.github.io/CAST/reference/print.aoa.html</loc>
-  </url>
-  <url>
-    <loc>https://hannameyer.github.io/CAST/reference/print.trainDI.html</loc>
-  </url>
-  <url>
-    <loc>https://hannameyer.github.io/CAST/reference/show.aoa.html</loc>
-  </url>
-  <url>
-    <loc>https://hannameyer.github.io/CAST/reference/show.trainDI.html</loc>
+    <loc>https://hannameyer.github.io/CAST/reference/print.html</loc>
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/reference/trainDI.html</loc>

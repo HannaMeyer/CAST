@@ -76,7 +76,7 @@
       <img src="" class="logo" alt=""><h1>3. AOA in Parallel</h1>
                         <h4 data-toc-skip class="author">Marvin Ludwig</h4>
             
-            <h4 data-toc-skip class="date">2022-03-10</h4>
+            <h4 data-toc-skip class="date">2022-03-11</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast03-AOA-parallel.Rmd" class="external-link"><code>vignettes/cast03-AOA-parallel.Rmd</code></a></small>
       <div class="d-none name"><code>cast03-AOA-parallel.Rmd</code></div>
@@ -160,7 +160,7 @@
 <p>For even better performances, it is recommended to compute the AOA in two steps. First, the DI of training data and the resulting DI threshold is computed from the model or training data with the function <code>trainDI</code>. The result from trainDI is usually the first step of the <code>aoa</code> function, however it can be skipped by providing the trainDI object in the function call. This makes it possible to compute the AOA on multiple raster tiles at once (e.g. on different cores). This is especially useful for very large prediction areas, e.g. in global mapping.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">model_random_trainDI</span> <span class="op">=</span> <span class="fu"><a href="../reference/trainDI.html">trainDI</a></span><span class="op">(</span><span class="va">model_random</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">model_random_trainDI</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">model_random_trainDI</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## DI of 74 observation </span>
 <span class="co">## Predictors: bio2 bio5 bio10 bio13 bio14 bio19 </span>
 <span class="co">## </span>
@@ -213,7 +213,7 @@
 <div class="section level2">
 <h2 id="final-remarks">Final Remarks<a class="anchor" aria-label="anchor" href="#final-remarks"></a>
 </h2>
-<p>It should be possible to combine both parallization methods! For example on a High Performance Cluster, multiple raster tiles can be handeled by different nodes and then, each node than computes the distance between prediction and training data on multiple cores.</p>
+<p>It should be possible to combine both parallelization methods! For example on a High Performance Cluster, multiple raster tiles can be handled by different nodes and then, each node computes the distance between prediction and training data on multiple cores.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
