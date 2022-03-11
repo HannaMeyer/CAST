@@ -1,5 +1,6 @@
-#' Print TrainDI
-#' @noRd
+#' Print
+#' @description Generic print function for trainDI and aoa
+#' @name print
 #' @param x trainDI object
 #' @param ... other params
 #' @export
@@ -14,8 +15,7 @@ print.trainDI = function(x, ...){
 }
 
 
-#' Show TrainDI
-#' @noRd
+#' @name print
 #' @param x trainDI object
 #' @param ... other params
 #' @export
@@ -27,8 +27,8 @@ show.trainDI = function(x, ...){
 
 
 
-#' Print AOA
-#' @noRd
+
+#' @name print
 #' @param x aoa object
 #' @param ... other params
 #' @export
@@ -53,8 +53,7 @@ print.aoa = function(x, ...){
 }
 
 
-#' Show AOA
-#' @noRd
+#' @name print
 #' @param x aoa object
 #' @param ... other params
 #' @export

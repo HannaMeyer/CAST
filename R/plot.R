@@ -1,8 +1,10 @@
-#' Plot TrainDI
+#' Plot
+#' @description Generic plot function for trainDI and aoa
+#'
+#' @name plot
 #' @param x trainDI object
 #' @param ... other params
 #'
-#' @noRd
 #'
 #' @author Marvin Ludwig, Hanna Meyer
 #' @export
@@ -21,12 +23,10 @@ plot.trainDI = function(x, ...){
 
 
 
-#' Plot AOA
-#'
-#' @description Density plot of the DI with AOA threshold
-#'
-#' @noRd
-#'
+
+
+
+#' @name plot
 #'
 #' @param x aoa object
 #' @param samplesize numeric. How many prediction samples should be plotted?
