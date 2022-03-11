@@ -2,7 +2,7 @@
 % Please edit documentation in R/global_validation.R
 \name{global_validation}
 \alias{global_validation}
-\title{evaluate 'global' cross-validation}
+\title{Evaluate 'global' cross-validation}
 \usage{
 global_validation(model)
 }
@@ -10,10 +10,10 @@ global_validation(model)
 \item{model}{an object of class \code{\link{train}}}
 }
 \value{
-a data.frame containing regression or classification statistics.
+regression (\code{\link{postResample}}) or classification  (\code{\link{confusionMatrix}}) statistics
 }
 \description{
-calculate validation metric using all held back predictions at once
+Calculate validation metric using all held back predictions at once
 }
 \details{
 Relevant when folds are not representative for the entire area of interest.

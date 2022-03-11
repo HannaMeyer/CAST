@@ -1,6 +1,10 @@
-#' Plot TrainDI
+#' Plot
+#' @description Generic plot function for trainDI and aoa
+#'
+#' @name plot
 #' @param x trainDI object
 #' @param ... other params
+#'
 #'
 #' @author Marvin Ludwig, Hanna Meyer
 #' @export
@@ -19,10 +23,10 @@ plot.trainDI = function(x, ...){
 
 
 
-#' Plot AOA
-#'
-#' @description Density plot of the DI with AOA threshold
-#'
+
+
+
+#' @name plot
 #'
 #' @param x aoa object
 #' @param samplesize numeric. How many prediction samples should be plotted?
@@ -40,9 +44,19 @@ plot.aoa = function(x, samplesize = 1000, ...){
   trainDI = data.frame(DI = x$parameters$trainDI,
                        what = "trainDI")
 
+
+
   if(inherits(x$AOA, "RasterLayer")){
     targetDI = raster::sampleRegular(x$DI, size = samplesize)
-    targetDI = data.frame(DI = targetDI,
+    targetDI = data.frame(DI = as.numeric(targetDI),
+                          what = "predictionDI")
+  }else if(inherits(x$AOA, "stars")){
+    targetDI = raster::sampleRegular(methods::as(x$DI, "Raster"), size = samplesize)
+    targetDI = data.frame(DI = as.numeric(targetDI),
+                          what = "predictionDI")
+  }else if(inherits(x$AOA, "SpatRaster")){
+    targetDI = raster::sampleRegular(methods::as(x$DI, "Raster"), size = samplesize)
+    targetDI = data.frame(DI = as.numeric(targetDI),
                           what = "predictionDI")
   }else{
     targetDI = data.frame(DI = sample(x$DI, size = samplesize),

@@ -157,18 +157,10 @@ trainDI <- function(model = NA,
 
   # calculate average mean distance between training data
 
-  ### Great potential for parallel computing -----
-
   trainDist_avrg <- c()
   trainDist_min <- c()
 
   for(i in seq(nrow(train))){
-
-    # these two distance matrices should give the same output
-    # it should be enough to calculate the second one, mask the self-distance as NA
-    # (also important for fold masking afterward that the rows dont get mixed up)
-    # and calculate the average afterwards
-
 
     # distance to all other training data (for average)
     trainDistAll <- FNN::knnx.dist(train, t(train[i,]), k = nrow(train))[-1]

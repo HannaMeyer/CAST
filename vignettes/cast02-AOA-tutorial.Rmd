@@ -160,11 +160,16 @@ names(TDI)
 print(TDI)
 ```
 
-Plotting a trainDI object displays the distribution of the DI of the training data together with the lower and upper AOA thresholds (vertical lines).
+Plotting a trainDI object displays the distribution of the DI of the training data together with the lower and upper AOA thresholds (vertical lines). Plotting the aoa object, also displays the DI of new data in the plot.
 
 ```{r, message = FALSE, warning = FALSE}
 plot(TDI)
+
+plot(AOA)
 ```
+
+
+
 
 
 ## AOA for spatially clustered data?
