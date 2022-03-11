@@ -1,5 +1,5 @@
 ---
-title: "4. Visualization of geographic- and feature space distances"
+title: "4. Visualization of nearest neighbor distance distributions"
 author: "Hanna Meyer"
 date: "`r Sys.Date()`"
 output:
@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE,fig.width=6.1, fig.height=3.5)
 
 ## Introduction
 
-This tutorial shows how euclidean nearest neighbor distances in the geographic space or feature space can be calculated and visualized.
+This tutorial shows how euclidean nearest neighbor distances in the geographic space or feature space can be calculated and visualized using CAST.
 This type of visualization allows to assess whether training data feature a representative coverage of the prediction area and if cross-validation (CV) folds (or independent test data) are adequately chosen to be representative for the prediction locations.
 
 See e.g. Meyer and Pebesma (2022) and Mila et al. (2022) for further discussion on this topic.
@@ -94,7 +94,6 @@ clustered_sample <- function(sarea, nsamples, nparents, radius){
 ```
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
-#For a clustered sesign:
 set.seed(10)
 sf_use_s2(FALSE)
 pts_clustered <- clustered_sample(co, 1000, 20, 8)
@@ -125,34 +124,59 @@ Note that for the random data set the nearest neighbor distance distribution of 
 In comparison, the second data set has the same number of training data but these are heavily clustered in geographic space. We therefore see that the nearest neighbor distances within the reference data is rather small. Prediction locations, however, are on average much further away.
 
 
-### Accounting for cross-validation folds and/or test sets
+### Accounting for cross-validation folds
 
-Let's use the clustered data set to show how the distribution of spatial nearest neighbor distances during cross-validation can be visualized as well. Therefore, we first use the "default" way of a random 10-fold cross validation (see Meyer et al., 2018 and 2019 to see why this might not be a good idea).
+#### Random Cross-validation
+
+Let's use the clustered data set to show how the distribution of spatial nearest neighbor distances during cross-validation can be visualized as well. Therefore, we first use the "default" way of a random 10-fold cross validation where we randomly split the reference data into training and test (see Meyer et al., 2018 and 2019 to see why this might not be a good idea).
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
-randomfolds <- caret::createFolds(pts_clustered)
+randomfolds <- caret::createFolds(1:nrow(pts_clustered))
+```
 
-dist_clstr <- plot_geodist(pts_clustered,co,cvfolds= randomfolds, scale=T,showPlot = FALSE)
+```{r,message = FALSE, warning=FALSE, results='hide',echo=FALSE}
+for (i in 1:nrow(pts_clustered)){
+  pts_clustered$randomCV[i] <- which(unlist(lapply(randomfolds,function(x){sum(x%in%i)}))==1)
+}
 
-dist_clstr$plot
-             
+ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
+  geom_sf(data = pts_clustered, color = rainbow(max(pts_clustered$randomCV))[pts_clustered$randomCV],size=0.5, shape=3) +
+  guides(fill = FALSE, col = FALSE) +
+  labs(x = NULL, y = NULL)+ggtitle("random fold membership shown by color")
+```
+
+```{r,message = FALSE, warning=FALSE, results='hide'}
+dist_clstr <- plot_geodist(pts_clustered,co,cvfolds= randomfolds, scale=T)
+
 ```
 
 
 Obviously the CV folds are not representative for the prediction locations (at least not in terms of distance to a nearest training data point). I.e. when these folds are used for performance assessment of a model, we can expect overly optimistic estimates because we only validate predictions in close proximity to the reference data.
 
+#### Spatial Cross-validation
+
 This, however, should not be the case but the CV performance should be regarded as representative for the prediction task. Therefore, we use a spatial CV instead. Here, we use a leave-cluster-out CV, which means that in each iteration, one of the spatial clusters is held back.
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 spatialfolds <- CreateSpacetimeFolds(pts_clustered,spacevar="parent",k=length(unique(pts_clustered$parent)))
+```
 
-dist_clstr <- plot_geodist(pts_clustered,co,cvfolds= spatialfolds$indexOut, scale=T,showPlot = FALSE)
+```{r,message = FALSE, warning=FALSE, results='hide',echo=FALSE}
+ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
+  geom_sf(data = pts_clustered, color = rainbow(max(pts_clustered$parent))[pts_clustered$parent],size=0.5, shape=3) +
+  guides(fill = FALSE, col = FALSE) +
+  labs(x = NULL, y = NULL)+ ggtitle("spatial fold membership by color")
+```
 
-dist_clstr$plot
+```{r,message = FALSE, warning=FALSE, results='hide'}
+dist_clstr <- plot_geodist(pts_clustered,co,
+                           cvfolds= spatialfolds$indexOut, scale=T)
+
              
 ```
 
 See that this fits the nearest neighbor distribution of the prediction area much better (See Mila et al. (2022) for a better idea to do the spatial CV).
+Note that plot_geodist also allows inspecting independent test data instead of cross validation folds. See ?plot_geodist.
 
 ## Distances in feature space
 
