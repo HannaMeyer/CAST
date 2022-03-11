@@ -1,4 +1,5 @@
 #' Print TrainDI
+#' @noRd
 #' @param x trainDI object
 #' @param ... other params
 #' @export
@@ -14,6 +15,7 @@ print.trainDI = function(x, ...){
 
 
 #' Show TrainDI
+#' @noRd
 #' @param x trainDI object
 #' @param ... other params
 #' @export
@@ -26,6 +28,7 @@ show.trainDI = function(x, ...){
 
 
 #' Print AOA
+#' @noRd
 #' @param x aoa object
 #' @param ... other params
 #' @export
@@ -51,6 +54,7 @@ print.aoa = function(x, ...){
 
 
 #' Show AOA
+#' @noRd
 #' @param x aoa object
 #' @param ... other params
 #' @export
