@@ -24,20 +24,20 @@ See examples for the case that no model is available or for models trained via e
 
 \item{trainDI}{A trainDI object. Optional if \code{\link{trainDI}} was calculated beforehand.}
 
-\item{cl}{A cluster object e.g. created with doParallel. Should only be used if newdata is large.}
+\item{cl}{A cluster object e.g. created with doParallel. Optional. Should only be used if newdata is large.}
 
-\item{train}{A data.frame containing the data used for model training. Only required when no model is given}
+\item{train}{A data.frame containing the data used for model training. Optional. Only required when no model is given}
 
-\item{weight}{A data.frame containing weights for each variable. Only required if no model is given.}
+\item{weight}{A data.frame containing weights for each variable. Optional. Only required if no model is given.}
 
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the model are used or if no model is given then of the train dataset.}
 
-\item{folds}{Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
+\item{folds}{Numeric or character. Optional. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 Should be used if replicates are present. Only required if no model is given.}
 }
 \value{
-A list of class \code{aoa} containing:
+An object of class \code{aoa} containing:
  \item{parameters}{object of class trainDI. see \code{\link{trainDI}}}
  \item{DI}{raster or data frame. Dissimilarity index of newdata}
  \item{AOA}{raster or data frame. Area of Applicability of newdata.
@@ -104,6 +104,7 @@ plot(varImp(model,scale=FALSE))
 
 #...then calculate the AOA of the trained model for the study area:
 AOA <- aoa(studyArea,model)
+plot(AOA)
 spplot(AOA$DI, col.regions=viridis(100),main="Dissimilarity Index")
 #plot predictions for the AOA only:
 spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
@@ -162,7 +163,7 @@ AOA <- aoa(studyArea,
 \references{
 Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 Estimating the area of applicability of spatial prediction models.
-\doi{10.1111/2041-210X.13650}
+Methods in Ecology and Evolution 12: 1620-1633. \doi{10.1111/2041-210X.13650}
 }
 \seealso{
 \code{\link{calibrate_aoa}}, \code{\link{trainDI}}
