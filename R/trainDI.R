@@ -8,6 +8,7 @@
 #' This function is called within \code{\link{aoa}} to estimate the DI and AOA of new data.
 #' However, it may also be used on its own if only the DI of training data is of interest,
 #' or to facilitate a parallelization of \code{\link{aoa}} by avoiding a repeated calculation of the DI within the training data.
+#' For more details see \code{vignette("cast03-AOA-parallel", package = "CAST")}
 #'
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
 #' @param train A data.frame containing the data used for model training. Only required when no model is given
@@ -157,18 +158,10 @@ trainDI <- function(model = NA,
 
   # calculate average mean distance between training data
 
-  ### Great potential for parallel computing -----
-
   trainDist_avrg <- c()
   trainDist_min <- c()
 
   for(i in seq(nrow(train))){
-
-    # these two distance matrices should give the same output
-    # it should be enough to calculate the second one, mask the self-distance as NA
-    # (also important for fold masking afterward that the rows dont get mixed up)
-    # and calculate the average afterwards
-
 
     # distance to all other training data (for average)
     trainDistAll <- FNN::knnx.dist(train, t(train[i,]), k = nrow(train))[-1]

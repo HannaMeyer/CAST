@@ -182,6 +182,6 @@ tiles_aoa = mclapply(tiles, function(tile){
 
 # Final Remarks
 
-It should be possible to combine both parallization methods! For example on a High Performance Cluster, multiple raster tiles can be handeled by different nodes and then, each node than computes the distance between prediction and training data on multiple cores.
+It should be possible to combine both parallelization methods! For example on a High Performance Cluster, multiple raster tiles can be handled by different nodes and then, each node computes the distance between prediction and training data on multiple cores.
 
 

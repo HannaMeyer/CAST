@@ -380,7 +380,6 @@ sampleFromArea <- function(modeldomain, samplesize, distance,variables,type){
     sf::st_transform(4326) -> bb
   methods::as(bb, "Spatial") |>
     sp::spsample(n =samplesize, type = type)  |>
-    #sp::spsample(n =samplesize, type = "Fibonacci")  |>
     sf::st_as_sfc() |>
     sf::st_set_crs(4326) -> predictionloc
 

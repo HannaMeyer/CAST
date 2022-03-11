@@ -40,9 +40,19 @@ plot.aoa = function(x, samplesize = 1000, ...){
   trainDI = data.frame(DI = x$parameters$trainDI,
                        what = "trainDI")
 
+
+
   if(inherits(x$AOA, "RasterLayer")){
     targetDI = raster::sampleRegular(x$DI, size = samplesize)
-    targetDI = data.frame(DI = targetDI,
+    targetDI = data.frame(DI = as.numeric(targetDI),
+                          what = "predictionDI")
+  }else if(inherits(x$AOA, "stars")){
+    targetDI = raster::sampleRegular(as(x$DI, "Raster"), size = samplesize)
+    targetDI = data.frame(DI = as.numeric(targetDI),
+                          what = "predictionDI")
+  }else if(inherits(x$AOA, "SpatRaster")){
+    targetDI = raster::sampleRegular(as(x$DI, "Raster"), size = samplesize)
+    targetDI = data.frame(DI = as.numeric(targetDI),
                           what = "predictionDI")
   }else{
     targetDI = data.frame(DI = sample(x$DI, size = samplesize),

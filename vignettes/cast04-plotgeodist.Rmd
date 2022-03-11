@@ -17,6 +17,7 @@ knitr::opts_chunk$set(echo = TRUE,fig.width=6.1, fig.height=3.5)
 ```
 
 ## Introduction
+
 This tutorial shows how euclidean nearest neighbor distances in the geographic space or feature space can be calculated and visualized.
 This type of visualization allows to assess whether training data feature a representative coverage of the prediction area and if cross-validation (CV) folds (or independent test data) are adequately chosen to be representative for the prediction locations.
 
@@ -126,7 +127,7 @@ In comparison, the second data set has the same number of training data but thes
 
 ### Accounting for cross-validation folds and/or test sets
 
-Lets's use the clustered data set to show how the distribution of spatial nearest neighbor distances during cross-validation can be visualized as well. Therefore, we first use the "default" way of a random 10-fold cross validation (see Meyer et al., 2018 and 2019 to see why this might not be a good idea).
+Let's use the clustered data set to show how the distribution of spatial nearest neighbor distances during cross-validation can be visualized as well. Therefore, we first use the "default" way of a random 10-fold cross validation (see Meyer et al., 2018 and 2019 to see why this might not be a good idea).
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 randomfolds <- caret::createFolds(pts_clustered)
@@ -138,7 +139,7 @@ dist_clstr$plot
 ```
 
 
-Obviously the CV folds are not representative for the prediction locations (at least not in terms of distance to a nearest training data point). I.e. when these folds are used for performance assessment of a model, we can expect overly opimistic estimates because we only validate predictions in close promxity to the reference data.
+Obviously the CV folds are not representative for the prediction locations (at least not in terms of distance to a nearest training data point). I.e. when these folds are used for performance assessment of a model, we can expect overly optimistic estimates because we only validate predictions in close proximity to the reference data.
 
 This, however, should not be the case but the CV performance should be regarded as representative for the prediction task. Therefore, we use a spatial CV instead. Here, we use a leave-cluster-out CV, which means that in each iteration, one of the spatial clusters is held back.
 
