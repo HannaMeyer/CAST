@@ -185,6 +185,13 @@ So far we compared nearest neighbor distances in geographic space. We can also d
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 predictors_global <- stack(system.file("extdata","bioclim_global.grd",package="CAST"))
 
+plot(predictors_global)
+```
+
+Then we visualize nearest neighbor feature space distances under consideration of cross-validation.
+
+```{r,message = FALSE, warning=FALSE, results='hide'}
+
 # use random CV:
 dist_clstr_rCV <- plot_geodist(pts_clustered,predictors_global,distance = "feature",cvfolds = randomfolds,scale=T, showPlot=FALSE)
 
