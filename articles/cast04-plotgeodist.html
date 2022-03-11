@@ -192,7 +192,11 @@
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">predictors_global</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"bioclim_global.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span>
 
-<span class="co"># use random CV:</span>
+<span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">predictors_global</span><span class="op">)</span></code></pre></div>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-13-1.png" width="585.6"></p>
+<p>Then we visualize nearest neighbor feature space distances under consideration of cross-validation.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># use random CV:</span>
 <span class="va">dist_clstr_rCV</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">predictors_global</span>,distance <span class="op">=</span> <span class="st">"feature"</span>,cvfolds <span class="op">=</span> <span class="va">randomfolds</span>,scale<span class="op">=</span><span class="cn">T</span>, showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 
 <span class="co"># use spatial CV:</span>
@@ -200,10 +204,10 @@
 
 <span class="co"># Plot results:</span>
 <span class="va">dist_clstr_rCV</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data and random CV"</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-13-1.png" width="585.6"></p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-14-1.png" width="585.6"></p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">dist_clstr_sCV</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data and spatial CV"</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-13-2.png" width="585.6"></p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-14-2.png" width="585.6"></p>
 <p>With regard to the chosen predictor variables we see that again the nearest neighbor distance of the clustered training data is rather small, compared to what is required during prediction. Again the random CV is not representative for the prediction locations while the spatial CV is doing a better job.</p>
 <div class="section level3">
 <h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
