@@ -8,7 +8,6 @@
 #' This function is called within \code{\link{aoa}} to estimate the DI and AOA of new data.
 #' However, it may also be used on its own if only the DI of training data is of interest,
 #' or to facilitate a parallelization of \code{\link{aoa}} by avoiding a repeated calculation of the DI within the training data.
-#' For more details see \code{vignette("cast03-AOA-parallel", package = "CAST")}
 #'
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds
 #' @param train A data.frame containing the data used for model training. Only required when no model is given
