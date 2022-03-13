@@ -109,14 +109,18 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 ## Distances in geographic space
 
 Then we can plot the distributions of the spatial distances of reference
-data to their nearest neighbor ("sample-to-sample") with the distribution of distances from all points of the global land surface to the nearest reference data point ("sample-to-prediction"):
+data to their nearest neighbor ("sample-to-sample") with the distribution of distances from all points of the global land surface to the nearest reference data point ("sample-to-prediction"). Note that samples of prediction locations are used to calculate the sample-to-prediction nearest neighbor distances. Since we're using a global case study here, throughout this tutorial we use sampling=Fibonacci to draw prediction locations with constant point density on the sphere.
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
-dist_random <- plot_geodist(pts_random,co,scale=T,showPlot = FALSE)
-dist_clstr <- plot_geodist(pts_clustered,co,scale=T,showPlot = FALSE)
+dist_random <- plot_geodist(pts_random,co,
+                            sampling="Fibonacci",
+                            showPlot = FALSE)
+dist_clstr <- plot_geodist(pts_clustered,co,
+                           sampling="Fibonacci",
+                           showPlot = FALSE)
 
-dist_random$plot+ggtitle("Randomly distributed reference data")
-dist_clstr$plot+ggtitle("Clustered reference data")
+dist_random$plot+scale_x_log10(labels=round)+ggtitle("Randomly distributed reference data")
+dist_clstr$plot+scale_x_log10(labels=round)+ggtitle("Clustered reference data")
              
 ```
 
@@ -146,7 +150,11 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 ```
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
-dist_clstr <- plot_geodist(pts_clustered,co,cvfolds= randomfolds, scale=T)
+dist_clstr <- plot_geodist(pts_clustered,co,
+                           sampling="Fibonacci", 
+                           cvfolds= randomfolds, 
+                           showPlot=FALSE)
+dist_clstr$plot+scale_x_log10(labels=round)
 
 ```
 
@@ -170,7 +178,10 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 dist_clstr <- plot_geodist(pts_clustered,co,
-                           cvfolds= spatialfolds$indexOut, scale=T)
+                           sampling="Fibonacci",
+                           cvfolds= spatialfolds$indexOut, 
+                           showPlot=FALSE)
+dist_clstr$plot+scale_x_log10(labels=round)
 
              
 ```
@@ -180,7 +191,7 @@ Note that plot_geodist also allows inspecting independent test data instead of c
 
 ## Distances in feature space
 
-So far we compared nearest neighbor distances in geographic space. We can also do so in feature space. Therefore we download bioclimatic variables here to use them as features (i.e. predictors) in this virtual prediction task. 
+So far we compared nearest neighbor distances in geographic space. We can also do so in feature space. Therefore, a set of bioclimatic variables are used (https://www.worldclim.org/) as features (i.e. predictors) in this virtual prediction task. 
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 predictors_global <- stack(system.file("extdata","bioclim_global.grd",package="CAST"))
@@ -193,14 +204,21 @@ Then we visualize nearest neighbor feature space distances under consideration o
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 
 # use random CV:
-dist_clstr_rCV <- plot_geodist(pts_clustered,predictors_global,distance = "feature",cvfolds = randomfolds,scale=T, showPlot=FALSE)
+dist_clstr_rCV <- plot_geodist(pts_clustered,predictors_global,
+                               type = "feature", 
+                               sampling="Fibonacci",
+                               cvfolds = randomfolds,
+                               showPlot=FALSE)
 
 # use spatial CV:
-dist_clstr_sCV <- plot_geodist(pts_clustered,predictors_global,distance = "feature", cvfolds = spatialfolds$indexOut, scale =TRUE, showPlot=FALSE)
+dist_clstr_sCV <- plot_geodist(pts_clustered,predictors_global,
+                               type = "feature", sampling="Fibonacci",
+                               cvfolds = spatialfolds$indexOut,
+                               showPlot=FALSE)
 
 # Plot results:
-dist_clstr_rCV$plot+ggtitle("Clustered reference data and random CV")
-dist_clstr_sCV$plot+ggtitle("Clustered reference data and spatial CV")
+dist_clstr_rCV$plot+scale_x_log10(labels=round)+ggtitle("Clustered reference data and random CV")
+dist_clstr_sCV$plot+scale_x_log10(labels=round)+ggtitle("Clustered reference data and spatial CV")
 ```
 
 With regard to the chosen predictor variables we see that again the nearest neighbor distance of the clustered training data is rather small, compared to what is required during prediction. Again the random CV is not representative for the prediction locations while the spatial CV is doing a better job.
