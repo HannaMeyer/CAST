@@ -7,12 +7,11 @@
 plot_geodist(
   x,
   modeldomain,
+  type = "geo",
   cvfolds = NULL,
   testdata = NULL,
   samplesize = 2000,
-  type = "regular",
-  scale = FALSE,
-  distance = "geo",
+  sampling = "regular",
   variables = NULL,
   showPlot = TRUE
 )
@@ -22,19 +21,17 @@ plot_geodist(
 
 \item{modeldomain}{raster or sf object defining the prediction area (see Details)}
 
+\item{type}{"geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)}
+
 \item{cvfolds}{optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?createSpaceTimeFolds}
 
 \item{testdata}{optional. object of class sf: Data used for independent validation}
 
-\item{samplesize}{numeric. How many random prediction samples should be used? Only required if modeldomain is a raster (see Details)}
+\item{samplesize}{numeric. How many prediction samples should be used? Only required if modeldomain is a raster (see Details)}
 
-\item{type}{character. See \link[sp]{spsample}}
+\item{sampling}{character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.}
 
-\item{scale}{logical. Present distances on log scale?}
-
-\item{distance}{"geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)}
-
-\item{variables}{character vector defining the predictor variables used if distance="feature. If not provided all variables included in modeldomain are used.}
+\item{variables}{character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.}
 
 \item{showPlot}{logical}
 }
@@ -48,7 +45,7 @@ The plot can be used to check the suitability of a chosen CV method to be repres
 }
 \details{
 The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
-    If distance = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster. If not provided they are extracted from the modeldomain rasterStack.
+    If type = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster. If not provided they are extracted from the modeldomain rasterStack.
 }
 \note{
 See Meyer and Pebesma (2022) for an application of this plotting function
@@ -80,14 +77,14 @@ dist <- plot_geodist(pts_train,studyArea,testdata=pts_test)
 
 ########### Distance between training data, new data and CV folds:
 folds <- createFolds(1:nrow(pts_train),k=3,returnTrain=FALSE)
-plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds=folds)
+dist <- plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds=folds)
 
 ########### Distances in the feature space:
 plot_geodist(x=pts_train, modeldomain=studyArea,
-distance = "feature",variables=c("DEM","TWI", "NDRE.M"))
+type = "feature",variables=c("DEM","TWI", "NDRE.M"))
 
-plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds = folds, testdata = pts_test,
-distance = "feature",variables=c("DEM","TWI", "NDRE.M"))
+dist <- plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds = folds, testdata = pts_test,
+type = "feature",variables=c("DEM","TWI", "NDRE.M"))
 
 ############ Example for a random global dataset
 ############ (refer to figure in Meyer and Pebesma 2022)
@@ -112,7 +109,8 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
      labs(x = NULL, y = NULL)
 
 ### plot distances:
-plot_geodist(pts_random,co,scale=T)
+dist <- plot_geodist(pts_random,co,showPlot=FALSE)
+dist$plot+scale_x_log10(labels=round)
 
 }
 }

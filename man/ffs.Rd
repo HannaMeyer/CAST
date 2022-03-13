@@ -86,9 +86,9 @@ it is assumed that the optimal variables can only be found if more than 2
 are considered at the same time.
 }
 \note{
-This validation is particularly suitable for spatial
-leave-location-out cross validations where variable selection
-MUST be based on the performance of the model on the hold out station.
+This variable selection is particularly suitable for spatial
+cross validations where variable selection
+MUST be based on the performance of the model for predicting new spatial units.
 See Meyer et al. (2018) and Meyer et al. (2019) for further details.
 }
 \examples{

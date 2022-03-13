@@ -6,17 +6,16 @@
 #'
 #' @param x object of class sf, training data locations
 #' @param modeldomain raster or sf object defining the prediction area (see Details)
+#' @param type "geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)
 #' @param cvfolds optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?createSpaceTimeFolds
 #' @param testdata optional. object of class sf: Data used for independent validation
-#' @param samplesize numeric. How many random prediction samples should be used? Only required if modeldomain is a raster (see Details)
-#' @param type character. See \link[sp]{spsample}
-#' @param scale logical. Present distances on log scale?
-#' @param distance "geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)
-#' @param variables character vector defining the predictor variables used if distance="feature. If not provided all variables included in modeldomain are used.
+#' @param samplesize numeric. How many prediction samples should be used? Only required if modeldomain is a raster (see Details)
+#' @param sampling character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.
+#' @param variables character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.
 #' @param showPlot logical
 #' @return A list including the plot and the corresponding data.frame containing the distances
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
-#'     If distance = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster. If not provided they are extracted from the modeldomain rasterStack.
+#'     If type = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster. If not provided they are extracted from the modeldomain rasterStack.
 #'
 #' @note See Meyer and Pebesma (2022) for an application of this plotting function
 #'
@@ -50,14 +49,14 @@
 #'
 #' ########### Distance between training data, new data and CV folds:
 #' folds <- createFolds(1:nrow(pts_train),k=3,returnTrain=FALSE)
-#' plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds=folds)
+#' dist <- plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds=folds)
 #'
 #' ########### Distances in the feature space:
 #' plot_geodist(x=pts_train, modeldomain=studyArea,
-#' distance = "feature",variables=c("DEM","TWI", "NDRE.M"))
+#' type = "feature",variables=c("DEM","TWI", "NDRE.M"))
 #'
-#' plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds = folds, testdata = pts_test,
-#' distance = "feature",variables=c("DEM","TWI", "NDRE.M"))
+#' dist <- plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds = folds, testdata = pts_test,
+#' type = "feature",variables=c("DEM","TWI", "NDRE.M"))
 #'
 #'############ Example for a random global dataset
 #'############ (refer to figure in Meyer and Pebesma 2022)
@@ -82,32 +81,31 @@
 #'      labs(x = NULL, y = NULL)
 #'
 #'### plot distances:
-#'plot_geodist(pts_random,co,scale=T)
+#'dist <- plot_geodist(pts_random,co,showPlot=FALSE)
+#'dist$plot+scale_x_log10(labels=round)
 #'
 #' }
 #' @export
 
 plot_geodist <- function(x,
                          modeldomain,
+                         type = "geo",
                          cvfolds=NULL,
                          testdata=NULL,
                          samplesize=2000,
-                         type = "regular",
-                         scale=FALSE,
-                         distance = "geo",
+                         sampling = "regular",
                          variables=NULL,
                          showPlot=TRUE){
 
 
   # input formatting ------------
   x <- sf::st_transform(x,4326)
-
-
-  if(distance == "feature"){
+  if(type == "feature"){
     if(is.null(variables)){
       variables <- names(modeldomain)
     }
     if(any(!variables%in%names(x))){ # extract variable values of raster:
+      message("features are extracted from the modeldomain")
       x <- sf::st_transform(x,sf::st_crs(modeldomain))
 
       if(class(x)[1]=="sfc_POINT"){
@@ -132,48 +130,36 @@ plot_geodist <- function(x,
     }
   }
 
-## Sample prediction location from the study area:
-#  if(inherits(modeldomain, "Raster")){
-    modeldomain <- sampleFromArea(modeldomain, samplesize, distance,variables,type)
-#  }
-
 
   # required steps ----
+
+  ## Sample prediction location from the study area:
+  modeldomain <- sampleFromArea(modeldomain, samplesize, type,variables,sampling)
+
   # always do sample-to-sample and sample-to-prediction
-  s2s <- sample2sample(x, distance,variables)
-  s2p <- sample2prediction(x, modeldomain, distance, samplesize,variables)
+  s2s <- sample2sample(x, type,variables)
+  s2p <- sample2prediction(x, modeldomain, type, samplesize,variables)
 
   dists <- rbind(s2s, s2p)
 
   # optional steps ----
   ##### Distance to test data:
   if(!is.null(testdata)){
-    s2t <- sample2test(x, testdata, distance,variables)
+    s2t <- sample2test(x, testdata, type,variables)
     dists <- rbind(dists, s2t)
   }
 
   ##### Distance to CV data:
   if(!is.null(cvfolds)){
-    cvd <- cvdistance(x, cvfolds, distance,variables)
+    cvd <- cvdistance(x, cvfolds, type,variables)
     dists <- rbind(dists, cvd)
   }
 
-  # Compile and plot data ----
-  xlabs <- "geographic distances (m)"
-  if(distance=="feature"){ xlabs <- "feature space distances"}
-  what <- "" #just to avoid check note
-  if (distance=="feature"){unit ="unitless"}
-  p <- ggplot2::ggplot(data=dists, aes(x=dist, group=what, fill=what)) +
-    ggplot2::geom_density(adjust=1.5, alpha=.4) +
-    ggplot2::scale_fill_discrete(name = "distance function") +
-    ggplot2::xlab(xlabs) +
-    ggplot2::theme(legend.position="bottom")
+  # Compile output and plot data ----
+  p <- plot.nnd(dists,type)
 
-  if(scale){
-    p <- p+scale_x_log10(labels=round)
-  }
   if(showPlot){
-  print(p)
+    print(p)
   }
 
   out <- list(p,dists)
@@ -186,9 +172,9 @@ plot_geodist <- function(x,
 
 # Sample to Sample Distance
 
-sample2sample <- function(x, distance,variables){
+sample2sample <- function(x, type,variables){
 
-  if(distance == "geo"){
+  if(type == "geo"){
     sf::sf_use_s2(TRUE)
     d <- sf::st_distance(x)
     diag(d) <- Inf
@@ -198,7 +184,7 @@ sample2sample <- function(x, distance,variables){
                                  dist_type = "geo")
 
 
-  }else if(distance == "feature"){
+  }else if(type == "feature"){
     x <- x[,variables]
     x <- sf::st_drop_geometry(x)
     scaleparam <- attributes(scale(x))
@@ -225,9 +211,9 @@ sample2sample <- function(x, distance,variables){
 # Sample to Prediction
 
 
-sample2prediction = function(x, modeldomain, distance, samplesize,variables){
+sample2prediction = function(x, modeldomain, type, samplesize,variables){
 
-  if(distance == "geo"){
+  if(type == "geo"){
     modeldomain <- sf::st_transform(modeldomain, sf::st_crs(x))
     sf::sf_use_s2(TRUE)
     d0 <- sf::st_distance(modeldomain, x)
@@ -236,7 +222,7 @@ sample2prediction = function(x, modeldomain, distance, samplesize,variables){
                                      what = factor("sample-to-prediction"),
                                      dist_type = "geo")
 
-  }else if(distance == "feature"){
+  }else if(type == "feature"){
     x <- x[,variables]
     x <- sf::st_drop_geometry(x)
     scaleparam <- attributes(scale(x))
@@ -266,9 +252,9 @@ sample2prediction = function(x, modeldomain, distance, samplesize,variables){
 # sample to test
 
 
-sample2test <- function(x, testdata, distance,variables){
+sample2test <- function(x, testdata, type,variables){
 
-  if(distance == "geo"){
+  if(type == "geo"){
     testdata <- sf::st_transform(testdata,4326)
     d_test <- sf::st_distance(testdata, x)
     min_d_test <- apply(d_test, 1, min)
@@ -278,7 +264,7 @@ sample2test <- function(x, testdata, distance,variables){
                              dist_type = "geo")
 
 
-  }else if(distance == "feature"){
+  }else if(type == "feature"){
     x <- x[,variables]
     x <- sf::st_drop_geometry(x)
     scaleparam <- attributes(scale(x))
@@ -309,9 +295,9 @@ sample2test <- function(x, testdata, distance,variables){
 
 # between folds
 
-cvdistance <- function(x, cvfolds, distance,variables){
+cvdistance <- function(x, cvfolds, type,variables){
 
-  if(distance == "geo"){
+  if(type == "geo"){
     d_cv <- c()
     for (i in 1:length(cvfolds)){
       d_cv_tmp <- sf::st_distance(x[cvfolds[[i]],], x[-cvfolds[[i]],])
@@ -323,7 +309,7 @@ cvdistance <- function(x, cvfolds, distance,variables){
                            dist_type = "geo")
 
 
-  }else if(distance == "feature"){
+  }else if(type == "feature"){
     x <- x[,variables]
     x <- sf::st_drop_geometry(x)
     x <- data.frame(scale(x))
@@ -359,7 +345,7 @@ cvdistance <- function(x, cvfolds, distance,variables){
 
 
 
-sampleFromArea <- function(modeldomain, samplesize, distance,variables,type){
+sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
 
   ##### Distance to prediction locations:
   # regularly spread points (prediction locations):
@@ -379,7 +365,7 @@ sampleFromArea <- function(modeldomain, samplesize, distance,variables,type){
   sf::st_as_sf(modeldomainextent) |>
     sf::st_transform(4326) -> bb
   methods::as(bb, "Spatial") |>
-    sp::spsample(n =samplesize, type = type)  |>
+    sp::spsample(n =samplesize, type = sampling)  |>
     sf::st_as_sfc() |>
     sf::st_set_crs(4326) -> predictionloc
 
@@ -387,7 +373,7 @@ sampleFromArea <- function(modeldomain, samplesize, distance,variables,type){
   predictionloc <- sf::st_as_sf(predictionloc)
 
 
-  if(distance == "feature"){
+  if(type == "feature"){
     predictionloc <- sf::st_as_sf(raster::extract(modeldomain, predictionloc, df = TRUE, sp = TRUE))
     predictionloc <- na.omit(predictionloc)
   }
@@ -396,3 +382,16 @@ sampleFromArea <- function(modeldomain, samplesize, distance,variables,type){
 
 }
 
+# plot results
+
+plot.nnd = function(x,type){
+  xlabs <- "geographic distances (m)"
+  if( type=="feature"){ xlabs <- "feature space distances"}
+  what <- "" #just to avoid check note
+  if (type=="feature"){unit ="unitless"}
+  p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, fill=what)) +
+    ggplot2::geom_density(adjust=1.5, alpha=.4) +
+    ggplot2::scale_fill_discrete(name = "distance function") +
+    ggplot2::xlab(xlabs) +
+    ggplot2::theme(legend.position="bottom")
+}

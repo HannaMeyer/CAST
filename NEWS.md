@@ -2,11 +2,11 @@
 * new feature: 
   * trainDI allows to calculate the DI of the training dataset separately from the aoa function
   * plot and print functions for the AOA
-  * function to plot distance distributions in geographic and feature space
+  * function to plot nearest neighbor distance distributions in geographic and feature space
   * function global_validation added
-  * ffs and bss can be used with global_validation
 * modifications
   * extensive restructuring of the AOA function
+  * ffs and bss can be used with global_validation
 * bugfix:
   * error in manual assignment of weights fixed
 

@@ -1,4 +1,4 @@
-#' Plot
+#' Plot CAST classes
 #' @description Generic plot function for trainDI and aoa
 #'
 #' @name plot

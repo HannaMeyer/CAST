@@ -6,7 +6,7 @@
 \alias{show.trainDI}
 \alias{print.aoa}
 \alias{show.aoa}
-\title{Print}
+\title{Print CAST classes}
 \usage{
 \method{print}{trainDI}(x, ...)
 

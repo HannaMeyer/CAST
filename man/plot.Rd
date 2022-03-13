@@ -4,7 +4,7 @@
 \alias{plot}
 \alias{plot.trainDI}
 \alias{plot.aoa}
-\title{Plot}
+\title{Plot CAST classes}
 \usage{
 \method{plot}{trainDI}(x, ...)
 

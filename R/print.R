@@ -1,4 +1,4 @@
-#' Print
+#' Print CAST classes
 #' @description Generic print function for trainDI and aoa
 #' @name print
 #' @param x trainDI object
