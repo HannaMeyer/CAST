@@ -59,7 +59,7 @@ bss <- function (predictors,
                  ...){
   trControl$returnResamp <- "final"
   trControl$savePredictions <- "final"
-  if(class(response)=="character"){
+  if(inherits(response,"character")){
     response <- factor(response)
     if(metric=="RMSE"){
       metric <- "Accuracy"

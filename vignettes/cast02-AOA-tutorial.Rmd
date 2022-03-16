@@ -52,7 +52,7 @@ RMSE = function(a, b){
 
 ### Generate Predictors
 
-As predictor variables, a set of bioclimatic variables are used (https://www.worldclim.org/). For this tutorial, they have been originally downloaded using the getData function from the raster package but cropped to an area in central Europe. The cropped data are provided in the CAST package.
+As predictor variables, a set of bioclimatic variables are used (https://www.worldclim.org). For this tutorial, they have been originally downloaded using the getData function from the raster package but cropped to an area in central Europe. The cropped data are provided in the CAST package.
 
 ```{r, message = FALSE, warning=FALSE}
 predictors <- stack(system.file("extdata","bioclim.grd",package="CAST"))
@@ -163,7 +163,7 @@ The example above had randomly distributed training samples. However, sampling l
 [Valavi et al. 2019](https://doi.org/10.1111/2041-210X.13107),
 [Roberts et al. 2018](https://doi.org/10.1111/ecog.02881),
 [Pohjankukka et al. 2017](https://doi.org/10.1080/13658816.2017.1346255),
-[Brenning 2012](https://CRAN.R-project.org/package=sperrorest/))
+[Brenning 2012](https://CRAN.R-project.org/package=sperrorest))
 
 Also the threshold for the AOA is not reliable, because it is based in distance to a nearest data point within the training data (which is usually very small when data are clustered). Instead, cross-validation should be based on a leave-cluster-out approach, and the AOA estimation based on distances to a nearest data point not located in the same spatial cluster.
  
@@ -297,7 +297,7 @@ spplot(AOA_calib$AOA$expected_RMSE,col.regions=viridis(100),main="expected RMSE"
 The example above used simulated data so that it allows to analyze the reliability of the AOA. However, a simulated area-wide response is not available in usual prediction tasks. Therefore, as a second example the AOA is estimated for a dataset that has point observations as a reference only.
 
 ## Data and preprocessing
-To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251/). The dataset included in CAST is a re-structured dataset. Find more details also in the vignette "Introduction to CAST".
+To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251). The dataset included in CAST is a re-structured dataset. Find more details also in the vignette "Introduction to CAST".
 We will use soil moisture (VW) as response variable here. Hence, we're aiming at making a spatial continuous prediction based on limited measurements from data loggers.
 
 ```{r, message = FALSE, warning=FALSE}
@@ -366,6 +366,6 @@ grid.arrange(spplot(AOA$DI,col.regions=viridis(100),main="DI with sampling locat
 
 *  Meyer, H., & Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications. Accepted. 
 
-*  Meyer, H., & Pebesma, E. (2021). Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution, 12, 1620– 1633. [https://doi.org/10.1111/2041-210X.13650
+*  Meyer, H., & Pebesma, E. (2021). Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution, 12, 1620– 1633. [https://doi.org/10.1111/2041-210X.13650]
 
 *  Tutorial (https://youtu.be/EyP04zLe9qo) and Lecture (https://youtu.be/OoNH6Nl-X2s) recording from OpenGeoHub summer school 2020 on the area of applicability. As well as talk at the OpenGeoHub summer school 2021: https://av.tib.eu/media/54879

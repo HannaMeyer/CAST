@@ -21,7 +21,7 @@ user_hanna <- Sys.getenv("USER") %in% c("hanna")
 ## Introduction
 ### Background
 One key task in environmental science is obtaining information of environmental variables continuously in space or in space and time, usually based on remote sensing and limited field data. In that respect, machine learning algorithms have been proven to be an important tool to learn patterns in nonlinear and complex systems.
-However, standard machine learning applications are not suitable for spatio-temporal data, as they usually ignore the spatio-temporal dependencies in the data. This becomes problematic in (at least) two aspects of predictive modelling: Overfitted models as well as overly optimistic error assessment (see [Meyer et al 2018](https://www.sciencedirect.com/science/article/pii/S1364815217310976/) or [Meyer et al 2019](https://www.sciencedirect.com/science/article/abs/pii/S0304380019303230) ). To approach these problems, CAST supports the well-known caret package ([Kuhn 2018](http://topepo.github.io/caret/index.html) to provide methods designed for spatio-temporal data.
+However, standard machine learning applications are not suitable for spatio-temporal data, as they usually ignore the spatio-temporal dependencies in the data. This becomes problematic in (at least) two aspects of predictive modelling: Overfitted models as well as overly optimistic error assessment (see [Meyer et al 2018](https://www.sciencedirect.com/science/article/pii/S1364815217310976) or [Meyer et al 2019](https://www.sciencedirect.com/science/article/abs/pii/S0304380019303230) ). To approach these problems, CAST supports the well-known caret package ([Kuhn 2018](http://topepo.github.io/caret/index.html/) to provide methods designed for spatio-temporal data.
 
 This tutorial shows how to set up a spatio-temporal prediction model that includes objective and reliable error estimation. It further shows how spatio-temporal overfitting can be detected by comparison between validation strategies. It will be shown that certain variables are responsible for the problem of overfitting due to spatio-temporal autocorrelation patterns. Therefore, this tutorial also shows how to automatically exclude variables that lead to overfitting with the aim to improve the spatio-temporal prediction model.
 
@@ -47,7 +47,7 @@ help(CAST)
 The example prediction task for this tutorial is the following: we have a set of data loggers distributed over a farm, and we want to map soil moisture, based on a set of spatial and temporal predictor variables. We will use Random Forests as a machine learning algorithm in this tutorial.
 
 ### Description of the example dataset
-To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251/) and available via the GSIF package ([Hengl 2017](https://CRAN.R-project.org/package=GSIF/)). The dataset included in the CAST package is a re-structured dataset which was used for the analysis in [Meyer et al 2018](https://www.sciencedirect.com/science/article/pii/S1364815217310976/).
+To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251/) and available via the GSIF package ([Hengl 2017](https://CRAN.R-project.org/package=GSIF)). The dataset included in the CAST package is a re-structured dataset which was used for the analysis in [Meyer et al 2018](https://www.sciencedirect.com/science/article/pii/S1364815217310976).
 
 
 ```{r, message = FALSE, warning=FALSE}
@@ -56,7 +56,7 @@ head(data)
 ```
 
 I want to point out on the following information of this dataset: The "SOURCEID" represents the ID for the data logger, "VW" is soil moisture which is our response variable, "Easting" and "Northing" are the coordinates of the data loggers, "altitude" indicates the depth of the soil in which VW was measured, and the remaining columns represent different potential predictor variables which are terrain related (e.g. "DEM", "TWI"), vegetation indices (e.g. "NDRE"), soil properties (e.g. "BLD") or climate-related predictors (e.g. "Precip_wrcc").
-See [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251/) for further description on the dataset.
+See [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251) for further description on the dataset.
 
 To get an impression on the spatial properties of the dataset, let's have a look on the spatial distribution of the data loggers on the cookfarm:
 
@@ -170,7 +170,7 @@ model_LLO
 
 By inspecting the output of the model, we see that in view to new locations, the R² is only 0.16 so the performance is much lower than expected from the random CV (R² = 0.90).
 
-Apparently, there is considerable overfitting in the model, causing a good random performance but a poor performance in view to new locations. This might partly be attributed to the choice of variables where we must suspect that certain variables are misinterpreted by the model (see [Meyer et al 2018](https://www.sciencedirect.com/science/article/pii/S1364815217310976/) or [talk at the OpenGeoHub summer school 2019] (https://www.youtube.com/watch?v=mkHlmYEzsVQ)).
+Apparently, there is considerable overfitting in the model, causing a good random performance but a poor performance in view to new locations. This might partly be attributed to the choice of variables where we must suspect that certain variables are misinterpreted by the model (see [Meyer et al 2018](https://www.sciencedirect.com/science/article/pii/S1364815217310976) or [talk at the OpenGeoHub summer school 2019] (https://www.youtube.com/watch?v=mkHlmYEzsVQ)).
 
 Let's have a look at the variable importance ranking of Random Forest and see if we find something suspicious:
 

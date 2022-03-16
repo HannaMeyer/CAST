@@ -191,7 +191,7 @@ Note that plot_geodist also allows inspecting independent test data instead of c
 
 ## Distances in feature space
 
-So far we compared nearest neighbor distances in geographic space. We can also do so in feature space. Therefore, a set of bioclimatic variables are used (https://www.worldclim.org/) as features (i.e. predictors) in this virtual prediction task. 
+So far we compared nearest neighbor distances in geographic space. We can also do so in feature space. Therefore, a set of bioclimatic variables are used (https://www.worldclim.org) as features (i.e. predictors) in this virtual prediction task. 
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 predictors_global <- stack(system.file("extdata","bioclim_global.grd",package="CAST"))
