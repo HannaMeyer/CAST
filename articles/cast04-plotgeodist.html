@@ -199,7 +199,7 @@
 <div class="section level2">
 <h2 id="distances-in-feature-space">Distances in feature space<a class="anchor" aria-label="anchor" href="#distances-in-feature-space"></a>
 </h2>
-<p>So far we compared nearest neighbor distances in geographic space. We can also do so in feature space. Therefore, a set of bioclimatic variables are used (<a href="https://www.worldclim.org/" class="external-link uri">https://www.worldclim.org/</a>) as features (i.e. predictors) in this virtual prediction task.</p>
+<p>So far we compared nearest neighbor distances in geographic space. We can also do so in feature space. Therefore, a set of bioclimatic variables are used (<a href="https://www.worldclim.org" class="external-link uri">https://www.worldclim.org</a>) as features (i.e. predictors) in this virtual prediction task.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">predictors_global</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"bioclim_global.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span>
 
