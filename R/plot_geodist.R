@@ -189,7 +189,7 @@ sample2sample <- function(x, type,variables){
     x <- sf::st_drop_geometry(x)
     scaleparam <- attributes(scale(x))
     x <- data.frame(scale(x))
-    x_clean <- x[complete.cases(x),]
+    x_clean <- data.frame(x[complete.cases(x),])
     # sample to sample feature distance
     d <- c()
     for (i in 1:nrow(x_clean)){
