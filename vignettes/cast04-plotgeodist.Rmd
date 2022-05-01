@@ -21,11 +21,11 @@ knitr::opts_chunk$set(echo = TRUE,fig.width=6.1, fig.height=3.5)
 This tutorial shows how euclidean nearest neighbor distances in the geographic space or feature space can be calculated and visualized using CAST.
 This type of visualization allows to assess whether training data feature a representative coverage of the prediction area and if cross-validation (CV) folds (or independent test data) are adequately chosen to be representative for the prediction locations.
 
-See e.g. Meyer and Pebesma (2022) and Mila et al. (2022) for further discussion on this topic.
+See e.g. [Meyer and Pebesma (2022)](https://doi.org/10.1038/s41467-022-29838-9) and [Mila et al. (2022)](https://doi.org/10.1111/2041-210X.13851) for further discussion on this topic.
 
 ## Sample data
 
-As example data, we use two different sets of global virtual reference data: One is a spatial random sample and in the second example, reference data are clustered in geographic space (see Meyer and Pebesma (2022) for more discussions on this).
+As example data, we use two different sets of global virtual reference data: One is a spatial random sample and in the second example, reference data are clustered in geographic space (see [Meyer and Pebesma (2022)](https://doi.org/10.1038/s41467-022-29838-9) for more discussions on this).
 
 ```{r, message = FALSE, warning=FALSE}
 library(CAST)
@@ -186,8 +186,41 @@ dist_clstr$plot+scale_x_log10(labels=round)
              
 ```
 
-See that this fits the nearest neighbor distribution of the prediction area much better (See Mila et al. (2022) for a better idea to do the spatial CV).
+See that this fits the nearest neighbor distribution of the prediction area much better (See Mila et al. 2022 for a better idea to do the spatial CV).
 Note that plot_geodist also allows inspecting independent test data instead of cross validation folds. See ?plot_geodist.
+
+### Why has spatial CV sometimes blamed for being to pessimistic ?
+Recently, [Wadoux et al. (2021)](https://doi.org/10.1016/j.ecolmodel.2021.109692) published a paper with the title "Spatial cross-validation is not the right way to evaluate map accuracy" where they state that "spatial cross-validation strategies resulted in a grossly pessimistic map accuracy assessment". Why do they come to this conclusion?
+The referecne data they used in their study where either regularly, random or comparably mildly clustered in geographic space, but they applied spatial CV strategies that held large spatial units back during CV. Here we can see what happens when we apply spatial CV to randomly distributed reference data.
+
+```{r,message = FALSE, warning=FALSE, results='hide'}
+# create a spatial CV for the randomly distributed data. Here:
+# "leave region-out-CV"
+sf_use_s2(FALSE)
+pts_random_co <- st_join(st_as_sf(pts_random),co)
+
+
+ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
+  geom_sf(data = pts_random_co, aes(color=subregion),size=0.5, shape=3) +
+  scale_color_manual(values=rainbow(length(unique(pts_random_co$subregion))))+
+  guides(fill = FALSE, col = FALSE) +
+  labs(x = NULL, y = NULL)+ ggtitle("spatial fold membership by color")
+
+```
+
+```{r,message = FALSE, warning=FALSE, results='hide'}
+
+spfolds_rand <- CreateSpacetimeFolds(pts_random_co,spacevar = "subregion",
+                                     k=length(unique(pts_random_co$subregion)))
+dist_rand_sp <- plot_geodist(pts_random_co,co,
+                           sampling="Fibonacci", 
+                           cvfolds= spfolds_rand$indexOut, 
+                           showPlot=FALSE)
+dist_rand_sp$plot+scale_x_log10(labels=round)
+```
+
+We see that the nearest neighbor distances during cross-validation don't match the nearest neighbor distances during prediction. But compared to the section above, this time the cross-validation folds are too far away from reference data. Naturally we would end up with overly pessimistic performance estimates because we make prediction situations during cross-validation harder, compared to what is required during model application to the entire area of interest (here global). The spatial CV chosen here is therefore not suitable for this prediction task, because prediction situations created during CV do not resemble what is encountered during prediction. See [Mila et al., 2022](https://doi.org/10.1111/2041-210X.13851) for a suggestion on how this can be achieved.
+
 
 ## Distances in feature space
 
@@ -225,5 +258,5 @@ With regard to the chosen predictor variables we see that again the nearest neig
 
 
 ### References
-* Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications. Accepted.
-* Mila, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution. Accepted.
+* Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications 13, 2208. https://doi.org/10.1038/s41467-022-29838-9
+* Mila, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13. https://doi.org/10.1111/2041-210X.13851.
