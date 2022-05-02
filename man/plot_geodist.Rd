@@ -9,6 +9,7 @@ plot_geodist(
   modeldomain,
   type = "geo",
   cvfolds = NULL,
+  cvtrain = NULL,
   testdata = NULL,
   samplesize = 2000,
   sampling = "regular",
@@ -24,6 +25,8 @@ plot_geodist(
 \item{type}{"geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)}
 
 \item{cvfolds}{optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?createSpaceTimeFolds}
+
+\item{cvtrain}{optional. List of row indices of x to fit the model to in each CV iteration. If cvtrain is null but cvfolds is not, all samples but those included in cvfolds are used as training data}
 
 \item{testdata}{optional. object of class sf: Data used for independent validation}
 

@@ -8,6 +8,7 @@
 #' @param modeldomain raster or sf object defining the prediction area (see Details)
 #' @param type "geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)
 #' @param cvfolds optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?createSpaceTimeFolds
+#' @param cvtrain optional. List of row indices of x to fit the model to in each CV iteration. If cvtrain is null but cvfolds is not, all samples but those included in cvfolds are used as training data
 #' @param testdata optional. object of class sf: Data used for independent validation
 #' @param samplesize numeric. How many prediction samples should be used? Only required if modeldomain is a raster (see Details)
 #' @param sampling character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.
@@ -91,6 +92,7 @@ plot_geodist <- function(x,
                          modeldomain,
                          type = "geo",
                          cvfolds=NULL,
+                         cvtrain=NULL,
                          testdata=NULL,
                          samplesize=2000,
                          sampling = "regular",
@@ -151,7 +153,7 @@ plot_geodist <- function(x,
 
   ##### Distance to CV data:
   if(!is.null(cvfolds)){
-    cvd <- cvdistance(x, cvfolds, type,variables)
+    cvd <- cvdistance(x, cvfolds, cvtrain, type, variables)
     dists <- rbind(dists, cvd)
   }
 
@@ -295,12 +297,17 @@ sample2test <- function(x, testdata, type,variables){
 
 # between folds
 
-cvdistance <- function(x, cvfolds, type,variables){
+cvdistance <- function(x, cvfolds, cvtrain, type, variables){
 
   if(type == "geo"){
     d_cv <- c()
     for (i in 1:length(cvfolds)){
-      d_cv_tmp <- sf::st_distance(x[cvfolds[[i]],], x[-cvfolds[[i]],])
+
+      if(!is.null(cvtrain)){
+        d_cv_tmp <- sf::st_distance(x[cvfolds[[i]],], x[cvtrain[[i]],])
+      }else{
+        d_cv_tmp <- sf::st_distance(x[cvfolds[[i]],], x[-cvfolds[[i]],])
+      }
       d_cv <- c(d_cv,apply(d_cv_tmp, 1, min))
     }
 
@@ -317,8 +324,14 @@ cvdistance <- function(x, cvfolds, type,variables){
 
     d_cv <- c()
     for(i in 1:length(cvfolds)){
-      testdata_i <- x[cvfolds[[i]],]
-      traindata_i <- x[-cvfolds[[i]],]
+
+      if(!is.null(cvtrain)){
+        testdata_i <- x[cvfolds[[i]],]
+        traindata_i <- x[cvtrain[[i]],]
+      }else{
+        testdata_i <- x[cvfolds[[i]],]
+        traindata_i <- x[-cvfolds[[i]],]
+      }
 
       testdata_i <- testdata_i[complete.cases(testdata_i),]
       traindata_i <- traindata_i[complete.cases(traindata_i),]
