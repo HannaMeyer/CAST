@@ -76,7 +76,7 @@
       <img src="" class="logo" alt=""><h1>4. Visualization of nearest neighbor distance distributions</h1>
                         <h4 data-toc-skip class="author">Hanna Meyer</h4>
             
-            <h4 data-toc-skip class="date">2022-05-01</h4>
+            <h4 data-toc-skip class="date">2022-05-03</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast04-plotgeodist.Rmd" class="external-link"><code>vignettes/cast04-plotgeodist.Rmd</code></a></small>
       <div class="d-none name"><code>cast04-plotgeodist.Rmd</code></div>
@@ -88,7 +88,7 @@
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>This tutorial shows how euclidean nearest neighbor distances in the geographic space or feature space can be calculated and visualized using CAST. This type of visualization allows to assess whether training data feature a representative coverage of the prediction area and if cross-validation (CV) folds (or independent test data) are adequately chosen to be representative for the prediction locations.</p>
-<p>See e.g. <a href="https://doi.org/10.1038/s41467-022-29838-9" class="external-link">Meyer and Pebesma (2022)</a> and <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link">Mila et al. (2022)</a> for further discussion on this topic.</p>
+<p>See e.g. <a href="https://doi.org/10.1038/s41467-022-29838-9" class="external-link">Meyer and Pebesma (2022)</a> and <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link">Milà et al. (2022)</a> for further discussion on this topic.</p>
 </div>
 <div class="section level2">
 <h2 id="sample-data">Sample data<a class="anchor" aria-label="anchor" href="#sample-data"></a>
@@ -101,11 +101,20 @@
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ropenscilabs/rnaturalearth" class="external-link">rnaturalearth</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></code></pre></div>
+<p>Here we can define some parameters to run the example with different settings</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">seed</span> <span class="op">&lt;-</span> <span class="fl">10</span> <span class="co"># random realization</span>
+<span class="va">samplesize</span> <span class="op">&lt;-</span> <span class="fl">250</span> <span class="co"># how many samples will be used?</span>
+<span class="va">nparents</span> <span class="op">&lt;-</span> <span class="fl">20</span> <span class="co">#For clustered samples: How many clusters? </span>
+<span class="va">radius</span> <span class="op">&lt;-</span> <span class="fl">7</span> <span class="co"># For clustered samples: What is the radius of a cluster?</span>
+<span class="va">NNDM</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span> <span class="co">## Show Results for NNDM as well? See explanations further below.</span>
+<span class="co"># Note that NNDM takes a while, especially for large samplesize.</span>
+<span class="co"># install via remotes::install_github("carlesmila/NNDM")</span></code></pre></div>
 <div class="section level3">
 <h3 id="prediction-area">Prediction area<a class="anchor" aria-label="anchor" href="#prediction-area"></a>
 </h3>
 <p>The prediction area is the entire global land area, i.e. we could imagine a prediction task where we aim at making global predictions based on the set of reference data.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ee</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="st">"+proj=eqearth"</span><span class="op">)</span>
 <span class="va">co</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/rnaturalearth/man/ne_countries.html" class="external-link">ne_countries</a></span><span class="op">(</span>returnclass <span class="op">=</span> <span class="st">"sf"</span><span class="op">)</span>
 <span class="va">co.ee</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span><span class="va">co</span>, <span class="va">ee</span><span class="op">)</span></code></pre></div>
@@ -114,38 +123,38 @@
 <h3 id="spatial-random-sample">Spatial random sample<a class="anchor" aria-label="anchor" href="#spatial-random-sample"></a>
 </h3>
 <p>Then, we simulate the random sample and visualize the data on the entire global prediction area.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://r-spatial.github.io/sf/reference/s2.html" class="external-link">sf_use_s2</a></span><span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>
-<span class="va">pts_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">co</span>, <span class="fl">1000</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span>
+<span class="va">pts_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">co</span>, <span class="va">samplesize</span><span class="op">)</span>
 <span class="co">### See points on the map:</span>
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">co.ee</span>, fill<span class="op">=</span><span class="st">"#00BFC4"</span>,col<span class="op">=</span><span class="st">"#00BFC4"</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">pts_random</span>, color <span class="op">=</span> <span class="st">"#F8766D"</span>,size<span class="op">=</span><span class="fl">0.5</span>, shape<span class="op">=</span><span class="fl">3</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="cn">FALSE</span>, col <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-3-1.png" width="585.6"></p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-4-1.png" width="585.6"></p>
 </div>
 <div class="section level3">
 <h3 id="clustered-sample">Clustered sample<a class="anchor" aria-label="anchor" href="#clustered-sample"></a>
 </h3>
 <p>As second data set we use a clustered design of the same size.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span>
 <span class="fu"><a href="https://r-spatial.github.io/sf/reference/s2.html" class="external-link">sf_use_s2</a></span><span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span>
-<span class="va">pts_clustered</span> <span class="op">&lt;-</span> <span class="fu">clustered_sample</span><span class="op">(</span><span class="va">co</span>, <span class="fl">1000</span>, <span class="fl">20</span>, <span class="fl">8</span><span class="op">)</span>
+<span class="va">pts_clustered</span> <span class="op">&lt;-</span> <span class="fu">clustered_sample</span><span class="op">(</span><span class="va">co</span>, <span class="va">samplesize</span>, <span class="va">nparents</span>, <span class="va">radius</span><span class="op">)</span>
 
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">co.ee</span>, fill<span class="op">=</span><span class="st">"#00BFC4"</span>,col<span class="op">=</span><span class="st">"#00BFC4"</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">pts_clustered</span>, color <span class="op">=</span> <span class="st">"#F8766D"</span>,size<span class="op">=</span><span class="fl">0.5</span>, shape<span class="op">=</span><span class="fl">3</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="cn">FALSE</span>, col <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-5-1.png" width="585.6"></p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-6-1.png" width="585.6"></p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="distances-in-geographic-space">Distances in geographic space<a class="anchor" aria-label="anchor" href="#distances-in-geographic-space"></a>
 </h2>
 <p>Then we can plot the distributions of the spatial distances of reference data to their nearest neighbor (“sample-to-sample”) with the distribution of distances from all points of the global land surface to the nearest reference data point (“sample-to-prediction”). Note that samples of prediction locations are used to calculate the sample-to-prediction nearest neighbor distances. Since we’re using a global case study here, throughout this tutorial we use sampling=Fibonacci to draw prediction locations with constant point density on the sphere.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">dist_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random</span>,<span class="va">co</span>,
                             sampling<span class="op">=</span><span class="st">"Fibonacci"</span>,
                             showPlot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
@@ -154,10 +163,10 @@
                            showPlot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 
 <span class="va">dist_random</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Randomly distributed reference data"</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-6-1.png" width="585.6"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-7-1.png" width="585.6"></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">dist_clstr</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data"</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-6-2.png" width="585.6"></p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-7-2.png" width="585.6"></p>
 <p>Note that for the random data set the nearest neighbor distance distribution of the training data is quasi identical to the nearest neighbor distance distribution of the prediction area. In comparison, the second data set has the same number of training data but these are heavily clustered in geographic space. We therefore see that the nearest neighbor distances within the reference data is rather small. Prediction locations, however, are on average much further away.</p>
 <div class="section level3">
 <h3 id="accounting-for-cross-validation-folds">Accounting for cross-validation folds<a class="anchor" aria-label="anchor" href="#accounting-for-cross-validation-folds"></a>
@@ -166,40 +175,39 @@
 <h4 id="random-cross-validation">Random Cross-validation<a class="anchor" aria-label="anchor" href="#random-cross-validation"></a>
 </h4>
 <p>Let’s use the clustered data set to show how the distribution of spatial nearest neighbor distances during cross-validation can be visualized as well. Therefore, we first use the “default” way of a random 10-fold cross validation where we randomly split the reference data into training and test (see Meyer et al., 2018 and 2019 to see why this might not be a good idea).</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">randomfolds</span> <span class="op">&lt;-</span> <span class="fu">caret</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/createDataPartition.html" class="external-link">createFolds</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/ncell.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pts_clustered</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-8-1.png" width="585.6"></p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">randomfolds</span> <span class="op">&lt;-</span> <span class="fu">caret</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/createDataPartition.html" class="external-link">createFolds</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/ncell.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pts_clustered</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-9-1.png" width="585.6"></p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co</span>,
                            sampling<span class="op">=</span><span class="st">"Fibonacci"</span>, 
                            cvfolds<span class="op">=</span> <span class="va">randomfolds</span>, 
                            showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="va">dist_clstr</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-9-1.png" width="585.6"></p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-10-1.png" width="585.6"></p>
 <p>Obviously the CV folds are not representative for the prediction locations (at least not in terms of distance to a nearest training data point). I.e. when these folds are used for performance assessment of a model, we can expect overly optimistic estimates because we only validate predictions in close proximity to the reference data.</p>
 </div>
 <div class="section level4">
 <h4 id="spatial-cross-validation">Spatial Cross-validation<a class="anchor" aria-label="anchor" href="#spatial-cross-validation"></a>
 </h4>
 <p>This, however, should not be the case but the CV performance should be regarded as representative for the prediction task. Therefore, we use a spatial CV instead. Here, we use a leave-cluster-out CV, which means that in each iteration, one of the spatial clusters is held back.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">spatialfolds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CreateSpacetimeFolds.html">CreateSpacetimeFolds</a></span><span class="op">(</span><span class="va">pts_clustered</span>,spacevar<span class="op">=</span><span class="st">"parent"</span>,k<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">pts_clustered</span><span class="op">$</span><span class="va">parent</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-11-1.png" width="585.6"></p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">spatialfolds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CreateSpacetimeFolds.html">CreateSpacetimeFolds</a></span><span class="op">(</span><span class="va">pts_clustered</span>,spacevar<span class="op">=</span><span class="st">"parent"</span>,k<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">pts_clustered</span><span class="op">$</span><span class="va">parent</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-12-1.png" width="585.6"></p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co</span>,
                            sampling<span class="op">=</span><span class="st">"Fibonacci"</span>,
                            cvfolds<span class="op">=</span> <span class="va">spatialfolds</span><span class="op">$</span><span class="va">indexOut</span>, 
                            showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="va">dist_clstr</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-12-1.png" width="585.6"></p>
-<p>See that this fits the nearest neighbor distribution of the prediction area much better (See Mila et al. 2022 for a better idea to do the spatial CV). Note that plot_geodist also allows inspecting independent test data instead of cross validation folds. See ?plot_geodist.</p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-13-1.png" width="585.6"></p>
+<p>See that this fits the nearest neighbor distribution of the prediction area much better. Note that plot_geodist also allows inspecting independent test data instead of cross validation folds. See ?plot_geodist.</p>
 </div>
-</div>
-<div class="section level3">
-<h3 id="why-has-spatial-cv-sometimes-blamed-for-being-to-pessimistic">Why has spatial CV sometimes blamed for being to pessimistic ?<a class="anchor" aria-label="anchor" href="#why-has-spatial-cv-sometimes-blamed-for-being-to-pessimistic"></a>
-</h3>
-<p>Recently, <a href="https://doi.org/10.1016/j.ecolmodel.2021.109692" class="external-link">Wadoux et al. (2021)</a> published a paper with the title “Spatial cross-validation is not the right way to evaluate map accuracy” where they state that “spatial cross-validation strategies resulted in a grossly pessimistic map accuracy assessment”. Why do they come to this conclusion? The referecne data they used in their study where either regularly, random or comparably mildly clustered in geographic space, but they applied spatial CV strategies that held large spatial units back during CV. Here we can see what happens when we apply spatial CV to randomly distributed reference data.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="section level4">
+<h4 id="why-has-spatial-cv-sometimes-blamed-for-being-too-pessimistic">Why has spatial CV sometimes blamed for being too pessimistic ?<a class="anchor" aria-label="anchor" href="#why-has-spatial-cv-sometimes-blamed-for-being-too-pessimistic"></a>
+</h4>
+<p>Recently, <a href="https://doi.org/10.1016/j.ecolmodel.2021.109692" class="external-link">Wadoux et al. (2021)</a> published a paper with the title “Spatial cross-validation is not the right way to evaluate map accuracy” where they state that “spatial cross-validation strategies resulted in a grossly pessimistic map accuracy assessment”. Why do they come to this conclusion? The reference data they used in their study where either regularly, random or comparably mildly clustered in geographic space, but they applied spatial CV strategies that held large spatial units back during CV. Here we can see what happens when we apply spatial CV to randomly distributed reference data.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># create a spatial CV for the randomly distributed data. Here:</span>
 <span class="co"># "leave region-out-CV"</span>
 <span class="fu"><a href="https://r-spatial.github.io/sf/reference/s2.html" class="external-link">sf_use_s2</a></span><span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span>
@@ -211,30 +219,61 @@
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span>values<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/grDevices/palettes.html" class="external-link">rainbow</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">pts_random_co</span><span class="op">$</span><span class="va">subregion</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="cn">FALSE</span>, col <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"spatial fold membership by color"</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-13-1.png" width="585.6"></p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-14-1.png" width="585.6"></p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">spfolds_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CreateSpacetimeFolds.html">CreateSpacetimeFolds</a></span><span class="op">(</span><span class="va">pts_random_co</span>,spacevar <span class="op">=</span> <span class="st">"subregion"</span>,
                                      k<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">pts_random_co</span><span class="op">$</span><span class="va">subregion</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="va">dist_rand_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random_co</span>,<span class="va">co</span>,
-                           sampling<span class="op">=</span><span class="st">"Fibonacci"</span>, 
-                           cvfolds<span class="op">=</span> <span class="va">spfolds_rand</span><span class="op">$</span><span class="va">indexOut</span>, 
-                           showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
+                             sampling<span class="op">=</span><span class="st">"Fibonacci"</span>, 
+                             cvfolds<span class="op">=</span> <span class="va">spfolds_rand</span><span class="op">$</span><span class="va">indexOut</span>, 
+                             showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 <span class="va">dist_rand_sp</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-14-1.png" width="585.6"></p>
-<p>We see that the nearest neighbor distances during cross-validation don’t match the nearest neighbor distances during prediction. But compared to the section above, this time the cross-validation folds are too far away from reference data. Naturally we would end up with overly pessimistic performance estimates because we make prediction situations during cross-validation harder, compared to what is required during model application to the entire area of interest (here global). The spatial CV chosen here is therefore not suitable for this prediction task, because prediction situations created during CV do not resemble what is encountered during prediction. See <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link">Mila et al., 2022</a> for a suggestion on how this can be achieved.</p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-15-1.png" width="585.6"></p>
+<p>We see that the nearest neighbor distances during cross-validation don’t match the nearest neighbor distances during prediction. But compared to the section above, this time the cross-validation folds are too far away from reference data. Naturally we would end up with overly pessimistic performance estimates because we make prediction situations during cross-validation harder, compared to what is required during model application to the entire area of interest (here global). The spatial CV chosen here is therefore not suitable for this prediction task, because prediction situations created during CV do not resemble what is encountered during prediction.</p>
+</div>
+<div class="section level4">
+<h4 id="nearest-neighbour-distance-matching-cv">Nearest Neighbour Distance Matching CV<a class="anchor" aria-label="anchor" href="#nearest-neighbour-distance-matching-cv"></a>
+</h4>
+<p>A good way to approximate the geographical prediction distances during the CV is to use Nearest Neighbour Distance Matching (NNDM) CV (see <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link">Milà et al., 2022</a> for more details). NNDM CV is a variation of LOO CV in which the empirical distribution function of nearest neighbour distances found during prediction is matched during the CV process, for all distances below a threshold. Here, we match all geographical distances equal or lower than 10,000 km first for the geographically clustered data. Note: To run these examples, install the NNDM package first via remotes::install_github(“carlesmila/NNDM”) and change NNDM &lt;- FALSE to NNDM y- TRUE in the beginnig of this script.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw">if</span><span class="op">(</span><span class="va">NNDM</span><span class="op">)</span><span class="op">{</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">NNDM</span><span class="op">)</span>
+<span class="va">predpoints</span> <span class="op">&lt;-</span> <span class="fu">sampleFromArea</span><span class="op">(</span>modeldomain <span class="op">=</span> <span class="va">co</span>, samplesize <span class="op">=</span> <span class="fl">2000</span>, type <span class="op">=</span> <span class="st">"geo"</span>,
+                             variables <span class="op">=</span> <span class="cn">NULL</span>, sampling <span class="op">=</span> <span class="st">"Fibonacci"</span><span class="op">)</span>
+<span class="va">nndmfolds_clstr</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">pts_clustered</span>, <span class="va">predpoints</span>, <span class="fl">1e7</span><span class="op">)</span>
+<span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co</span>,
+                           sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,
+                           cvfolds <span class="op">=</span> <span class="va">nndmfolds_clstr</span><span class="op">$</span><span class="va">indx_test</span>, 
+                           cvtrain <span class="op">=</span> <span class="va">nndmfolds_clstr</span><span class="op">$</span><span class="va">indx_train</span>,
+                           showPlot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+<span class="va">dist_clstr</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span>
+<span class="op">}</span></code></pre></div>
+<p>The NNDM CV-distance distribution matches the sample-to-prediction distribution very well. What happens if we use NNDM CV for the randomly-distributed sampling points instead?</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw">if</span><span class="op">(</span><span class="va">NNDM</span><span class="op">)</span><span class="op">{</span>
+<span class="va">nndmfolds_rand</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">pts_random_co</span>, <span class="va">predpoints</span>, <span class="fl">1e7</span><span class="op">)</span>
+<span class="va">dist_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random_co</span>,<span class="va">co</span>,
+                          sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,
+                          cvfolds <span class="op">=</span> <span class="va">nndmfolds_rand</span><span class="op">$</span><span class="va">indx_test</span>, 
+                          cvtrain <span class="op">=</span> <span class="va">nndmfolds_rand</span><span class="op">$</span><span class="va">indx_train</span>,
+                          showPlot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+<span class="va">dist_rand</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span>
+<span class="op">}</span></code></pre></div>
+<p>The NNDM CV-distance still matches the sample-to-prediction distance function.</p>
+</div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="distances-in-feature-space">Distances in feature space<a class="anchor" aria-label="anchor" href="#distances-in-feature-space"></a>
 </h2>
 <p>So far we compared nearest neighbor distances in geographic space. We can also do so in feature space. Therefore, a set of bioclimatic variables are used (<a href="https://www.worldclim.org" class="external-link uri">https://www.worldclim.org</a>) as features (i.e. predictors) in this virtual prediction task.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">predictors_global</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"bioclim_global.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span>
 
 <span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">predictors_global</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-15-1.png" width="585.6"></p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-19-1.png" width="585.6"></p>
 <p>Then we visualize nearest neighbor feature space distances under consideration of cross-validation.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># use random CV:</span>
 <span class="va">dist_clstr_rCV</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">predictors_global</span>,
                                type <span class="op">=</span> <span class="st">"feature"</span>, 
@@ -248,20 +287,21 @@
                                cvfolds <span class="op">=</span> <span class="va">spatialfolds</span><span class="op">$</span><span class="va">indexOut</span>,
                                showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
 
+
 <span class="co"># Plot results:</span>
-<span class="va">dist_clstr_rCV</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data and random CV"</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-16-1.png" width="585.6"></p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">dist_clstr_sCV</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data and spatial CV"</span><span class="op">)</span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-16-2.png" width="585.6"></p>
-<p>With regard to the chosen predictor variables we see that again the nearest neighbor distance of the clustered training data is rather small, compared to what is required during prediction. Again the random CV is not representative for the prediction locations while the spatial CV is doing a better job.</p>
+<span class="va">dist_clstr_rCV</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data and random CV"</span><span class="op">)</span></code></pre></div>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-20-1.png" width="585.6"></p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">dist_clstr_sCV</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data and spatial CV"</span><span class="op">)</span></code></pre></div>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-20-2.png" width="585.6"></p>
+<p>With regard to the chosen predictor variables we see that again the nearest neighbor distance of the clustered training data is rather small, compared to what is required during prediction. Again the random CV is not representative for the prediction locations while spatial CV is doing a better job.</p>
 <div class="section level3">
 <h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h3>
 <ul>
 <li>Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications 13, 2208. <a href="https://doi.org/10.1038/s41467-022-29838-9" class="external-link uri">https://doi.org/10.1038/s41467-022-29838-9</a>
 </li>
-<li>Mila, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13. <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link uri">https://doi.org/10.1111/2041-210X.13851</a>.</li>
+<li>Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13. <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link uri">https://doi.org/10.1111/2041-210X.13851</a>.</li>
 </ul>
 </div>
 </div>
