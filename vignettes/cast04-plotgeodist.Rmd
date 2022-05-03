@@ -37,6 +37,18 @@ library(ggplot2)
 library(NNDM)
 ```
 
+Here we can define some parameters to run the example with different settings
+
+```{r, message = FALSE, warning=FALSE}
+seed <- 10 # random realization
+samplesize <- 250 # how many samples will be used?
+nparents <- 20 #For clustered samples: How many clusters? 
+radius <- 7 # For clustered samples: What is the radius of a cluster?
+NNDM <- TRUE ## Show Results for NNDM as well? See explanations further below.
+# Note that NNDM takes a while, especially for large samplesize.
+
+```
+
 ### Prediction area
 The prediction area is the entire global land area, i.e. we could imagine a prediction task where we aim at making global predictions based on the set of reference data.
 ```{r,message = FALSE, warning=FALSE}
@@ -51,8 +63,8 @@ Then, we simulate the random sample and visualize the data on the entire global 
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 sf_use_s2(FALSE)
-set.seed(10)
-pts_random <- st_sample(co, 500)
+set.seed(seed)
+pts_random <- st_sample(co, samplesize)
 ### See points on the map:
 ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
   geom_sf(data = pts_random, color = "#F8766D",size=0.5, shape=3) +
@@ -95,9 +107,9 @@ clustered_sample <- function(sarea, nsamples, nparents, radius){
 ```
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
-set.seed(10)
+set.seed(seed)
 sf_use_s2(FALSE)
-pts_clustered <- clustered_sample(co, 500, 20, 8)
+pts_clustered <- clustered_sample(co, samplesize, nparents, radius)
 
 ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
   geom_sf(data = pts_clustered, color = "#F8766D",size=0.5, shape=3) +
@@ -226,6 +238,10 @@ We see that the nearest neighbor distances during cross-validation don't match t
 
 A good way to approximate the geographical prediction distances during the CV is to use Nearest Neighbour Distance Matching (NNDM) CV (see [Milà et al., 2022](https://doi.org/10.1111/2041-210X.13851) for more details). NNDM CV is a variation of LOO CV in which the empirical distribution function of nearest neighbour distances found during prediction is matched during the CV process, for all distances below a threshold. Here, we match all geographical distances equal or lower than 10,000 km first for the geographically clustered data.
 
+Since NNDM is a variation of leave-one-out CV it takes quite long. 
+Change NNDM=TRUE to NNDM=FALSE in the beginning of this script to avoid running it!
+`
+
 ```{r,message = FALSE, include=FALSE}
 # Internal CAST function needed to generate prediction points for NNDM CV
 sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
@@ -267,6 +283,9 @@ sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
 ```
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
+
+if(NNDM){
+
 predpoints <- sampleFromArea(modeldomain = co, samplesize = 2000, type = "geo",
                              variables = NULL, sampling = "Fibonacci")
 nndmfolds_clstr <- nndm(pts_clustered, predpoints, 1e7)
@@ -276,11 +295,13 @@ dist_clstr <- plot_geodist(pts_clustered,co,
                            cvtrain = nndmfolds_clstr$indx_train,
                            showPlot = FALSE)
 dist_clstr$plot+scale_x_log10(labels=round)
+}
 ```
 
 The NNDM CV-distance distribution matches the sample-to-prediction distribution very well. What happens if we use NNDM CV for the randomly-distributed sampling points instead? 
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
+if(NNDM){
 nndmfolds_rand <- nndm(pts_random_co, predpoints, 1e7)
 dist_rand <- plot_geodist(pts_random_co,co,
                           sampling = "Fibonacci",
@@ -288,6 +309,7 @@ dist_rand <- plot_geodist(pts_random_co,co,
                           cvtrain = nndmfolds_rand$indx_train,
                           showPlot = FALSE)
 dist_rand$plot+scale_x_log10(labels=round)
+}
 ```
 
 The NNDM CV-distance still matches the sample-to-prediction distance function.
@@ -321,16 +343,20 @@ dist_clstr_sCV <- plot_geodist(pts_clustered,predictors_global,
                                showPlot=FALSE)
 
 # use nndm CV:
+if(NNDM){
 dist_clstr_nndmCV <- plot_geodist(pts_clustered,predictors_global,
                                   type = "feature", sampling="Fibonacci",
                                   cvfolds = nndmfolds_clstr$indx_test, 
                                   cvtrain = nndmfolds_clstr$indx_train,
                                   showPlot=FALSE)
+}
 
 # Plot results:
 dist_clstr_rCV$plot+scale_x_log10()+ggtitle("Clustered reference data and random CV")
 dist_clstr_sCV$plot+scale_x_log10()+ggtitle("Clustered reference data and spatial CV")
+if(NNDM){
 dist_clstr_nndmCV$plot+scale_x_log10()+ggtitle("Clustered reference data and NNDM CV")
+}
 ```
 
 With regard to the chosen predictor variables we see that again the nearest neighbor distance of the clustered training data is rather small, compared to what is required during prediction. Again the random CV is not representative for the prediction locations while spatial and NNDM CV do a better job.
