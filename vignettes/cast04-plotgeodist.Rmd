@@ -34,6 +34,8 @@ library(raster)
 library(sf)
 library(rnaturalearth)
 library(ggplot2)
+library(remotes)
+install_github("carlesmila/NNDM")
 library(NNDM)
 ```
 
