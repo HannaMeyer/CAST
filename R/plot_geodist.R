@@ -338,7 +338,13 @@ cvdistance <- function(x, cvfolds, cvtrain, type, variables){
 
       for (k in 1:nrow(testdata_i)){
 
-        trainDist <-  FNN::knnx.dist(testdata_i[k,],traindata_i,k=1)
+        trainDist <-  tryCatch(FNN::knnx.dist(testdata_i[k,],traindata_i,k=1),
+                               error = function(e)e)
+        if(inherits(trainDist, "error")){
+          trainDist <- NA
+          message("warning: no distance could be calculated for a fold.
+                  Possibly because predictor values are NA")
+          }
 
         trainDist[k] <- NA
         d_cv <- c(d_cv,min(trainDist,na.rm=T))
