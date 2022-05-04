@@ -146,21 +146,6 @@ aoa <- function(newdata,
                 variables="all",
                 folds=NULL) {
 
-  # if not provided, compute train DI
-  if(!inherits(trainDI, "trainDI")){
-    message("No trainDI provided. Computing DI of training data...")
-    trainDI <- trainDI(model, train, variables, weight, folds)
-  }
-
-  message("Computing DI of newdata...")
-
-
-  # check if variables are in newdata
-  if(any(trainDI$variables %in% names(newdata)==FALSE)){
-    stop("names of newdata don't match names of train data in the model")
-  }
-
-
   # handling of different raster formats
   as_stars <- FALSE
   as_terra <- FALSE
@@ -178,6 +163,22 @@ aoa <- function(newdata,
     as_terra <- TRUE
   }
 
+
+
+
+  # if not provided, compute train DI
+  if(!inherits(trainDI, "trainDI")){
+    message("No trainDI provided. Computing DI of training data...")
+    trainDI <- trainDI(model, train, variables, weight, folds)
+  }
+
+  message("Computing DI of newdata...")
+
+
+  # check if variables are in newdata
+  if(any(trainDI$variables %in% names(newdata)==FALSE)){
+    stop("names of newdata don't match names of train data in the model")
+  }
 
 
   # Prepare output as either as RasterLayer or vector:
