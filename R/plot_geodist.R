@@ -13,11 +13,13 @@
 #' @param samplesize numeric. How many prediction samples should be used? Only required if modeldomain is a raster (see Details)
 #' @param sampling character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.
 #' @param variables character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.
-#' @param unit character. Only if type=="geo". Supported: "m" or "km".
+#' @param unit character. Only if type=="geo" and only applied to the plot. Supported: "m" or "km".
 #' @param showPlot logical
-#' @return A list including the plot and the corresponding data.frame containing the distances
+#' @return A list including the plot and the corresponding data.frame containing the distances. Unit of returned geographic distances is meters.
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
-#'     If type = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster. If not provided they are extracted from the modeldomain rasterStack.
+#'     If type = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster.
+#'     If not provided they are extracted from the modeldomain rasterStack.
+#'
 #'
 #' @note See Meyer and Pebesma (2022) for an application of this plotting function
 #'
@@ -160,9 +162,6 @@ plot_geodist <- function(x,
   }
 
   # Compile output and plot data ----
-  if(unit=="km"){
-    dists$dist <- dists$dist/1000
-  }
   p <- plot.nnd(dists,type,unit)
 
   if(showPlot){
@@ -410,6 +409,7 @@ sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
 
 plot.nnd = function(x,type,unit){
   if(unit=="km"){
+    x$dist <- x$dist/1000
     xlabs <- "geographic distances (km)"
   }else{
     xlabs <- "geographic distances (m)"

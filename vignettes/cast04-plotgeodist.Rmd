@@ -127,9 +127,11 @@ data to their nearest neighbor ("sample-to-sample") with the distribution of dis
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 dist_random <- plot_geodist(pts_random,co,
                             sampling="Fibonacci",
+                            unit="km",
                             showPlot = FALSE)
 dist_clstr <- plot_geodist(pts_clustered,co,
                            sampling="Fibonacci",
+                           unit="km",
                            showPlot = FALSE)
 
 dist_random$plot+scale_x_log10(labels=round)+ggtitle("Randomly distributed reference data")
@@ -166,6 +168,7 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 dist_clstr <- plot_geodist(pts_clustered,co,
                            sampling="Fibonacci", 
                            cvfolds= randomfolds, 
+                           unit="km",
                            showPlot=FALSE)
 dist_clstr$plot+scale_x_log10(labels=round)
 
@@ -193,6 +196,7 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 dist_clstr <- plot_geodist(pts_clustered,co,
                            sampling="Fibonacci",
                            cvfolds= spatialfolds$indexOut, 
+                           unit="km",
                            showPlot=FALSE)
 dist_clstr$plot+scale_x_log10(labels=round)
 
@@ -228,6 +232,7 @@ spfolds_rand <- CreateSpacetimeFolds(pts_random_co,spacevar = "subregion",
 dist_rand_sp <- plot_geodist(pts_random_co,co,
                              sampling="Fibonacci", 
                              cvfolds= spfolds_rand$indexOut, 
+                             unit="km",
                              showPlot=FALSE)
 dist_rand_sp$plot+scale_x_log10(labels=round)
 ```
@@ -291,6 +296,7 @@ dist_clstr <- plot_geodist(pts_clustered,co,
                            sampling = "Fibonacci",
                            cvfolds = nndmfolds_clstr$indx_test, 
                            cvtrain = nndmfolds_clstr$indx_train,
+                           unit="km",
                            showPlot = FALSE)
 dist_clstr$plot+scale_x_log10(labels=round)
 }
@@ -305,6 +311,7 @@ dist_rand <- plot_geodist(pts_random_co,co,
                           sampling = "Fibonacci",
                           cvfolds = nndmfolds_rand$indx_test, 
                           cvtrain = nndmfolds_rand$indx_train,
+                          unit="km",
                           showPlot = FALSE)
 dist_rand$plot+scale_x_log10(labels=round)
 }
