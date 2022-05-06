@@ -13,6 +13,7 @@
 #' @param samplesize numeric. How many prediction samples should be used? Only required if modeldomain is a raster (see Details)
 #' @param sampling character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.
 #' @param variables character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.
+#' @param unit character. Only if type=="geo". Supported: "m" or "km".
 #' @param showPlot logical
 #' @return A list including the plot and the corresponding data.frame containing the distances
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
@@ -97,6 +98,7 @@ plot_geodist <- function(x,
                          samplesize=2000,
                          sampling = "regular",
                          variables=NULL,
+                         unit="m",
                          showPlot=TRUE){
 
 
@@ -158,7 +160,10 @@ plot_geodist <- function(x,
   }
 
   # Compile output and plot data ----
-  p <- plot.nnd(dists,type)
+  if(unit=="km"){
+    dists$dist <- dists$dist/1000
+  }
+  p <- plot.nnd(dists,type,unit)
 
   if(showPlot){
     print(p)
@@ -403,8 +408,13 @@ sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
 
 # plot results
 
-plot.nnd = function(x,type){
-  xlabs <- "geographic distances (m)"
+plot.nnd = function(x,type,unit){
+  if(unit=="km"){
+    xlabs <- "geographic distances (km)"
+  }else{
+    xlabs <- "geographic distances (m)"
+  }
+
   if( type=="feature"){ xlabs <- "feature space distances"}
   what <- "" #just to avoid check note
   if (type=="feature"){unit ="unitless"}
