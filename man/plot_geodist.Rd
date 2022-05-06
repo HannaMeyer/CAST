@@ -14,6 +14,7 @@ plot_geodist(
   samplesize = 2000,
   sampling = "regular",
   variables = NULL,
+  unit = "m",
   showPlot = TRUE
 )
 }
@@ -36,10 +37,12 @@ plot_geodist(
 
 \item{variables}{character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.}
 
+\item{unit}{character. Only if type=="geo" and only applied to the plot. Supported: "m" or "km".}
+
 \item{showPlot}{logical}
 }
 \value{
-A list including the plot and the corresponding data.frame containing the distances
+A list including the plot and the corresponding data.frame containing the distances. Unit of returned geographic distances is meters.
 }
 \description{
 Density plot of nearest neighbor distances in geographic space or feature space between training data as well as between training data and prediction locations.
@@ -48,7 +51,8 @@ The plot can be used to check the suitability of a chosen CV method to be repres
 }
 \details{
 The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
-    If type = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster. If not provided they are extracted from the modeldomain rasterStack.
+    If type = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster.
+    If not provided they are extracted from the modeldomain rasterStack.
 }
 \note{
 See Meyer and Pebesma (2022) for an application of this plotting function
