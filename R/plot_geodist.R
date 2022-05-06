@@ -422,5 +422,6 @@ plot.nnd = function(x,type,unit){
     ggplot2::geom_density(adjust=1.5, alpha=.4) +
     ggplot2::scale_fill_discrete(name = "distance function") +
     ggplot2::xlab(xlabs) +
-    ggplot2::theme(legend.position="bottom")
+    ggplot2::theme(legend.position="bottom",
+                   plot.margin = unit(c(0,0.5,0,0),"cm"))
 }
