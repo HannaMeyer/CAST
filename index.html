@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,16 +73,34 @@
 <div class="page-header"><h1 id="cast-caret-applications-for-spatio-temporal-models">CAST: Caret Applications for Spatio-Temporal models<a class="anchor" aria-label="anchor" href="#cast-caret-applications-for-spatio-temporal-models"></a>
 </h1></div>
 <p>Supporting functionality to run ‘caret’ with spatial or spatial-temporal data. ‘caret’ is a frequently used package for model training and prediction using machine learning. CAST includes functions to improve spatial or spatial-temporal modelling tasks using ‘caret’. To decrease spatial overfitting and to improve model performances, the package implements a forward feature selection that selects suitable predictor variables in view to their contribution to spatial or spatio-temporal model performance. CAST further includes functionality to estimate the (spatial) area of applicability of prediction models.</p>
-<p>For a documentation of the methods see also:</p>
-<ul>
-<li><p>Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauss, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling &amp; Software, 101, 1-9.</p></li>
-<li><p>Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance of spatial predictor variable selection in machine learning applications - Moving from data reproduction to spatial prediction. Ecological Modelling. 411.</p></li>
-<li><p>The talk from the OpenGeoHub summer school 2019 on spatial validation and variable selection: <a href="https://www.youtube.com/watch?v=mkHlmYEzsVQ" class="external-link uri">https://www.youtube.com/watch?v=mkHlmYEzsVQ</a>.</p></li>
-<li><p>Meyer, H., Pebesma, E. (2021). Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution, 12, 1620– 1633. <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link uri">https://doi.org/10.1111/2041-210X.13650</a></p></li>
-<li><p>Tutorial (<a href="https://youtu.be/EyP04zLe9qo" class="external-link uri">https://youtu.be/EyP04zLe9qo</a>) and Lecture (<a href="https://youtu.be/OoNH6Nl-X2s" class="external-link uri">https://youtu.be/OoNH6Nl-X2s</a>) recording from OpenGeoHub summer school 2020 on the area of applicability. As well as talk at the OpenGeoHub summer school 2021: <a href="https://av.tib.eu/media/54879" class="external-link uri">https://av.tib.eu/media/54879</a></p></li>
-<li><p>Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications. Accepted.</p></li>
-</ul>
 <p>Note: This is the developer version of CAST. The CRAN Version can be found on <a href="https://CRAN.R-project.org/package=CAST" class="external-link uri">https://CRAN.R-project.org/package=CAST</a></p>
+<div class="section level2">
+<h2 id="package-website">Package Website<a class="anchor" aria-label="anchor" href="#package-website"></a>
+</h2>
+<p><a href="https://hannameyer.github.io/CAST/" class="uri">https://hannameyer.github.io/CAST/</a></p>
+</div>
+<div class="section level2">
+<h2 id="tutorials">Tutorials<a class="anchor" aria-label="anchor" href="#tutorials"></a>
+</h2>
+<ul>
+<li><p><a href="https://hannameyer.github.io/CAST/articles/cast01-CAST-intro.html">Introduction to CAST</a></p></li>
+<li><p><a href="https://hannameyer.github.io/CAST/articles/cast02-AOA-tutorial.html">Area of applicability of spatial prediction models</a></p></li>
+<li><p><a href="https://hannameyer.github.io/CAST/articles/cast03-AOA-parallel.html">Area of applicability in parallel</a></p></li>
+<li><p><a href="https://hannameyer.github.io/CAST/articles/cast04-plotgeodist.html">Visualization of nearest neighbor distance distributions</a></p></li>
+<li><p>The talk from the OpenGeoHub summer school 2019 on spatial validation and variable selection: <a href="https://www.youtube.com/watch?v=mkHlmYEzsVQ" class="external-link uri">https://www.youtube.com/watch?v=mkHlmYEzsVQ</a>.</p></li>
+<li><p>Tutorial (<a href="https://youtu.be/EyP04zLe9qo" class="external-link uri">https://youtu.be/EyP04zLe9qo</a>) and Lecture (<a href="https://youtu.be/OoNH6Nl-X2s" class="external-link uri">https://youtu.be/OoNH6Nl-X2s</a>) recording from OpenGeoHub summer school 2020 on the area of applicability. As well as talk at the OpenGeoHub summer school 2021: <a href="https://av.tib.eu/media/54879" class="external-link uri">https://av.tib.eu/media/54879</a></p></li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="scientific-documentation-of-the-methods">Scientific documentation of the methods<a class="anchor" aria-label="anchor" href="#scientific-documentation-of-the-methods"></a>
+</h2>
+<ul>
+<li><p>Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauss, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling &amp; Software, 101, 1-9. <a href="https://doi.org/10.1016/j.envsoft.2017.12.001" class="external-link uri">https://doi.org/10.1016/j.envsoft.2017.12.001</a></p></li>
+<li><p>Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance of spatial predictor variable selection in machine learning applications - Moving from data reproduction to spatial prediction. Ecological Modelling. 411. <a href="https://doi.org/10.1016/j.ecolmodel.2019.108815" class="external-link uri">https://doi.org/10.1016/j.ecolmodel.2019.108815</a></p></li>
+<li><p>Meyer, H., Pebesma, E. (2021). Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution, 12, 1620– 1633. <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link uri">https://doi.org/10.1111/2041-210X.13650</a></p></li>
+<li><p>Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications, 13. <a href="https://www.nature.com/articles/s41467-022-29838-9" class="external-link uri">https://www.nature.com/articles/s41467-022-29838-9</a></p></li>
+</ul>
+</div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
