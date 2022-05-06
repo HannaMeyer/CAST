@@ -12,7 +12,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,fig.width=6.1, fig.height=3.5)
+knitr::opts_chunk$set(echo = TRUE,fig.width=6.2, fig.height=3.4)
 
 ```
 
@@ -40,7 +40,7 @@ Here we can define some parameters to run the example with different settings
 
 ```{r, message = FALSE, warning=FALSE}
 seed <- 10 # random realization
-samplesize <- 250 # how many samples will be used?
+samplesize <- 500 # how many samples will be used?
 nparents <- 20 #For clustered samples: How many clusters? 
 radius <- 7 # For clustered samples: What is the radius of a cluster?
 NNDM <- FALSE ## Show Results for NNDM as well? See explanations further below.
