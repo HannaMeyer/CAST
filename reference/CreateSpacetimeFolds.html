@@ -74,24 +74,37 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>x</dt>
 <dd><p>data.frame containing spatio-temporal data</p></dd>
+
+
 <dt>spacevar</dt>
 <dd><p>Character indicating which column of x identifies the
 spatial units (e.g. ID of weather stations)</p></dd>
+
+
 <dt>timevar</dt>
 <dd><p>Character indicating which column of x identifies the
 temporal units (e.g. the day of the year)</p></dd>
+
+
 <dt>k</dt>
 <dd><p>numeric. Number of folds. If spacevar or timevar is NA and a
 leave one location out or leave one time step out cv should be performed,
 set k to the number of unique spatial or temporal units.</p></dd>
+
+
 <dt>class</dt>
 <dd><p>Character indicating which column of x identifies a class unit (e.g. land cover)</p></dd>
+
+
 <dt>seed</dt>
 <dd><p>numeric. See ?seed</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list that contains a list for model training and a list for
+    
+
+<p>A list that contains a list for model training and a list for
 model validation that can directly be used as "index" and "indexOut" in
 caret's trainControl function</p>
     </div>
@@ -128,53 +141,53 @@ should be similar in each fold (class="LUC").</p>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">indices</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> List of 2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ index   :List of 10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:144224] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:154811] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:152071] 6 7 8 9 10 11 12 13 14 15 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:143748] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:154044] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:148034] 291 294 296 298 300 302 303 305 306 308 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:144359] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:149251] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:141542] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:151908] 1 2 3 4 5 11 12 13 14 15 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:155259] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:149487] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:142739] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:151987] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:142223] 1 2 3 4 5 11 12 13 14 15 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:141686] 6 7 8 9 10 11 12 13 14 15 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:146203] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:152192] 291 294 296 298 300 302 303 305 306 308 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:154567] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:147701] 1 2 3 4 5 6 7 8 9 10 ...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ indexOut:List of 10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:2251] 1279 1288 1297 1305 1314 2136 2144 2151 2160 2168 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:1123] 1464 1472 1974 1981 2292 2307 2322 2337 2352 2445 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:1425] 1559 1565 1570 2550 2570 2588 2609 2630 9094 9099 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:2337] 1180 1190 1200 1210 1218 1620 1626 1631 1638 1645 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:1243] 7097 7121 7144 7168 7192 7681 7703 7725 7746 7768 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:1890] 26 27 28 29 30 191 192 193 194 195 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:2259] 359 362 367 370 402 405 408 411 414 1060 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:1771] 2374 2389 2403 2419 2435 3374 3387 3400 3414 3427 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:2591] 431 434 437 440 443 596 600 604 608 612 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:1422] 508 512 516 520 524 577 581 585 589 593 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:1142] 1224 1234 1244 1772 1778 1783 1790 1797 2091 2099 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:1761] 314 317 320 323 326 329 332 335 338 341 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:2432] 1464 1472 1575 1581 1974 1981 3871 3873 3878 3891 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:1457] 1587 1593 1605 1611 2293 2308 2338 2353 2446 2447 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:2476] 345 348 353 356 359 362 367 370 1524 1525 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:2553] 777 781 785 789 793 856 860 864 867 871 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:2058] 2183 2191 2201 2211 3442 3456 3468 3470 3482 3484 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:1435] 81 82 83 84 85 156 157 158 159 160 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:1164] 2374 2389 2403 2419 2435 3198 3202 3218 3224 3240 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:1886] 697 701 705 709 713 816 820 824 828 832 ...</span>
 <span class="r-in"><span class="co">### Prepare for 10-fold Leave-Location-Out cross validation</span></span>
 <span class="r-in"><span class="va">indices</span> <span class="op">&lt;-</span> <span class="fu">CreateSpacetimeFolds</span><span class="op">(</span><span class="va">dat</span>,spacevar<span class="op">=</span><span class="st">"SOURCEID"</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">indices</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> List of 2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ index   :List of 10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:165138] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:169457] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:165917] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:164068] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:160395] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:157594] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:170299] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:160719] 291 294 296 298 300 302 303 305 306 308 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:169616] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:165687] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:157278] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:170619] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:161858] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:167091] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:169767] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:164979] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:170558] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:168938] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:161497] 291 294 296 298 300 302 303 305 306 308 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:156305] 1 2 3 4 5 6 7 8 9 10 ...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ indexOut:List of 10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:18072] 291 294 296 298 300 302 305 308 311 314 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:13753] 2172 2221 2297 2374 2389 2403 2419 2435 2452 2460 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:17293] 1179 1189 1199 1209 1217 1227 1237 1247 1257 1265 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:19142] 530 536 542 548 554 558 562 566 570 574 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:22815] 448 452 456 460 464 468 472 476 480 484 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:25616] 303 306 309 312 315 318 321 324 327 330 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:12911] 526 532 538 544 550 1062 1070 1078 1085 1091 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:22491] 1 2 3 4 5 6 7 8 9 10 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:13594] 1060 1068 1076 1083 1089 1097 1105 1113 1120 1126 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:17523] 1138 1147 1156 1164 1170 1180 1190 1200 1210 1218 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:25932] 1060 1068 1076 1083 1089 1097 1105 1113 1120 1126 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:12591] 530 536 542 548 554 558 562 566 570 574 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:21352] 291 294 296 298 300 302 305 308 311 314 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:16119] 1061 1069 1077 1084 1090 1098 1106 1114 1121 1127 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:13443] 2207 2235 2249 2264 2277 2280 2311 2325 2341 2354 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:18231] 448 452 456 460 464 468 472 476 480 484 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:12652] 303 306 309 312 315 318 321 324 327 330 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:14272] 526 532 538 544 550 1062 1070 1078 1085 1091 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:21713] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ : int [1:26905] 1205 1213 1253 1261 1298 1306 1342 1350 1385 1393 ...</span>
 <span class="r-in"><span class="co">### Prepare for leave-One-Location-Out cross validation</span></span>
 <span class="r-in"><span class="va">indices</span> <span class="op">&lt;-</span> <span class="fu">CreateSpacetimeFolds</span><span class="op">(</span><span class="va">dat</span>,spacevar<span class="op">=</span><span class="st">"SOURCEID"</span>,</span>
 <span class="r-in">k<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">SOURCEID</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -277,7 +290,7 @@ should be similar in each fold (class="LUC").</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>

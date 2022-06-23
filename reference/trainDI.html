@@ -76,40 +76,61 @@ variable importance of the machine learning algorithm used for model training.</
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>model</dt>
 <dd><p>A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds</p></dd>
+
+
 <dt>train</dt>
 <dd><p>A data.frame containing the data used for model training. Only required when no model is given</p></dd>
+
+
 <dt>variables</dt>
 <dd><p>character vector of predictor variables. if "all" then all variables
 of the model are used or if no model is given then of the train dataset.</p></dd>
+
+
 <dt>weight</dt>
 <dd><p>A data.frame containing weights for each variable. Only required if no model is given.</p></dd>
+
+
 <dt>folds</dt>
 <dd><p>Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
 Only required if no model is given.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list of class <code>trainDI</code> containing:</p>
+    
+
+<p>A list of class <code>trainDI</code> containing:</p>
 <dl><dt>train</dt>
 <dd><p>A data frame containing the training data</p></dd>
-<dt>weight</dt>
+
+ <dt>weight</dt>
 <dd><p>A data frame with weights based on the variable importance.</p></dd>
-<dt>variables</dt>
+
+ <dt>variables</dt>
 <dd><p>Names of the used variables</p></dd>
-<dt>catvars</dt>
+
+ <dt>catvars</dt>
 <dd><p>Which variables are categorial</p></dd>
-<dt>scaleparam</dt>
+
+ <dt>scaleparam</dt>
 <dd><p>Scaling parameters. Output from <code>scale</code></p></dd>
-<dt>trainDist_avrg</dt>
+
+ <dt>trainDist_avrg</dt>
 <dd><p>A data frame with the average eucildean distance of each training point to every other point</p></dd>
-<dt>trainDist_avrgmean</dt>
+
+ <dt>trainDist_avrgmean</dt>
 <dd><p>The mean of trainDist_avrg. Used for normalizing the DI</p></dd>
-<dt>trainDI</dt>
+
+ <dt>trainDI</dt>
 <dd><p>Dissimilarity Index of the training data</p></dd>
-<dt>threshold</dt>
+
+ <dt>threshold</dt>
 <dd><p>The DI threshold used for inside/outside AOA</p></dd>
-<dt>lower_threshold</dt>
+
+ <dt>lower_threshold</dt>
 <dd><p>The lower DI threshold. Currently unused.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
@@ -189,7 +210,7 @@ Estimating the area of applicability of spatial prediction models.
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>

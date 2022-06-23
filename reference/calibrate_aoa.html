@@ -78,28 +78,49 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>AOA</dt>
 <dd><p>the result of <code><a href="aoa.html">aoa</a></code></p></dd>
+
+
 <dt>model</dt>
 <dd><p>the model used to get the AOA</p></dd>
+
+
 <dt>window.size</dt>
 <dd><p>Numeric. Size of the moving window. See <code>rollapply</code>.</p></dd>
+
+
 <dt>calib</dt>
 <dd><p>Character. Function to model the DI~performance relationship. Currently lm and scam are supported</p></dd>
+
+
 <dt>multiCV</dt>
 <dd><p>Logical. Re-run model fitting and validation with different CV strategies. See details.</p></dd>
+
+
 <dt>length.out</dt>
 <dd><p>Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.</p></dd>
+
+
 <dt>maskAOA</dt>
 <dd><p>Logical. Should areas outside the AOA set to NA?</p></dd>
+
+
 <dt>showPlot</dt>
 <dd><p>Logical.</p></dd>
+
+
 <dt>k</dt>
 <dd><p>Numeric. See mgcv::s</p></dd>
+
+
 <dt>m</dt>
 <dd><p>Numeric. See mgcv::s</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list of length 2 with the elements "AOA": rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected performance based on the relationship.
+    
+
+<p>A list of length 2 with the elements "AOA": rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected performance based on the relationship.
 Data used for calibration are stored in the attributes. The second element is a plot showing the relationship.</p>
     </div>
     <div class="section level2">
@@ -170,7 +191,7 @@ Estimating the area of applicability of spatial prediction models.
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>
