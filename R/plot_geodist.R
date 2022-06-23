@@ -14,6 +14,7 @@
 #' @param sampling character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.
 #' @param variables character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.
 #' @param unit character. Only if type=="geo" and only applied to the plot. Supported: "m" or "km".
+#' @param stat "density" for density plot or "ecdf" for cumulative plot.
 #' @param showPlot logical
 #' @return A list including the plot and the corresponding data.frame containing the distances. Unit of returned geographic distances is meters.
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
@@ -101,6 +102,7 @@ plot_geodist <- function(x,
                          sampling = "regular",
                          variables=NULL,
                          unit="m",
+                         stat = "density",
                          showPlot=TRUE){
 
 
@@ -162,7 +164,7 @@ plot_geodist <- function(x,
   }
 
   # Compile output and plot data ----
-  p <- plot.nnd(dists,type,unit)
+  p <- plot.nnd(dists,type,unit,stat)
 
   if(showPlot){
     print(p)
@@ -407,7 +409,7 @@ sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
 
 # plot results
 
-plot.nnd = function(x,type,unit){
+plot.nnd = function(x,type,unit,stat){
   if(unit=="km"){
     x$dist <- x$dist/1000
     xlabs <- "geographic distances (km)"
@@ -419,7 +421,7 @@ plot.nnd = function(x,type,unit){
   what <- "" #just to avoid check note
   if (type=="feature"){unit ="unitless"}
   p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, fill=what)) +
-    ggplot2::geom_density(adjust=1.5, alpha=.4) +
+    ggplot2::geom_density(adjust=1.5, alpha=.4, stat=stat) +
     ggplot2::scale_fill_discrete(name = "distance function") +
     ggplot2::xlab(xlabs) +
     ggplot2::theme(legend.position="bottom",
