@@ -15,6 +15,7 @@ plot_geodist(
   sampling = "regular",
   variables = NULL,
   unit = "m",
+  stat = "density",
   showPlot = TRUE
 )
 }
@@ -38,6 +39,8 @@ plot_geodist(
 \item{variables}{character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.}
 
 \item{unit}{character. Only if type=="geo" and only applied to the plot. Supported: "m" or "km".}
+
+\item{stat}{"density" for density plot or "ecdf" for cumulative plot.}
 
 \item{showPlot}{logical}
 }
