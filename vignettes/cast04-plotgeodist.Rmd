@@ -40,7 +40,7 @@ Here we can define some parameters to run the example with different settings
 
 ```{r, message = FALSE, warning=FALSE}
 seed <- 10 # random realization
-samplesize <- 500 # how many samples will be used?
+samplesize <- 300 # how many samples will be used?
 nparents <- 20 #For clustered samples: How many clusters? 
 radius <- 7 # For clustered samples: What is the radius of a cluster?
 
