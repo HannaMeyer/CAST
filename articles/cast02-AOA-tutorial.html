@@ -8,8 +8,8 @@
 <meta name="description" content="CAST">
 <title>2. Area of applicability of spatial prediction models • CAST</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="../deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="2. Area of applicability of spatial prediction models">
 <meta property="og:description" content="CAST">
@@ -76,7 +76,7 @@
       <img src="" class="logo" alt=""><h1>2. Area of applicability of spatial prediction models</h1>
                         <h4 data-toc-skip class="author">Hanna Meyer</h4>
             
-            <h4 data-toc-skip class="date">2022-06-24</h4>
+            <h4 data-toc-skip class="date">2022-08-03</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast02-AOA-tutorial.Rmd" class="external-link"><code>vignettes/cast02-AOA-tutorial.Rmd</code></a></small>
       <div class="d-none name"><code>cast02-AOA-tutorial.Rmd</code></div>
@@ -96,15 +96,15 @@
 <h4 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
 </h4>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/HannaMeyer/CAST" class="external-link">CAST</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://borisleroy.com/virtualspecies" class="external-link">virtualspecies</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/topepo/caret/" class="external-link">caret</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/raster" class="external-link">raster</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/edzer/sp/" class="external-link">sp</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sjmgarnier.github.io/viridis/" class="external-link">viridis</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://latticeextra.r-forge.r-project.org/" class="external-link">latticeExtra</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">gridExtra</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/HannaMeyer/CAST" class="external-link">CAST</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://borisleroy.com/virtualspecies" class="external-link">virtualspecies</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/topepo/caret/" class="external-link">caret</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/raster" class="external-link">raster</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/edzer/sp/" class="external-link">sp</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sjmgarnier.github.io/viridis/" class="external-link">viridis</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://latticeextra.r-forge.r-project.org/" class="external-link">latticeExtra</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">gridExtra</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -118,8 +118,8 @@
 </h4>
 <p>As predictor variables, a set of bioclimatic variables are used (<a href="https://www.worldclim.org" class="external-link uri">https://www.worldclim.org</a>). For this tutorial, they have been originally downloaded using the getData function from the raster package but cropped to an area in central Europe. The cropped data are provided in the CAST package.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">predictors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"bioclim.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/strech.html" class="external-link">stretch</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">predictors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"bioclim.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/stretch.html" class="external-link">stretch</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-3-1.png" width="847.68"></p>
 </div>
 <div class="section level4">
@@ -127,21 +127,21 @@
 </h4>
 <p>To be able to test the reliability of the method, we’re using a simulated prediction task from the virtualspecies package. Therefore, a virtual response variable is simulated from the bioclimatic variables. See <a href="https://doi.org/10.1111/ecog.01388" class="external-link">Leroy et al. 2016</a> for further information on this methodology.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">response</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/virtualspecies/man/generateSpFromPCA.html" class="external-link">generateSpFromPCA</a></span><span class="op">(</span><span class="va">predictors</span>,
-                              means <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">1</span><span class="op">)</span>,sds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">2</span><span class="op">)</span>, plot<span class="op">=</span><span class="cn">F</span><span class="op">)</span><span class="op">$</span><span class="va">suitab.raster</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">response</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/virtualspecies/man/generateSpFromPCA.html" class="external-link">generateSpFromPCA</a></span><span class="op">(</span><span class="va">predictors</span>,</span>
+<span>                              means <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">1</span><span class="op">)</span>,sds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">2</span><span class="op">)</span>, plot<span class="op">=</span><span class="cn">F</span><span class="op">)</span><span class="op">$</span><span class="va">suitab.raster</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="simulate-sampling-locations">Simulate sampling locations<a class="anchor" aria-label="anchor" href="#simulate-sampling-locations"></a>
 </h4>
 <p>To simulate a typical prediction task, field sampling locations are randomly selected. Here, we randomly select 20 points. Note that this is a very small data set, but used here to avoid long computation times.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">mask</span> <span class="op">&lt;-</span> <span class="va">predictors</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">mask</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">mask</span><span class="op">)</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span>
-<span class="va">mask</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/rasterToPolygons.html" class="external-link">rasterToPolygons</a></span><span class="op">(</span><span class="va">mask</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">15</span><span class="op">)</span>
-<span class="va">samplepoints</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spsample.html" class="external-link">spsample</a></span><span class="op">(</span><span class="va">mask</span>,<span class="fl">20</span>,<span class="st">"random"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">response</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,
-            sp.layout<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"sp.points"</span>, <span class="va">samplepoints</span>, col <span class="op">=</span> <span class="st">"red"</span>, first <span class="op">=</span> <span class="cn">FALSE</span>, cex<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">mask</span> <span class="op">&lt;-</span> <span class="va">predictors</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">mask</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">mask</span><span class="op">)</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span><span class="va">mask</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/rasterToPolygons.html" class="external-link">rasterToPolygons</a></span><span class="op">(</span><span class="va">mask</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">15</span><span class="op">)</span></span>
+<span><span class="va">samplepoints</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spsample.html" class="external-link">spsample</a></span><span class="op">(</span><span class="va">mask</span>,<span class="fl">20</span>,<span class="st">"random"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">response</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,</span>
+<span>            sp.layout<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"sp.points"</span>, <span class="va">samplepoints</span>, col <span class="op">=</span> <span class="st">"red"</span>, first <span class="op">=</span> <span class="cn">FALSE</span>, cex<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-5-1.png" width="847.68"></p>
 </div>
 </div>
@@ -154,46 +154,46 @@
 </h4>
 <p>Therefore, predictors and response are extracted for the sampling locations.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">samplepoints</span>,df<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
-<span class="va">trainDat</span><span class="op">$</span><span class="va">response</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/extract.html" class="external-link">extract</a></span> <span class="op">(</span><span class="va">response</span>,<span class="va">samplepoints</span><span class="op">)</span>
-<span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="va">trainDat</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">)</span>,<span class="op">]</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">samplepoints</span>,df<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">trainDat</span><span class="op">$</span><span class="va">response</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/extract.html" class="external-link">extract</a></span> <span class="op">(</span><span class="va">response</span>,<span class="va">samplepoints</span><span class="op">)</span></span>
+<span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="va">trainDat</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">)</span>,<span class="op">]</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="train-the-model">Train the model<a class="anchor" aria-label="anchor" href="#train-the-model"></a>
 </h4>
 <p>Random Forest is applied here as machine learning algorithm (others can be used as well, as long as variable importance is returned). The model is validated by default cross-validation to estimate the prediction error.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>
-<span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/pkg/raster/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">predictors</span><span class="op">)</span><span class="op">]</span>,
-               <span class="va">trainDat</span><span class="op">$</span><span class="va">response</span>,
-               method<span class="op">=</span><span class="st">"rf"</span>,
-               importance<span class="op">=</span><span class="cn">TRUE</span>,
-               trControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## Random Forest </span>
-<span class="co">## </span>
-<span class="co">## 20 samples</span>
-<span class="co">##  6 predictor</span>
-<span class="co">## </span>
-<span class="co">## No pre-processing</span>
-<span class="co">## Resampling: Cross-Validated (10 fold) </span>
-<span class="co">## Summary of sample sizes: 18, 18, 18, 18, 18, 18, ... </span>
-<span class="co">## Resampling results across tuning parameters:</span>
-<span class="co">## </span>
-<span class="co">##   mtry  RMSE       Rsquared  MAE      </span>
-<span class="co">##   2     0.1103267  1         0.0962007</span>
-<span class="co">##   4     0.1200531  1         0.1025987</span>
-<span class="co">##   6     0.1187460  1         0.1014125</span>
-<span class="co">## </span>
-<span class="co">## RMSE was used to select the optimal model using the smallest value.</span>
-<span class="co">## The final value used for the model was mtry = 2.</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">predictors</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>               <span class="va">trainDat</span><span class="op">$</span><span class="va">response</span>,</span>
+<span>               method<span class="op">=</span><span class="st">"rf"</span>,</span>
+<span>               importance<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>               trControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Random Forest </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## 20 samples</span></span>
+<span><span class="co">##  6 predictor</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## No pre-processing</span></span>
+<span><span class="co">## Resampling: Cross-Validated (10 fold) </span></span>
+<span><span class="co">## Summary of sample sizes: 18, 18, 18, 18, 18, 18, ... </span></span>
+<span><span class="co">## Resampling results across tuning parameters:</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">##   mtry  RMSE       Rsquared  MAE      </span></span>
+<span><span class="co">##   2     0.1103267  1         0.0962007</span></span>
+<span><span class="co">##   4     0.1200531  1         0.1025987</span></span>
+<span><span class="co">##   6     0.1187460  1         0.1014125</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## RMSE was used to select the optimal model using the smallest value.</span></span>
+<span><span class="co">## The final value used for the model was mtry = 2.</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="variable-importance">Variable importance<a class="anchor" aria-label="anchor" href="#variable-importance"></a>
 </h4>
 <p>The estimation of the AOA will require the importance of the individual predictor variables.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/varImp.html" class="external-link">varImp</a></span><span class="op">(</span><span class="va">model</span>,scale <span class="op">=</span> <span class="cn">F</span><span class="op">)</span>,col<span class="op">=</span><span class="st">"black"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/varImp.html" class="external-link">varImp</a></span><span class="op">(</span><span class="va">model</span>,scale <span class="op">=</span> <span class="cn">F</span><span class="op">)</span>,col<span class="op">=</span><span class="st">"black"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-8-1.png" width="847.68"></p>
 </div>
 <div class="section level4">
@@ -201,9 +201,9 @@
 </h4>
 <p>The trained model is then used to make predictions for the entire area of interest. Since a simulated area-wide response is used, it’s possible in this tutorial to compare the predictions with the true reference.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">model</span><span class="op">)</span>
-<span class="va">truediff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">-</span><span class="va">response</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="va">prediction</span>,<span class="va">response</span><span class="op">)</span>,main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"prediction"</span>,<span class="st">"reference"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">model</span><span class="op">)</span></span>
+<span><span class="va">truediff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">-</span><span class="va">response</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="va">prediction</span>,<span class="va">response</span><span class="op">)</span>,main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"prediction"</span>,<span class="st">"reference"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-9-1.png" width="847.68"></p>
 </div>
 </div>
@@ -213,53 +213,53 @@
 <p>The visualization above shows the predictions made by the model. In the next step, the DI and AOA will be calculated.</p>
 <p>The AOA calculation takes the model as input to extract the importance of the predictors, used as weights in multidimensional distance calculation. Note that the AOA can also be calculated without a trained model (i.e. using training data and new data only). In this case all predictor variables are treated equally important (unless weights are given in form of a table).</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="va">model</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] "aoa"</span></code></pre>
+<code class="sourceCode R"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="va">model</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] "aoa"</span></span></code></pre>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/raster/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] "parameters" "DI"         "AOA"</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] "parameters" "DI"         "AOA"</span></span></code></pre>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## DI:</span>
-<span class="co">## class      : RasterLayer </span>
-<span class="co">## band       : 1  (of  6  bands)</span>
-<span class="co">## dimensions : 75, 126, 9450  (nrow, ncol, ncell)</span>
-<span class="co">## resolution : 0.1666667, 0.1666667  (x, y)</span>
-<span class="co">## extent     : 0, 21, 42.33333, 54.83333  (xmin, xmax, ymin, ymax)</span>
-<span class="co">## crs        : +proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 </span>
-<span class="co">## source     : memory</span>
-<span class="co">## names      : DI </span>
-<span class="co">## values     : 0, 4.35002  (min, max)</span>
-<span class="co">## </span>
-<span class="co">## AOA:</span>
-<span class="co">## class      : RasterLayer </span>
-<span class="co">## dimensions : 75, 126, 9450  (nrow, ncol, ncell)</span>
-<span class="co">## resolution : 0.1666667, 0.1666667  (x, y)</span>
-<span class="co">## extent     : 0, 21, 42.33333, 54.83333  (xmin, xmax, ymin, ymax)</span>
-<span class="co">## crs        : +proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 </span>
-<span class="co">## source     : memory</span>
-<span class="co">## names      : AOA </span>
-<span class="co">## values     : 0, 1  (min, max)</span>
-<span class="co">## </span>
-<span class="co">## </span>
-<span class="co">## </span>
-<span class="co">## Predictor Weights:</span>
-<span class="co">##        bio2     bio5    bio10    bio13    bio14    bio19</span>
-<span class="co">## 1 0.1683883 7.203433 10.84442 5.490218 8.340626 5.558477</span>
-<span class="co">## </span>
-<span class="co">## </span>
-<span class="co">## AOA Threshold: 0.5850463</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## DI:</span></span>
+<span><span class="co">## class      : RasterLayer </span></span>
+<span><span class="co">## band       : 1  (of  6  bands)</span></span>
+<span><span class="co">## dimensions : 75, 126, 9450  (nrow, ncol, ncell)</span></span>
+<span><span class="co">## resolution : 0.1666667, 0.1666667  (x, y)</span></span>
+<span><span class="co">## extent     : 0, 21, 42.33333, 54.83333  (xmin, xmax, ymin, ymax)</span></span>
+<span><span class="co">## crs        : +proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 </span></span>
+<span><span class="co">## source     : memory</span></span>
+<span><span class="co">## names      : DI </span></span>
+<span><span class="co">## values     : 0, 4.35002  (min, max)</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## AOA:</span></span>
+<span><span class="co">## class      : RasterLayer </span></span>
+<span><span class="co">## dimensions : 75, 126, 9450  (nrow, ncol, ncell)</span></span>
+<span><span class="co">## resolution : 0.1666667, 0.1666667  (x, y)</span></span>
+<span><span class="co">## extent     : 0, 21, 42.33333, 54.83333  (xmin, xmax, ymin, ymax)</span></span>
+<span><span class="co">## crs        : +proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 </span></span>
+<span><span class="co">## source     : memory</span></span>
+<span><span class="co">## names      : AOA </span></span>
+<span><span class="co">## values     : 0, 1  (min, max)</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Predictor Weights:</span></span>
+<span><span class="co">##        bio2     bio5    bio10    bio13    bio14    bio19</span></span>
+<span><span class="co">## 1 0.1683883 7.203433 10.84442 5.490218 8.340626 5.558477</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## AOA Threshold: 0.5850463</span></span></code></pre>
 <p>Plotting the <code>aoa</code> object shows the distribution of DI values within the training data and the DI of the new data.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-11-1.png" width="847.68"> The most output of the <code>aoa</code> function are two raster data: The first is the DI that is the normalized and weighted minimum distance to a nearest training data point divided by the average distance within the training data. The AOA is derived from the DI by using a threshold. The threshold is the (outlier-removed) maximum DI observed in the training data where the DI of the training data is calculated by considering the cross-validation folds. The used threshold and all relevant information about the training data DI is returned in the <code>parameters</code> list entry.</p>
 <p>We can plot the DI as well as predictions onyl in the AOA:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span>
-  <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">truediff</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"true prediction error"</span><span class="op">)</span>,
-  <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"DI"</span><span class="op">)</span>,
-  <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction</span>, col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA"</span><span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">truediff</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"true prediction error"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"DI"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction</span>, col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA"</span><span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-12-1.png" width="847.68"></p>
 <p>The patterns in the DI are in general agreement with the true prediction error. Very high values are present in the Alps, as they have not been covered by training data but feature very distinct environmental conditions. Since the DI values for these areas are above the threshold, we regard this area as outside the AOA.</p>
 </div>
@@ -270,91 +270,91 @@
 <p>Also the threshold for the AOA is not reliable, because it is based in distance to a nearest data point within the training data (which is usually very small when data are clustered). Instead, cross-validation should be based on a leave-cluster-out approach, and the AOA estimation based on distances to a nearest data point not located in the same spatial cluster.</p>
 <p>To show how this looks like, we use 15 spatial locations and simulate 5 data points around each location.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">samplepoints</span> <span class="op">&lt;-</span> <span class="fu">csample</span><span class="op">(</span><span class="va">mask</span>,<span class="fl">75</span>,<span class="fl">15</span>,maxdist<span class="op">=</span><span class="fl">0.20</span>,seed<span class="op">=</span><span class="fl">15</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">response</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,
-            sp.layout<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"sp.points"</span>, <span class="va">samplepoints</span>, col <span class="op">=</span> <span class="st">"red"</span>, first <span class="op">=</span> <span class="cn">FALSE</span>, cex<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">samplepoints</span> <span class="op">&lt;-</span> <span class="fu">csample</span><span class="op">(</span><span class="va">mask</span>,<span class="fl">75</span>,<span class="fl">15</span>,maxdist<span class="op">=</span><span class="fl">0.20</span>,seed<span class="op">=</span><span class="fl">15</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">response</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,</span>
+<span>            sp.layout<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"sp.points"</span>, <span class="va">samplepoints</span>, col <span class="op">=</span> <span class="st">"red"</span>, first <span class="op">=</span> <span class="cn">FALSE</span>, cex<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-13-1.png" width="847.68"></p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">samplepoints</span>,df<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
-<span class="va">trainDat</span><span class="op">$</span><span class="va">response</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/extract.html" class="external-link">extract</a></span> <span class="op">(</span><span class="va">response</span>,<span class="va">samplepoints</span><span class="op">)</span>
-<span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">trainDat</span>,<span class="va">samplepoints</span>,by.x<span class="op">=</span><span class="st">"ID"</span>,by.y<span class="op">=</span><span class="st">"ID"</span><span class="op">)</span>
-<span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="va">trainDat</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">)</span>,<span class="op">]</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">samplepoints</span>,df<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">trainDat</span><span class="op">$</span><span class="va">response</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/extract.html" class="external-link">extract</a></span> <span class="op">(</span><span class="va">response</span>,<span class="va">samplepoints</span><span class="op">)</span></span>
+<span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">trainDat</span>,<span class="va">samplepoints</span>,by.x<span class="op">=</span><span class="st">"ID"</span>,by.y<span class="op">=</span><span class="st">"ID"</span><span class="op">)</span></span>
+<span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="va">trainDat</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">)</span>,<span class="op">]</span></span></code></pre></div>
 <p>We first train a model with (in this case) inappropriate random cross-validation.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>
-<span class="va">model_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/pkg/raster/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">predictors</span><span class="op">)</span><span class="op">]</span>,
-               <span class="va">trainDat</span><span class="op">$</span><span class="va">response</span>,
-               method<span class="op">=</span><span class="st">"rf"</span>,
-               importance<span class="op">=</span><span class="cn">TRUE</span>,
-               trControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">prediction_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">model_random</span><span class="op">)</span>
-<span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">model_random</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## Random Forest </span>
-<span class="co">## </span>
-<span class="co">## 74 samples</span>
-<span class="co">##  6 predictor</span>
-<span class="co">## </span>
-<span class="co">## No pre-processing</span>
-<span class="co">## Resampling: Cross-Validated (10 fold) </span>
-<span class="co">## Summary of sample sizes: 67, 66, 67, 67, 66, 68, ... </span>
-<span class="co">## Resampling results across tuning parameters:</span>
-<span class="co">## </span>
-<span class="co">##   mtry  RMSE        Rsquared   MAE       </span>
-<span class="co">##   2     0.04091038  0.9808718  0.02701173</span>
-<span class="co">##   4     0.04229663  0.9754960  0.02747445</span>
-<span class="co">##   6     0.04475604  0.9655655  0.02799310</span>
-<span class="co">## </span>
-<span class="co">## RMSE was used to select the optimal model using the smallest value.</span>
-<span class="co">## The final value used for the model was mtry = 2.</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">model_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">predictors</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>               <span class="va">trainDat</span><span class="op">$</span><span class="va">response</span>,</span>
+<span>               method<span class="op">=</span><span class="st">"rf"</span>,</span>
+<span>               importance<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>               trControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">prediction_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">model_random</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">model_random</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Random Forest </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## 74 samples</span></span>
+<span><span class="co">##  6 predictor</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## No pre-processing</span></span>
+<span><span class="co">## Resampling: Cross-Validated (10 fold) </span></span>
+<span><span class="co">## Summary of sample sizes: 67, 66, 67, 67, 66, 68, ... </span></span>
+<span><span class="co">## Resampling results across tuning parameters:</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">##   mtry  RMSE        Rsquared   MAE       </span></span>
+<span><span class="co">##   2     0.04091038  0.9808718  0.02701173</span></span>
+<span><span class="co">##   4     0.04229663  0.9754960  0.02747445</span></span>
+<span><span class="co">##   6     0.04475604  0.9655655  0.02799310</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## RMSE was used to select the optimal model using the smallest value.</span></span>
+<span><span class="co">## The final value used for the model was mtry = 2.</span></span></code></pre>
 <p>…and a model based on leave-cluster-out cross-validation.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">folds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CreateSpacetimeFolds.html">CreateSpacetimeFolds</a></span><span class="op">(</span><span class="va">trainDat</span>, spacevar<span class="op">=</span><span class="st">"clstrID"</span>,k<span class="op">=</span><span class="fl">10</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">15</span><span class="op">)</span>
-<span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/pkg/raster/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">predictors</span><span class="op">)</span><span class="op">]</span>,
-                 <span class="va">trainDat</span><span class="op">$</span><span class="va">response</span>,
-                     method<span class="op">=</span><span class="st">"rf"</span>,
-                 importance<span class="op">=</span><span class="cn">TRUE</span>,
-                 tuneGrid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span>mtry <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">predictors</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,
-                 trControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>,index<span class="op">=</span><span class="va">folds</span><span class="op">$</span><span class="va">index</span><span class="op">)</span><span class="op">)</span>
-  <span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## Random Forest </span>
-<span class="co">## </span>
-<span class="co">## 74 samples</span>
-<span class="co">##  6 predictor</span>
-<span class="co">## </span>
-<span class="co">## No pre-processing</span>
-<span class="co">## Resampling: Cross-Validated (10 fold) </span>
-<span class="co">## Summary of sample sizes: 65, 64, 69, 64, 69, 69, ... </span>
-<span class="co">## Resampling results across tuning parameters:</span>
-<span class="co">## </span>
-<span class="co">##   mtry  RMSE        Rsquared   MAE       </span>
-<span class="co">##   2     0.09699313  0.9400206  0.08501311</span>
-<span class="co">##   3     0.09472860  0.8649564  0.08603081</span>
-<span class="co">##   4     0.08904630  0.8859366  0.08042506</span>
-<span class="co">##   5     0.08716000  0.8586236  0.07832948</span>
-<span class="co">##   6     0.09411451  0.8148868  0.08357705</span>
-<span class="co">## </span>
-<span class="co">## RMSE was used to select the optimal model using the smallest value.</span>
-<span class="co">## The final value used for the model was mtry = 5.</span></code></pre>
+<code class="sourceCode R"><span><span class="va">folds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CreateSpacetimeFolds.html">CreateSpacetimeFolds</a></span><span class="op">(</span><span class="va">trainDat</span>, spacevar<span class="op">=</span><span class="st">"clstrID"</span>,k<span class="op">=</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">15</span><span class="op">)</span></span>
+<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">predictors</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                 <span class="va">trainDat</span><span class="op">$</span><span class="va">response</span>,</span>
+<span>                     method<span class="op">=</span><span class="st">"rf"</span>,</span>
+<span>                 importance<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>                 tuneGrid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span>mtry <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">predictors</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                 trControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>,index<span class="op">=</span><span class="va">folds</span><span class="op">$</span><span class="va">index</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Random Forest </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## 74 samples</span></span>
+<span><span class="co">##  6 predictor</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## No pre-processing</span></span>
+<span><span class="co">## Resampling: Cross-Validated (10 fold) </span></span>
+<span><span class="co">## Summary of sample sizes: 65, 64, 69, 64, 69, 69, ... </span></span>
+<span><span class="co">## Resampling results across tuning parameters:</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">##   mtry  RMSE        Rsquared   MAE       </span></span>
+<span><span class="co">##   2     0.09699313  0.9400206  0.08501311</span></span>
+<span><span class="co">##   3     0.09472860  0.8649564  0.08603081</span></span>
+<span><span class="co">##   4     0.08904630  0.8859366  0.08042506</span></span>
+<span><span class="co">##   5     0.08716000  0.8586236  0.07832948</span></span>
+<span><span class="co">##   6     0.09411451  0.8148868  0.08357705</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## RMSE was used to select the optimal model using the smallest value.</span></span>
+<span><span class="co">## The final value used for the model was mtry = 5.</span></span></code></pre>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">model</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">model</span><span class="op">)</span></span></code></pre></div>
 <p>The AOA is then calculated (for comparison) using the model validated by random cross-validation, and second by taking the spatial clusters into account and calculating the threshold based on minimum distances to a nearest training point not located in the same cluster. This is done in the aoa function, where the folds used for cross-validation are automatically extracted from the model.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">AOA_spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="va">model</span><span class="op">)</span>
-
-<span class="va">AOA_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="va">model_random</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">AOA_spatial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="va">model</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">AOA_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="va">model_random</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">DI</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"DI"</span><span class="op">)</span>,
-  <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction</span>, col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA \n(spatial CV error applies)"</span><span class="op">)</span><span class="op">+</span>
-         <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span>,
-  <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction_random</span>, col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA \n(random CV error applies)"</span><span class="op">)</span><span class="op">+</span>
-         <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span>,
-ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">DI</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"DI"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction</span>, col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA \n(spatial CV error applies)"</span><span class="op">)</span><span class="op">+</span></span>
+<span>         <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction_random</span>, col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA \n(random CV error applies)"</span><span class="op">)</span><span class="op">+</span></span>
+<span>         <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-18-1.png" width="847.68"></p>
 <p>Note that the AOA is much larger for the spatial CV approach. However, the spatial cross-validation error is considerably larger, hence also the area for which this error applies is larger. The random cross-validation performance is very high, however, the area to which the performance applies is small. This fact is also apparent if you plot the <code>aoa</code> objects which will display the distributions of the DI of the training data as well as the DI of the new data. For random CV most of the predictionDI is larger than the AOA threshold determined by the trainDI. Using spatial CV, the predictionDI is well within the DI of the training samples.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">)</span> <span class="op">+</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Spatial CV"</span><span class="op">)</span>,
-             <span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">)</span> <span class="op">+</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Random CV"</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">)</span> <span class="op">+</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Spatial CV"</span><span class="op">)</span>,</span>
+<span>             <span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">)</span> <span class="op">+</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Random CV"</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-19-1.png" width="847.68"></p>
 </div>
 <div class="section level3">
@@ -362,33 +362,33 @@ ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span><
 </h3>
 <p>Since we used a simulated response variable, we can now compare the prediction error within the AOA with the model error, assuming that the model error applies inside the AOA but not outside.</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">###for the spatial CV:</span>
-<span class="fu"><a href="https://rdrr.io/pkg/caret/man/postResample.html" class="external-link">RMSE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] 0.1213942</span></code></pre>
+<code class="sourceCode R"><span><span class="co">###for the spatial CV:</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/postResample.html" class="external-link">RMSE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 0.1213942</span></span></code></pre>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/caret/man/postResample.html" class="external-link">RMSE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">0</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] 0.5353775</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/postResample.html" class="external-link">RMSE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">0</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 0.5353775</span></span></code></pre>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">model</span><span class="op">$</span><span class="va">results</span></code></pre></div>
-<pre><code><span class="co">##   mtry       RMSE  Rsquared        MAE     RMSESD RsquaredSD      MAESD</span>
-<span class="co">## 1    2 0.09699313 0.9400206 0.08501311 0.06988480 0.09556929 0.06224228</span>
-<span class="co">## 2    3 0.09472860 0.8649564 0.08603081 0.06900899 0.19276546 0.06419389</span>
-<span class="co">## 3    4 0.08904630 0.8859366 0.08042506 0.06986285 0.11612124 0.06564410</span>
-<span class="co">## 4    5 0.08716000 0.8586236 0.07832948 0.07222770 0.13989462 0.06827500</span>
-<span class="co">## 5    6 0.09411451 0.8148868 0.08357705 0.07655589 0.20333811 0.07406734</span></code></pre>
+<code class="sourceCode R"><span><span class="va">model</span><span class="op">$</span><span class="va">results</span></span></code></pre></div>
+<pre><code><span><span class="co">##   mtry       RMSE  Rsquared        MAE     RMSESD RsquaredSD      MAESD</span></span>
+<span><span class="co">## 1    2 0.09699313 0.9400206 0.08501311 0.06988480 0.09556929 0.06224228</span></span>
+<span><span class="co">## 2    3 0.09472860 0.8649564 0.08603081 0.06900899 0.19276546 0.06419389</span></span>
+<span><span class="co">## 3    4 0.08904630 0.8859366 0.08042506 0.06986285 0.11612124 0.06564410</span></span>
+<span><span class="co">## 4    5 0.08716000 0.8586236 0.07832948 0.07222770 0.13989462 0.06827500</span></span>
+<span><span class="co">## 5    6 0.09411451 0.8148868 0.08357705 0.07655589 0.20333811 0.07406734</span></span></code></pre>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">###and for the random CV:</span>
-<span class="fu"><a href="https://rdrr.io/pkg/caret/man/postResample.html" class="external-link">RMSE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">prediction_random</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] 0.01902935</span></code></pre>
+<code class="sourceCode R"><span><span class="co">###and for the random CV:</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/postResample.html" class="external-link">RMSE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">prediction_random</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 0.01902935</span></span></code></pre>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/caret/man/postResample.html" class="external-link">RMSE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">prediction_random</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">0</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/getValues.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] 0.3444048</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/postResample.html" class="external-link">RMSE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">prediction_random</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">0</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 0.3444048</span></span></code></pre>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">model_random</span><span class="op">$</span><span class="va">results</span></code></pre></div>
-<pre><code><span class="co">##   mtry       RMSE  Rsquared        MAE     RMSESD RsquaredSD      MAESD</span>
-<span class="co">## 1    2 0.04091038 0.9808718 0.02701173 0.02830469 0.02843866 0.01841331</span>
-<span class="co">## 2    4 0.04229663 0.9754960 0.02747445 0.02672590 0.03655193 0.01611715</span>
-<span class="co">## 3    6 0.04475604 0.9655655 0.02799310 0.03175719 0.05163937 0.01799873</span></code></pre>
+<code class="sourceCode R"><span><span class="va">model_random</span><span class="op">$</span><span class="va">results</span></span></code></pre></div>
+<pre><code><span><span class="co">##   mtry       RMSE  Rsquared        MAE     RMSESD RsquaredSD      MAESD</span></span>
+<span><span class="co">## 1    2 0.04091038 0.9808718 0.02701173 0.02830469 0.02843866 0.01841331</span></span>
+<span><span class="co">## 2    4 0.04229663 0.9754960 0.02747445 0.02672590 0.03655193 0.01611715</span></span>
+<span><span class="co">## 3    6 0.04475604 0.9655655 0.02799310 0.03175719 0.05163937 0.01799873</span></span></code></pre>
 <p>The results indicate that there is a high agreement between the model CV error (RMSE) and the true prediction RMSE. This is the case for both, the random as well as the spatial model.</p>
 </div>
 <div class="section level3">
@@ -396,12 +396,12 @@ ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span><
 </h3>
 <p>The relationship between error and DI can be used to limit predictions to an area (within the AOA) where a required performance (e.g. RMSE, R2, Kappa, Accuracy) applies. This can be done using the result of calibrate_aoa which used the relationship analyzed in a window of DI values. The corresponding model (here: shape constrained additive models which is the default: Monotone increasing P-splines with the dimension of the basis used to represent the smooth term is 6 and a 2nd order penalty.) can be used to estimate the performance on a pixel level, which then allows limiting predictions using a threshold. Note that we used a multi-purpose CV to estimate the relationship between the DI and the RMSE here (see details in the paper).</p>
 <div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">AOA_calib</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate_aoa.html">calibrate_aoa</a></span><span class="op">(</span><span class="va">AOA_spatial</span>,<span class="va">model</span>,window.size <span class="op">=</span> <span class="fl">5</span>,length.out <span class="op">=</span> <span class="fl">5</span>, multiCV<span class="op">=</span><span class="cn">TRUE</span>,showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
-<span class="va">AOA_calib</span><span class="op">$</span><span class="va">plot</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">AOA_calib</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate_aoa.html">calibrate_aoa</a></span><span class="op">(</span><span class="va">AOA_spatial</span>,<span class="va">model</span>,window.size <span class="op">=</span> <span class="fl">5</span>,length.out <span class="op">=</span> <span class="fl">5</span>, multiCV<span class="op">=</span><span class="cn">TRUE</span>,showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">AOA_calib</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-21-1.png" width="847.68"></p>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA_calib</span><span class="op">$</span><span class="va">AOA</span><span class="op">$</span><span class="va">expected_RMSE</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"expected RMSE"</span><span class="op">)</span><span class="op">+</span>
- <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA_calib</span><span class="op">$</span><span class="va">AOA</span><span class="op">$</span><span class="va">expected_RMSE</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"expected RMSE"</span><span class="op">)</span><span class="op">+</span></span>
+<span> <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-21-2.png" width="847.68"></p>
 </div>
 </div>
@@ -414,82 +414,82 @@ ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span><
 </h3>
 <p>To do so, we will work with the cookfarm dataset, described in e.g. <a href="https://www.sciencedirect.com/science/article/pii/S2211675315000251" class="external-link">Gasch et al 2015</a>. The dataset included in CAST is a re-structured dataset. Find more details also in the vignette “Introduction to CAST”. We will use soil moisture (VW) as response variable here. Hence, we’re aiming at making a spatial continuous prediction based on limited measurements from data loggers.</p>
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/get.html" class="external-link">get</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"Cookfarm.RData"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-<span class="co"># calculate average of VW for each sampling site:</span>
-<span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VW"</span>,<span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">]</span>,by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/as.character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">SOURCEID</span><span class="op">)</span><span class="op">)</span>,<span class="va">mean</span><span class="op">)</span>
-<span class="co"># create sf object from the data:</span>
-<span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">dat</span>,coords<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co">##### Extract Predictors for the locations of the sampling points</span>
-<span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/projection.html" class="external-link">crs</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">)</span>
-<span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">pts</span>,df<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
-<span class="va">pts</span><span class="op">$</span><span class="va">ID</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/ncell.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span>
-<span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">trainDat</span>,<span class="va">pts</span>,by.x<span class="op">=</span><span class="st">"ID"</span>,by.y<span class="op">=</span><span class="st">"ID"</span><span class="op">)</span>
-<span class="co"># The final training dataset with potential predictors and VW:</span>
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">##   ID      DEM      TWI  BLD       NDRE.M   NDRE.Sd     Bt Easting Northing</span>
-<span class="co">## 1  1 788.1906 4.304258 1.42 -0.051189531 0.2506899 0.0000  493384  5180587</span>
-<span class="co">## 2  2 788.3813 3.863605 1.29 -0.046459336 0.1754623 0.0000  493514  5180567</span>
-<span class="co">## 3  3 790.5244 3.947488 1.36 -0.040845532 0.2225785 0.0000  493574  5180577</span>
-<span class="co">## 4  4 775.7229 5.395786 1.55 -0.004329725 0.2099845 0.0501  493244  5180587</span>
-<span class="co">## 5  5 796.7618 3.534822 1.31  0.027252737 0.2002646 0.0000  493624  5180607</span>
-<span class="co">## 6  6 795.8370 3.815516 1.40 -0.123434804 0.2180606 0.0000  493694  5180607</span>
-<span class="co">##   MinT_wrcc MaxT_wrcc Precip_cum  cday Precip_wrcc Group.1        VW</span>
-<span class="co">## 1       1.1      36.2       10.6 15425           0  CAF003 0.2938029</span>
-<span class="co">## 2       1.1      36.2       10.6 15425           0  CAF007 0.2737227</span>
-<span class="co">## 3       1.1      36.2       10.6 15425           0  CAF009 0.2723993</span>
-<span class="co">## 4       1.1      36.2       10.6 15425           0  CAF019 0.3134010</span>
-<span class="co">## 5       1.1      36.2       10.6 15425           0  CAF031 0.2751161</span>
-<span class="co">## 6       1.1      36.2       10.6 15425           0  CAF033 0.2602674</span>
-<span class="co">##                   geometry</span>
-<span class="co">## 1 POINT (493383.1 5180586)</span>
-<span class="co">## 2 POINT (493510.7 5180568)</span>
-<span class="co">## 3 POINT (493574.6 5180573)</span>
-<span class="co">## 4 POINT (493246.6 5180590)</span>
-<span class="co">## 5 POINT (493628.3 5180612)</span>
-<span class="co">## 6 POINT (493692.2 5180610)</span></code></pre>
+<code class="sourceCode R"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/get.html" class="external-link">get</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"Cookfarm.RData"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># calculate average of VW for each sampling site:</span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VW"</span>,<span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">]</span>,by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">SOURCEID</span><span class="op">)</span><span class="op">)</span>,<span class="va">mean</span><span class="op">)</span></span>
+<span><span class="co"># create sf object from the data:</span></span>
+<span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">dat</span>,coords<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">##### Extract Predictors for the locations of the sampling points</span></span>
+<span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crs.html" class="external-link">crs</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">)</span></span>
+<span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">pts</span>,df<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">pts</span><span class="op">$</span><span class="va">ID</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span></span>
+<span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">trainDat</span>,<span class="va">pts</span>,by.x<span class="op">=</span><span class="st">"ID"</span>,by.y<span class="op">=</span><span class="st">"ID"</span><span class="op">)</span></span>
+<span><span class="co"># The final training dataset with potential predictors and VW:</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   ID      DEM      TWI  BLD       NDRE.M   NDRE.Sd     Bt Easting Northing</span></span>
+<span><span class="co">## 1  1 788.1906 4.304258 1.42 -0.051189531 0.2506899 0.0000  493384  5180587</span></span>
+<span><span class="co">## 2  2 788.3813 3.863605 1.29 -0.046459336 0.1754623 0.0000  493514  5180567</span></span>
+<span><span class="co">## 3  3 790.5244 3.947488 1.36 -0.040845532 0.2225785 0.0000  493574  5180577</span></span>
+<span><span class="co">## 4  4 775.7229 5.395786 1.55 -0.004329725 0.2099845 0.0501  493244  5180587</span></span>
+<span><span class="co">## 5  5 796.7618 3.534822 1.31  0.027252737 0.2002646 0.0000  493624  5180607</span></span>
+<span><span class="co">## 6  6 795.8370 3.815516 1.40 -0.123434804 0.2180606 0.0000  493694  5180607</span></span>
+<span><span class="co">##   MinT_wrcc MaxT_wrcc Precip_cum  cday Precip_wrcc Group.1        VW</span></span>
+<span><span class="co">## 1       1.1      36.2       10.6 15425           0  CAF003 0.2938029</span></span>
+<span><span class="co">## 2       1.1      36.2       10.6 15425           0  CAF007 0.2737227</span></span>
+<span><span class="co">## 3       1.1      36.2       10.6 15425           0  CAF009 0.2723993</span></span>
+<span><span class="co">## 4       1.1      36.2       10.6 15425           0  CAF019 0.3134010</span></span>
+<span><span class="co">## 5       1.1      36.2       10.6 15425           0  CAF031 0.2751161</span></span>
+<span><span class="co">## 6       1.1      36.2       10.6 15425           0  CAF033 0.2602674</span></span>
+<span><span class="co">##                   geometry</span></span>
+<span><span class="co">## 1 POINT (493383.1 5180586)</span></span>
+<span><span class="co">## 2 POINT (493510.7 5180568)</span></span>
+<span><span class="co">## 3 POINT (493574.6 5180573)</span></span>
+<span><span class="co">## 4 POINT (493246.6 5180590)</span></span>
+<span><span class="co">## 5 POINT (493628.3 5180612)</span></span>
+<span><span class="co">## 6 POINT (493692.2 5180610)</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="model-training-and-prediction">Model training and prediction<a class="anchor" aria-label="anchor" href="#model-training-and-prediction"></a>
 </h3>
 <p>A set of variables is used as predictors for VW in a random Forest model. The model is validated with a leave one out cross-validation. Note that the model performance is very low, due to the small dataset being used here (and for this small dataset a low ability of the predictors to model VW).</p>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">predictors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DEM"</span>,<span class="st">"NDRE.Sd"</span>,<span class="st">"TWI"</span>,<span class="st">"Bt"</span><span class="op">)</span>
-<span class="va">response</span> <span class="op">&lt;-</span> <span class="st">"VW"</span>
-
-<span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">[</span>,<span class="va">predictors</span><span class="op">]</span>,<span class="va">trainDat</span><span class="op">[</span>,<span class="va">response</span><span class="op">]</span>,
-               method<span class="op">=</span><span class="st">"rf"</span>,tuneLength<span class="op">=</span><span class="fl">3</span>,importance<span class="op">=</span><span class="cn">TRUE</span>,
-               trControl<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"LOOCV"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">model</span></code></pre></div>
-<pre><code><span class="co">## Random Forest </span>
-<span class="co">## </span>
-<span class="co">## 42 samples</span>
-<span class="co">##  4 predictor</span>
-<span class="co">## </span>
-<span class="co">## No pre-processing</span>
-<span class="co">## Resampling: Leave-One-Out Cross-Validation </span>
-<span class="co">## Summary of sample sizes: 41, 41, 41, 41, 41, 41, ... </span>
-<span class="co">## Resampling results across tuning parameters:</span>
-<span class="co">## </span>
-<span class="co">##   mtry  RMSE        Rsquared     MAE       </span>
-<span class="co">##   2     0.03842827  0.005425658  0.03051082</span>
-<span class="co">##   3     0.03933811  0.001429581  0.03134197</span>
-<span class="co">##   4     0.03938455  0.003577853  0.03185219</span>
-<span class="co">## </span>
-<span class="co">## RMSE was used to select the optimal model using the smallest value.</span>
-<span class="co">## The final value used for the model was mtry = 2.</span></code></pre>
+<code class="sourceCode R"><span><span class="va">predictors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DEM"</span>,<span class="st">"NDRE.Sd"</span>,<span class="st">"TWI"</span>,<span class="st">"Bt"</span><span class="op">)</span></span>
+<span><span class="va">response</span> <span class="op">&lt;-</span> <span class="st">"VW"</span></span>
+<span></span>
+<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">[</span>,<span class="va">predictors</span><span class="op">]</span>,<span class="va">trainDat</span><span class="op">[</span>,<span class="va">response</span><span class="op">]</span>,</span>
+<span>               method<span class="op">=</span><span class="st">"rf"</span>,tuneLength<span class="op">=</span><span class="fl">3</span>,importance<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>               trControl<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"LOOCV"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">model</span></span></code></pre></div>
+<pre><code><span><span class="co">## Random Forest </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## 42 samples</span></span>
+<span><span class="co">##  4 predictor</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## No pre-processing</span></span>
+<span><span class="co">## Resampling: Leave-One-Out Cross-Validation </span></span>
+<span><span class="co">## Summary of sample sizes: 41, 41, 41, 41, 41, 41, ... </span></span>
+<span><span class="co">## Resampling results across tuning parameters:</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">##   mtry  RMSE        Rsquared     MAE       </span></span>
+<span><span class="co">##   2     0.03842827  0.005425658  0.03051082</span></span>
+<span><span class="co">##   3     0.03933811  0.001429581  0.03134197</span></span>
+<span><span class="co">##   4     0.03938455  0.003577853  0.03185219</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## RMSE was used to select the optimal model using the smallest value.</span></span>
+<span><span class="co">## The final value used for the model was mtry = 2.</span></span></code></pre>
 <div class="section level4">
 <h4 id="prediction">Prediction<a class="anchor" aria-label="anchor" href="#prediction"></a>
 </h4>
 <p>Next, the model is used to make predictions for the entire study area.</p>
 <div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#Predictors:</span>
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/strech.html" class="external-link">stretch</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">[[</span><span class="va">predictors</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co">#Predictors:</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/stretch.html" class="external-link">stretch</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">[[</span><span class="va">predictors</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-24-1.png" width="847.68"></p>
 <div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#prediction:</span>
-<span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co">#prediction:</span></span>
+<span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level3">
@@ -497,12 +497,12 @@ ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span><
 </h3>
 <p>Next we’re limiting the predictions to the AOA. Predictions outside the AOA should be excluded.</p>
 <div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span><span class="op">)</span>
-
-<span class="co">#### Plot results:</span>
-<span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"DI with sampling locations (red)"</span><span class="op">)</span><span class="op">+</span>
-               <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/coerce-methods.html" class="external-link">as_Spatial</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span>,zcol<span class="op">=</span><span class="st">"ID"</span>,col.regions<span class="op">=</span><span class="st">"red"</span><span class="op">)</span>,
-  <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction</span>, col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA \n(LOOCV error applies)"</span><span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span>,ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#### Plot results:</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"DI with sampling locations (red)"</span><span class="op">)</span><span class="op">+</span></span>
+<span>               <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/coerce-methods.html" class="external-link">as_Spatial</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span>,zcol<span class="op">=</span><span class="st">"ID"</span>,col.regions<span class="op">=</span><span class="st">"red"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction</span>, col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA \n(LOOCV error applies)"</span><span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span>,ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-25-1.png" width="847.68"></p>
 </div>
 </div>
@@ -532,12 +532,12 @@ ncol<span class="op">=</span><span class="fl">3</span><span class="op">)</span><
 
     <footer><div class="pkgdown-footer-left">
   <p></p>
-<p>Developed by Hanna Meyer, Marvin Ludwig.</p>
+<p>Developed by Hanna Meyer, Carles Milà, Marvin Ludwig.</p>
 </div>
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
     </footer>
