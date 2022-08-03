@@ -19,6 +19,7 @@ by analysing the similarity between new data and training data.
 }
 \references{
 \itemize{
+\item Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.
 \item Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications. 13.
 \item Meyer, H., Pebesma, E. (2021): Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution. 12, 1620– 1633.
 \item Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance of spatial predictor variable selection in machine learning applications - Moving from data reproduction to spatial prediction. Ecological Modelling. 411, 108815.
@@ -26,6 +27,6 @@ by analysing the similarity between new data and training data.
 }
 }
 \author{
-Hanna Meyer, Marvin Ludwig
+Hanna Meyer, Carles Milà, Marvin Ludwig
 }
 \keyword{package}

@@ -36,9 +36,11 @@ model validation that can directly be used as "index" and "indexOut" in
 caret's trainControl function
 }
 \description{
-Create spatial, temporal or spatio-temporal Folds for cross validation
+Create spatial, temporal or spatio-temporal Folds for cross validation based on pre-defined groups
 }
 \details{
+The function creates train and test sets by taking (spatial and/or temporal) groups into account.
+In contrast to \code{\link{nndm}}, it requires that the groups are already defined (e.g. spatial clusters or blocks or temporal units).
 Using "class" is helpful in the case that data are clustered in space
 and are categorical. E.g This is the case for land cover classifications when
 training data come as training polygons. In this case the data should be split in a way
@@ -65,7 +67,7 @@ str(indices)
 Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.
 }
 \seealso{
-\code{\link{trainControl}},\code{\link{ffs}}
+\code{\link{trainControl}},\code{\link{ffs}}, \code{\link{nndm}}
 }
 \author{
 Hanna Meyer

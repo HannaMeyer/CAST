@@ -1,5 +1,5 @@
 #' Create Space-time Folds
-#' @description Create spatial, temporal or spatio-temporal Folds for cross validation
+#' @description Create spatial, temporal or spatio-temporal Folds for cross validation based on pre-defined groups
 #' @param x data.frame containing spatio-temporal data
 #' @param spacevar Character indicating which column of x identifies the
 #' spatial units (e.g. ID of weather stations)
@@ -13,14 +13,16 @@
 #' @return A list that contains a list for model training and a list for
 #' model validation that can directly be used as "index" and "indexOut" in
 #' caret's trainControl function
-#' @details Using "class" is helpful in the case that data are clustered in space
+#' @details The function creates train and test sets by taking (spatial and/or temporal) groups into account.
+#' In contrast to \code{\link{nndm}}, it requires that the groups are already defined (e.g. spatial clusters or blocks or temporal units).
+#' Using "class" is helpful in the case that data are clustered in space
 #' and are categorical. E.g This is the case for land cover classifications when
 #' training data come as training polygons. In this case the data should be split in a way
 #' that entire polygons are held back (spacevar="polygonID") but at the same time the distribution of classes
 #' should be similar in each fold (class="LUC").
 #' @note Standard k-fold cross-validation can lead to considerable misinterpretation in spatial-temporal modelling tasks. This function can be used to prepare a Leave-Location-Out, Leave-Time-Out or Leave-Location-and-Time-Out cross-validation as target-oriented validation strategies for spatial-temporal prediction tasks. See Meyer et al. (2018) for further information.
 #' @author Hanna Meyer
-#' @seealso \code{\link{trainControl}},\code{\link{ffs}}
+#' @seealso \code{\link{trainControl}},\code{\link{ffs}}, \code{\link{nndm}}
 #' @references
 #' Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.
 #' @examples

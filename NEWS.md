@@ -1,4 +1,6 @@
 # `CAST` 0.6.1
+* new feature: 
+  * nndm cross-validation as suggested by Milà et al. (2022)
 * modifications
   * plot_geodist works with NNDM
 

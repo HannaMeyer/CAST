@@ -4,16 +4,19 @@
 \alias{plot}
 \alias{plot.trainDI}
 \alias{plot.aoa}
+\alias{plot.nndm}
 \title{Plot CAST classes}
 \usage{
 \method{plot}{trainDI}(x, ...)
 
 \method{plot}{aoa}(x, samplesize = 1000, ...)
+
+\method{plot}{nndm}(x, ...)
 }
 \arguments{
-\item{x}{aoa object}
+\item{x}{An object of type \emph{nndm}.}
 
-\item{...}{other params}
+\item{...}{other arguments.}
 
 \item{samplesize}{numeric. How many prediction samples should be plotted?}
 }
@@ -23,5 +26,5 @@ Generic plot function for trainDI and aoa
 \author{
 Marvin Ludwig, Hanna Meyer
 
-Marvin Ludwig, Hanna Meyer
+Carles Milà
 }

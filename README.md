@@ -33,5 +33,8 @@ https://www.youtube.com/watch?v=mkHlmYEzsVQ.
 
 * Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications, 13. https://www.nature.com/articles/s41467-022-29838-9
 
+* Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.
+https://doi.org/10.1111/2041-210X.13851
+
 
 

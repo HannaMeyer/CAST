@@ -43,9 +43,6 @@ seed <- 10 # random realization
 samplesize <- 500 # how many samples will be used?
 nparents <- 20 #For clustered samples: How many clusters? 
 radius <- 7 # For clustered samples: What is the radius of a cluster?
-NNDM <- FALSE ## Show Results for NNDM as well? See explanations further below.
-# Note that NNDM takes a while, especially for large samplesize.
-# install via remotes::install_github("carlesmila/NNDM")
 
 ```
 
@@ -242,8 +239,6 @@ We see that the nearest neighbor distances during cross-validation don't match t
 #### Nearest Neighbour Distance Matching CV
 
 A good way to approximate the geographical prediction distances during the CV is to use Nearest Neighbour Distance Matching (NNDM) CV (see [Milà et al., 2022](https://doi.org/10.1111/2041-210X.13851) for more details). NNDM CV is a variation of LOO CV in which the empirical distribution function of nearest neighbour distances found during prediction is matched during the CV process, for all distances below a threshold. Here, we match all geographical distances equal or lower than 10,000 km first for the geographically clustered data.
-Note: To run these examples, install the NNDM package first via remotes::install_github("carlesmila/NNDM") and change NNDM <- FALSE to NNDM y- TRUE in the beginnig of this script.
-
 
 ```{r,message = FALSE, include=FALSE}
 # Internal CAST function needed to generate prediction points for NNDM CV
@@ -287,8 +282,6 @@ sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 
-if(NNDM){
-library(NNDM)
 predpoints <- sampleFromArea(modeldomain = co, samplesize = 2000, type = "geo",
                              variables = NULL, sampling = "Fibonacci")
 nndmfolds_clstr <- nndm(pts_clustered, predpoints, 1e7)
@@ -299,13 +292,13 @@ dist_clstr <- plot_geodist(pts_clustered,co,
                            unit="km",
                            showPlot = FALSE)
 dist_clstr$plot+scale_x_log10(labels=round)
-}
+
 ```
 
 The NNDM CV-distance distribution matches the sample-to-prediction distribution very well. What happens if we use NNDM CV for the randomly-distributed sampling points instead? 
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
-if(NNDM){
+
 nndmfolds_rand <- nndm(pts_random_co, predpoints, 1e7)
 dist_rand <- plot_geodist(pts_random_co,co,
                           sampling = "Fibonacci",
@@ -314,7 +307,7 @@ dist_rand <- plot_geodist(pts_random_co,co,
                           unit="km",
                           showPlot = FALSE)
 dist_rand$plot+scale_x_log10(labels=round)
-}
+
 ```
 
 The NNDM CV-distance still matches the sample-to-prediction distance function.

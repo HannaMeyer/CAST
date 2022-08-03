@@ -6,6 +6,8 @@
 \alias{show.trainDI}
 \alias{print.aoa}
 \alias{show.aoa}
+\alias{print.nndm}
+\alias{show.nndm}
 \title{Print CAST classes}
 \usage{
 \method{print}{trainDI}(x, ...)
@@ -15,11 +17,15 @@ show.trainDI(x, ...)
 \method{print}{aoa}(x, ...)
 
 show.aoa(x, ...)
+
+\method{print}{nndm}(x, ...)
+
+show.nndm(x, ...)
 }
 \arguments{
-\item{x}{aoa object}
+\item{x}{An object of type \emph{nndm}.}
 
-\item{...}{other params}
+\item{...}{other arguments.}
 }
 \description{
 Generic print function for trainDI and aoa

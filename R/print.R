@@ -63,3 +63,28 @@ show.aoa = function(x, ...){
   print.aoa(x)
 }
 
+
+
+#' @name print
+#' @param x An object of type \emph{nndm}.
+#' @param ... other arguments.
+#' @export
+#'
+print.nndm <- function(x, ...){
+  mean_train <- round(mean(sapply(x$indx_train, length)), 2)
+  min_train <- round(min(sapply(x$indx_train, length)), 2)
+  cat(paste0("nndm object\n",
+             "Total number of points: ", length(x$Gj), "\n",
+             "Mean number of training points: ", mean_train, "\n",
+             "Minimum number of training points: ", min_train, "\n"))
+}
+
+#' @name print
+#' @param x An object of type \emph{nndm}.
+#' @param ... other arguments.
+#' @export
+
+show.nndm = function(x, ...){
+  print.nndm(x)
+}
+
