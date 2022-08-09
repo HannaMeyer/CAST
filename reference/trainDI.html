@@ -69,7 +69,14 @@ variable importance of the machine learning algorithm used for model training.</
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">trainDI</span><span class="op">(</span>model <span class="op">=</span> <span class="cn">NA</span>, train <span class="op">=</span> <span class="cn">NULL</span>, variables <span class="op">=</span> <span class="st">"all"</span>, weight <span class="op">=</span> <span class="cn">NA</span>, folds <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">trainDI</span><span class="op">(</span></span>
+<span>  model <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  train <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  variables <span class="op">=</span> <span class="st">"all"</span>,</span>
+<span>  weight <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  folds <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  foldsIn <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -92,7 +99,12 @@ of the model are used or if no model is given then of the train dataset.</p></dd
 
 
 <dt>folds</dt>
-<dd><p>Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
+<dd><p>Numeric or character. Data points used for testing (i.e. held back data) for cross validation iteration. E.g. Spatial cluster affiliation for each data point.
+Only required if no model is given.</p></dd>
+
+
+<dt>foldsIn</dt>
+<dd><p>Optional. Numeric or character. Data points that are used for training in each cross validation iteration. E.g. Spatial cluster affiliation for each data point.
 Only required if no model is given.</p></dd>
 
 </dl></div>

@@ -77,8 +77,8 @@ indices to perform a NNDM LOO CV for map validation.</p>
 
 
 <dt>phi</dt>
-<dd><p>Numeric. Estimate of the landscape autocorrelation range  (in the
-same units as the tpoints and ppoints).</p></dd>
+<dd><p>Numeric. Estimate of the landscape autocorrelation range in the
+same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.</p></dd>
 
 
 <dt>min_train</dt>
@@ -103,7 +103,7 @@ caret's <code><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="e
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Details of the method can be found in Milà et al. (2022).
 Euclidean distances are used for projected
-and non-defined CRS, otherwise the function uses great circle distances.</p>
+and non-defined CRS, great circle distances are used for geographic CRS (units in meters).</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
