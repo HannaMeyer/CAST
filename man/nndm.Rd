@@ -11,8 +11,8 @@ nndm(tpoints, ppoints, phi, min_train = 0)
 
 \item{ppoints}{sf or sfc point object. Contains the target prediction points.}
 
-\item{phi}{Numeric. Estimate of the landscape autocorrelation range  (in the
-same units as the tpoints and ppoints).}
+\item{phi}{Numeric. Estimate of the landscape autocorrelation range in the
+same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.}
 
 \item{min_train}{Numeric between 0 and 1. Minimum proportion of training
 data that must be used in each CV fold. Defaults to 0 (i.e. no restrictions).}
@@ -34,7 +34,7 @@ indices to perform a NNDM LOO CV for map validation.
 \details{
 Details of the method can be found in Milà et al. (2022).
 Euclidean distances are used for projected
-and non-defined CRS, otherwise the function uses great circle distances.
+and non-defined CRS, great circle distances are used for geographic CRS (units in meters).
 }
 \note{
 NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
