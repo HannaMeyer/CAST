@@ -4,7 +4,14 @@
 \alias{trainDI}
 \title{Calculate Dissimilarity Index of training data}
 \usage{
-trainDI(model = NA, train = NULL, variables = "all", weight = NA, folds = NULL)
+trainDI(
+  model = NA,
+  train = NULL,
+  variables = "all",
+  weight = NA,
+  folds = NULL,
+  foldsIn = NULL
+)
 }
 \arguments{
 \item{model}{A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds}
@@ -16,7 +23,10 @@ of the model are used or if no model is given then of the train dataset.}
 
 \item{weight}{A data.frame containing weights for each variable. Only required if no model is given.}
 
-\item{folds}{Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
+\item{folds}{Numeric or character. Data points used for testing (i.e. held back data) for cross validation iteration. E.g. Spatial cluster affiliation for each data point.
+Only required if no model is given.}
+
+\item{foldsIn}{Optional. Numeric or character. Data points that are used for training in each cross validation iteration. E.g. Spatial cluster affiliation for each data point.
 Only required if no model is given.}
 }
 \value{

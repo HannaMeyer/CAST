@@ -14,7 +14,9 @@
 #' @param weight A data.frame containing weights for each variable. Only required if no model is given.
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the model are used or if no model is given then of the train dataset.
-#' @param folds Numeric or character. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
+#' @param folds Numeric or character. Data points used for testing (i.e. held back data) for cross validation iteration. E.g. Spatial cluster affiliation for each data point.
+#' Only required if no model is given.
+#' @param foldsIn Optional. Numeric or character. Data points that are used for training in each cross validation iteration. E.g. Spatial cluster affiliation for each data point.
 #' Only required if no model is given.
 #'
 #' @seealso \code{\link{aoa}}
@@ -96,7 +98,8 @@ trainDI <- function(model = NA,
                    train = NULL,
                    variables = "all",
                    weight = NA,
-                   folds = NULL){
+                   folds = NULL,
+                   foldsIn = NULL){
 
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
@@ -121,7 +124,16 @@ trainDI <- function(model = NA,
     }
   }
 
-  if(is.null(folds)){folds = aoa_get_folds(model, folds)}
+  if(is.null(folds)){
+    folds = aoa_get_folds(model, folds)
+
+    if(!is.null(model)&is.null(foldsIn)){
+    #foldsIn = model$control$index # relevant in case of eg NNDM
+      foldsIn = aoa_get_foldsIn(model,foldsIn)# relevant in case of eg NNDM
+
+    }
+  }
+
 
   # check for input errors -----
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
@@ -171,9 +183,10 @@ trainDI <- function(model = NA,
     trainDist[i] <- NA
 
 
-    # mask of other folds
+    # mask of other folds and data points that are ignored during CV
     if (!is.null(folds)){
       trainDist[folds==folds[i]] <- NA
+      trainDist[sort(unique(foldsIn$value)[foldsIn$L1!=unique(foldsIn$L1)[i]])] <- NA # would be sufficient. Do we need the previous line?
     }
 
     trainDist_min <- append(trainDist_min, min(trainDist, na.rm = TRUE))
@@ -304,6 +317,7 @@ aoa_get_folds <- function(model, folds){
   if(!is.null(model)&is.null(folds)){
     CVfolds <- tryCatch(reshape::melt(model$control$indexOut),
                         error=function(e) e)
+
     if(inherits(CVfolds, "error")){
       message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
     }else{
@@ -314,6 +328,29 @@ aoa_get_folds <- function(model, folds){
   return(CVfolds$L1)
 
 }
+
+# get data that are ignored during CV from train object (eg NNDM):
+
+aoa_get_foldsIn <- function(model, foldsIn){
+  if(!is.null(model)&is.null(foldsIn)){
+    CVfoldsIn <- tryCatch(reshape::melt(model$control$index),
+                        error=function(e) e)
+
+    if(inherits(CVfoldsIn, "error")){
+      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+    }else{
+      CVfoldsIn <- CVfoldsIn[order(CVfoldsIn$value),]
+    }
+  }
+
+  return(CVfoldsIn)
+
+}
+
+
+
+
+
 
 
 # Get variables from train object
