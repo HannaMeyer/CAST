@@ -149,6 +149,10 @@ The plot can be used to check the suitability of a chosen CV method to be repres
     <p>See Meyer and Pebesma (2022) for an application of this plotting function</p>
     </div>
     <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="nndm.html">nndm</a></code></p></div>
+    </div>
+    <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
     <p>Hanna Meyer, Edzer Pebesma, Marvin Ludwig</p>
     </div>
@@ -182,6 +186,14 @@ The plot can be used to check the suitability of a chosen CV method to be repres
 <span class="r-in"><span><span class="co">########### Distance between training data, new data and CV folds:</span></span></span>
 <span class="r-in"><span><span class="va">folds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/createDataPartition.html" class="external-link">createFolds</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pts_train</span><span class="op">)</span>,k<span class="op">=</span><span class="fl">3</span>,returnTrain<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">dist</span> <span class="op">&lt;-</span> <span class="fu">plot_geodist</span><span class="op">(</span>x<span class="op">=</span><span class="va">pts_train</span>, modeldomain<span class="op">=</span><span class="va">studyArea</span>, cvfolds<span class="op">=</span><span class="va">folds</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## or use nndm to define folds</span></span></span>
+<span class="r-in"><span><span class="va">mask</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/rasterToPolygons.html" class="external-link">rasterToPolygons</a></span><span class="op">(</span><span class="va">studyArea</span>,dissolve<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">pts_pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">mask</span>,<span class="fl">200</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="nndm.html">nndm</a></span><span class="op">(</span><span class="va">pts_train</span>, <span class="va">pts_pred</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dist</span> <span class="op">&lt;-</span> <span class="fu">plot_geodist</span><span class="op">(</span>x<span class="op">=</span><span class="va">pts_train</span>, modeldomain<span class="op">=</span><span class="va">studyArea</span>,</span></span>
+<span class="r-in"><span>cvfolds<span class="op">=</span><span class="va">nndm_pred</span><span class="op">$</span><span class="va">indx_test</span>, cvtrain<span class="op">=</span><span class="va">nndm_pred</span><span class="op">$</span><span class="va">indx_train</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">########### Distances in the feature space:</span></span></span>
 <span class="r-in"><span><span class="fu">plot_geodist</span><span class="op">(</span>x<span class="op">=</span><span class="va">pts_train</span>, modeldomain<span class="op">=</span><span class="va">studyArea</span>,</span></span>

@@ -63,7 +63,7 @@ indices to perform a NNDM LOO CV for map validation.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nndm</span><span class="op">(</span><span class="va">tpoints</span>, <span class="va">ppoints</span>, <span class="va">phi</span>, min_train <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nndm</span><span class="op">(</span><span class="va">tpoints</span>, <span class="va">ppoints</span>, phi <span class="op">=</span> <span class="st">"max"</span>, min_train <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -78,7 +78,8 @@ indices to perform a NNDM LOO CV for map validation.</p>
 
 <dt>phi</dt>
 <dd><p>Numeric. Estimate of the landscape autocorrelation range in the
-same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.</p></dd>
+same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.
+Per default (phi="max"), the size of the prediction area is used. See Details</p></dd>
 
 
 <dt>min_train</dt>
@@ -103,7 +104,10 @@ caret's <code><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="e
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Details of the method can be found in Milà et al. (2022).
 Euclidean distances are used for projected
-and non-defined CRS, great circle distances are used for geographic CRS (units in meters).</p>
+and non-defined CRS, great circle distances are used for geographic CRS (units in meters).
+Specifying phi allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
+Distances are only matched up to phi. Beyond that range, all data points are used for training, without exclusions.
+When phi is set to "max", nearest neighbor distance matching is performed for the entire prediction area.</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
@@ -116,6 +120,10 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 <ul><li><p>Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.</p></li>
 <li><p>Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications. 13.</p></li>
 </ul></div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="plot_geodist.html">plot_geodist</a></code></p></div>
+    </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
     <p>Carles Milà</p>
@@ -133,15 +141,26 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 <span class="r-in"><span><span class="va">train_points</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">sample_poly</span>, <span class="fl">100</span>, type <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pred_points</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">sample_poly</span>, <span class="fl">100</span>, type <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># We run NNDM. The autocorrelation range (phi) is known to be 10.</span></span></span>
-<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, <span class="va">pred_points</span>, <span class="fl">10</span>, <span class="fl">0.5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Run NNDM.</span></span></span>
+<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, <span class="va">pred_points</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">nndm_pred</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total number of points: 100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mean number of training points: 98.63</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Minimum number of training points: 95</span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="nndm-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># ...or run NNDM with a known autocorrelation range.</span></span></span>
+<span class="r-in"><span><span class="co"># Here, the autocorrelation range (phi) is known to be 10.</span></span></span>
+<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, <span class="va">pred_points</span>, <span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total number of points: 100</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mean number of training points: 98.69</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Minimum number of training points: 96</span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="nndm-1.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="nndm-2.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
