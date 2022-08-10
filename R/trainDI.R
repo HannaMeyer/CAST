@@ -95,11 +95,11 @@
 
 
 trainDI <- function(model = NA,
-                   train = NULL,
-                   variables = "all",
-                   weight = NA,
-                   folds = NULL,
-                   foldsIn = NULL){
+                    train = NULL,
+                    variables = "all",
+                    weight = NA,
+                    folds = NULL,
+                    foldsIn = NULL){
 
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
@@ -124,15 +124,13 @@ trainDI <- function(model = NA,
     }
   }
 
-  if(is.null(folds)){
-    folds = aoa_get_folds(model, folds)
+  #  if(is.null(folds)){
+  #    folds = aoa_get_folds(model, folds)
+  #    if(!is.null(model)&is.null(foldsIn)){
+  #      foldsIn = aoa_get_foldsIn(model,foldsIn)# relevant in case of eg NNDM
 
-    if(!is.null(model)&is.null(foldsIn)){
-    #foldsIn = model$control$index # relevant in case of eg NNDM
-      foldsIn = aoa_get_foldsIn(model,foldsIn)# relevant in case of eg NNDM
-
-    }
-  }
+  #   }
+  #  }
 
 
   # check for input errors -----
@@ -183,11 +181,32 @@ trainDI <- function(model = NA,
     trainDist[i] <- NA
 
 
-    # mask of other folds and data points that are ignored during CV
-    if (!is.null(folds)){
-      trainDist[folds==folds[i]] <- NA
-      trainDist[sort(unique(foldsIn$value)[foldsIn$L1!=unique(foldsIn$L1)[i]])] <- NA # would be sufficient. Do we need the previous line?
+    # mask of any data that are not used for training for the respective data point (using CV)
+    #   if (!is.null(folds)){
+    #      trainDist[folds==folds[i]] <- NA
+    #      trainDist[sort(unique(foldsIn$value)[foldsIn$L1!=unique(foldsIn$L1)[i]])] <- NA # would be sufficient. Do we need the previous line?
+    #    }
+
+    ###################################
+    if (!is.null(model)){
+      folds <- model$control$indexOut
+      foldsIn <- model$control$index
+    } ###improve for manual fold specifications!!
+
+
+    whichfold <-  tryCatch(
+      as.numeric(which(lapply(folds,function(x){any(x==i)})==TRUE)), # fold where i is held back
+      error=function(e) e)
+    if(inherits(whichfold, "error")){
+      if(i==1){
+        message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+      }
+    }else{
+      trainDist[!seq(nrow(train))%in%foldsIn[[whichfold]]] <- NA # everything that is not in the training data for i gets NA
     }
+
+    #######################################
+
 
     trainDist_min <- append(trainDist_min, min(trainDist, na.rm = TRUE))
 
@@ -313,39 +332,37 @@ aoa_get_train <- function(model){
 # Get folds from train object
 
 
-aoa_get_folds <- function(model, folds){
-  if(!is.null(model)&is.null(folds)){
-    CVfolds <- tryCatch(reshape::melt(model$control$indexOut),
-                        error=function(e) e)
+#aoa_get_folds <- function(model, folds){
+#  if(!is.null(model)&is.null(folds)){
+#    CVfolds <- tryCatch(reshape::melt(model$control$indexOut),
+#                        error=function(e) e)
 
-    if(inherits(CVfolds, "error")){
-      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
-    }else{
-      CVfolds <- CVfolds[order(CVfolds$value),]
-    }
-  }
-
-  return(CVfolds$L1)
-
-}
+#    if(inherits(CVfolds, "error")){
+#      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+#   }else{
+#      CVfolds <- CVfolds[order(CVfolds$value),]
+#    }
+#  }
+#  return(CVfolds$L1)
+#}
 
 # get data that are ignored during CV from train object (eg NNDM):
 
-aoa_get_foldsIn <- function(model, foldsIn){
-  if(!is.null(model)&is.null(foldsIn)){
-    CVfoldsIn <- tryCatch(reshape::melt(model$control$index),
-                        error=function(e) e)
+#aoa_get_foldsIn <- function(model, foldsIn){
+#  if(!is.null(model)&is.null(foldsIn)){
+#    CVfoldsIn <- tryCatch(reshape::melt(model$control$index),
+#                        error=function(e) e)
+#
+#    if(inherits(CVfoldsIn, "error")){
+#      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+#    }else{
+#      CVfoldsIn <- CVfoldsIn[order(CVfoldsIn$value),]
+#    }
+#  }
 
-    if(inherits(CVfoldsIn, "error")){
-      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
-    }else{
-      CVfoldsIn <- CVfoldsIn[order(CVfoldsIn$value),]
-    }
-  }
-
-  return(CVfoldsIn)
-
-}
+#  return(CVfoldsIn)
+#
+#}
 
 
 
