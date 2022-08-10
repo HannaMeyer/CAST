@@ -7,6 +7,7 @@
 #' @param ppoints sf or sfc point object. Contains the target prediction points.
 #' @param phi Numeric. Estimate of the landscape autocorrelation range in the
 #' same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.
+#' Per default (phi="max"), the size of the prediction area is used. See Details
 #' @param min_train Numeric between 0 and 1. Minimum proportion of training
 #' data that must be used in each CV fold. Defaults to 0 (i.e. no restrictions).
 #'
@@ -21,8 +22,12 @@
 #' @details Details of the method can be found in Milà et al. (2022).
 #' Euclidean distances are used for projected
 #' and non-defined CRS, great circle distances are used for geographic CRS (units in meters).
+#' Specifying phi allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
+#' Distances are only matched up to phi. Beyond that range, all data points are used for training, without exclusions.
+#' When phi is set to "max", nearest neighbor distance matching is performed for the entire prediction area.
 #' @note NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
 #' You may need to consider alternatives following the ideas of Milà et al. (2022) for large data sets.
+#' @seealso \code{\link{plot_geodist}}
 #' @references
 #' \itemize{
 #' \item Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.
@@ -39,11 +44,18 @@
 #' train_points <- sf::st_sample(sample_poly, 100, type = "random")
 #' pred_points <- sf::st_sample(sample_poly, 100, type = "random")
 #'
-#' # We run NNDM. The autocorrelation range (phi) is known to be 10.
-#' nndm_pred <- nndm(train_points, pred_points, 10, 0.5)
+#' # Run NNDM.
+#' nndm_pred <- nndm(train_points, pred_points)
 #' nndm_pred
 #' plot(nndm_pred)
-nndm <- function(tpoints, ppoints, phi, min_train=0){
+#'
+#' # ...or run NNDM with a known autocorrelation range.
+#' # Here, the autocorrelation range (phi) is known to be 10.
+#' nndm_pred <- nndm(train_points, pred_points, 10)
+#' nndm_pred
+#' plot(nndm_pred)
+
+nndm <- function(tpoints, ppoints, phi="max", min_train=0){
 
   # If tpoints is sfc, coerce to sf.
   if(any(class(tpoints) %in% "sfc")){
@@ -53,6 +65,17 @@ nndm <- function(tpoints, ppoints, phi, min_train=0){
   # If ppoints is sfc, coerce to sf.
   if(any(class(ppoints) %in% "sfc")){
     ppoints <- sf::st_sf(geom=ppoints)
+  }
+
+  # if phi==max calculate the range of the size area
+  if(phi=="max"){
+    xmin <- min(sf::st_coordinates(ppoints)[,1])
+    xmax <- max(sf::st_coordinates(ppoints)[,1])
+    ymin <- min(sf::st_coordinates(ppoints)[,2])
+    ymax <-  max(sf::st_coordinates(ppoints)[,2])
+    p <- sf::st_sfc(sf::st_point(c(xmin,ymin)), sf::st_point(c(xmax,ymax)))
+    sf::st_crs(p) <- sf::st_crs(ppoints)
+    phi <- as.numeric(max(sf::st_distance(p)))
   }
 
   # Input data checks
@@ -117,7 +140,7 @@ nndm <- function(tpoints, ppoints, phi, min_train=0){
 nndm_checks <- function(tpoints, ppoints, phi, min_train){
 
   # Check for valid range of phi
-  if(phi < 0){
+  if(phi < 0 | !is.numeric(phi)){
     stop("phi must be positive.")
   }
 

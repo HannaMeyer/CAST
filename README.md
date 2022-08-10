@@ -2,7 +2,7 @@
 
 Supporting functionality to run 'caret' with spatial or spatial-temporal data. 'caret' is a frequently used package for model training and prediction using machine learning. CAST includes functions to improve spatial or spatial-temporal modelling tasks using 'caret'. To decrease spatial overfitting and to improve model performances, the package implements a forward feature selection that selects suitable predictor variables in view to their contribution to spatial or spatio-temporal model performance. CAST further includes functionality to estimate the (spatial) area of applicability of prediction models.
 
-Note: This is the developer version of CAST. The CRAN Version can be found on	https://CRAN.R-project.org/package=CAST
+Note: The developer version of CAST can be found on https://github.com/HannaMeyer/CAST. The CRAN Version can be found on	https://CRAN.R-project.org/package=CAST
 
 ## Package Website
 https://hannameyer.github.io/CAST/

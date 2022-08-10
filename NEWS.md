@@ -3,6 +3,7 @@
   * nndm cross-validation as suggested by Milà et al. (2022)
 * modifications
   * plot_geodist works with NNDM
+  * trainDI works with NNDM
 
 # `CAST` 0.6.0
 * new feature: 

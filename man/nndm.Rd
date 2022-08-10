@@ -4,7 +4,7 @@
 \alias{nndm}
 \title{Nearest Neighbour Distance Matching (NNDM) algorithm}
 \usage{
-nndm(tpoints, ppoints, phi, min_train = 0)
+nndm(tpoints, ppoints, phi = "max", min_train = 0)
 }
 \arguments{
 \item{tpoints}{sf or sfc point object. Contains the training points samples.}
@@ -12,7 +12,8 @@ nndm(tpoints, ppoints, phi, min_train = 0)
 \item{ppoints}{sf or sfc point object. Contains the target prediction points.}
 
 \item{phi}{Numeric. Estimate of the landscape autocorrelation range in the
-same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.}
+same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.
+Per default (phi="max"), the size of the prediction area is used. See Details}
 
 \item{min_train}{Numeric between 0 and 1. Minimum proportion of training
 data that must be used in each CV fold. Defaults to 0 (i.e. no restrictions).}
@@ -35,6 +36,9 @@ indices to perform a NNDM LOO CV for map validation.
 Details of the method can be found in Milà et al. (2022).
 Euclidean distances are used for projected
 and non-defined CRS, great circle distances are used for geographic CRS (units in meters).
+Specifying phi allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
+Distances are only matched up to phi. Beyond that range, all data points are used for training, without exclusions.
+When phi is set to "max", nearest neighbor distance matching is performed for the entire prediction area.
 }
 \note{
 NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
@@ -50,8 +54,14 @@ sample_poly <- sf::st_polygon(poly)
 train_points <- sf::st_sample(sample_poly, 100, type = "random")
 pred_points <- sf::st_sample(sample_poly, 100, type = "random")
 
-# We run NNDM. The autocorrelation range (phi) is known to be 10.
-nndm_pred <- nndm(train_points, pred_points, 10, 0.5)
+# Run NNDM.
+nndm_pred <- nndm(train_points, pred_points)
+nndm_pred
+plot(nndm_pred)
+
+# ...or run NNDM with a known autocorrelation range.
+# Here, the autocorrelation range (phi) is known to be 10.
+nndm_pred <- nndm(train_points, pred_points, 10)
 nndm_pred
 plot(nndm_pred)
 }
@@ -60,6 +70,9 @@ plot(nndm_pred)
 \item Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.
 \item Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications. 13.
 }
+}
+\seealso{
+\code{\link{plot_geodist}}
 }
 \author{
 Carles Milà

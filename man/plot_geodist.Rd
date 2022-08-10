@@ -89,6 +89,14 @@ dist <- plot_geodist(pts_train,studyArea,testdata=pts_test)
 folds <- createFolds(1:nrow(pts_train),k=3,returnTrain=FALSE)
 dist <- plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds=folds)
 
+## or use nndm to define folds
+mask <- st_as_sf(rasterToPolygons(studyArea,dissolve=TRUE))
+pts_pred <- st_sample(mask,200)
+nndm_pred <- nndm(pts_train, pts_pred)
+dist <- plot_geodist(x=pts_train, modeldomain=studyArea,
+cvfolds=nndm_pred$indx_test, cvtrain=nndm_pred$indx_train)
+
+
 ########### Distances in the feature space:
 plot_geodist(x=pts_train, modeldomain=studyArea,
 type = "feature",variables=c("DEM","TWI", "NDRE.M"))
@@ -123,6 +131,9 @@ dist <- plot_geodist(pts_random,co,showPlot=FALSE)
 dist$plot+scale_x_log10(labels=round)
 
 }
+}
+\seealso{
+\code{\link{nndm}}
 }
 \author{
 Hanna Meyer, Edzer Pebesma, Marvin Ludwig

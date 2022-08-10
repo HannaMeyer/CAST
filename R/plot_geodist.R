@@ -20,12 +20,9 @@
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
 #'     If type = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster.
 #'     If not provided they are extracted from the modeldomain rasterStack.
-#'
-#'
 #' @note See Meyer and Pebesma (2022) for an application of this plotting function
-#'
+#' @seealso \code{\link{nndm}}
 #' @import ggplot2
-#'
 #' @author Hanna Meyer, Edzer Pebesma, Marvin Ludwig
 #' @examples
 #' \dontrun{
@@ -55,6 +52,14 @@
 #' ########### Distance between training data, new data and CV folds:
 #' folds <- createFolds(1:nrow(pts_train),k=3,returnTrain=FALSE)
 #' dist <- plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds=folds)
+#'
+#' ## or use nndm to define folds
+#' mask <- st_as_sf(rasterToPolygons(studyArea,dissolve=TRUE))
+#' pts_pred <- st_sample(mask,200)
+#' nndm_pred <- nndm(pts_train, pts_pred)
+#' dist <- plot_geodist(x=pts_train, modeldomain=studyArea,
+#' cvfolds=nndm_pred$indx_test, cvtrain=nndm_pred$indx_train)
+#'
 #'
 #' ########### Distances in the feature space:
 #' plot_geodist(x=pts_train, modeldomain=studyArea,
