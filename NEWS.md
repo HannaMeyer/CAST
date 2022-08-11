@@ -4,6 +4,7 @@
 * modifications
   * plot_geodist works with NNDM
   * trainDI works with NNDM
+  * rename of parameter folds in AOA and trainDI
 
 # `CAST` 0.6.0
 * new feature: 

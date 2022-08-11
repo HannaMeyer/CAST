@@ -12,7 +12,8 @@ aoa(
   train = NULL,
   weight = NA,
   variables = "all",
-  folds = NULL
+  CVtest = NULL,
+  CVtrain = NULL
 )
 }
 \arguments{
@@ -33,8 +34,13 @@ See examples for the case that no model is available or for models trained via e
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the model are used or if no model is given then of the train dataset.}
 
-\item{folds}{Numeric or character. Optional. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
-Should be used if replicates are present. Only required if no model is given.}
+\item{CVtest}{list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+Or a vector that contains the ID of the fold for each training point.
+Only required if no model is given.}
+
+\item{CVtrain}{list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
+Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
+Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 }
 \value{
 An object of class \code{aoa} containing:
@@ -156,7 +162,7 @@ AOA <- aoa(studyArea,
            train = as.data.frame(task$data()),
            variables = task$feature_names,
            weight = data.frame(t(lrn$importance())),
-           folds = rsmp_cv$instance[order(row_id)]$fold)
+           CVtest = rsmp_cv$instance[order(row_id)]$fold)
 
 }
 }

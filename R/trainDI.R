@@ -14,10 +14,12 @@
 #' @param weight A data.frame containing weights for each variable. Only required if no model is given.
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the model are used or if no model is given then of the train dataset.
-#' @param folds Numeric or character. Data points used for testing (i.e. held back data) for cross validation iteration. E.g. Spatial cluster affiliation for each data point.
+#' @param CVtest list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+#' Or a vector that contains the ID of the fold for each training point.
 #' Only required if no model is given.
-#' @param foldsIn Optional. Numeric or character. Data points that are used for training in each cross validation iteration. E.g. Spatial cluster affiliation for each data point.
-#' Only required if no model is given.
+#' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
+#' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
+#' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
 #'
 #' @seealso \code{\link{aoa}}
 #' @importFrom graphics boxplot
@@ -98,8 +100,8 @@ trainDI <- function(model = NA,
                     train = NULL,
                     variables = "all",
                     weight = NA,
-                    folds = NULL,
-                    foldsIn = NULL){
+                    CVtest = NULL,
+                    CVtrain = NULL){
 
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
@@ -124,14 +126,10 @@ trainDI <- function(model = NA,
     }
   }
 
-  #  if(is.null(folds)){
-  #    folds = aoa_get_folds(model, folds)
-  #    if(!is.null(model)&is.null(foldsIn)){
-  #      foldsIn = aoa_get_foldsIn(model,foldsIn)# relevant in case of eg NNDM
-
-  #   }
-  #  }
-
+  # get CV folds from model or from parameters
+  folds <-  aoa_get_folds(model,CVtrain,CVtest)
+  CVtest <- folds[[2]]
+  CVtrain <- folds[[1]]
 
   # check for input errors -----
   if(nrow(train)<=1){stop("at least two training points need to be specified")}
@@ -182,27 +180,9 @@ trainDI <- function(model = NA,
 
 
     # mask of any data that are not used for training for the respective data point (using CV)
-    #   if (!is.null(folds)){
-    #      trainDist[folds==folds[i]] <- NA
-    #      trainDist[sort(unique(foldsIn$value)[foldsIn$L1!=unique(foldsIn$L1)[i]])] <- NA # would be sufficient. Do we need the previous line?
-    #    }
-
-    ###################################
-    if (!is.null(model)){
-      folds <- model$control$indexOut
-      foldsIn <- model$control$index
-    } ###improve for manual fold specifications!!
-
-
-    whichfold <-  tryCatch(
-      as.numeric(which(lapply(folds,function(x){any(x==i)})==TRUE)), # fold where i is held back
-      error=function(e) e)
-    if(inherits(whichfold, "error")){
-      if(i==1){
-        message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
-      }
-    }else{
-      trainDist[!seq(nrow(train))%in%foldsIn[[whichfold]]] <- NA # everything that is not in the training data for i gets NA
+    if(!is.null(CVtrain)&!is.null(CVtest)){
+      whichfold <-  as.numeric(which(lapply(CVtest,function(x){any(x==i)})==TRUE)) # index of the fold where i is held back
+      trainDist[!seq(nrow(train))%in%CVtrain[[whichfold]]] <- NA # everything that is not in the training data for i is ignored
     }
 
     #######################################
@@ -212,7 +192,6 @@ trainDI <- function(model = NA,
 
   }
   trainDist_avrgmean <- mean(trainDist_avrg,na.rm=TRUE)
-
 
 
 
@@ -332,38 +311,41 @@ aoa_get_train <- function(model){
 # Get folds from train object
 
 
-#aoa_get_folds <- function(model, folds){
-#  if(!is.null(model)&is.null(folds)){
-#    CVfolds <- tryCatch(reshape::melt(model$control$indexOut),
-#                        error=function(e) e)
+aoa_get_folds <- function(model, CVtrain, CVtest){
+  ### if folds are to be extracted from the model:
+  if (!is.na(model)[1]){
+    if(model$control$method!="cv"){
+      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
+    }else{
+      CVtest <- model$control$indexOut
+      CVtrain <- model$control$index
+    }
+  }
+  ### if folds are specified manually:
+  if(is.na(model)[1]){
 
-#    if(inherits(CVfolds, "error")){
-#      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
-#   }else{
-#      CVfolds <- CVfolds[order(CVfolds$value),]
-#    }
-#  }
-#  return(CVfolds$L1)
-#}
+    if(!is.null(CVtest)&is.vector(CVtest)){ # restructure input if CVtest only contains the fold ID
+      tmp <- list()
+      for (i in unique(CVtest)){
+        tmp[[i]] <- which(CVtest==i)
+      }
+      CVtest <- tmp
+    }
 
-# get data that are ignored during CV from train object (eg NNDM):
-
-#aoa_get_foldsIn <- function(model, foldsIn){
-#  if(!is.null(model)&is.null(foldsIn)){
-#    CVfoldsIn <- tryCatch(reshape::melt(model$control$index),
-#                        error=function(e) e)
-#
-#    if(inherits(CVfoldsIn, "error")){
-#      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
-#    }else{
-#      CVfoldsIn <- CVfoldsIn[order(CVfoldsIn$value),]
-#    }
-#  }
-
-#  return(CVfoldsIn)
-#
-#}
-
+    if(is.null(CVtest)&is.null(CVtrain)){
+      message("note: No model and no CV folds were given. The DI threshold is therefore based on all training data")
+    }else{
+      if(is.null(CVtest)){ # if CVtest is not given, then use the opposite of CVtrain
+        CVtest <- lapply(CVtrain,function(x){which(!seq(nrow(train))%in%x)})
+      }else{
+        if(is.null(CVtrain)){ # if CVtrain is not given, then use the opposite of CVtest
+          CVtrain <- lapply(CVtest,function(x){which(!seq(nrow(train))%in%x)})
+        }
+      }
+    }
+  }
+  return(list(CVtrain,CVtest))
+}
 
 
 

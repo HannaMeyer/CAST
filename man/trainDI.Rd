@@ -9,8 +9,8 @@ trainDI(
   train = NULL,
   variables = "all",
   weight = NA,
-  folds = NULL,
-  foldsIn = NULL
+  CVtest = NULL,
+  CVtrain = NULL
 )
 }
 \arguments{
@@ -23,11 +23,13 @@ of the model are used or if no model is given then of the train dataset.}
 
 \item{weight}{A data.frame containing weights for each variable. Only required if no model is given.}
 
-\item{folds}{Numeric or character. Data points used for testing (i.e. held back data) for cross validation iteration. E.g. Spatial cluster affiliation for each data point.
+\item{CVtest}{list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+Or a vector that contains the ID of the fold for each training point.
 Only required if no model is given.}
 
-\item{foldsIn}{Optional. Numeric or character. Data points that are used for training in each cross validation iteration. E.g. Spatial cluster affiliation for each data point.
-Only required if no model is given.}
+\item{CVtrain}{list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
+Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
+Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 }
 \value{
 A list of class \code{trainDI} containing:

@@ -18,8 +18,12 @@
 #' @param weight A data.frame containing weights for each variable. Optional. Only required if no model is given.
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the model are used or if no model is given then of the train dataset.
-#' @param folds Numeric or character. Optional. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
-#' Should be used if replicates are present. Only required if no model is given.
+#' @param CVtest list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+#' Or a vector that contains the ID of the fold for each training point.
+#' Only required if no model is given.
+#' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
+#' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
+#' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
 #' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
 #'
@@ -131,7 +135,7 @@
 #'            train = as.data.frame(task$data()),
 #'            variables = task$feature_names,
 #'            weight = data.frame(t(lrn$importance())),
-#'            folds = rsmp_cv$instance[order(row_id)]$fold)
+#'            CVtest = rsmp_cv$instance[order(row_id)]$fold)
 #'
 #' }
 #' @export aoa
@@ -144,7 +148,8 @@ aoa <- function(newdata,
                 train=NULL,
                 weight=NA,
                 variables="all",
-                folds=NULL) {
+                CVtest=NULL,
+                CVtrain=NULL) {
 
   # handling of different raster formats
   as_stars <- FALSE
@@ -169,7 +174,7 @@ aoa <- function(newdata,
   # if not provided, compute train DI
   if(!inherits(trainDI, "trainDI")){
     message("No trainDI provided. Computing DI of training data...")
-    trainDI <- trainDI(model, train, variables, weight, folds)
+    trainDI <- trainDI(model, train, variables, weight, CVtest, CVtrain)
   }
 
   message("Computing DI of newdata...")
