@@ -89,7 +89,8 @@ maximum DI of the cross-validated training data.</p>
 <span>  train <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weight <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  variables <span class="op">=</span> <span class="st">"all"</span>,</span>
-<span>  folds <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  CVtest <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  CVtrain <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -126,9 +127,16 @@ See examples for the case that no model is available or for models trained via e
 of the model are used or if no model is given then of the train dataset.</p></dd>
 
 
-<dt>folds</dt>
-<dd><p>Numeric or character. Optional. Folds for cross validation. E.g. Spatial cluster affiliation for each data point.
-Should be used if replicates are present. Only required if no model is given.</p></dd>
+<dt>CVtest</dt>
+<dd><p>list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+Or a vector that contains the ID of the fold for each training point.
+Only required if no model is given.</p></dd>
+
+
+<dt>CVtrain</dt>
+<dd><p>list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
+Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
+Relevant if some data points are excluded, e.g. when using <code><a href="nndm.html">nndm</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -267,7 +275,7 @@ Methods in Ecology and Evolution 12: 1620-1633. <a href="https://doi.org/10.1111
 <span class="r-in"><span>           train <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">task</span><span class="op">$</span><span class="fu">data</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>           variables <span class="op">=</span> <span class="va">task</span><span class="op">$</span><span class="va">feature_names</span>,</span></span>
 <span class="r-in"><span>           weight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">lrn</span><span class="op">$</span><span class="fu">importance</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>           folds <span class="op">=</span> <span class="va">rsmp_cv</span><span class="op">$</span><span class="va">instance</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">row_id</span><span class="op">)</span><span class="op">]</span><span class="op">$</span><span class="va">fold</span><span class="op">)</span></span></span>
+<span class="r-in"><span>           CVtest <span class="op">=</span> <span class="va">rsmp_cv</span><span class="op">$</span><span class="va">instance</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">row_id</span><span class="op">)</span><span class="op">]</span><span class="op">$</span><span class="va">fold</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>

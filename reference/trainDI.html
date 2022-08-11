@@ -74,8 +74,8 @@ variable importance of the machine learning algorithm used for model training.</
 <span>  train <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  variables <span class="op">=</span> <span class="st">"all"</span>,</span>
 <span>  weight <span class="op">=</span> <span class="cn">NA</span>,</span>
-<span>  folds <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  foldsIn <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  CVtest <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  CVtrain <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -98,14 +98,16 @@ of the model are used or if no model is given then of the train dataset.</p></dd
 <dd><p>A data.frame containing weights for each variable. Only required if no model is given.</p></dd>
 
 
-<dt>folds</dt>
-<dd><p>Numeric or character. Data points used for testing (i.e. held back data) for cross validation iteration. E.g. Spatial cluster affiliation for each data point.
+<dt>CVtest</dt>
+<dd><p>list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+Or a vector that contains the ID of the fold for each training point.
 Only required if no model is given.</p></dd>
 
 
-<dt>foldsIn</dt>
-<dd><p>Optional. Numeric or character. Data points that are used for training in each cross validation iteration. E.g. Spatial cluster affiliation for each data point.
-Only required if no model is given.</p></dd>
+<dt>CVtrain</dt>
+<dd><p>list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
+Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
+Relevant if some data points are excluded, e.g. when using <code><a href="nndm.html">nndm</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
