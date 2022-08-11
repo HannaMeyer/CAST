@@ -336,10 +336,10 @@ aoa_get_folds <- function(model, CVtrain, CVtest){
       message("note: No model and no CV folds were given. The DI threshold is therefore based on all training data")
     }else{
       if(is.null(CVtest)){ # if CVtest is not given, then use the opposite of CVtrain
-        CVtest <- lapply(CVtrain,function(x){which(!seq(nrow(train))%in%x)})
+        CVtest <- lapply(CVtrain,function(x){which(!sort(unique(unlist(CVtrain)))%in%x)})
       }else{
         if(is.null(CVtrain)){ # if CVtrain is not given, then use the opposite of CVtest
-          CVtrain <- lapply(CVtest,function(x){which(!seq(nrow(train))%in%x)})
+          CVtrain <- lapply(CVtest,function(x){which(!sort(unique(unlist(CVtest)))%in%x)})
         }
       }
     }
