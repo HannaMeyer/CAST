@@ -10,7 +10,7 @@
 #' @param cvfolds optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?createSpaceTimeFolds
 #' @param cvtrain optional. List of row indices of x to fit the model to in each CV iteration. If cvtrain is null but cvfolds is not, all samples but those included in cvfolds are used as training data
 #' @param testdata optional. object of class sf: Data used for independent validation
-#' @param samplesize numeric. How many prediction samples should be used? Only required if modeldomain is a raster (see Details)
+#' @param samplesize numeric. How many prediction samples should be used?
 #' @param sampling character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.
 #' @param variables character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.
 #' @param unit character. Only if type=="geo" and only applied to the plot. Supported: "m" or "km".

@@ -32,7 +32,7 @@ plot_geodist(
 
 \item{testdata}{optional. object of class sf: Data used for independent validation}
 
-\item{samplesize}{numeric. How many prediction samples should be used? Only required if modeldomain is a raster (see Details)}
+\item{samplesize}{numeric. How many prediction samples should be used?}
 
 \item{sampling}{character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.}
 
