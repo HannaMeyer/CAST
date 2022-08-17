@@ -4,12 +4,26 @@
 \alias{nndm}
 \title{Nearest Neighbour Distance Matching (NNDM) algorithm}
 \usage{
-nndm(tpoints, ppoints, phi = "max", min_train = 0)
+nndm(
+  tpoints,
+  modeldomain = NULL,
+  ppoints = NULL,
+  samplesize = 1000,
+  sampling = "regular",
+  phi = "max",
+  min_train = 0
+)
 }
 \arguments{
 \item{tpoints}{sf or sfc point object. Contains the training points samples.}
 
-\item{ppoints}{sf or sfc point object. Contains the target prediction points.}
+\item{modeldomain}{raster or sf object defining the prediction area (see Details).}
+
+\item{ppoints}{sf or sfc point object. Contains the target prediction points. Optional. Alternative to modeldomain (see Details).}
+
+\item{samplesize}{numeric. How many sampled of the modeldomain should be sampled? Only required if modeldomain is used instead of ppoints}
+
+\item{sampling}{character. How to draw samples from the modeldomain? See spsample. Use sampling = "Fibonacci" for global applications." Only required if modeldomain is used instead of ppoints}
 
 \item{phi}{Numeric. Estimate of the landscape autocorrelation range in the
 same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.
@@ -39,6 +53,9 @@ and non-defined CRS, great circle distances are used for geographic CRS (units i
 Specifying phi allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
 Distances are only matched up to phi. Beyond that range, all data points are used for training, without exclusions.
 When phi is set to "max", nearest neighbor distance matching is performed for the entire prediction area.
+
+The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
+As an alternative use ppoints instead of modeldomain, if you alre<dy have a representative sample from your prediction area.
 }
 \note{
 NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
@@ -61,9 +78,27 @@ plot(nndm_pred)
 
 # ...or run NNDM with a known autocorrelation range.
 # Here, the autocorrelation range (phi) is known to be 10.
-nndm_pred <- nndm(train_points, pred_points, 10)
+nndm_pred <- nndm(train_points, ppoints=pred_points, phi = 10)
 nndm_pred
 plot(nndm_pred)
+
+# Real- world example
+library(sf)
+library(raster)
+
+########### prepare sample data:
+dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
+dat <- aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing")],
+by=list(as.character(dat$SOURCEID)),mean)
+pts <- dat[,-1]
+pts <- st_as_sf(pts,coords=c("Easting","Northing"))
+st_crs(pts) <- 26911
+pts_train <- pts[1:29,]
+pts_test <- pts[30:42,]
+studyArea <- raster::stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
+studyArea = studyArea[[c("DEM","TWI", "NDRE.M", "NDRE.Sd", "Bt")]]
+
+nndm(pts_train, modeldomain= studyArea)
 }
 \references{
 \itemize{

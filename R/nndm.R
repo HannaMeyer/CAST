@@ -4,7 +4,10 @@
 #' indices to perform a NNDM LOO CV for map validation.
 #' @author Carles Milà
 #' @param tpoints sf or sfc point object. Contains the training points samples.
-#' @param ppoints sf or sfc point object. Contains the target prediction points.
+#' @param modeldomain raster or sf object defining the prediction area (see Details).
+#' @param ppoints sf or sfc point object. Contains the target prediction points. Optional. Alternative to modeldomain (see Details).
+#' @param samplesize numeric. How many sampled of the modeldomain should be sampled? Only required if modeldomain is used instead of ppoints
+#' @param sampling character. How to draw samples from the modeldomain? See spsample. Use sampling = "Fibonacci" for global applications." Only required if modeldomain is used instead of ppoints
 #' @param phi Numeric. Estimate of the landscape autocorrelation range in the
 #' same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.
 #' Per default (phi="max"), the size of the prediction area is used. See Details
@@ -25,6 +28,9 @@
 #' Specifying phi allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
 #' Distances are only matched up to phi. Beyond that range, all data points are used for training, without exclusions.
 #' When phi is set to "max", nearest neighbor distance matching is performed for the entire prediction area.
+#'
+#' The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
+#' As an alternative use ppoints instead of modeldomain, if you alre<dy have a representative sample from your prediction area.
 #' @note NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
 #' You may need to consider alternatives following the ideas of Milà et al. (2022) for large data sets.
 #' @seealso \code{\link{plot_geodist}}
@@ -45,17 +51,43 @@
 #' pred_points <- sf::st_sample(sample_poly, 100, type = "random")
 #'
 #' # Run NNDM.
-#' nndm_pred <- nndm(train_points, pred_points)
+#' nndm_pred <- nndm(train_points, ppoints=pred_points)
 #' nndm_pred
 #' plot(nndm_pred)
 #'
 #' # ...or run NNDM with a known autocorrelation range.
 #' # Here, the autocorrelation range (phi) is known to be 10.
-#' nndm_pred <- nndm(train_points, pred_points, 10)
+#' nndm_pred <- nndm(train_points, ppoints=pred_points, phi = 10)
 #' nndm_pred
 #' plot(nndm_pred)
+#'
+#'
+#' # Example 2: Real- world example; using a modeldomain instead of previously
+#' # sampled prediction locations
+#' library(raster)
+#'
+#' ### prepare sample data:
+#' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
+#' dat <- aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing")],
+#' by=list(as.character(dat$SOURCEID)),mean)
+#' pts <- dat[,-1]
+#' pts <- st_as_sf(pts,coords=c("Easting","Northing"))
+#' st_crs(pts) <- 26911
+#' pts_train <- pts[1:29,]
+#' pts_test <- pts[30:42,]
+#' studyArea <- raster::stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
+#' studyArea = studyArea[[c("DEM","TWI", "NDRE.M", "NDRE.Sd", "Bt")]]
+#'
+#' nndm(pts_train, modeldomain= studyArea)
 
-nndm <- function(tpoints, ppoints, phi="max", min_train=0){
+
+nndm <- function(tpoints, modeldomain =NULL, ppoints=NULL , samplesize = 1000,  sampling = "regular", phi="max", min_train=0){
+
+  # create sample points from modeldomain
+  if(is.null(ppoints)&!is.null(modeldomain)){
+    message(paste0(samplesize, " prediction points are sampled from the modeldomain"))
+    ppoints <- sampleFromArea(modeldomain, samplesize, type="geo",variables=NULL, sampling)
+  }
 
   # If tpoints is sfc, coerce to sf.
   if(any(class(tpoints) %in% "sfc")){
@@ -65,6 +97,12 @@ nndm <- function(tpoints, ppoints, phi="max", min_train=0){
   # If ppoints is sfc, coerce to sf.
   if(any(class(ppoints) %in% "sfc")){
     ppoints <- sf::st_sf(geom=ppoints)
+  }
+
+  # Check same CRS of tpoints and ppoints
+  if(sf::st_crs(tpoints) != sf::st_crs(ppoints)){
+    tpoints <- st_transform(tpoints,st_crs(ppoints))
+    message("tpoints and ppoints must have the same CRS. tpoints have been transformed.")
   }
 
   # if phi==max calculate the range of the size area
@@ -77,6 +115,8 @@ nndm <- function(tpoints, ppoints, phi="max", min_train=0){
     sf::st_crs(p) <- sf::st_crs(ppoints)
     phi <- as.numeric(max(sf::st_distance(p)))
   }
+
+
 
   # Input data checks
   nndm_checks(tpoints, ppoints, phi, min_train)
@@ -163,8 +203,4 @@ nndm_checks <- function(tpoints, ppoints, phi, min_train){
     stop("ppoints must be a sf/sfc point object.")
   }
 
-  # Check same CRS of tpoints and ppoints
-  if(sf::st_crs(tpoints) != sf::st_crs(ppoints)){
-    stop("tpoints and ppoints must have the same CRS.")
-  }
 }

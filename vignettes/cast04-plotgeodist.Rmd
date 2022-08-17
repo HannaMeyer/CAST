@@ -238,53 +238,14 @@ We see that the nearest neighbor distances during cross-validation don't match t
 
 #### Nearest Neighbour Distance Matching CV
 
-A good way to approximate the geographical prediction distances during the CV is to use Nearest Neighbour Distance Matching (NNDM) CV (see [Milà et al., 2022](https://doi.org/10.1111/2041-210X.13851) for more details). NNDM CV is a variation of LOO CV in which the empirical distribution function of nearest neighbour distances found during prediction is matched during the CV process, for all distances below a threshold. Here, we match all geographical distances equal or lower than 10,000 km first for the geographically clustered data.
-
-```{r,message = FALSE, include=FALSE}
-# Internal CAST function needed to generate prediction points for NNDM CV
-sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
-
-  ##### Distance to prediction locations:
-  # regularly spread points (prediction locations):
-  # see https://edzer.github.io/OGH21/
-  if(inherits(modeldomain, "Raster")){
-    if(samplesize>raster::ncell(modeldomain)){
-      samplesize <- raster::ncell(modeldomain)
-      message(paste0("samplesize for new data shouldn't be larger than number of pixels.
-              Samplesize was reduced to ",raster::ncell(modeldomain)))
-    }
-    modeldomainextent <- sf::st_as_sf(sf::st_as_sfc(sf::st_bbox(modeldomain)))
-  }else{
-    modeldomainextent <- modeldomain
-  }
-
-  sf::sf_use_s2(FALSE)
-  sf::st_as_sf(modeldomainextent) |>
-    sf::st_transform(4326) -> bb
-  methods::as(bb, "Spatial") |>
-    sp::spsample(n =samplesize, type = sampling)  |>
-    sf::st_as_sfc() |>
-    sf::st_set_crs(4326) -> predictionloc
+A good way to approximate the geographical prediction distances during the CV is to use Nearest Neighbour Distance Matching (NNDM) CV (see [Milà et al., 2022](https://doi.org/10.1111/2041-210X.13851) for more details). NNDM CV is a variation of LOO CV in which the empirical distribution function of nearest neighbour distances found during prediction is matched during the CV process.
 
 
-  predictionloc <- sf::st_as_sf(predictionloc)
-
-
-  if(type == "feature"){
-    predictionloc <- sf::st_as_sf(raster::extract(modeldomain, predictionloc, df = TRUE, sp = TRUE))
-    predictionloc <- na.omit(predictionloc)
-  }
-
-  return(predictionloc)
-
-}
-```
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 
-predpoints <- sampleFromArea(modeldomain = co, samplesize = 2000, type = "geo",
-                             variables = NULL, sampling = "Fibonacci")
-nndmfolds_clstr <- nndm(pts_clustered, predpoints, 1e7)
+
+nndmfolds_clstr <- nndm(pts_clustered, modeldomain=co, sampling = "Fibonacci",samplesize = 2000)
 dist_clstr <- plot_geodist(pts_clustered,co,
                            sampling = "Fibonacci",
                            cvfolds = nndmfolds_clstr$indx_test, 
@@ -299,7 +260,7 @@ The NNDM CV-distance distribution matches the sample-to-prediction distribution 
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 
-nndmfolds_rand <- nndm(pts_random_co, predpoints, 1e7)
+nndmfolds_rand <- nndm(pts_random_co,  modeldomain=co, sampling = "Fibonacci",samplesize = 2000)
 dist_rand <- plot_geodist(pts_random_co,co,
                           sampling = "Fibonacci",
                           cvfolds = nndmfolds_rand$indx_test, 
