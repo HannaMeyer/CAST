@@ -63,7 +63,15 @@ indices to perform a NNDM LOO CV for map validation.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nndm</span><span class="op">(</span><span class="va">tpoints</span>, <span class="va">ppoints</span>, phi <span class="op">=</span> <span class="st">"max"</span>, min_train <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nndm</span><span class="op">(</span></span>
+<span>  <span class="va">tpoints</span>,</span>
+<span>  modeldomain <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ppoints <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  samplesize <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  sampling <span class="op">=</span> <span class="st">"regular"</span>,</span>
+<span>  phi <span class="op">=</span> <span class="st">"max"</span>,</span>
+<span>  min_train <span class="op">=</span> <span class="fl">0</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -72,8 +80,20 @@ indices to perform a NNDM LOO CV for map validation.</p>
 <dd><p>sf or sfc point object. Contains the training points samples.</p></dd>
 
 
+<dt>modeldomain</dt>
+<dd><p>raster or sf object defining the prediction area (see Details).</p></dd>
+
+
 <dt>ppoints</dt>
-<dd><p>sf or sfc point object. Contains the target prediction points.</p></dd>
+<dd><p>sf or sfc point object. Contains the target prediction points. Optional. Alternative to modeldomain (see Details).</p></dd>
+
+
+<dt>samplesize</dt>
+<dd><p>numeric. How many sampled of the modeldomain should be sampled? Only required if modeldomain is used instead of ppoints</p></dd>
+
+
+<dt>sampling</dt>
+<dd><p>character. How to draw samples from the modeldomain? See spsample. Use sampling = "Fibonacci" for global applications." Only required if modeldomain is used instead of ppoints</p></dd>
 
 
 <dt>phi</dt>
@@ -108,6 +128,8 @@ and non-defined CRS, great circle distances are used for geographic CRS (units i
 Specifying phi allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
 Distances are only matched up to phi. Beyond that range, all data points are used for training, without exclusions.
 When phi is set to "max", nearest neighbor distance matching is performed for the entire prediction area.</p>
+<p>The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
+As an alternative use ppoints instead of modeldomain, if you alre&lt;dy have a representative sample from your prediction area.</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
@@ -143,24 +165,51 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Run NNDM.</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, <span class="va">pred_points</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 1000 prediction points are sampled from the modeldomain</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Spherical geometry (s2) switched off</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in st_transform.sfc(st_geometry(x), crs, ...):</span> cannot transform sfc object with missing crs</span>
 <span class="r-in"><span><span class="va">nndm_pred</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total number of points: 100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Mean number of training points: 98.63</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Minimum number of training points: 95</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'nndm_pred' not found</span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="nndm-1.png" alt="" width="700" height="433"></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in plot(nndm_pred):</span> object 'nndm_pred' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ...or run NNDM with a known autocorrelation range.</span></span></span>
 <span class="r-in"><span><span class="co"># Here, the autocorrelation range (phi) is known to be 10.</span></span></span>
-<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, <span class="va">pred_points</span>, <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, ppoints<span class="op">=</span><span class="va">pred_points</span>, phi <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total number of points: 100</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mean number of training points: 98.69</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Minimum number of training points: 96</span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="nndm-2.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="nndm-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Real- world example</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/raster" class="external-link">raster</a></span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: sp</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">########### prepare sample data:</span></span></span>
+<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/get.html" class="external-link">get</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"Cookfarm.RData"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DEM"</span>,<span class="st">"TWI"</span>, <span class="st">"NDRE.M"</span>, <span class="st">"Easting"</span>, <span class="st">"Northing"</span><span class="op">)</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">SOURCEID</span><span class="op">)</span><span class="op">)</span>,<span class="va">mean</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">pts</span>,coords<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">26911</span></span></span>
+<span class="r-in"><span><span class="va">pts_train</span> <span class="op">&lt;-</span> <span class="va">pts</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">29</span>,<span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">pts_test</span> <span class="op">&lt;-</span> <span class="va">pts</span><span class="op">[</span><span class="fl">30</span><span class="op">:</span><span class="fl">42</span>,<span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu">raster</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">studyArea</span> <span class="op">=</span> <span class="va">studyArea</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DEM"</span>,<span class="st">"TWI"</span>, <span class="st">"NDRE.M"</span>, <span class="st">"NDRE.Sd"</span>, <span class="st">"Bt"</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">nndm</span><span class="op">(</span><span class="va">pts_train</span>, modeldomain<span class="op">=</span> <span class="va">studyArea</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 1000 prediction points are sampled from the modeldomain</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>CRS object has comment, which is lost in output; in tests, see</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://cran.r-project.org/web/packages/sp/vignettes/CRS_warnings.html</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> tpoints and ppoints must have the same CRS. tpoints have been transformed.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total number of points: 29</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mean number of training points: 25.83</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Minimum number of training points: 19</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

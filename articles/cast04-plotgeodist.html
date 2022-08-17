@@ -76,7 +76,7 @@
       <img src="" class="logo" alt=""><h1>4. Visualization of nearest neighbor distance distributions</h1>
                         <h4 data-toc-skip class="author">Hanna Meyer</h4>
             
-            <h4 data-toc-skip class="date">2022-08-11</h4>
+            <h4 data-toc-skip class="date">2022-08-17</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast04-plotgeodist.Rmd" class="external-link"><code>vignettes/cast04-plotgeodist.Rmd</code></a></small>
       <div class="d-none name"><code>cast04-plotgeodist.Rmd</code></div>
@@ -236,11 +236,9 @@
 <div class="section level4">
 <h4 id="nearest-neighbour-distance-matching-cv">Nearest Neighbour Distance Matching CV<a class="anchor" aria-label="anchor" href="#nearest-neighbour-distance-matching-cv"></a>
 </h4>
-<p>A good way to approximate the geographical prediction distances during the CV is to use Nearest Neighbour Distance Matching (NNDM) CV (see <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link">Milà et al., 2022</a> for more details). NNDM CV is a variation of LOO CV in which the empirical distribution function of nearest neighbour distances found during prediction is matched during the CV process, for all distances below a threshold. Here, we match all geographical distances equal or lower than 10,000 km first for the geographically clustered data.</p>
+<p>A good way to approximate the geographical prediction distances during the CV is to use Nearest Neighbour Distance Matching (NNDM) CV (see <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link">Milà et al., 2022</a> for more details). NNDM CV is a variation of LOO CV in which the empirical distribution function of nearest neighbour distances found during prediction is matched during the CV process.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">predpoints</span> <span class="op">&lt;-</span> <span class="fu">sampleFromArea</span><span class="op">(</span>modeldomain <span class="op">=</span> <span class="va">co</span>, samplesize <span class="op">=</span> <span class="fl">2000</span>, type <span class="op">=</span> <span class="st">"geo"</span>,</span>
-<span>                             variables <span class="op">=</span> <span class="cn">NULL</span>, sampling <span class="op">=</span> <span class="st">"Fibonacci"</span><span class="op">)</span></span>
-<span><span class="va">nndmfolds_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">pts_clustered</span>, <span class="va">predpoints</span>, <span class="fl">1e7</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">nndmfolds_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">pts_clustered</span>, modeldomain<span class="op">=</span><span class="va">co</span>, sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,samplesize <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
 <span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co</span>,</span>
 <span>                           sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,</span>
 <span>                           cvfolds <span class="op">=</span> <span class="va">nndmfolds_clstr</span><span class="op">$</span><span class="va">indx_test</span>, </span>
@@ -248,10 +246,10 @@
 <span>                           unit<span class="op">=</span><span class="st">"km"</span>,</span>
 <span>                           showPlot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">dist_clstr</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-17-1.png" width="595.2"></p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-16-1.png" width="595.2"></p>
 <p>The NNDM CV-distance distribution matches the sample-to-prediction distribution very well. What happens if we use NNDM CV for the randomly-distributed sampling points instead?</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">nndmfolds_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">pts_random_co</span>, <span class="va">predpoints</span>, <span class="fl">1e7</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">nndmfolds_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">pts_random_co</span>,  modeldomain<span class="op">=</span><span class="va">co</span>, sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,samplesize <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
 <span><span class="va">dist_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random_co</span>,<span class="va">co</span>,</span>
 <span>                          sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,</span>
 <span>                          cvfolds <span class="op">=</span> <span class="va">nndmfolds_rand</span><span class="op">$</span><span class="va">indx_test</span>, </span>
@@ -259,7 +257,7 @@
 <span>                          unit<span class="op">=</span><span class="st">"km"</span>,</span>
 <span>                          showPlot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">dist_rand</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-18-1.png" width="595.2"></p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-17-1.png" width="595.2"></p>
 <p>The NNDM CV-distance still matches the sample-to-prediction distance function.</p>
 </div>
 </div>
@@ -272,7 +270,7 @@
 <code class="sourceCode R"><span><span class="va">predictors_global</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"bioclim_global.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">predictors_global</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-19-1.png" width="595.2"></p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-18-1.png" width="595.2"></p>
 <p>Then we visualize nearest neighbor feature space distances under consideration of cross-validation.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># use random CV:</span></span>
@@ -291,10 +289,10 @@
 <span></span>
 <span><span class="co"># Plot results:</span></span>
 <span><span class="va">dist_clstr_rCV</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data and random CV"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-20-1.png" width="595.2"></p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-19-1.png" width="595.2"></p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dist_clstr_sCV</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data and spatial CV"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-20-2.png" width="595.2"></p>
+<p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-19-2.png" width="595.2"></p>
 <p>With regard to the chosen predictor variables we see that again the nearest neighbor distance of the clustered training data is rather small, compared to what is required during prediction. Again the random CV is not representative for the prediction locations while spatial CV is doing a better job.</p>
 <div class="section level3">
 <h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
