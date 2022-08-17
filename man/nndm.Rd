@@ -72,7 +72,7 @@ train_points <- sf::st_sample(sample_poly, 100, type = "random")
 pred_points <- sf::st_sample(sample_poly, 100, type = "random")
 
 # Run NNDM.
-nndm_pred <- nndm(train_points, pred_points)
+nndm_pred <- nndm(train_points, ppoints=pred_points)
 nndm_pred
 plot(nndm_pred)
 
@@ -82,11 +82,12 @@ nndm_pred <- nndm(train_points, ppoints=pred_points, phi = 10)
 nndm_pred
 plot(nndm_pred)
 
-# Real- world example
-library(sf)
+
+# Example 2: Real- world example; using a modeldomain instead of previously
+# sampled prediction locations
 library(raster)
 
-########### prepare sample data:
+### prepare sample data:
 dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 dat <- aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing")],
 by=list(as.character(dat$SOURCEID)),mean)

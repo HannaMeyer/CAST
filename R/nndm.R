@@ -101,7 +101,7 @@ nndm <- function(tpoints, modeldomain =NULL, ppoints=NULL , samplesize = 1000,  
 
   # Check same CRS of tpoints and ppoints
   if(sf::st_crs(tpoints) != sf::st_crs(ppoints)){
-    tpoints <- st_transform(tpoints,st_crs(ppoints))
+    tpoints <- sf::st_transform(tpoints,sf::st_crs(ppoints))
     message("tpoints and ppoints must have the same CRS. tpoints have been transformed.")
   }
 
