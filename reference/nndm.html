@@ -118,7 +118,7 @@ multitype G function construction between prediction and target points), Gj
 (distances for G function construction during LOO CV), Gjstar (distances
 for modified G function during NNDM LOO CV), phi (landscape autocorrelation range).
 indx_train and indx_test can directly be used as "index" and "indexOut" in
-caret's <code><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></code> function.</p>
+caret's <code><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></code> function or used to initiate a custom validation strategy in mlr3.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -185,33 +185,64 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 <span class="r-plt img"><img src="nndm-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">########################################################################</span></span></span>
 <span class="r-in"><span><span class="co"># Example 2: Real- world example; using a modeldomain instead of previously</span></span></span>
 <span class="r-in"><span><span class="co"># sampled prediction locations</span></span></span>
+<span class="r-in"><span><span class="co">########################################################################</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/raster" class="external-link">raster</a></span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: sp</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### prepare sample data:</span></span></span>
 <span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/get.html" class="external-link">get</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"Cookfarm.RData"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DEM"</span>,<span class="st">"TWI"</span>, <span class="st">"NDRE.M"</span>, <span class="st">"Easting"</span>, <span class="st">"Northing"</span><span class="op">)</span><span class="op">]</span>,</span></span>
-<span class="r-in"><span>by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">SOURCEID</span><span class="op">)</span><span class="op">)</span>,<span class="va">mean</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DEM"</span>,<span class="st">"TWI"</span>, <span class="st">"NDRE.M"</span>, <span class="st">"Easting"</span>, <span class="st">"Northing"</span>,<span class="st">"VW"</span><span class="op">)</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>   by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">SOURCEID</span><span class="op">)</span><span class="op">)</span>,<span class="va">mean</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">pts</span>,coords<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">26911</span></span></span>
-<span class="r-in"><span><span class="va">pts_train</span> <span class="op">&lt;-</span> <span class="va">pts</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">29</span>,<span class="op">]</span></span></span>
-<span class="r-in"><span><span class="va">pts_test</span> <span class="op">&lt;-</span> <span class="va">pts</span><span class="op">[</span><span class="fl">30</span><span class="op">:</span><span class="fl">42</span>,<span class="op">]</span></span></span>
 <span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu">raster</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">studyArea</span> <span class="op">=</span> <span class="va">studyArea</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DEM"</span>,<span class="st">"TWI"</span>, <span class="st">"NDRE.M"</span>, <span class="st">"NDRE.Sd"</span>, <span class="st">"Bt"</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">nndm</span><span class="op">(</span><span class="va">pts_train</span>, modeldomain<span class="op">=</span> <span class="va">studyArea</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">nndm_folds</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">pts</span>, modeldomain<span class="op">=</span> <span class="va">studyArea</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 1000 prediction points are sampled from the modeldomain</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Spherical geometry (s2) switched off</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>CRS object has comment, which is lost in output; in tests, see</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> https://cran.r-project.org/web/packages/sp/vignettes/CRS_warnings.html</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> tpoints and ppoints must have the same CRS. tpoints have been transformed.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total number of points: 29</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Mean number of training points: 25.83</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Minimum number of training points: 19</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">#use for cross-validation:</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/topepo/caret/" class="external-link">caret</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>,</span></span>
+<span class="r-in"><span>   index<span class="op">=</span><span class="va">nndm_folds</span><span class="op">$</span><span class="va">indx_train</span>,</span></span>
+<span class="r-in"><span>   indexOut<span class="op">=</span><span class="va">nndm_folds</span><span class="op">$</span><span class="va">indx_test</span>,</span></span>
+<span class="r-in"><span>   savePredictions<span class="op">=</span><span class="st">'final'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">model_nndm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DEM"</span>,<span class="st">"TWI"</span>, <span class="st">"NDRE.M"</span><span class="op">)</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>   <span class="va">dat</span><span class="op">$</span><span class="va">VW</span>,</span></span>
+<span class="r-in"><span>   method<span class="op">=</span><span class="st">"rf"</span>,</span></span>
+<span class="r-in"><span>   trControl <span class="op">=</span> <span class="va">ctrl</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> note: only 2 unique complexity parameters in default grid. Truncating the grid to 2 .</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were missing values in resampled performance measures.</span>
+<span class="r-in"><span><span class="va">model_nndm</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Random Forest </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42 samples</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3 predictor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> No pre-processing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Resampling: Cross-Validated (10 fold) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Summary of sample sizes: 36, 41, 41, 38, 41, 41, ... </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Resampling results across tuning parameters:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   mtry  RMSE        Rsquared  MAE       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   2     0.03383840  NaN       0.03383840</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   3     0.03457086  NaN       0.03457086</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> RMSE was used to select the optimal model using the smallest value.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> The final value used for the model was mtry = 2.</span>
+<span class="r-in"><span><span class="fu"><a href="global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">model_nndm</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        RMSE    Rsquared         MAE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.041609098 0.005184905 0.033838402 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
