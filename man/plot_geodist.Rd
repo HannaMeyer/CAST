@@ -92,7 +92,7 @@ nndm_pred <- nndm(pts_train, studyArea)
 dist <- plot_geodist(x=pts_train, modeldomain=studyArea,
     cvfolds=nndm_pred$indx_test, cvtrain=nndm_pred$indx_train)
 
-
+\dontrun{
 ########### Distances in the feature space:
 plot_geodist(x=pts_train, modeldomain=studyArea,
     type = "feature",variables=c("DEM","TWI", "NDRE.M"))
@@ -125,7 +125,7 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 ### plot distances:
 dist <- plot_geodist(pts_random,co,showPlot=FALSE)
 dist$plot+scale_x_log10(labels=round)
-
+}
 }
 \seealso{
 \code{\link{nndm}}
