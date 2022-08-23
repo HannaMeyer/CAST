@@ -40,7 +40,7 @@ multitype G function construction between prediction and target points), Gj
 (distances for G function construction during LOO CV), Gjstar (distances
 for modified G function during NNDM LOO CV), phi (landscape autocorrelation range).
 indx_train and indx_test can directly be used as "index" and "indexOut" in
-caret's \code{\link{trainControl}} function.
+caret's \code{\link{trainControl}} function or used to initiate a custom validation strategy in mlr3.
 }
 \description{
 This function implements the \emph{NNDM} algorithm and returns the necessary
@@ -83,23 +83,37 @@ nndm_pred
 plot(nndm_pred)
 
 
+########################################################################
 # Example 2: Real- world example; using a modeldomain instead of previously
 # sampled prediction locations
+########################################################################
 library(raster)
 
 ### prepare sample data:
 dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
-dat <- aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing")],
-by=list(as.character(dat$SOURCEID)),mean)
+dat <- aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+   by=list(as.character(dat$SOURCEID)),mean)
 pts <- dat[,-1]
 pts <- st_as_sf(pts,coords=c("Easting","Northing"))
 st_crs(pts) <- 26911
-pts_train <- pts[1:29,]
-pts_test <- pts[30:42,]
 studyArea <- raster::stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
-studyArea = studyArea[[c("DEM","TWI", "NDRE.M", "NDRE.Sd", "Bt")]]
 
-nndm(pts_train, modeldomain= studyArea)
+nndm_folds <- nndm(pts, modeldomain= studyArea)
+
+#use for cross-validation:
+library(caret)
+ctrl <- trainControl(method="cv",
+   index=nndm_folds$indx_train,
+   indexOut=nndm_folds$indx_test,
+   savePredictions='final')
+model_nndm <- train(dat[,c("DEM","TWI", "NDRE.M")],
+   dat$VW,
+   method="rf",
+   trControl = ctrl)
+model_nndm
+global_validation(model_nndm)
+
+
 }
 \references{
 \itemize{

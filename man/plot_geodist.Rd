@@ -61,7 +61,6 @@ The modeldomain is a sf polygon or a raster that defines the prediction area. Th
 See Meyer and Pebesma (2022) for an application of this plotting function
 }
 \examples{
-\dontrun{
 library(sf)
 library(raster)
 library(caret)
@@ -69,14 +68,13 @@ library(caret)
 ########### prepare sample data:
 dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 dat <- aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing")],
-by=list(as.character(dat$SOURCEID)),mean)
-pts <- dat[,-1]
-pts <- st_as_sf(pts,coords=c("Easting","Northing"))
+  by=list(as.character(dat$SOURCEID)),mean)
+pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 st_crs(pts) <- 26911
 pts_train <- pts[1:29,]
 pts_test <- pts[30:42,]
 studyArea <- raster::stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
-studyArea = studyArea[[c("DEM","TWI", "NDRE.M", "NDRE.Sd", "Bt")]]
+studyArea <- studyArea[[c("DEM","TWI", "NDRE.M", "NDRE.Sd", "Bt")]]
 
 ########### Distance between training data and new data:
 dist <- plot_geodist(pts_train,studyArea)
@@ -90,19 +88,17 @@ folds <- createFolds(1:nrow(pts_train),k=3,returnTrain=FALSE)
 dist <- plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds=folds)
 
 ## or use nndm to define folds
-mask <- st_as_sf(rasterToPolygons(studyArea,dissolve=TRUE))
-pts_pred <- st_sample(mask,200)
-nndm_pred <- nndm(pts_train, pts_pred)
+nndm_pred <- nndm(pts_train, studyArea)
 dist <- plot_geodist(x=pts_train, modeldomain=studyArea,
-cvfolds=nndm_pred$indx_test, cvtrain=nndm_pred$indx_train)
+    cvfolds=nndm_pred$indx_test, cvtrain=nndm_pred$indx_train)
 
 
 ########### Distances in the feature space:
 plot_geodist(x=pts_train, modeldomain=studyArea,
-type = "feature",variables=c("DEM","TWI", "NDRE.M"))
+    type = "feature",variables=c("DEM","TWI", "NDRE.M"))
 
 dist <- plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds = folds, testdata = pts_test,
-type = "feature",variables=c("DEM","TWI", "NDRE.M"))
+    type = "feature",variables=c("DEM","TWI", "NDRE.M"))
 
 ############ Example for a random global dataset
 ############ (refer to figure in Meyer and Pebesma 2022)
@@ -130,7 +126,6 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 dist <- plot_geodist(pts_random,co,showPlot=FALSE)
 dist$plot+scale_x_log10(labels=round)
 
-}
 }
 \seealso{
 \code{\link{nndm}}
