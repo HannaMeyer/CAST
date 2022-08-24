@@ -25,6 +25,7 @@
 #' @import ggplot2
 #' @author Hanna Meyer, Edzer Pebesma, Marvin Ludwig
 #' @examples
+#' \dontrun{
 #' library(sf)
 #' library(raster)
 #' library(caret)
@@ -56,7 +57,6 @@
 #' dist <- plot_geodist(x=pts_train, modeldomain=studyArea,
 #'     cvfolds=nndm_pred$indx_test, cvtrain=nndm_pred$indx_train)
 #'
-#' \dontrun{
 #' ########### Distances in the feature space:
 #' plot_geodist(x=pts_train, modeldomain=studyArea,
 #'     type = "feature",variables=c("DEM","TWI", "NDRE.M"))

@@ -50,7 +50,7 @@
 #'
 #' @author Hanna Meyer
 #' @seealso \code{\link{train}},\code{\link{bss}},
-#' \code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}}
+#' \code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}},\code{\link{nndm}}
 #' @references
 #' \itemize{
 #' \item Gasch, C.K., Hengl, T., Gräler, B., Meyer, H., Magney, T., Brown, D.J. (2015): Spatio-temporal interpolation of soil water, temperature, and electrical conductivity in 3D+T: the Cook Agronomy Farm data set. Spatial Statistics 14: 70-90.

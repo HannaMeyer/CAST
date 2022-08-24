@@ -81,7 +81,8 @@ bssmodel$perf_all
 }
 \seealso{
 \code{\link{train}},\code{\link{ffs}},
-\code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}}
+\code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}},
+\code{\link{nndm}}
 }
 \author{
 Hanna Meyer

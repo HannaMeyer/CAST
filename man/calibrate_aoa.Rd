@@ -47,9 +47,9 @@ Performance metrics are calculated for moving windows of DI values of cross-vali
 }
 \details{
 If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
-ranging from three clusters to LOOCV.
-If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold, the AOA is updated accordingly.
-See Meyer and Pebesma (2020) for the full documentation of the methodology.
+ranging from three clusters to LOOCV. Hence, a large range of DI values is created during cross-validation.
+If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold (which is likely if extrapolation situations are created during CV),
+the AOA is updated accordingly. See Meyer and Pebesma (2021) for the full documentation of the methodology.
 }
 \examples{
 \dontrun{
@@ -83,7 +83,8 @@ model <- train(trainDat[,which(names(trainDat)\%in\%variables)],
 AOA <- aoa(studyArea,model)
 
 AOA_new <- calibrate_aoa(AOA,model)
-plot(AOA_new$AOA[[3]])
+plot(AOA_new$AOA$expected_RMSE)
+# attributes(AOA_new$AOA) # data used for calibration
 }
 }
 \references{

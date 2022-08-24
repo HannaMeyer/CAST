@@ -60,7 +60,7 @@ indices <- CreateSpacetimeFolds(dat,spacevar="SOURCEID")
 str(indices)
 ### Prepare for leave-One-Location-Out cross validation
 indices <- CreateSpacetimeFolds(dat,spacevar="SOURCEID",
-k=length(unique(dat$SOURCEID)))
+    k=length(unique(dat$SOURCEID)))
 str(indices)
 }
 \references{

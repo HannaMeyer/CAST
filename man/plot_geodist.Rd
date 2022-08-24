@@ -61,6 +61,7 @@ The modeldomain is a sf polygon or a raster that defines the prediction area. Th
 See Meyer and Pebesma (2022) for an application of this plotting function
 }
 \examples{
+\dontrun{
 library(sf)
 library(raster)
 library(caret)
@@ -92,7 +93,6 @@ nndm_pred <- nndm(pts_train, studyArea)
 dist <- plot_geodist(x=pts_train, modeldomain=studyArea,
     cvfolds=nndm_pred$indx_test, cvtrain=nndm_pred$indx_train)
 
-\dontrun{
 ########### Distances in the feature space:
 plot_geodist(x=pts_train, modeldomain=studyArea,
     type = "feature",variables=c("DEM","TWI", "NDRE.M"))

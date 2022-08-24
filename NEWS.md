@@ -1,4 +1,4 @@
-# `CAST` 0.6.1
+# `CAST` 0.7.0
 * new feature: 
   * nndm cross-validation as suggested by Milà et al. (2022)
 * modifications

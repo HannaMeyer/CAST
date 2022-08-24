@@ -66,6 +66,7 @@
 #' # Example 2: Real- world example; using a modeldomain instead of previously
 #' # sampled prediction locations
 #' ########################################################################
+#' \dontrun{
 #' library(raster)
 #'
 #' ### prepare sample data:
@@ -91,7 +92,7 @@
 #'    trControl = ctrl)
 #' model_nndm
 #' global_validation(model_nndm)
-#'
+#'}
 #'
 
 

@@ -35,7 +35,8 @@
 #'  (\code{\link{ffs}}).
 #' @author Hanna Meyer
 #' @seealso \code{\link{train}},\code{\link{ffs}},
-#' \code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}}
+#' \code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}},
+#' \code{\link{nndm}}
 #' @examples
 #' \dontrun{
 #' data(iris)

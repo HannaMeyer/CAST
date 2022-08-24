@@ -87,6 +87,7 @@ plot(nndm_pred)
 # Example 2: Real- world example; using a modeldomain instead of previously
 # sampled prediction locations
 ########################################################################
+\dontrun{
 library(raster)
 
 ### prepare sample data:
@@ -112,7 +113,7 @@ model_nndm <- train(dat[,c("DEM","TWI", "NDRE.M")],
    trControl = ctrl)
 model_nndm
 global_validation(model_nndm)
-
+}
 
 }
 \references{

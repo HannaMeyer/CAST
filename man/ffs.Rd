@@ -148,7 +148,7 @@ stopCluster(cl)
 }
 \seealso{
 \code{\link{train}},\code{\link{bss}},
-\code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}}
+\code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}},\code{\link{nndm}}
 }
 \author{
 Hanna Meyer
