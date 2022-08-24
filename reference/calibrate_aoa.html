@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -126,9 +126,9 @@ Data used for calibration are stored in the attributes. The second element is a 
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
-ranging from three clusters to LOOCV.
-If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold, the AOA is updated accordingly.
-See Meyer and Pebesma (2020) for the full documentation of the methodology.</p>
+ranging from three clusters to LOOCV. Hence, a large range of DI values is created during cross-validation.
+If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold (which is likely if extrapolation situations are created during CV),
+the AOA is updated accordingly. See Meyer and Pebesma (2021) for the full documentation of the methodology.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -178,7 +178,8 @@ Estimating the area of applicability of spatial prediction models.
 <span class="r-in"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="aoa.html">aoa</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">AOA_new</span> <span class="op">&lt;-</span> <span class="fu">calibrate_aoa</span><span class="op">(</span><span class="va">AOA</span>,<span class="va">model</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_new</span><span class="op">$</span><span class="va">AOA</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_new</span><span class="op">$</span><span class="va">AOA</span><span class="op">$</span><span class="va">expected_RMSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># attributes(AOA_new$AOA) # data used for calibration</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
