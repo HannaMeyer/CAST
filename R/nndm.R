@@ -29,8 +29,8 @@
 #' Distances are only matched up to phi. Beyond that range, all data points are used for training, without exclusions.
 #' When phi is set to "max", nearest neighbor distance matching is performed for the entire prediction area.
 #'
-#' The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
-#' As an alternative use ppoints instead of modeldomain, if you alre<dy have a representative sample from your prediction area.
+#' The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a point sample (amount defined by samplesize, method defined by sampling) from the spatial extent.
+#' As an alternative use ppoints instead of modeldomain, if you already have a representative sample from your prediction area.
 #' @note NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
 #' You may need to consider alternatives following the ideas of Milà et al. (2022) for large data sets.
 #' @seealso \code{\link{plot_geodist}}
