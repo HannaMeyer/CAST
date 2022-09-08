@@ -1,3 +1,9 @@
+# `CAST` 0.7.1
+* new features:
+  *
+* modifications:
+  * faster estimation of the AOA
+
 # `CAST` 0.7.0
 * new feature: 
   * nndm cross-validation as suggested by Milà et al. (2022)
