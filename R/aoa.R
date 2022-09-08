@@ -246,19 +246,31 @@ aoa <- function(newdata,
 
   # Distance Calculation ---------
 
+  #distfun <- function(x){
+  #  if(any(is.na(x))){
+  #    return(NA)
+  #  }else{
+  #    tmp <- FNN::knnx.dist(t(matrix(x)), train_scaled, k=1)
+  #    return(min(tmp))
+  #  }
+  #}
+
   distfun <- function(x){
-    if(any(is.na(x))){
-      return(NA)
-    }else{
-      tmp <- FNN::knnx.dist(t(matrix(x)), train_scaled, k=1)
-      return(min(tmp))
-    }
+    tmp <- rep(NA, nrow(x))
+    okrows <- which(apply(x, 1, function(x) all(!is.na(x))))
+    newdataCC <- x[okrows,]
+    tmp[okrows] <- c(FNN::knnx.dist(train_scaled, newdataCC, k = 1))
+    return(tmp)
   }
-  if (!is.null(cl)){
-    mindist <- parallel::parApply(cl=cl,X=newdata,MARGIN=1,FUN=distfun)
-  }else{
-    mindist <- apply(newdata,1,FUN=distfun)
-  }
+
+
+#  if (!is.null(cl)){
+#    mindist <- parallel::parApply(cl=cl,X=newdata,MARGIN=1,FUN=distfun)
+#  }else{
+#    mindist <- apply(newdata,1,FUN=distfun)
+#  }
+
+  mindist <- distfun(newdata)
 
 
   DI_out <- mindist/trainDI$trainDist_avrgmean
