@@ -12,7 +12,7 @@ indices to perform a NNDM LOO CV for map validation."><!-- mathjax --><script sr
     
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -124,12 +124,12 @@ caret's <code><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="e
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>NNDM proposes a LOO CV scheme such that the nearest neighbour distance distribution function between the test and training data during the CV process is matched to the nearest neighbour
 distance distribution function between the prediction and training points. Details of the method can be found in Milà et al. (2022).</p>
-<p>Specifying <code>phi</code> allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
-Distances are only matched up to <code>phi</code>. Beyond that range, all data points are used for training, without exclusions.
-When <code>phi</code> is set to "max", nearest neighbor distance matching is performed for the entire prediction area. Euclidean distances are used for projected
+<p>Specifying <em>phi</em> allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
+Distances are only matched up to <em>phi</em>. Beyond that range, all data points are used for training, without exclusions.
+When <em>phi</em> is set to "max", nearest neighbor distance matching is performed for the entire prediction area. Euclidean distances are used for projected
 and non-defined CRS, great circle distances are used for geographic CRS (units in meters).</p>
-<p>The <code>modeldomain</code> is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by <code>samplesize)</code> from the spatial extent.
-As an alternative use <code><a href="https://rdrr.io/r/stats/ppoints.html" class="external-link">ppoints</a></code> instead of <code>modeldomain</code>, if you have already defined the prediction locations.</p>
+<p>The <em>modeldomain</em> is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by <em>samplesize)</em> from the spatial extent.
+As an alternative use <em>ppoints</em> instead of <em>modeldomain</em>, if you have already defined the prediction locations.</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
@@ -173,7 +173,8 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="nndm-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># ...or run NNDM with a known autocorrelation range of 10 to restrict the matching to distances lower than that.</span></span></span>
+<span class="r-in"><span><span class="co"># ...or run NNDM with a known autocorrelation range of 10</span></span></span>
+<span class="r-in"><span><span class="co"># to restrict the matching to distances lower than that.</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, ppoints<span class="op">=</span><span class="va">pred_points</span>, phi <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
