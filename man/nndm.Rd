@@ -21,13 +21,13 @@ nndm(
 
 \item{ppoints}{sf or sfc point object. Contains the target prediction points. Optional. Alternative to modeldomain (see Details).}
 
-\item{samplesize}{numeric. How many sampled of the modeldomain should be sampled? Only required if modeldomain is used instead of ppoints}
+\item{samplesize}{numeric. How many points in the modeldomain should be sampled as prediction points? Only required if modeldomain is used instead of ppoints.}
 
-\item{sampling}{character. How to draw samples from the modeldomain? See spsample. Use sampling = "Fibonacci" for global applications." Only required if modeldomain is used instead of ppoints}
+\item{sampling}{character. How to draw prediction points from the modeldomain? See spsample. Use sampling = "Fibonacci" for global applications." Only required if modeldomain is used instead of ppoints.}
 
 \item{phi}{Numeric. Estimate of the landscape autocorrelation range in the
 same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.
-Per default (phi="max"), the size of the prediction area is used. See Details}
+Per default (phi="max"), the size of the prediction area is used. See Details.}
 
 \item{min_train}{Numeric between 0 and 1. Minimum proportion of training
 data that must be used in each CV fold. Defaults to 0 (i.e. no restrictions).}
@@ -36,7 +36,7 @@ data that must be used in each CV fold. Defaults to 0 (i.e. no restrictions).}
 An object of class \emph{nndm} consisting of a list of six elements:
 indx_train, indx_test, and indx_exclude (indices of the observations to use as
 training/test/excluded data in each NNDM LOO CV iteration), Gij (distances for
-multitype G function construction between prediction and target points), Gj
+G function construction between prediction and target points), Gj
 (distances for G function construction during LOO CV), Gjstar (distances
 for modified G function during NNDM LOO CV), phi (landscape autocorrelation range).
 indx_train and indx_test can directly be used as "index" and "indexOut" in
@@ -47,15 +47,16 @@ This function implements the \emph{NNDM} algorithm and returns the necessary
 indices to perform a NNDM LOO CV for map validation.
 }
 \details{
-Details of the method can be found in Milà et al. (2022).
-Euclidean distances are used for projected
-and non-defined CRS, great circle distances are used for geographic CRS (units in meters).
-Specifying phi allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
-Distances are only matched up to phi. Beyond that range, all data points are used for training, without exclusions.
-When phi is set to "max", nearest neighbor distance matching is performed for the entire prediction area.
+NNDM proposes a LOO CV scheme such that the nearest neighbour distance distribution function between the test and training data during the CV process is matched to the nearest neighbour
+distance distribution function between the prediction and training points. Details of the method can be found in Milà et al. (2022).
 
-The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
-As an alternative use ppoints instead of modeldomain, if you alre<dy have a representative sample from your prediction area.
+Specifying \code{\link{phi}} allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
+Distances are only matched up to \code{\link{phi}}. Beyond that range, all data points are used for training, without exclusions.
+When \code{\link{phi}} is set to "max", nearest neighbor distance matching is performed for the entire prediction area. Euclidean distances are used for projected
+and non-defined CRS, great circle distances are used for geographic CRS (units in meters).
+
+The \code{\link{modeldomain}} is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by \code{\link{samplesize)}} from the spatial extent.
+As an alternative use \code{\link{ppoints}} instead of \code{\link{modeldomain}}, if you have already defined the prediction locations.
 }
 \note{
 NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
@@ -71,13 +72,12 @@ sample_poly <- sf::st_polygon(poly)
 train_points <- sf::st_sample(sample_poly, 100, type = "random")
 pred_points <- sf::st_sample(sample_poly, 100, type = "random")
 
-# Run NNDM.
+# Run NNDM for the whole domain, here the prediction points are known.
 nndm_pred <- nndm(train_points, ppoints=pred_points)
 nndm_pred
 plot(nndm_pred)
 
-# ...or run NNDM with a known autocorrelation range.
-# Here, the autocorrelation range (phi) is known to be 10.
+# ...or run NNDM with a known autocorrelation range of 10 to restrict the matching to distances lower than that.
 nndm_pred <- nndm(train_points, ppoints=pred_points, phi = 10)
 nndm_pred
 plot(nndm_pred)
@@ -100,6 +100,7 @@ st_crs(pts) <- 26911
 studyArea <- raster::stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
 
 nndm_folds <- nndm(pts, modeldomain= studyArea)
+plot(nndm_folds)
 
 #use for cross-validation:
 library(caret)
