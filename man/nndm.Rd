@@ -50,13 +50,13 @@ indices to perform a NNDM LOO CV for map validation.
 NNDM proposes a LOO CV scheme such that the nearest neighbour distance distribution function between the test and training data during the CV process is matched to the nearest neighbour
 distance distribution function between the prediction and training points. Details of the method can be found in Milà et al. (2022).
 
-Specifying \code{\link{phi}} allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
-Distances are only matched up to \code{\link{phi}}. Beyond that range, all data points are used for training, without exclusions.
-When \code{\link{phi}} is set to "max", nearest neighbor distance matching is performed for the entire prediction area. Euclidean distances are used for projected
+Specifying \emph{phi} allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
+Distances are only matched up to \emph{phi}. Beyond that range, all data points are used for training, without exclusions.
+When \emph{phi} is set to "max", nearest neighbor distance matching is performed for the entire prediction area. Euclidean distances are used for projected
 and non-defined CRS, great circle distances are used for geographic CRS (units in meters).
 
-The \code{\link{modeldomain}} is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by \code{\link{samplesize)}} from the spatial extent.
-As an alternative use \code{\link{ppoints}} instead of \code{\link{modeldomain}}, if you have already defined the prediction locations.
+The \emph{modeldomain} is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by \emph{samplesize)} from the spatial extent.
+As an alternative use \emph{ppoints} instead of \emph{modeldomain}, if you have already defined the prediction locations.
 }
 \note{
 NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
@@ -77,7 +77,8 @@ nndm_pred <- nndm(train_points, ppoints=pred_points)
 nndm_pred
 plot(nndm_pred)
 
-# ...or run NNDM with a known autocorrelation range of 10 to restrict the matching to distances lower than that.
+# ...or run NNDM with a known autocorrelation range of 10
+# to restrict the matching to distances lower than that.
 nndm_pred <- nndm(train_points, ppoints=pred_points, phi = 10)
 nndm_pred
 plot(nndm_pred)
