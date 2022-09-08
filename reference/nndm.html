@@ -89,17 +89,17 @@ indices to perform a NNDM LOO CV for map validation.</p>
 
 
 <dt>samplesize</dt>
-<dd><p>numeric. How many sampled of the modeldomain should be sampled? Only required if modeldomain is used instead of ppoints</p></dd>
+<dd><p>numeric. How many points in the modeldomain should be sampled as prediction points? Only required if modeldomain is used instead of ppoints.</p></dd>
 
 
 <dt>sampling</dt>
-<dd><p>character. How to draw samples from the modeldomain? See spsample. Use sampling = "Fibonacci" for global applications." Only required if modeldomain is used instead of ppoints</p></dd>
+<dd><p>character. How to draw prediction points from the modeldomain? See spsample. Use sampling = "Fibonacci" for global applications." Only required if modeldomain is used instead of ppoints.</p></dd>
 
 
 <dt>phi</dt>
 <dd><p>Numeric. Estimate of the landscape autocorrelation range in the
 same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.
-Per default (phi="max"), the size of the prediction area is used. See Details</p></dd>
+Per default (phi="max"), the size of the prediction area is used. See Details.</p></dd>
 
 
 <dt>min_train</dt>
@@ -114,7 +114,7 @@ data that must be used in each CV fold. Defaults to 0 (i.e. no restrictions).</p
 <p>An object of class <em>nndm</em> consisting of a list of six elements:
 indx_train, indx_test, and indx_exclude (indices of the observations to use as
 training/test/excluded data in each NNDM LOO CV iteration), Gij (distances for
-multitype G function construction between prediction and target points), Gj
+G function construction between prediction and target points), Gj
 (distances for G function construction during LOO CV), Gjstar (distances
 for modified G function during NNDM LOO CV), phi (landscape autocorrelation range).
 indx_train and indx_test can directly be used as "index" and "indexOut" in
@@ -122,14 +122,14 @@ caret's <code><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="e
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Details of the method can be found in Milà et al. (2022).
-Euclidean distances are used for projected
-and non-defined CRS, great circle distances are used for geographic CRS (units in meters).
-Specifying phi allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
-Distances are only matched up to phi. Beyond that range, all data points are used for training, without exclusions.
-When phi is set to "max", nearest neighbor distance matching is performed for the entire prediction area.</p>
-<p>The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
-As an alternative use ppoints instead of modeldomain, if you alre&lt;dy have a representative sample from your prediction area.</p>
+    <p>NNDM proposes a LOO CV scheme such that the nearest neighbour distance distribution function between the test and training data during the CV process is matched to the nearest neighbour
+distance distribution function between the prediction and training points. Details of the method can be found in Milà et al. (2022).</p>
+<p>Specifying <code>phi</code> allows limiting distance matching to the area where this is assumed to be relevant due to spatial autocorrelation.
+Distances are only matched up to <code>phi</code>. Beyond that range, all data points are used for training, without exclusions.
+When <code>phi</code> is set to "max", nearest neighbor distance matching is performed for the entire prediction area. Euclidean distances are used for projected
+and non-defined CRS, great circle distances are used for geographic CRS (units in meters).</p>
+<p>The <code>modeldomain</code> is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by <code>samplesize)</code> from the spatial extent.
+As an alternative use <code><a href="https://rdrr.io/r/stats/ppoints.html" class="external-link">ppoints</a></code> instead of <code>modeldomain</code>, if you have already defined the prediction locations.</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
@@ -163,7 +163,7 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 <span class="r-in"><span><span class="va">train_points</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">sample_poly</span>, <span class="fl">100</span>, type <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pred_points</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">sample_poly</span>, <span class="fl">100</span>, type <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Run NNDM.</span></span></span>
+<span class="r-in"><span><span class="co"># Run NNDM for the whole domain, here the prediction points are known.</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, ppoints<span class="op">=</span><span class="va">pred_points</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
@@ -173,8 +173,7 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="nndm-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># ...or run NNDM with a known autocorrelation range.</span></span></span>
-<span class="r-in"><span><span class="co"># Here, the autocorrelation range (phi) is known to be 10.</span></span></span>
+<span class="r-in"><span><span class="co"># ...or run NNDM with a known autocorrelation range of 10 to restrict the matching to distances lower than that.</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, ppoints<span class="op">=</span><span class="va">pred_points</span>, phi <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
@@ -202,6 +201,7 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 <span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu">raster</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">nndm_folds</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">pts</span>, modeldomain<span class="op">=</span> <span class="va">studyArea</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_folds</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#use for cross-validation:</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/topepo/caret/" class="external-link">caret</a></span><span class="op">)</span></span></span>
