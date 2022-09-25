@@ -24,7 +24,7 @@
 #' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
-#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented
+#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested.
 #' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
 #'
@@ -258,7 +258,7 @@ aoa <- function(newdata,
     }
 
     if(method=="MD"){
-      S_inv       <- solve(cov(train_scaled))
+      S_inv       <- solve(stats::cov(train_scaled))
       tmp[okrows] <- sapply(1:dim(newdataCC)[1],
                             function(y) min(sapply(1:dim(train_scaled)[1],
                                              function(x) sqrt( t(newdataCC[y,] - train_scaled[x,]) %*% S_inv %*% (newdataCC[y,] - train_scaled[x,]) ))))

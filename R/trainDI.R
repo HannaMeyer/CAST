@@ -20,7 +20,7 @@
 #' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
-#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented
+#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested.
 
 #'
 #' @seealso \code{\link{aoa}}
@@ -178,8 +178,9 @@ trainDI <- function(model = NA,
       trainDistAll <- FNN::knnx.dist(train, t(train[i,]), k = nrow(train))[-1]
     }
     if (method == "MD"){ # Mahalanobis Distance
-      S_inv       <- solve(cov(train))
-      trainDistAll <- sapply(1:dim(train_scaled)[1], function(x) sqrt( t(train[i,] - train[x,]) %*% S_inv %*% (train[i,] - train[x,]) ))
+      print(stats::cov(train))
+      S_inv <- solve(stats::cov(train))
+      trainDistAll <- sapply(1:dim(train)[1], function(x) sqrt( t(train[i,] - train[x,]) %*% S_inv %*% (train[i,] - train[x,]) ))
     }
     trainDist_avrg <- append(trainDist_avrg, mean(trainDistAll, na.rm = TRUE))
 
