@@ -75,7 +75,8 @@ variable importance of the machine learning algorithm used for model training.</
 <span>  variables <span class="op">=</span> <span class="st">"all"</span>,</span>
 <span>  weight <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  CVtest <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  CVtrain <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  CVtrain <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"L2"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -109,6 +110,10 @@ Only required if no model is given.</p></dd>
 Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 Relevant if some data points are excluded, e.g. when using <code><a href="nndm.html">nndm</a></code>.</p></dd>
 
+
+<dt>method</dt>
+<dd><p>Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -131,7 +136,7 @@ Relevant if some data points are excluded, e.g. when using <code><a href="nndm.h
 <dd><p>Scaling parameters. Output from <code>scale</code></p></dd>
 
  <dt>trainDist_avrg</dt>
-<dd><p>A data frame with the average eucildean distance of each training point to every other point</p></dd>
+<dd><p>A data frame with the average distance of each training point to every other point</p></dd>
 
  <dt>trainDist_avrgmean</dt>
 <dd><p>The mean of trainDist_avrg. Used for normalizing the DI</p></dd>

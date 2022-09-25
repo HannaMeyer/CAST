@@ -90,7 +90,8 @@ maximum DI of the cross-validated training data.</p>
 <span>  weight <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  variables <span class="op">=</span> <span class="st">"all"</span>,</span>
 <span>  CVtest <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  CVtrain <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  CVtrain <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"L2"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -137,6 +138,10 @@ Only required if no model is given.</p></dd>
 <dd><p>list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
 Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 Relevant if some data points are excluded, e.g. when using <code><a href="nndm.html">nndm</a></code>.</p></dd>
+
+
+<dt>method</dt>
+<dd><p>Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -228,15 +233,6 @@ Methods in Ecology and Evolution 12: 1620-1633. <a href="https://doi.org/10.1111
 <span class="r-in"><span><span class="co">#plot predictions for the AOA only:</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction</span>, col.regions<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for the AOA"</span><span class="op">)</span><span class="op">+</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">####</span></span></span>
-<span class="r-in"><span><span class="co"># Calculating the AOA might be time consuming. Consider running it in parallel:</span></span></span>
-<span class="r-in"><span><span class="co">####</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RevolutionAnalytics/doparallel" class="external-link">doParallel</a></span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">parallel</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/pkg/doParallel/man/registerDoParallel.html" class="external-link">registerDoParallel</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu">aoa</span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span>,cl<span class="op">=</span><span class="va">cl</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">####</span></span></span>
 <span class="r-in"><span><span class="co">#The AOA can also be calculated without a trained model.</span></span></span>
