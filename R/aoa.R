@@ -24,6 +24,7 @@
 #' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
+#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented
 #' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
 #'
@@ -90,15 +91,6 @@
 #' spplot(AOA$AOA,col.regions=c("grey","transparent"))
 #'
 #' ####
-#' # Calculating the AOA might be time consuming. Consider running it in parallel:
-#' ####
-#' library(doParallel)
-#' library(parallel)
-#' cl <- makeCluster(4)
-#' registerDoParallel(cl)
-#' AOA <- aoa(studyArea,model,cl=cl)
-#'
-#' ####
 #' #The AOA can also be calculated without a trained model.
 #' #All variables are weighted equally in this case:
 #' ####
@@ -149,7 +141,8 @@ aoa <- function(newdata,
                 weight=NA,
                 variables="all",
                 CVtest=NULL,
-                CVtrain=NULL) {
+                CVtrain=NULL,
+                method="L2") {
 
   # handling of different raster formats
   as_stars <- FALSE
@@ -174,7 +167,7 @@ aoa <- function(newdata,
   # if not provided, compute train DI
   if(!inherits(trainDI, "trainDI")){
     message("No trainDI provided. Computing DI of training data...")
-    trainDI <- trainDI(model, train, variables, weight, CVtest, CVtrain)
+    trainDI <- trainDI(model, train, variables, weight, CVtest, CVtrain,method)
   }
 
   message("Computing DI of newdata...")
@@ -246,31 +239,36 @@ aoa <- function(newdata,
 
   # Distance Calculation ---------
 
-  #distfun <- function(x){
-  #  if(any(is.na(x))){
-  #    return(NA)
-  #  }else{
-  #    tmp <- FNN::knnx.dist(t(matrix(x)), train_scaled, k=1)
-  #    return(min(tmp))
-  #  }
-  #}
 
-  distfun <- function(x){
-    tmp <- rep(NA, nrow(x))
-    okrows <- which(apply(x, 1, function(x) all(!is.na(x))))
-    newdataCC <- x[okrows,]
-    tmp[okrows] <- c(FNN::knnx.dist(train_scaled, newdataCC, k = 1))
-    return(tmp)
+#  distfun <- function(x){
+#    tmp <- rep(NA, nrow(x))
+#    okrows <- which(apply(x, 1, function(x) all(!is.na(x))))
+#    newdataCC <- x[okrows,]
+#    tmp[okrows] <- c(FNN::knnx.dist(train_scaled, newdataCC, k = 1))
+#    return(tmp)
+#  }
+
+  distfun <- function(x,method){
+    tmp         <- rep(NA, nrow(x))
+    okrows      <- which(apply(x, 1, function(x) all(!is.na(x))))
+    newdataCC   <- x[okrows,]
+
+    if(method=="L2"){
+      tmp[okrows] <- c(FNN::knnx.dist(train_scaled, newdataCC, k = 1))
+    }
+
+    if(method=="MD"){
+      S_inv       <- solve(cov(train_scaled))
+      tmp[okrows] <- sapply(1:dim(newdataCC)[1],
+                            function(y) min(sapply(1:dim(train_scaled)[1],
+                                             function(x) sqrt( t(newdataCC[y,] - train_scaled[x,]) %*% S_inv %*% (newdataCC[y,] - train_scaled[x,]) ))))
+    }
+      return(tmp)
   }
 
 
-#  if (!is.null(cl)){
-#    mindist <- parallel::parApply(cl=cl,X=newdata,MARGIN=1,FUN=distfun)
-#  }else{
-#    mindist <- apply(newdata,1,FUN=distfun)
-#  }
 
-  mindist <- distfun(newdata)
+  mindist <- distfun(newdata,method)
 
 
   DI_out <- mindist/trainDI$trainDist_avrgmean

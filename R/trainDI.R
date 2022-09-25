@@ -20,6 +20,8 @@
 #' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
+#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented
+
 #'
 #' @seealso \code{\link{aoa}}
 #' @importFrom graphics boxplot
@@ -31,7 +33,7 @@
 #'  \item{variables}{Names of the used variables}
 #'  \item{catvars}{Which variables are categorial}
 #'  \item{scaleparam}{Scaling parameters. Output from \code{scale}}
-#'  \item{trainDist_avrg}{A data frame with the average eucildean distance of each training point to every other point}
+#'  \item{trainDist_avrg}{A data frame with the average distance of each training point to every other point}
 #'  \item{trainDist_avrgmean}{The mean of trainDist_avrg. Used for normalizing the DI}
 #'  \item{trainDI}{Dissimilarity Index of the training data}
 #'  \item{threshold}{The DI threshold used for inside/outside AOA}
@@ -101,7 +103,8 @@ trainDI <- function(model = NA,
                     variables = "all",
                     weight = NA,
                     CVtest = NULL,
-                    CVtrain = NULL){
+                    CVtrain = NULL,
+                    method="L2"){
 
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
@@ -171,12 +174,24 @@ trainDI <- function(model = NA,
   for(i in seq(nrow(train))){
 
     # distance to all other training data (for average)
-    trainDistAll <- FNN::knnx.dist(train, t(train[i,]), k = nrow(train))[-1]
+    if (method == "L2"){ # Euclidean Distance
+      trainDistAll <- FNN::knnx.dist(train, t(train[i,]), k = nrow(train))[-1]
+    }
+    if (method == "MD"){ # Mahalanobis Distance
+      S_inv       <- solve(cov(train))
+      trainDistAll <- sapply(1:dim(train_scaled)[1], function(x) sqrt( t(train[i,] - train[x,]) %*% S_inv %*% (train[i,] - train[x,]) ))
+    }
     trainDist_avrg <- append(trainDist_avrg, mean(trainDistAll, na.rm = TRUE))
 
     # calculate distance to other training data:
-    trainDist <- FNN::knnx.dist(t(matrix(train[i,])),train,k=1)
+    if (method == "L2"){ # Euclidean Distance
+      trainDist <- FNN::knnx.dist(t(matrix(train[i,])),train,k=1)
+    }
+    if (method == "MD"){ # Mahalanobis Distance
+      trainDist <- min(trainDistAll)
+    }
     trainDist[i] <- NA
+
 
 
     # mask of any data that are not used for training for the respective data point (using CV)
