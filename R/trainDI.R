@@ -118,7 +118,6 @@ trainDI <- function(model = NA,
   }else{ #check if manually given weights are correct. otherwise ignore (set to 1):
     if(nrow(weight)!=1||ncol(weight)!=length(variables)){
       message("variable weights are not correctly specified and will be ignored. See ?aoa")
-      #weight <- simpleError("error")
       weight <- t(data.frame(rep(1,length(variables))))
       names(weight) <- variables
     }
@@ -171,28 +170,19 @@ trainDI <- function(model = NA,
   trainDist_avrg <- c()
   trainDist_min <- c()
 
+  if(method=="MD"){
+    S_inv     <- MASS::ginv(stats::cov(train))
+  }
+
   for(i in seq(nrow(train))){
 
     # distance to all other training data (for average)
-    if (method == "L2"){ # Euclidean Distance
-      trainDistAll <- FNN::knnx.dist(train, t(train[i,]), k = nrow(train))[-1]
-    }
-    if (method == "MD"){ # Mahalanobis Distance
-      print(stats::cov(train))
-      S_inv <- solve(stats::cov(train))
-      trainDistAll <- sapply(1:dim(train)[1], function(x) sqrt( t(train[i,] - train[x,]) %*% S_inv %*% (train[i,] - train[x,]) ))
-    }
+    trainDistAll   <- .alldistfun(t(train[i,]), train,  method, S_inv=S_inv)[-1]
     trainDist_avrg <- append(trainDist_avrg, mean(trainDistAll, na.rm = TRUE))
 
-    # calculate distance to other training data:
-    if (method == "L2"){ # Euclidean Distance
-      trainDist <- FNN::knnx.dist(t(matrix(train[i,])),train,k=1)
-    }
-    if (method == "MD"){ # Mahalanobis Distance
-      trainDist <- min(trainDistAll)
-    }
-    trainDist[i] <- NA
-
+    # calculate  distance to other training data:
+    trainDist      <- matrix(.alldistfun(t(matrix(train[i,])), train, method, sorted = FALSE, S_inv))
+    trainDist[i]   <- NA
 
 
     # mask of any data that are not used for training for the respective data point (using CV)
@@ -384,4 +374,39 @@ aoa_get_variables <- function(variables, model, train){
   return(variables)
 
 
+}
+
+
+
+.mindistfun <- function(point, reference, method, S_inv=NULL){
+
+  if (method == "L2"){ # Euclidean Distance
+    return(c(FNN::knnx.dist(reference, point, k = 1)))
+  } else if (method == "MD"){ # Mahalanobis Distance
+    return(sapply(1:dim(point)[1],
+                  function(y) min(sapply(1:dim(reference)[1],
+                                         function(x) sqrt( t(point[y,] - reference[x,]) %*% S_inv %*% (point[y,] - reference[x,]) )))))
+  }
+}
+
+.alldistfun <- function(point, reference, method, sorted = TRUE,S_inv=NULL){
+
+  if (method == "L2"){ # Euclidean Distance
+    if(sorted){
+      return(FNN::knnx.dist(reference, point, k = dim(reference)[1]))
+    } else {
+      return(FNN::knnx.dist(point,reference,k=1))
+    }
+  } else if (method == "MD"){ # Mahalanobis Distance
+    if(sorted){
+      return(t(sapply(1:dim(point)[1],
+                      function(y) sort(sapply(1:dim(reference)[1],
+                                              function(x) sqrt( t(point[y,] - reference[x,]) %*% S_inv %*% (point[y,] - reference[x,]) ))))))
+    } else {
+      return(t(sapply(1:dim(point)[1],
+                      function(y) sapply(1:dim(reference)[1],
+                                         function(x) sqrt( t(point[y,] - reference[x,]) %*% S_inv %*% (point[y,] - reference[x,]) )))))
+
+    }
+  }
 }

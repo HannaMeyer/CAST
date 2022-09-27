@@ -247,28 +247,16 @@ aoa <- function(newdata,
 #    tmp[okrows] <- c(FNN::knnx.dist(train_scaled, newdataCC, k = 1))
 #    return(tmp)
 #  }
+ # mindist <- distfun(newdata,method)
 
-  distfun <- function(x,method){
-    tmp         <- rep(NA, nrow(x))
-    okrows      <- which(apply(x, 1, function(x) all(!is.na(x))))
-    newdataCC   <- x[okrows,]
 
-    if(method=="L2"){
-      tmp[okrows] <- c(FNN::knnx.dist(train_scaled, newdataCC, k = 1))
-    }
-
-    if(method=="MD"){
-      S_inv       <- solve(stats::cov(train_scaled))
-      tmp[okrows] <- sapply(1:dim(newdataCC)[1],
-                            function(y) min(sapply(1:dim(train_scaled)[1],
-                                             function(x) sqrt( t(newdataCC[y,] - train_scaled[x,]) %*% S_inv %*% (newdataCC[y,] - train_scaled[x,]) ))))
-    }
-      return(tmp)
+  mindist <- rep(NA, nrow(newdata))
+  okrows <- which(apply(newdata, 1, function(x) all(!is.na(x))))
+  newdataCC <- newdata[okrows,]
+  if(method=="MD"){
+    S_inv <- MASS::ginv(stats::cov(train_scaled))
   }
-
-
-
-  mindist <- distfun(newdata,method)
+  mindist[okrows] <- .mindistfun(newdataCC, train_scaled, method, S_inv)
 
 
   DI_out <- mindist/trainDI$trainDist_avrgmean
@@ -318,3 +306,5 @@ aoa <- function(newdata,
   return(result)
 
 }
+
+

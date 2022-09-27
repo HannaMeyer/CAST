@@ -20,6 +20,6 @@ Depends: R (>= 4.1.0)
 Imports: caret, stats, utils, ggplot2, graphics, reshape, FNN, plyr, zoo, methods, grDevices, data.table, lattice
 Suggests: doParallel, randomForest, lubridate, raster, sp, knitr, mapview,
     rmarkdown, sf, scales, parallel, latticeExtra, virtualspecies, gridExtra, 
-    viridis, rgeos, stars, scam, terra, rnaturalearth, rgdal
+    viridis, rgeos, stars, scam, terra, rnaturalearth, rgdal, MASS
 RoxygenNote: 7.2.1
 VignetteBuilder: knitr
