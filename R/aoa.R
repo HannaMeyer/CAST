@@ -24,7 +24,7 @@
 #' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
-#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested.
+#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
 #' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
 #'
@@ -239,23 +239,21 @@ aoa <- function(newdata,
 
   # Distance Calculation ---------
 
-
-#  distfun <- function(x){
-#    tmp <- rep(NA, nrow(x))
-#    okrows <- which(apply(x, 1, function(x) all(!is.na(x))))
-#    newdataCC <- x[okrows,]
-#    tmp[okrows] <- c(FNN::knnx.dist(train_scaled, newdataCC, k = 1))
-#    return(tmp)
-#  }
- # mindist <- distfun(newdata,method)
-
-
   mindist <- rep(NA, nrow(newdata))
   okrows <- which(apply(newdata, 1, function(x) all(!is.na(x))))
   newdataCC <- newdata[okrows,]
+
+
   if(method=="MD"){
-    S_inv <- MASS::ginv(stats::cov(train_scaled))
+    if(dim(train_scaled)[2] == 1){
+      S <- matrix(stats::var(train_scaled), 1, 1)
+      newdataCC <- as.matrix(newdataCC,ncol=1)
+    } else {
+      S <- stats::cov(train_scaled)
+    }
+    S_inv <- MASS::ginv(S)
   }
+
   mindist[okrows] <- .mindistfun(newdataCC, train_scaled, method, S_inv)
 
 

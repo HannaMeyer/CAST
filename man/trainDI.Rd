@@ -32,7 +32,7 @@ Only required if no model is given.}
 Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
-\item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested.}
+\item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.}
 }
 \value{
 A list of class \code{trainDI} containing:

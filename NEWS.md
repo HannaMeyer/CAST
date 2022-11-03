@@ -1,8 +1,9 @@
 # `CAST` 0.7.1
 * new features:
-  *
+  * Mahalanobis distance for AOA assessment
 * modifications:
   * faster estimation of the AOA
+  * parallel option for AOA deprecated (see vignette)
 
 # `CAST` 0.7.0
 * new feature: 

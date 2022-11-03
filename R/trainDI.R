@@ -20,7 +20,7 @@
 #' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
-#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested.
+#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
 
 #'
 #' @seealso \code{\link{aoa}}
@@ -171,7 +171,12 @@ trainDI <- function(model = NA,
   trainDist_min <- c()
 
   if(method=="MD"){
-    S_inv     <- MASS::ginv(stats::cov(train))
+    if(dim(train)[2] == 1){
+      S <- matrix(stats::var(train), 1, 1)
+    } else {
+      S <- stats::cov(train)
+    }
+    S_inv <- MASS::ginv(S)
   }
 
   for(i in seq(nrow(train))){
