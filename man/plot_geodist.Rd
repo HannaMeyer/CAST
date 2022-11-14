@@ -26,7 +26,7 @@ plot_geodist(
 
 \item{type}{"geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)}
 
-\item{cvfolds}{optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?createSpaceTimeFolds}
+\item{cvfolds}{optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?CreateSpacetimeFolds}
 
 \item{cvtrain}{optional. List of row indices of x to fit the model to in each CV iteration. If cvtrain is null but cvfolds is not, all samples but those included in cvfolds are used as training data}
 
@@ -40,7 +40,7 @@ plot_geodist(
 
 \item{unit}{character. Only if type=="geo" and only applied to the plot. Supported: "m" or "km".}
 
-\item{stat}{"density" for density plot or "ecdf" for cumulative plot.}
+\item{stat}{"density" for density plot or "ecdf" for empirical cumulative distribution function plot.}
 
 \item{showPlot}{logical}
 }
