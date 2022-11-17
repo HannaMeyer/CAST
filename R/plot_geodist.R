@@ -7,14 +7,14 @@
 #' @param x object of class sf, training data locations
 #' @param modeldomain raster or sf object defining the prediction area (see Details)
 #' @param type "geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)
-#' @param cvfolds optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?createSpaceTimeFolds
+#' @param cvfolds optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?CreateSpacetimeFolds
 #' @param cvtrain optional. List of row indices of x to fit the model to in each CV iteration. If cvtrain is null but cvfolds is not, all samples but those included in cvfolds are used as training data
 #' @param testdata optional. object of class sf: Data used for independent validation
 #' @param samplesize numeric. How many prediction samples should be used?
 #' @param sampling character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.
 #' @param variables character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.
 #' @param unit character. Only if type=="geo" and only applied to the plot. Supported: "m" or "km".
-#' @param stat "density" for density plot or "ecdf" for cumulative plot.
+#' @param stat "density" for density plot or "ecdf" for empirical cumulative distribution function plot.
 #' @param showPlot logical
 #' @return A list including the plot and the corresponding data.frame containing the distances. Unit of returned geographic distances is meters.
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
@@ -420,10 +420,23 @@ plot.nnd = function(x,type,unit,stat){
   if( type=="feature"){ xlabs <- "feature space distances"}
   what <- "" #just to avoid check note
   if (type=="feature"){unit ="unitless"}
-  p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, fill=what)) +
-    ggplot2::geom_density(adjust=1.5, alpha=.4, stat=stat) +
-    ggplot2::scale_fill_discrete(name = "distance function") +
-    ggplot2::xlab(xlabs) +
-    ggplot2::theme(legend.position="bottom",
-                   plot.margin = unit(c(0,0.5,0,0),"cm"))
+  if(stat=="density"){
+    p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, fill=what)) +
+      ggplot2::geom_density(adjust=1.5, alpha=.4, stat=stat) +
+      ggplot2::scale_fill_discrete(name = "distance function") +
+      ggplot2::xlab(xlabs) +
+      ggplot2::theme(legend.position="bottom",
+                     plot.margin = unit(c(0,0.5,0,0),"cm"))
+  }else if(stat=="ecdf"){
+    p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, col=what)) +
+      ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
+      ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
+      ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
+      ggplot2::stat_ecdf(geom = "step", lwd = 1) +
+      ggplot2::scale_color_discrete(name = "distance function") +
+      ggplot2::xlab(xlabs) +
+      ggplot2::ylab("ECDF") +
+      ggplot2::theme(legend.position="bottom",
+                     plot.margin = unit(c(0,0.5,0,0),"cm"))
+  }
 }
