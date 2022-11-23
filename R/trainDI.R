@@ -21,7 +21,7 @@
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
 #' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
-
+#' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #'
 #' @seealso \code{\link{aoa}}
 #' @importFrom graphics boxplot
@@ -104,7 +104,8 @@ trainDI <- function(model = NA,
                     weight = NA,
                     CVtest = NULL,
                     CVtrain = NULL,
-                    method="L2"){
+                    method="L2",
+                    useWeight=TRUE){
 
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
@@ -114,7 +115,13 @@ trainDI <- function(model = NA,
     }
   }
   if(is.na(weight)[1]){
+    if(useWeight){
     weight = aoa_get_weights(model, variables = variables)
+    }else{
+      message("variable are not weighted. see ?aoa")
+      weight <- t(data.frame(rep(1,length(variables))))
+      names(weight) <- variables
+    }
   }else{ #check if manually given weights are correct. otherwise ignore (set to 1):
     if(nrow(weight)!=1||ncol(weight)!=length(variables)){
       message("variable weights are not correctly specified and will be ignored. See ?aoa")

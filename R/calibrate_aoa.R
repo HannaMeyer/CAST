@@ -7,6 +7,7 @@
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
 #' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
 #' @param maskAOA Logical. Should areas outside the AOA set to NA?
+#' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param k Numeric. See mgcv::s
 #' @param m Numeric. See mgcv::s
 #' @param showPlot Logical.
@@ -62,7 +63,8 @@
 #' @aliases calibrate_aoa
 
 calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
-                          length.out = 10, maskAOA=TRUE, showPlot=TRUE,k=6,m=2){
+                          length.out = 10, maskAOA=TRUE, useWeight=TRUE,
+                          showPlot=TRUE,k=6,m=2){
 
   as_stars <- FALSE
   as_terra <- FALSE
@@ -107,7 +109,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
       # retrain model and calculate AOA
       model_new <- do.call(caret::train,mcall)
-      AOA_new <- aoa(train_predictors,model_new)
+      AOA_new <- aoa(train_predictors,model_new,useWeight=useWeight)
 
       # legacy change (very dirty, change this as soon as possible)
       #AOA_new <- AOA_new$AOA

@@ -12,6 +12,7 @@ calibrate_aoa(
   multiCV = FALSE,
   length.out = 10,
   maskAOA = TRUE,
+  useWeight = TRUE,
   showPlot = TRUE,
   k = 6,
   m = 2
@@ -31,6 +32,8 @@ calibrate_aoa(
 \item{length.out}{Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.}
 
 \item{maskAOA}{Logical. Should areas outside the AOA set to NA?}
+
+\item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
 
 \item{showPlot}{Logical.}
 

@@ -11,7 +11,8 @@ trainDI(
   weight = NA,
   CVtest = NULL,
   CVtrain = NULL,
-  method = "L2"
+  method = "L2",
+  useWeight = TRUE
 )
 }
 \arguments{
@@ -33,6 +34,8 @@ Only required if no model is given and only required if CVtrain is not the oppos
 Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
 \item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.}
+
+\item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
 }
 \value{
 A list of class \code{trainDI} containing:

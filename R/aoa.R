@@ -25,6 +25,7 @@
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
 #' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
+#' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
 #'
@@ -142,7 +143,8 @@ aoa <- function(newdata,
                 variables="all",
                 CVtest=NULL,
                 CVtrain=NULL,
-                method="L2") {
+                method="L2",
+                useWeight=TRUE) {
 
   # handling of different raster formats
   as_stars <- FALSE
@@ -167,7 +169,7 @@ aoa <- function(newdata,
   # if not provided, compute train DI
   if(!inherits(trainDI, "trainDI")){
     message("No trainDI provided. Computing DI of training data...")
-    trainDI <- trainDI(model, train, variables, weight, CVtest, CVtrain,method)
+    trainDI <- trainDI(model, train, variables, weight, CVtest, CVtrain,method, useWeight)
   }
 
   message("Computing DI of newdata...")
