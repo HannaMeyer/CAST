@@ -132,6 +132,9 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   ### Get cross-validated predictions from the model:
   if(!multiCV){
     # Get cross-validated predictions:
+    if(is.null(model$pred)){
+      stop("CV predictions cannot be derived from the model. re-train using savePredictions, see ?caret::trainControl")
+    }
     preds_all <- model$pred
     for (i in 1:length(model$bestTune)){
       tunevar <- names(model$bestTune[i])
