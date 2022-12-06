@@ -342,7 +342,7 @@ aoa_get_folds <- function(model, CVtrain, CVtest){
   ### if folds are specified manually:
   if(is.na(model)[1]){
 
-    if(!is.null(CVtest)&is.vector(CVtest)){ # restructure input if CVtest only contains the fold ID
+    if(!is.null(CVtest)&!is.list(CVtest)){ # restructure input if CVtest only contains the fold ID
       tmp <- list()
       for (i in unique(CVtest)){
         tmp[[i]] <- which(CVtest==i)
