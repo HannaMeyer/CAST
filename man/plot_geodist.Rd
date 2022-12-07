@@ -26,7 +26,8 @@ plot_geodist(
 
 \item{type}{"geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)}
 
-\item{cvfolds}{optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?CreateSpacetimeFolds}
+\item{cvfolds}{optional. list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+Or a vector that contains the ID of the fold for each training point. See e.g. ?createFolds or ?CreateSpacetimeFolds or ?nndm}
 
 \item{cvtrain}{optional. List of row indices of x to fit the model to in each CV iteration. If cvtrain is null but cvfolds is not, all samples but those included in cvfolds are used as training data}
 

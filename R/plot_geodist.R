@@ -7,7 +7,8 @@
 #' @param x object of class sf, training data locations
 #' @param modeldomain raster or sf object defining the prediction area (see Details)
 #' @param type "geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)
-#' @param cvfolds optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?CreateSpacetimeFolds
+#' @param cvfolds optional. list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+#' Or a vector that contains the ID of the fold for each training point. See e.g. ?createFolds or ?CreateSpacetimeFolds or ?nndm
 #' @param cvtrain optional. List of row indices of x to fit the model to in each CV iteration. If cvtrain is null but cvfolds is not, all samples but those included in cvfolds are used as training data
 #' @param testdata optional. object of class sf: Data used for independent validation
 #' @param samplesize numeric. How many prediction samples should be used?
@@ -304,6 +305,15 @@ sample2test <- function(x, testdata, type,variables){
 # between folds
 
 cvdistance <- function(x, cvfolds, cvtrain, type, variables){
+
+  if(!is.null(cvfolds)&!is.list(cvfolds)){ # restructure input if CVtest only contains the fold ID
+    tmp <- list()
+    for (i in unique(cvfolds)){
+      tmp[[i]] <- which(cvfolds==i)
+    }
+    cvfolds <- tmp
+  }
+
 
   if(type == "geo"){
     d_cv <- c()
