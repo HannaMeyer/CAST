@@ -97,7 +97,8 @@ The plot can be used to check the suitability of a chosen CV method to be repres
 
 
 <dt>cvfolds</dt>
-<dd><p>optional. List of row indices of x that are held back in each CV iteration. See e.g. ?createFolds or ?CreateSpacetimeFolds</p></dd>
+<dd><p>optional. list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+Or a vector that contains the ID of the fold for each training point. See e.g. ?createFolds or ?CreateSpacetimeFolds or ?nndm</p></dd>
 
 
 <dt>cvtrain</dt>

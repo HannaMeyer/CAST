@@ -1,4 +1,4 @@
-pandoc: '2.5'
+pandoc: 2.19.2
 pkgdown: 2.0.6
 pkgdown_sha: ~
 articles:
@@ -6,7 +6,7 @@ articles:
   cast02-AOA-tutorial: cast02-AOA-tutorial.html
   cast03-AOA-parallel: cast03-AOA-parallel.html
   cast04-plotgeodist: cast04-plotgeodist.html
-last_built: 2022-11-17T07:04Z
+last_built: 2022-12-09T12:54Z
 urls:
   reference: https://hannameyer.github.io/CAST/reference
   article: https://hannameyer.github.io/CAST/articles
