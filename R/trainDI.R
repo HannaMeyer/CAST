@@ -291,14 +291,14 @@ aoa_get_weights = function(model, variables){
   }else{
     as.data.frame(t(caret::varImp(model,scale=F)$importance[,"Overall"]))
   }, error=function(e) e)
-  if(!inherits(weight, "error")){
+  if(!inherits(weight, "error") & length(variables)>1){
     names(weight)<- rownames(caret::varImp(model,scale=F)$importance)
   }else{
     # set all weights to 1
     weight <- as.data.frame(t(rep(1, length(variables))))
     names(weight) = variables
     message("note: variables were not weighted either because no weights or model were given,
-    or no variable importance could be retrieved from the given model.
+    no variable importance could be retrieved from the given model, or the model has a single feature.
     Check caret::varImp(model)")
   }
 

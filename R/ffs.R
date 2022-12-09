@@ -173,6 +173,7 @@ ffs <- function (predictors,
     set.seed(seed)
     #adaptations for pls:
     tuneGrid_orig <- tuneGrid
+    tuneLength_orig <- tuneLength
     if(method=="pls"&!is.null(tuneGrid)&any(tuneGrid$ncomp>minVar)){
       tuneGrid <- data.frame(ncomp=tuneGrid[tuneGrid$ncomp<=minVar,])
       if(verbose){
@@ -186,9 +187,13 @@ ffs <- function (predictors,
         print("invalid value for mtry. Reset to valid range.")
       }
     }
+    # adaptations for RF and minVar == 1 - tuneLength must be 1, only one mtry possible
+    if(minVar==1 & method%in%c("ranger", "rf") & is.null(tuneGrid)){
+      tuneLength <- minVar
+    }
 
     #train model:
-    model <- caret::train(predictors[,minGrid[i,]],
+    model <- caret::train(predictors[minGrid[i,]],
                           response,
                           method=method,
                           metric=metric,
@@ -198,6 +203,7 @@ ffs <- function (predictors,
                           ...)
 
     tuneGrid <- tuneGrid_orig
+    tuneLength <- tuneLength_orig
 
     ### compare the model with the currently best model
     if (globalval){
@@ -290,8 +296,6 @@ ffs <- function (predictors,
           print("invalid value for mtry. Reset to valid range.")
         }
       }
-
-
 
       model <- caret::train(predictors[,c(startvars,nextvars[i])],
                             response,
