@@ -293,9 +293,7 @@ aoa <- function(newdata,
 
   # used in old versions of the AOA. eventually remove the attributes
   attributes(AOA)$aoa_stats <- list("Mean_train" = trainDI$trainDist_avrgmean,
-                                    "threshold_stats" = trainDI$AOA_train_stats,
-                                    "threshold" = trainDI$thres,
-                                    "lower_threshold" = trainDI$lower_thres)
+                                    "threshold" = trainDI$thres)
   attributes(AOA)$TrainDI <- trainDI$trainDI
 
   result <- list(parameters = trainDI,

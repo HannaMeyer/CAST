@@ -48,7 +48,6 @@ A list of class \code{trainDI} containing:
  \item{trainDist_avrgmean}{The mean of trainDist_avrg. Used for normalizing the DI}
  \item{trainDI}{Dissimilarity Index of the training data}
  \item{threshold}{The DI threshold used for inside/outside AOA}
- \item{lower_threshold}{The lower DI threshold. Currently unused.}
 }
 \description{
 This function estimates the Dissimilarity Index (DI) of

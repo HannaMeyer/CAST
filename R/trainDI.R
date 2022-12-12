@@ -37,7 +37,6 @@
 #'  \item{trainDist_avrgmean}{The mean of trainDist_avrg. Used for normalizing the DI}
 #'  \item{trainDI}{Dissimilarity Index of the training data}
 #'  \item{threshold}{The DI threshold used for inside/outside AOA}
-#'  \item{lower_threshold}{The lower DI threshold. Currently unused.}
 #'
 #'
 #'
@@ -218,8 +217,13 @@ trainDI <- function(model = NA,
 
 
   # AOA Threshold ----
-  thres <- grDevices::boxplot.stats(TrainDI)$stats[5]
-  lower_thres <- grDevices::boxplot.stats(TrainDI)$stats[1]
+  threshold_quantile <- stats::quantile(TrainDI, 0.75)
+  threshold_iqr <- (1.5 * stats::IQR(TrainDI))
+  thres <- threshold_quantile + threshold_iqr
+
+  # note: previous versions of CAST derived the threshold this way:
+  #thres <- grDevices::boxplot.stats(TrainDI)$stats[5]
+
 
   # Return: trainDI Object -------
 
@@ -232,8 +236,7 @@ trainDI <- function(model = NA,
     trainDist_avrg = trainDist_avrg,
     trainDist_avrgmean = trainDist_avrgmean,
     trainDI = TrainDI,
-    threshold = thres,
-    lower_threshold = lower_thres
+    threshold = thres
   )
 
   class(aoa_results) = "trainDI"
