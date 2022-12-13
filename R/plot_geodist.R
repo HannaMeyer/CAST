@@ -397,13 +397,13 @@ sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
     }
     #create mask to sample from:
     template <- modeldomain
-    values(template)[!is.na(values(template))] <-1
+    terra::values(template)[!is.na(terra::values(template))] <-1
     modeldomainextent <- terra::as.polygons(template) |>
       sf::st_as_sf() |>
       sf::st_geometry() |>
       sf::st_union()
   }else{
-    modeldomainextent <- template
+    modeldomainextent <- modeldomain
   }
 
   sf::sf_use_s2(FALSE)
