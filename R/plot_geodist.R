@@ -381,40 +381,48 @@ cvdistance <- function(x, cvfolds, cvtrain, type, variables){
 
 
 sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
-
+  
   ##### Distance to prediction locations:
   # regularly spread points (prediction locations):
   # see https://edzer.github.io/OGH21/
   if(inherits(modeldomain, "Raster")){
-    if(samplesize>raster::ncell(modeldomain)){
-      samplesize <- raster::ncell(modeldomain)
+    modeldomain <- terra::rast(modeldomain)
+  } 
+  
+  if(inherits(modeldomain, "SpatRaster")) {
+    if(samplesize>terra::ncell(modeldomain)){
+      samplesize <- terra::ncell(modeldomain)
       message(paste0("samplesize for new data shouldn't be larger than number of pixels.
-              Samplesize was reduced to ",raster::ncell(modeldomain)))
+              Samplesize was reduced to ",terra::ncell(modeldomain)))
     }
-    modeldomainextent <- sf::st_as_sf(sf::st_as_sfc(sf::st_bbox(modeldomain)))
+    modeldomainextent <- terra::as.polygons(modeldomain) |>
+      sf::st_as_sf() |>
+      sf::st_geometry() |>
+      sf::st_union() 
   }else{
     modeldomainextent <- modeldomain
   }
-
+  
   sf::sf_use_s2(FALSE)
   sf::st_as_sf(modeldomainextent) |>
     sf::st_transform(4326) -> bb
   methods::as(bb, "Spatial") |>
-    sp::spsample(n =samplesize, type = sampling)  |>
+    sp::spsample(n = samplesize, type = sampling)  |>
     sf::st_as_sfc() |>
     sf::st_set_crs(4326) -> predictionloc
-
-
+  
+  
   predictionloc <- sf::st_as_sf(predictionloc)
-
-
+  
+  
   if(type == "feature"){
-    predictionloc <- sf::st_as_sf(raster::extract(modeldomain, predictionloc, df = TRUE, sp = TRUE))
+    modeldomain <- terra::project(modeldomain, "epsg:4326")
+    predictionloc <- sf::st_as_sf(terra::extract(modeldomain,terra::vect(predictionloc),bind=TRUE))
     predictionloc <- na.omit(predictionloc)
   }
-
+  
   return(predictionloc)
-
+  
 }
 
 # plot results
