@@ -85,7 +85,6 @@ maximum DI of the cross-validated training data.</p>
 <span>  <span class="va">newdata</span>,</span>
 <span>  model <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  trainDI <span class="op">=</span> <span class="cn">NA</span>,</span>
-<span>  cl <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  train <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weight <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  variables <span class="op">=</span> <span class="st">"all"</span>,</span>
@@ -110,10 +109,6 @@ See examples for the case that no model is available or for models trained via e
 
 <dt>trainDI</dt>
 <dd><p>A trainDI object. Optional if <code><a href="trainDI.html">trainDI</a></code> was calculated beforehand.</p></dd>
-
-
-<dt>cl</dt>
-<dd><p>A cluster object e.g. created with doParallel. Optional. Should only be used if newdata is large.</p></dd>
 
 
 <dt>train</dt>

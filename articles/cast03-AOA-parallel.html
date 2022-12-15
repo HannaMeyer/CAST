@@ -78,7 +78,7 @@
                         <h4 data-toc-skip class="author">Marvin
 Ludwig</h4>
             
-            <h4 data-toc-skip class="date">2022-12-14</h4>
+            <h4 data-toc-skip class="date">2022-12-15</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast03-AOA-parallel.Rmd" class="external-link"><code>vignettes/cast03-AOA-parallel.Rmd</code></a></small>
       <div class="d-none name"><code>cast03-AOA-parallel.Rmd</code></div>
@@ -153,45 +153,29 @@ generation.</p>
 <span><span class="va">prediction_random</span> <span class="op">&lt;-</span> <span class="fu">raster</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">model_random</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="parallel-aoa-1-providing-a-cluster">Parallel AOA 1: Providing a Cluster<a class="anchor" aria-label="anchor" href="#parallel-aoa-1-providing-a-cluster"></a>
+<h2 id="parallel-aoa-by-dividing-the-new-data">Parallel AOA by dividing the new data<a class="anchor" aria-label="anchor" href="#parallel-aoa-by-dividing-the-new-data"></a>
 </h2>
-<p>The simplest methods to compute the AOA in parallel is by providing a
-<code>cluster</code> object in the function call. This way the distance
-calculation between training data and new data will run on multiple
-cores (utilizing <code><a href="https://rdrr.io/r/parallel/clusterApply.html" class="external-link">parallel::parApply</a></code>). This is recommended
-if the training set is relatively small but new locations for which the
-AOA should be computed are abundant.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RevolutionAnalytics/doparallel" class="external-link">doParallel</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">parallel</span><span class="op">)</span></span>
-<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/doParallel/man/registerDoParallel.html" class="external-link">registerDoParallel</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
-<span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span>,cl<span class="op">=</span><span class="va">cl</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="parallel-aoa-2-divide-and-conquer">Parallel AOA 2: Divide and Conquer<a class="anchor" aria-label="anchor" href="#parallel-aoa-2-divide-and-conquer"></a>
-</h2>
-<p>For even better performances, it is recommended to compute the AOA in
-two steps. First, the DI of training data and the resulting DI threshold
-is computed from the model or training data with the function
+<p>For better performances, it is recommended to compute the AOA in two
+steps. First, the DI of training data and the resulting DI threshold is
+computed from the model or training data with the function
 <code>trainDI</code>. The result from trainDI is usually the first step
 of the <code>aoa</code> function, however it can be skipped by providing
 the trainDI object in the function call. This makes it possible to
 compute the AOA on multiple raster tiles at once (e.g. on different
 cores). This is especially useful for very large prediction areas,
 e.g. in global mapping.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_random_trainDI</span> <span class="op">=</span> <span class="fu"><a href="../reference/trainDI.html">trainDI</a></span><span class="op">(</span><span class="va">model_random</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">model_random_trainDI</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## DI of 74 observation </span></span>
 <span><span class="co">## Predictors: bio2 bio5 bio10 bio13 bio14 bio19 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## AOA Threshold: 0.1251918</span></span></code></pre>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">model_random_trainDI</span>, <span class="st">"path/to/file"</span><span class="op">)</span></span></code></pre></div>
 <p>If you have a large raster, you divide it into multiple smaller tiles
 and apply the trainDI object afterwards to each tile.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">r1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">7</span>,<span class="fl">42.33333</span>,<span class="fl">54.83333</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">r2</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>,<span class="fl">14</span>,<span class="fl">42.33333</span>,<span class="fl">54.83333</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">r3</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">14</span>,<span class="fl">21</span>,<span class="fl">42.33333</span>,<span class="fl">54.83333</span><span class="op">)</span><span class="op">)</span></span>
@@ -199,35 +183,35 @@ and apply the trainDI object afterwards to each tile.</p>
 <span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">r1</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, main <span class="op">=</span> <span class="st">"Tile 1"</span><span class="op">)</span>,</span>
 <span>             <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">r2</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, main <span class="op">=</span> <span class="st">"Tile 2"</span><span class="op">)</span>,</span>
 <span>             <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">r3</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, main <span class="op">=</span> <span class="st">"Tile 3"</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast03-AOA-parallel_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
+<p><img src="cast03-AOA-parallel_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 <p>Use the <code>trainDI</code> argument in the <code>aoa</code>
 function to specify, that you want to use a previously computed trainDI
 object.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">aoa_r1</span> <span class="op">=</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span>newdata <span class="op">=</span> <span class="va">r1</span>, trainDI <span class="op">=</span> <span class="va">model_random_trainDI</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">r1</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, main <span class="op">=</span> <span class="st">"Tile 1: Predictors"</span><span class="op">)</span>,</span>
 <span>             <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">aoa_r1</span><span class="op">$</span><span class="va">DI</span>, main <span class="op">=</span> <span class="st">"Tile 1: DI"</span><span class="op">)</span>,</span>
 <span>             <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">aoa_r1</span><span class="op">$</span><span class="va">AOA</span>, main <span class="op">=</span> <span class="st">"Tile 1: AOA"</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast03-AOA-parallel_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
+<p><img src="cast03-AOA-parallel_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
 <p>You can now run the aoa function in parallel on the different tiles!
 Of course you can use for favorite parallel backend for this task, here
 we use mclapply from the <code>parallel</code> package.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">parallel</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">tiles_aoa</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">mclapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">r1</span>, <span class="va">r2</span>, <span class="va">r3</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">tile</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span>newdata <span class="op">=</span> <span class="va">tile</span>, trainDI <span class="op">=</span> <span class="va">model_random_trainDI</span><span class="op">)</span></span>
 <span>  </span>
 <span><span class="op">}</span>, mc.cores <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">tiles_aoa</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">AOA</span>, main <span class="op">=</span> <span class="st">"Tile 1"</span><span class="op">)</span>,</span>
 <span>             <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">tiles_aoa</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">AOA</span>, main <span class="op">=</span> <span class="st">"Tile 2"</span><span class="op">)</span>,</span>
 <span>             <span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">tiles_aoa</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">AOA</span>, main <span class="op">=</span> <span class="st">"Tile 3"</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast03-AOA-parallel_files/figure-html/unnamed-chunk-11-1.png" width="700"></p>
+<p><img src="cast03-AOA-parallel_files/figure-html/unnamed-chunk-10-1.png" width="700"></p>
 <p>For larger tasks it might be useful to save the tiles to you
 hard-drive and load them one by one to avoid filling up your RAM.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Simple Example Code for raster tiles on the hard drive</span></span>
 <span></span>
 <span><span class="va">tiles</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="st">"path/to/tiles"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -237,14 +221,6 @@ hard-drive and load them one by one to avoid filling up your RAM.</p>
 <span>  <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span>newdata <span class="op">=</span> <span class="va">current</span>, trainDI <span class="op">=</span> <span class="va">model_random_trainDI</span><span class="op">)</span></span>
 <span>  </span>
 <span><span class="op">}</span>, mc.cores <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="final-remarks">Final Remarks<a class="anchor" aria-label="anchor" href="#final-remarks"></a>
-</h2>
-<p>It should be possible to combine both parallelization methods! For
-example on a High Performance Cluster, multiple raster tiles can be
-handled by different nodes and then, each node computes the distance
-between prediction and training data on multiple cores.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
