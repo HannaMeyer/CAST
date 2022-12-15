@@ -8,7 +8,6 @@ aoa(
   newdata,
   model = NA,
   trainDI = NA,
-  cl = NULL,
   train = NULL,
   weight = NA,
   variables = "all",
@@ -26,8 +25,6 @@ the model was meant to make predictions for.}
 See examples for the case that no model is available or for models trained via e.g. mlr3.}
 
 \item{trainDI}{A trainDI object. Optional if \code{\link{trainDI}} was calculated beforehand.}
-
-\item{cl}{A cluster object e.g. created with doParallel. Optional. Should only be used if newdata is large.}
 
 \item{train}{A data.frame containing the data used for model training. Optional. Only required when no model is given}
 

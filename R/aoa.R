@@ -13,7 +13,6 @@
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds.
 #' See examples for the case that no model is available or for models trained via e.g. mlr3.
 #' @param trainDI A trainDI object. Optional if \code{\link{trainDI}} was calculated beforehand.
-#' @param cl A cluster object e.g. created with doParallel. Optional. Should only be used if newdata is large.
 #' @param train A data.frame containing the data used for model training. Optional. Only required when no model is given
 #' @param weight A data.frame containing weights for each variable. Optional. Only required if no model is given.
 #' @param variables character vector of predictor variables. if "all" then all variables
@@ -137,7 +136,6 @@
 aoa <- function(newdata,
                 model=NA,
                 trainDI = NA,
-                cl=NULL,
                 train=NULL,
                 weight=NA,
                 variables="all",

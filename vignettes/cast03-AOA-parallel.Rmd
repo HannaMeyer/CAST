@@ -83,22 +83,10 @@ prediction_random <- raster::predict(predictors,model_random)
 ```
 
 
-# Parallel AOA 1: Providing a Cluster
 
-The simplest methods to compute the AOA in parallel is by providing a `cluster` object in the function call. This way the distance calculation between training data and new data will run on multiple cores (utilizing `parallel::parApply`). This is recommended if the training set is relatively small but new locations for which the AOA should be computed are abundant.
+# Parallel AOA by dividing the new data
 
-```{r, eval = FALSE}
-library(doParallel)
-library(parallel)
-cl <- makeCluster(4)
-registerDoParallel(cl)
-AOA <- aoa(studyArea,model,cl=cl)
-```
-
-
-# Parallel AOA 2: Divide and Conquer
-
-For even better performances, it is recommended to compute the AOA in two steps. First, the DI of training data and the resulting DI threshold is computed from the model or training data with the function `trainDI`. The result from trainDI is usually the first step of the `aoa` function, however it can be skipped by providing the trainDI object in the function call. This makes it possible to compute the AOA on multiple raster tiles at once (e.g. on different cores). This is especially useful for very large prediction areas, e.g. in global mapping.
+For better performances, it is recommended to compute the AOA in two steps. First, the DI of training data and the resulting DI threshold is computed from the model or training data with the function `trainDI`. The result from trainDI is usually the first step of the `aoa` function, however it can be skipped by providing the trainDI object in the function call. This makes it possible to compute the AOA on multiple raster tiles at once (e.g. on different cores). This is especially useful for very large prediction areas, e.g. in global mapping.
 
 ```{r}
 model_random_trainDI = trainDI(model_random)
@@ -179,9 +167,5 @@ tiles_aoa = mclapply(tiles, function(tile){
 }, mc.cores = 3)
 ```
 
-
-# Final Remarks
-
-It should be possible to combine both parallelization methods! For example on a High Performance Cluster, multiple raster tiles can be handled by different nodes and then, each node computes the distance between prediction and training data on multiple cores.
 
 
