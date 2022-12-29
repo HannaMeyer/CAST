@@ -147,7 +147,7 @@ aoa <- function(newdata,
   # handling of different raster formats
   as_stars <- FALSE
   as_terra <- FALSE
-  lead_digit <- all(grepl("[[:digit:]]",names(newdata)))
+  leading_digit <- all(grepl("[[:digit:]]",names(newdata)))
 
   if (inherits(newdata, "stars")) {
     if (!requireNamespace("stars", quietly = TRUE))
