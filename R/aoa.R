@@ -178,7 +178,7 @@ aoa <- function(newdata,
 
   # check if variables are in newdata
   if(any(trainDI$variables %in% names(newdata)==FALSE)){
-    if(leading_digit)
+    if(!leading_digit)
       stop("names of newdata start with leading digits, automatically added 'X' results in mismatching names of train data in the model")
     stop("names of newdata don't match names of train data in the model")
   }
