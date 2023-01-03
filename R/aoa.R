@@ -147,6 +147,8 @@ aoa <- function(newdata,
   # handling of different raster formats
   as_stars <- FALSE
   as_terra <- FALSE
+  leading_digit <- any(grepl("^{1}[0-9]",n))
+
   if (inherits(newdata, "stars")) {
     if (!requireNamespace("stars", quietly = TRUE))
       stop("package stars required: install that first")
@@ -157,6 +159,7 @@ aoa <- function(newdata,
   if (inherits(newdata, "SpatRaster")) {
     if (!requireNamespace("terra", quietly = TRUE))
       stop("package terra required: install that first")
+
     newdata <- methods::as(newdata, "Raster")
     as_terra <- TRUE
   }
@@ -175,6 +178,8 @@ aoa <- function(newdata,
 
   # check if variables are in newdata
   if(any(trainDI$variables %in% names(newdata)==FALSE)){
+    if(!leading_digit)
+      stop("names of newdata start with leading digits, automatically added 'X' results in mismatching names of train data in the model")
     stop("names of newdata don't match names of train data in the model")
   }
 
