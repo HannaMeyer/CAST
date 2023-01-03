@@ -147,7 +147,7 @@ aoa <- function(newdata,
   # handling of different raster formats
   as_stars <- FALSE
   as_terra <- FALSE
-  leading_digit <- any(grepl("^{1}[0-9]",n))
+  leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
 
   if (inherits(newdata, "stars")) {
     if (!requireNamespace("stars", quietly = TRUE))
@@ -178,8 +178,9 @@ aoa <- function(newdata,
 
   # check if variables are in newdata
   if(any(trainDI$variables %in% names(newdata)==FALSE)){
-    if(!leading_digit)
+    if(leading_digit){
       stop("names of newdata start with leading digits, automatically added 'X' results in mismatching names of train data in the model")
+    }
     stop("names of newdata don't match names of train data in the model")
   }
 
@@ -230,14 +231,14 @@ aoa <- function(newdata,
   if(!inherits(trainDI$weight, "error")){
     newdata <- sapply(1:ncol(newdata),function(x){
       newdata[,x]*unlist(trainDI$weight[x])
-      })
+    })
   }
 
 
   # rescale and reweight train data
   train_scaled <- scale(trainDI$train,
-                       center = trainDI$scaleparam$`scaled:center`,
-                       scale = trainDI$scaleparam$`scaled:scale`)
+                        center = trainDI$scaleparam$`scaled:center`,
+                        scale = trainDI$scaleparam$`scaled:scale`)
 
   train_scaled <- sapply(1:ncol(train_scaled),function(x){train_scaled[,x]*unlist(trainDI$weight[x])})
 
@@ -300,8 +301,8 @@ aoa <- function(newdata,
   attributes(AOA)$TrainDI <- trainDI$trainDI
 
   result <- list(parameters = trainDI,
-                DI = out,
-                AOA = AOA)
+                 DI = out,
+                 AOA = AOA)
 
   class(result) <- "aoa"
   return(result)
