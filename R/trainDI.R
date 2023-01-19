@@ -115,7 +115,7 @@ trainDI <- function(model = NA,
   }
   if(is.na(weight)[1]){
     if(useWeight){
-    weight = aoa_get_weights(model, variables = variables)
+      weight = aoa_get_weights(model, variables = variables)
     }else{
       message("variable are not weighted. see ?aoa")
       weight <- t(data.frame(rep(1,length(variables))))
@@ -199,7 +199,9 @@ trainDI <- function(model = NA,
     # mask of any data that are not used for training for the respective data point (using CV)
     if(!is.null(CVtrain)&!is.null(CVtest)){
       whichfold <-  as.numeric(which(lapply(CVtest,function(x){any(x==i)})==TRUE)) # index of the fold where i is held back
-      trainDist[!seq(nrow(train))%in%CVtrain[[whichfold]]] <- NA # everything that is not in the training data for i is ignored
+      if(length(whichfold)!=0){ # in case that a data point is never used for testing
+        trainDist[!seq(nrow(train))%in%CVtrain[[whichfold]]] <- NA # everything that is not in the training data for i is ignored
+      }
     }
 
     #######################################
