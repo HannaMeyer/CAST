@@ -337,7 +337,7 @@ aoa_get_train <- function(model){
 aoa_get_folds <- function(model, CVtrain, CVtest){
   ### if folds are to be extracted from the model:
   if (!is.na(model)[1]){
-    if(model$control$method!="cv"){
+    if(tolower(model$control$method)!="cv"){
       message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
     }else{
       CVtest <- model$control$indexOut
