@@ -7,6 +7,7 @@
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
 #' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
 #' @param maskAOA Logical. Should areas outside the AOA set to NA?
+#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param k Numeric. See mgcv::s
 #' @param m Numeric. See mgcv::s
@@ -68,20 +69,22 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
   as_stars <- FALSE
   as_terra <- FALSE
-  if (inherits(AOA, "stars")) {
+  if (inherits(AOA$AOA, "stars")) {
     if (!requireNamespace("stars", quietly = TRUE))
       stop("package stars required: install that first")
     attr <- attributes(AOA)[c("aoa_stats","TrainDI")]
-    AOA <- methods::as(AOA, "Raster")
+    AOA$AOA <- methods::as(AOA$AOA, "Raster")
+    AOA$DI <- methods::as(AOA$DI, "Raster")
     attributes(AOA)<- c(attributes(AOA),attr)
     as_stars <- TRUE
   }
 
-  if (inherits(AOA, "SpatRaster")) {
+  if (inherits(AOA$AOA, "SpatRaster")) {
     if (!requireNamespace("terra", quietly = TRUE))
       stop("package terra required: install that first")
     attr <- attributes(AOA)[c("aoa_stats","TrainDI")]
-    AOA <- methods::as(AOA, "Raster")
+    AOA$AOA <- methods::as(AOA$AOA, "Raster")
+    AOA$DI <- methods::as(AOA$DI, "Raster")
     attributes(AOA)<- c(attributes(AOA),attr)
     as_terra <- TRUE
   }
@@ -109,7 +112,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
       # retrain model and calculate AOA
       model_new <- do.call(caret::train,mcall)
-      AOA_new <- aoa(train_predictors,model_new,useWeight=useWeight)
+      AOA_new <- aoa(train_predictors,model_new,method=method, useWeight=useWeight)
 
       # legacy change (very dirty, change this as soon as possible)
       #AOA_new <- AOA_new$AOA
@@ -296,20 +299,21 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
 
   if (as_stars){
-    AOA <- split(stars::st_as_stars(AOA), "band")
-    attributes(AOA)<- c(attributes(AOA),attr)
+    AOA$AOA <- split(stars::st_as_stars(AOA$AOA), "band")
+    AOA$DI <- split(stars::st_as_stars(AOA$DI), "band")
+    attributes(AOA$AOA)<- c(attributes(AOA$AOA),attr)
   }
 
   if(as_terra){
-    AOA <- methods::as(AOA, "SpatRaster")
-    attributes(AOA)<- c(attributes(AOA),attr)
+    AOA$AOA <- methods::as(AOA$AOA, "SpatRaster")
+    AOA$DI <- methods::as(AOA$DI, "SpatRaster")
+    attributes(AOA$AOA)<- c(attributes(AOA$AOA),attr)
   }
   names(AOA)[names(AOA)=="expectedError"] <- paste0("expected_",model$metric)
   #return(AOA)
 
   return(list(AOA = AOA,
               plot = p))
-
 
 }
 
