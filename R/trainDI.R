@@ -202,13 +202,18 @@ trainDI <- function(model = NA,
       if(length(whichfold)!=0){ # in case that a data point is never used for testing
         trainDist[!seq(nrow(train))%in%CVtrain[[whichfold]]] <- NA # everything that is not in the training data for i is ignored
       }
+      if(length(whichfold)==0){#in case that a data point is never used for testing, the distances for that point are ignored
+        trainDist <- NA
+      }
     }
 
     #######################################
 
-
-    trainDist_min <- append(trainDist_min, min(trainDist, na.rm = TRUE))
-
+    if (length(whichfold)==0){
+      trainDist_min <- append(trainDist_min, NA)
+    }else{
+      trainDist_min <- append(trainDist_min, min(trainDist, na.rm = TRUE))
+    }
   }
   trainDist_avrgmean <- mean(trainDist_avrg,na.rm=TRUE)
 
@@ -219,8 +224,8 @@ trainDI <- function(model = NA,
 
 
   # AOA Threshold ----
-  threshold_quantile <- stats::quantile(TrainDI, 0.75)
-  threshold_iqr <- (1.5 * stats::IQR(TrainDI))
+  threshold_quantile <- stats::quantile(TrainDI, 0.75,na.rm=TRUE)
+  threshold_iqr <- (1.5 * stats::IQR(TrainDI,na.rm=T))
   thres <- threshold_quantile + threshold_iqr
 
   # note: previous versions of CAST derived the threshold this way:
@@ -427,3 +432,4 @@ aoa_get_variables <- function(variables, model, train){
     }
   }
 }
+

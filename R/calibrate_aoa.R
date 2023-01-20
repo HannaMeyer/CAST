@@ -7,7 +7,7 @@
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
 #' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
 #' @param maskAOA Logical. Should areas outside the AOA set to NA?
-#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
+#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer. See ?aoa for further explanation
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param k Numeric. See mgcv::s
 #' @param m Numeric. See mgcv::s
@@ -145,7 +145,7 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     }
 
     preds_all <- preds_all[order(preds_all$rowIndex),c("pred","obs")]
-    preds_all$DI <- AOA$parameters$trainDI
+    preds_all$DI <- AOA$parameters$trainDI[!is.na(AOA$parameters$trainDI)]
 
     ## only take predictions from inside the AOA:
     preds_all <-  preds_all[preds_all$DI<=AOA$parameters$threshold,]
