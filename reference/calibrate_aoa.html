@@ -68,6 +68,7 @@
 <span>  multiCV <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  length.out <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  maskAOA <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"L2"</span>,</span>
 <span>  useWeight <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  showPlot <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  k <span class="op">=</span> <span class="fl">6</span>,</span>
@@ -103,6 +104,10 @@
 
 <dt>maskAOA</dt>
 <dd><p>Logical. Should areas outside the AOA set to NA?</p></dd>
+
+
+<dt>method</dt>
+<dd><p>Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer. See ?aoa for further explanation</p></dd>
 
 
 <dt>useWeight</dt>
