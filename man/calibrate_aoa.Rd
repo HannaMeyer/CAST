@@ -34,7 +34,7 @@ calibrate_aoa(
 
 \item{maskAOA}{Logical. Should areas outside the AOA set to NA?}
 
-\item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.}
+\item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer. See ?aoa for further explanation}
 
 \item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
 

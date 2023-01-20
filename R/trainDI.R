@@ -197,6 +197,7 @@ trainDI <- function(model = NA,
 
 
     # mask of any data that are not used for training for the respective data point (using CV)
+    whichfold <- NA
     if(!is.null(CVtrain)&!is.null(CVtest)){
       whichfold <-  as.numeric(which(lapply(CVtest,function(x){any(x==i)})==TRUE)) # index of the fold where i is held back
       if(length(whichfold)!=0){ # in case that a data point is never used for testing
