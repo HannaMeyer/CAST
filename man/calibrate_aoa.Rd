@@ -12,6 +12,7 @@ calibrate_aoa(
   multiCV = FALSE,
   length.out = 10,
   maskAOA = TRUE,
+  method = "L2",
   useWeight = TRUE,
   showPlot = TRUE,
   k = 6,
@@ -32,6 +33,8 @@ calibrate_aoa(
 \item{length.out}{Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.}
 
 \item{maskAOA}{Logical. Should areas outside the AOA set to NA?}
+
+\item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.}
 
 \item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
 

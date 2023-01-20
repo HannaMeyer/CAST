@@ -64,7 +64,7 @@
 #' @aliases calibrate_aoa
 
 calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
-                          length.out = 10, maskAOA=TRUE, useWeight=TRUE,
+                          length.out = 10, maskAOA=TRUE, method= "L2", useWeight=TRUE,
                           showPlot=TRUE,k=6,m=2){
 
   as_stars <- FALSE
