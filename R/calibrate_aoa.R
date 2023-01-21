@@ -109,6 +109,9 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
       mcall$y <- quote(train_response)
       mcall$trControl <- trainControl(method="cv",index=folds$index,savePredictions = TRUE)
       mcall$tuneGrid <- model$bestTune
+      mcall$method <- model$method
+      mcall$metric <- model$metric
+      mcall$cl <- NULL # fix option for parallel later
 
       # retrain model and calculate AOA
       model_new <- do.call(caret::train,mcall)
