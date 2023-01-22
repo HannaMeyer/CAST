@@ -5,7 +5,8 @@
   * faster estimation of the AOA
   * parallel option for AOA deprecated (see vignette)
 * bugfix:
-  * delineation of the threshold fixed as suggested in github.com/HannaMeyer/CAST/issues/46
+  * delineation of the default threshold fixed as suggested in github.com/HannaMeyer/CAST/issues/46
+  * fixed issue github.com/ropensci/rnaturalearth/issues/69
   
 
 # `CAST` 0.7.0

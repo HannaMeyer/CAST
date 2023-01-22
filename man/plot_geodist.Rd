@@ -115,7 +115,7 @@ co.ee <- st_transform(co, ee)
 ### Simulate a spatial random sample
 ### (alternatively replace pts_random by a real sampling dataset (see Meyer and Pebesma 2022):
 sf_use_s2(FALSE)
-pts_random <- st_sample(co, 2000)
+pts_random <- st_sample(co.ee, 2000, exact=FALSE)
 
 ### See points on the map:
 ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
@@ -124,7 +124,7 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
      labs(x = NULL, y = NULL)
 
 ### plot distances:
-dist <- plot_geodist(pts_random,co,showPlot=FALSE)
+dist <- plot_geodist(pts_random,co.ee,showPlot=FALSE)
 dist$plot+scale_x_log10(labels=round)
 }
 }
