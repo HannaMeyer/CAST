@@ -78,7 +78,7 @@
                         <h4 data-toc-skip class="author">Hanna
 Meyer</h4>
             
-            <h4 data-toc-skip class="date">2023-01-21</h4>
+            <h4 data-toc-skip class="date">2023-01-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast04-plotgeodist.Rmd" class="external-link"><code>vignettes/cast04-plotgeodist.Rmd</code></a></small>
       <div class="d-none name"><code>cast04-plotgeodist.Rmd</code></div>
@@ -119,7 +119,7 @@ settings</p>
 <code class="sourceCode R"><span><span class="va">seed</span> <span class="op">&lt;-</span> <span class="fl">10</span> <span class="co"># random realization</span></span>
 <span><span class="va">samplesize</span> <span class="op">&lt;-</span> <span class="fl">300</span> <span class="co"># how many samples will be used?</span></span>
 <span><span class="va">nparents</span> <span class="op">&lt;-</span> <span class="fl">20</span> <span class="co">#For clustered samples: How many clusters? </span></span>
-<span><span class="va">radius</span> <span class="op">&lt;-</span> <span class="fl">7</span> <span class="co"># For clustered samples: What is the radius of a cluster?</span></span></code></pre></div>
+<span><span class="va">radius</span> <span class="op">&lt;-</span> <span class="fl">500000</span> <span class="co"># For clustered samples: What is the radius of a cluster?</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="prediction-area">Prediction area<a class="anchor" aria-label="anchor" href="#prediction-area"></a>
 </h3>
@@ -139,7 +139,7 @@ entire global prediction area.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/s2.html" class="external-link">sf_use_s2</a></span><span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
-<span><span class="va">pts_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">co</span>, <span class="va">samplesize</span><span class="op">)</span></span>
+<span><span class="va">pts_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">co.ee</span>, <span class="va">samplesize</span><span class="op">)</span></span>
 <span><span class="co">### See points on the map:</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">co.ee</span>, fill<span class="op">=</span><span class="st">"#00BFC4"</span>,col<span class="op">=</span><span class="st">"#00BFC4"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">pts_random</span>, color <span class="op">=</span> <span class="st">"#F8766D"</span>,size<span class="op">=</span><span class="fl">0.5</span>, shape<span class="op">=</span><span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
@@ -154,7 +154,7 @@ entire global prediction area.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/s2.html" class="external-link">sf_use_s2</a></span><span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">pts_clustered</span> <span class="op">&lt;-</span> <span class="fu">clustered_sample</span><span class="op">(</span><span class="va">co</span>, <span class="va">samplesize</span>, <span class="va">nparents</span>, <span class="va">radius</span><span class="op">)</span></span>
+<span><span class="va">pts_clustered</span> <span class="op">&lt;-</span> <span class="fu">clustered_sample</span><span class="op">(</span><span class="va">co.ee</span>, <span class="va">samplesize</span>, <span class="va">nparents</span>, <span class="va">radius</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">co.ee</span>, fill<span class="op">=</span><span class="st">"#00BFC4"</span>,col<span class="op">=</span><span class="st">"#00BFC4"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">pts_clustered</span>, color <span class="op">=</span> <span class="st">"#F8766D"</span>,size<span class="op">=</span><span class="fl">0.5</span>, shape<span class="op">=</span><span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
@@ -176,11 +176,11 @@ global case study here, throughout this tutorial we use
 sampling=Fibonacci to draw prediction locations with constant point
 density on the sphere.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dist_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random</span>,<span class="va">co</span>,</span>
+<code class="sourceCode R"><span><span class="va">dist_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random</span>,<span class="va">co.ee</span>,</span>
 <span>                            sampling<span class="op">=</span><span class="st">"Fibonacci"</span>,</span>
 <span>                            unit<span class="op">=</span><span class="st">"km"</span>,</span>
 <span>                            showPlot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co</span>,</span>
+<span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
 <span>                           sampling<span class="op">=</span><span class="st">"Fibonacci"</span>,</span>
 <span>                           unit<span class="op">=</span><span class="st">"km"</span>,</span>
 <span>                           showPlot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
@@ -213,7 +213,7 @@ this might not be a good idea).</p>
 <code class="sourceCode R"><span><span class="va">randomfolds</span> <span class="op">&lt;-</span> <span class="fu">caret</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/createDataPartition.html" class="external-link">createFolds</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pts_clustered</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-9-1.png" width="595.2"></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co</span>,</span>
+<code class="sourceCode R"><span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
 <span>                           sampling<span class="op">=</span><span class="st">"Fibonacci"</span>, </span>
 <span>                           cvfolds<span class="op">=</span> <span class="va">randomfolds</span>, </span>
 <span>                           unit<span class="op">=</span><span class="st">"km"</span>,</span>
@@ -237,7 +237,7 @@ that in each iteration, one of the spatial clusters is held back.</p>
 <code class="sourceCode R"><span><span class="va">spatialfolds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CreateSpacetimeFolds.html">CreateSpacetimeFolds</a></span><span class="op">(</span><span class="va">pts_clustered</span>,spacevar<span class="op">=</span><span class="st">"parent"</span>,k<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">pts_clustered</span><span class="op">$</span><span class="va">parent</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-12-1.png" width="595.2"></p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co</span>,</span>
+<code class="sourceCode R"><span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
 <span>                           sampling<span class="op">=</span><span class="st">"Fibonacci"</span>,</span>
 <span>                           cvfolds<span class="op">=</span> <span class="va">spatialfolds</span><span class="op">$</span><span class="va">indexOut</span>, </span>
 <span>                           unit<span class="op">=</span><span class="st">"km"</span>,</span>
@@ -266,7 +266,7 @@ randomly distributed reference data.</p>
 <code class="sourceCode R"><span><span class="co"># create a spatial CV for the randomly distributed data. Here:</span></span>
 <span><span class="co"># "leave region-out-CV"</span></span>
 <span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/s2.html" class="external-link">sf_use_s2</a></span><span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">pts_random_co</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_join.html" class="external-link">st_join</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">pts_random</span><span class="op">)</span>,<span class="va">co</span><span class="op">)</span></span>
+<span><span class="va">pts_random_co</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_join.html" class="external-link">st_join</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">pts_random</span><span class="op">)</span>,<span class="va">co.ee</span><span class="op">)</span></span>
 <span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">co.ee</span>, fill<span class="op">=</span><span class="st">"#00BFC4"</span>,col<span class="op">=</span><span class="st">"#00BFC4"</span><span class="op">)</span> <span class="op">+</span></span>
@@ -278,7 +278,7 @@ randomly distributed reference data.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">spfolds_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CreateSpacetimeFolds.html">CreateSpacetimeFolds</a></span><span class="op">(</span><span class="va">pts_random_co</span>,spacevar <span class="op">=</span> <span class="st">"subregion"</span>,</span>
 <span>                                     k<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">pts_random_co</span><span class="op">$</span><span class="va">subregion</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">dist_rand_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random_co</span>,<span class="va">co</span>,</span>
+<span><span class="va">dist_rand_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random_co</span>,<span class="va">co.ee</span>,</span>
 <span>                             sampling<span class="op">=</span><span class="st">"Fibonacci"</span>, </span>
 <span>                             cvfolds<span class="op">=</span> <span class="va">spfolds_rand</span><span class="op">$</span><span class="va">indexOut</span>, </span>
 <span>                             unit<span class="op">=</span><span class="st">"km"</span>,</span>
@@ -306,8 +306,8 @@ during the CV is to use Nearest Neighbour Distance Matching (NNDM) CV
 the empirical distribution function of nearest neighbour distances found
 during prediction is matched during the CV process.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">nndmfolds_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">pts_clustered</span>, modeldomain<span class="op">=</span><span class="va">co</span>, sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,samplesize <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
-<span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co</span>,</span>
+<code class="sourceCode R"><span><span class="va">nndmfolds_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">pts_clustered</span>, modeldomain<span class="op">=</span><span class="va">co.ee</span>, sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,samplesize <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
+<span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
 <span>                           sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,</span>
 <span>                           cvfolds <span class="op">=</span> <span class="va">nndmfolds_clstr</span><span class="op">$</span><span class="va">indx_test</span>, </span>
 <span>                           cvtrain <span class="op">=</span> <span class="va">nndmfolds_clstr</span><span class="op">$</span><span class="va">indx_train</span>,</span>
@@ -319,8 +319,8 @@ during prediction is matched during the CV process.</p>
 distribution very well. What happens if we use NNDM CV for the
 randomly-distributed sampling points instead?</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">nndmfolds_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">pts_random_co</span>,  modeldomain<span class="op">=</span><span class="va">co</span>, sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,samplesize <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
-<span><span class="va">dist_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random_co</span>,<span class="va">co</span>,</span>
+<code class="sourceCode R"><span><span class="va">nndmfolds_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">pts_random_co</span>,  modeldomain<span class="op">=</span><span class="va">co.ee</span>, sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,samplesize <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
+<span><span class="va">dist_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random_co</span>,<span class="va">co.ee</span>,</span>
 <span>                          sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,</span>
 <span>                          cvfolds <span class="op">=</span> <span class="va">nndmfolds_rand</span><span class="op">$</span><span class="va">indx_test</span>, </span>
 <span>                          cvtrain <span class="op">=</span> <span class="va">nndmfolds_rand</span><span class="op">$</span><span class="va">indx_train</span>,</span>
