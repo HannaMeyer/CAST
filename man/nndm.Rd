@@ -131,7 +131,7 @@ pts <- dat[,-1]
 pts <- st_as_sf(pts,coords=c("Easting","Northing"))
 st_crs(pts) <- 26911
 studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
-studyArea <- as.polygons(studyArea, values = F, na.all = T) |>
+studyArea <- as.polygons(studyArea, values = FALSE, na.all = TRUE) |>
     st_as_sf() |>
     st_union()
 pts <- st_transform(pts, crs = st_crs(studyArea))
