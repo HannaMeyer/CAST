@@ -60,6 +60,7 @@ and non-defined CRS, great circle distances are used for geographic CRS (units i
 
 The \emph{modeldomain} is a sf polygon that defines the prediction area. The function takes a regular point sample (amount defined by \emph{samplesize)} from the spatial extent.
 As an alternative use \emph{ppoints} instead of \emph{modeldomain}, if you have already defined the prediction locations (e.g. raster pixel centroids).
+When using either \emph{modeldomain} or \emph{ppoints}, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
 }
 \note{
 NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
@@ -72,12 +73,15 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 
 library(sf)
 
-# Simulate 100 random training and test points in a 100x100 square
+# Simulate 100 random training points in a 100x100 square
 set.seed(123)
 poly <- list(matrix(c(0,0,0,100,100,100,100,0,0,0), ncol=2, byrow=TRUE))
 sample_poly <- sf::st_polygon(poly)
 train_points <- sf::st_sample(sample_poly, 100, type = "random")
-pred_points <- sf::st_sample(sample_poly, 100, type = "random")
+pred_points <- sf::st_sample(sample_poly, 100, type = "regular")
+plot(sample_poly)
+plot(pred_points, add = TRUE, col = "blue")
+plot(train_points, add = TRUE, col = "red")
 
 # Run NNDM for the whole domain, here the prediction points are known
 nndm_pred <- nndm(train_points, ppoints=pred_points)
@@ -102,6 +106,9 @@ poly <- list(matrix(c(0,0,0,100,100,100,100,0,0,0), ncol=2, byrow=TRUE))
 sample_poly <- sf::st_polygon(poly)
 train_points <- clustered_sample(sample_poly, 100, 10, 5)
 pred_points <- sf::st_sample(sample_poly, 100, type = "regular")
+plot(sample_poly)
+plot(pred_points, add = TRUE, col = "blue")
+plot(train_points, add = TRUE, col = "red")
 
 # Run NNDM for the whole domain
 nndm_pred <- nndm(train_points, ppoints=pred_points)
@@ -124,10 +131,12 @@ pts <- dat[,-1]
 pts <- st_as_sf(pts,coords=c("Easting","Northing"))
 st_crs(pts) <- 26911
 studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
-studyArea <- as.polygons(studyArea, values = F) |>
+studyArea <- as.polygons(studyArea, values = FALSE, na.all = TRUE) |>
     st_as_sf() |>
     st_union()
 pts <- st_transform(pts, crs = st_crs(studyArea))
+plot(studyArea)
+plot(st_geometry(pts), add = TRUE, col = "red")
 
 nndm_folds <- nndm(pts, modeldomain= studyArea)
 plot(nndm_folds)
