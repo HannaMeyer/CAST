@@ -74,35 +74,6 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 
 As second data set we use a clustered design of the same size.
 
-```{r,message = FALSE, include=FALSE}
-# adjusted from from https://github.com/carlesmila/NNDMpaper/blob/main/code/sim_utils.R
-clustered_sample <- function(sarea, nsamples, nparents, radius){
-
-  # Number of offspring per parent
-  nchildren <- round((nsamples-nparents)/nparents, 0)
-
-  # Simulate parents
-  parents <- st_sf(geometry=st_sample(sarea, nparents, type="random"))
-  res <- parents
-  res$parent <- 1:nrow(parents)
-
-  # Simulate offspring
-  for(i in 1:nrow(parents)){
-
-    # Generate buffer and cut parts outside of the area of study
-    buf <- st_buffer(parents[i,], dist=radius)
-    buf <- st_intersection(buf, sarea)
-
-    # Simulate children
-    children <- st_sf(geometry=st_sample(buf, nchildren, type="random"))
-      children$parent <- i
-    res <- rbind(res, children)
-  }
-
-  return(res)
-}
-```
-
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 set.seed(seed)
 sf_use_s2(FALSE)
@@ -245,7 +216,7 @@ A good way to approximate the geographical prediction distances during the CV is
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 
 
-nndmfolds_clstr <- nndm(pts_clustered, modeldomain=co.ee, sampling = "Fibonacci",samplesize = 2000)
+nndmfolds_clstr <- nndm(pts_clustered, modeldomain=co.ee, samplesize = 2000)
 dist_clstr <- plot_geodist(pts_clustered,co.ee,
                            sampling = "Fibonacci",
                            cvfolds = nndmfolds_clstr$indx_test, 
@@ -260,7 +231,7 @@ The NNDM CV-distance distribution matches the sample-to-prediction distribution 
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 
-nndmfolds_rand <- nndm(pts_random_co,  modeldomain=co.ee, sampling = "Fibonacci",samplesize = 2000)
+nndmfolds_rand <- nndm(pts_random_co,  modeldomain=co.ee, samplesize = 2000)
 dist_rand <- plot_geodist(pts_random_co,co.ee,
                           sampling = "Fibonacci",
                           cvfolds = nndmfolds_rand$indx_test, 

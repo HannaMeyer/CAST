@@ -65,6 +65,7 @@ See Meyer and Pebesma (2022) for an application of this plotting function
 \dontrun{
 library(sf)
 library(raster)
+library(terra)
 library(caret)
 
 ########### prepare sample data:
@@ -90,7 +91,11 @@ folds <- createFolds(1:nrow(pts_train),k=3,returnTrain=FALSE)
 dist <- plot_geodist(x=pts_train, modeldomain=studyArea, cvfolds=folds)
 
 ## or use nndm to define folds
-nndm_pred <- nndm(pts_train, studyArea)
+AOI <- as.polygons(rast(studyArea), values = F) |>
+  st_as_sf() |>
+  st_union() |>
+  st_transform(crs = st_crs(pts_train))
+nndm_pred <- nndm(pts_train, AOI)
 dist <- plot_geodist(x=pts_train, modeldomain=studyArea,
     cvfolds=nndm_pred$indx_test, cvtrain=nndm_pred$indx_train)
 

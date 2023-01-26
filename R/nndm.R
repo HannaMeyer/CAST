@@ -1,18 +1,21 @@
 #' Nearest Neighbour Distance Matching (NNDM) algorithm
 #' @description
-#' This function implements the \emph{NNDM} algorithm and returns the necessary
+#' This function implements the NNDM algorithm and returns the necessary
 #' indices to perform a NNDM LOO CV for map validation.
 #' @author Carles Milà
 #' @param tpoints sf or sfc point object. Contains the training points samples.
-#' @param modeldomain raster or sf object defining the prediction area (see Details).
-#' @param ppoints sf or sfc point object. Contains the target prediction points. Optional. Alternative to modeldomain (see Details).
-#' @param samplesize numeric. How many points in the modeldomain should be sampled as prediction points? Only required if modeldomain is used instead of ppoints.
-#' @param sampling character. How to draw prediction points from the modeldomain? See spsample. Use sampling = "Fibonacci" for global applications." Only required if modeldomain is used instead of ppoints.
+#' @param modeldomain sf polygon object defining the prediction area (see Details).
+#' @param ppoints sf or sfc point object. Contains the target prediction points.
+#' Optional. Alternative to modeldomain (see Details).
+#' @param samplesize numeric. How many points in the modeldomain should be sampled as prediction points?
+#' Only required if modeldomain is used instead of ppoints.
+#' @param sampling character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
+#' Only required if modeldomain is used instead of ppoints.
 #' @param phi Numeric. Estimate of the landscape autocorrelation range in the
 #' same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.
 #' Per default (phi="max"), the size of the prediction area is used. See Details.
 #' @param min_train Numeric between 0 and 1. Minimum proportion of training
-#' data that must be used in each CV fold. Defaults to 0 (i.e. no restrictions).
+#' data that must be used in each CV fold. Defaults to 0.5 (i.e. half of the training points).
 #'
 #' @return An object of class \emph{nndm} consisting of a list of six elements:
 #' indx_train, indx_test, and indx_exclude (indices of the observations to use as
@@ -31,8 +34,8 @@
 #' When \emph{phi} is set to "max", nearest neighbor distance matching is performed for the entire prediction area. Euclidean distances are used for projected
 #' and non-defined CRS, great circle distances are used for geographic CRS (units in meters).
 #'
-#' The \emph{modeldomain} is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by \emph{samplesize)} from the spatial extent.
-#' As an alternative use \emph{ppoints} instead of \emph{modeldomain}, if you have already defined the prediction locations.
+#' The \emph{modeldomain} is a sf polygon that defines the prediction area. The function takes a regular point sample (amount defined by \emph{samplesize)} from the spatial extent.
+#' As an alternative use \emph{ppoints} instead of \emph{modeldomain}, if you have already defined the prediction locations (e.g. raster pixel centroids).
 #'
 #' @note NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
 #' You may need to consider alternatives following the ideas of Milà et al. (2022) for large data sets.
@@ -44,6 +47,10 @@
 #' }
 #' @export
 #' @examples
+#' ########################################################################
+#' # Example 1: Simulated data - Randomly-distributed training points
+#' ########################################################################
+#'
 #' library(sf)
 #'
 #' # Simulate 100 random training and test points in a 100x100 square
@@ -53,7 +60,7 @@
 #' train_points <- sf::st_sample(sample_poly, 100, type = "random")
 #' pred_points <- sf::st_sample(sample_poly, 100, type = "random")
 #'
-#' # Run NNDM for the whole domain, here the prediction points are known.
+#' # Run NNDM for the whole domain, here the prediction points are known
 #' nndm_pred <- nndm(train_points, ppoints=pred_points)
 #' nndm_pred
 #' plot(nndm_pred)
@@ -64,13 +71,31 @@
 #' nndm_pred
 #' plot(nndm_pred)
 #'
+#' ########################################################################
+#' # Example 2: Simulated data - Clustered training points
+#' ########################################################################
+#'
+#' library(sf)
+#'
+#' # Simulate 100 clustered training points in a 100x100 square
+#' set.seed(123)
+#' poly <- list(matrix(c(0,0,0,100,100,100,100,0,0,0), ncol=2, byrow=TRUE))
+#' sample_poly <- sf::st_polygon(poly)
+#' train_points <- clustered_sample(sample_poly, 100, 10, 5)
+#' pred_points <- sf::st_sample(sample_poly, 100, type = "regular")
+#'
+#' # Run NNDM for the whole domain
+#' nndm_pred <- nndm(train_points, ppoints=pred_points)
+#' nndm_pred
+#' plot(nndm_pred)
 #'
 #' ########################################################################
-#' # Example 2: Real- world example; using a modeldomain instead of previously
+#' # Example 3: Real- world example; using a modeldomain instead of previously
 #' # sampled prediction locations
 #' ########################################################################
 #' \dontrun{
-#' library(raster)
+#' library(sf)
+#' library(terra)
 #'
 #' ### prepare sample data:
 #' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
@@ -79,7 +104,11 @@
 #' pts <- dat[,-1]
 #' pts <- st_as_sf(pts,coords=c("Easting","Northing"))
 #' st_crs(pts) <- 26911
-#' studyArea <- raster::stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
+#' studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
+#' studyArea <- as.polygons(studyArea, values = F) |>
+#'     st_as_sf() |>
+#'     st_union()
+#' pts <- st_transform(pts, crs = st_crs(studyArea))
 #'
 #' nndm_folds <- nndm(pts, modeldomain= studyArea)
 #' plot(nndm_folds)
@@ -94,18 +123,25 @@
 #'    dat$VW,
 #'    method="rf",
 #'    trControl = ctrl)
-#' model_nndm
 #' global_validation(model_nndm)
 #'}
 #'
 
 
-nndm <- function(tpoints, modeldomain =NULL, ppoints=NULL , samplesize = 1000,  sampling = "regular", phi="max", min_train=0){
+nndm <- function(tpoints, modeldomain = NULL, ppoints = NULL, samplesize = 1000, sampling = "regular",
+                 phi = "max", min_train = 0.5){
 
   # create sample points from modeldomain
   if(is.null(ppoints)&!is.null(modeldomain)){
+    if(!identical(sf::st_crs(tpoints), sf::st_crs(modeldomain))){
+      stop("tpoints and modeldomain must have the same CRS")
+    }
     message(paste0(samplesize, " prediction points are sampled from the modeldomain"))
-    ppoints <- sampleFromArea(modeldomain, samplesize, type="geo",variables=NULL, sampling)
+    ppoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
+  }else if(!is.null(ppoints)){
+    if(!identical(sf::st_crs(tpoints), sf::st_crs(ppoints))){
+      stop("tpoints and ppoints must have the same CRS")
+    }
   }
 
   # If tpoints is sfc, coerce to sf.
@@ -116,12 +152,6 @@ nndm <- function(tpoints, modeldomain =NULL, ppoints=NULL , samplesize = 1000,  
   # If ppoints is sfc, coerce to sf.
   if(any(class(ppoints) %in% "sfc")){
     ppoints <- sf::st_sf(geom=ppoints)
-  }
-
-  # Check same CRS of tpoints and ppoints
-  if(sf::st_crs(tpoints) != sf::st_crs(ppoints)){
-    tpoints <- sf::st_transform(tpoints,sf::st_crs(ppoints))
-    message("tpoints and ppoints must have the same CRS. tpoints have been transformed.")
   }
 
   # if phi==max calculate the range of the size area
