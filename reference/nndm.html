@@ -57,7 +57,7 @@ indices to perform a NNDM LOO CV for map validation."><!-- mathjax --><script sr
     </div>
 
     <div class="ref-description section level2">
-    <p>This function implements the <em>NNDM</em> algorithm and returns the necessary
+    <p>This function implements the NNDM algorithm and returns the necessary
 indices to perform a NNDM LOO CV for map validation.</p>
     </div>
 
@@ -70,7 +70,7 @@ indices to perform a NNDM LOO CV for map validation.</p>
 <span>  samplesize <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  sampling <span class="op">=</span> <span class="st">"regular"</span>,</span>
 <span>  phi <span class="op">=</span> <span class="st">"max"</span>,</span>
-<span>  min_train <span class="op">=</span> <span class="fl">0</span></span>
+<span>  min_train <span class="op">=</span> <span class="fl">0.5</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -81,19 +81,22 @@ indices to perform a NNDM LOO CV for map validation.</p>
 
 
 <dt>modeldomain</dt>
-<dd><p>raster or sf object defining the prediction area (see Details).</p></dd>
+<dd><p>sf polygon object defining the prediction area (see Details).</p></dd>
 
 
 <dt>ppoints</dt>
-<dd><p>sf or sfc point object. Contains the target prediction points. Optional. Alternative to modeldomain (see Details).</p></dd>
+<dd><p>sf or sfc point object. Contains the target prediction points.
+Optional. Alternative to modeldomain (see Details).</p></dd>
 
 
 <dt>samplesize</dt>
-<dd><p>numeric. How many points in the modeldomain should be sampled as prediction points? Only required if modeldomain is used instead of ppoints.</p></dd>
+<dd><p>numeric. How many points in the modeldomain should be sampled as prediction points?
+Only required if modeldomain is used instead of ppoints.</p></dd>
 
 
 <dt>sampling</dt>
-<dd><p>character. How to draw prediction points from the modeldomain? See spsample. Use sampling = "Fibonacci" for global applications." Only required if modeldomain is used instead of ppoints.</p></dd>
+<dd><p>character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
+Only required if modeldomain is used instead of ppoints.</p></dd>
 
 
 <dt>phi</dt>
@@ -104,7 +107,7 @@ Per default (phi="max"), the size of the prediction area is used. See Details.</
 
 <dt>min_train</dt>
 <dd><p>Numeric between 0 and 1. Minimum proportion of training
-data that must be used in each CV fold. Defaults to 0 (i.e. no restrictions).</p></dd>
+data that must be used in each CV fold. Defaults to 0.5 (i.e. half of the training points).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -128,8 +131,8 @@ distance distribution function between the prediction and training points. Detai
 Distances are only matched up to <em>phi</em>. Beyond that range, all data points are used for training, without exclusions.
 When <em>phi</em> is set to "max", nearest neighbor distance matching is performed for the entire prediction area. Euclidean distances are used for projected
 and non-defined CRS, great circle distances are used for geographic CRS (units in meters).</p>
-<p>The <em>modeldomain</em> is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by <em>samplesize)</em> from the spatial extent.
-As an alternative use <em>ppoints</em> instead of <em>modeldomain</em>, if you have already defined the prediction locations.</p>
+<p>The <em>modeldomain</em> is a sf polygon that defines the prediction area. The function takes a regular point sample (amount defined by <em>samplesize)</em> from the spatial extent.
+As an alternative use <em>ppoints</em> instead of <em>modeldomain</em>, if you have already defined the prediction locations (e.g. raster pixel centroids).</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
@@ -153,8 +156,11 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Linking to GEOS 3.10.2, GDAL 3.4.1, PROJ 8.2.1; sf_use_s2() is TRUE</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">########################################################################</span></span></span>
+<span class="r-in"><span><span class="co"># Example 1: Simulated data - Randomly-distributed training points</span></span></span>
+<span class="r-in"><span><span class="co">########################################################################</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Simulate 100 random training and test points in a 100x100 square</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span></span>
@@ -163,7 +169,7 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 <span class="r-in"><span><span class="va">train_points</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">sample_poly</span>, <span class="fl">100</span>, type <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pred_points</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">sample_poly</span>, <span class="fl">100</span>, type <span class="op">=</span> <span class="st">"random"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Run NNDM for the whole domain, here the prediction points are known.</span></span></span>
+<span class="r-in"><span><span class="co"># Run NNDM for the whole domain, here the prediction points are known</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, ppoints<span class="op">=</span><span class="va">pred_points</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
@@ -184,22 +190,49 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="nndm-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">########################################################################</span></span></span>
+<span class="r-in"><span><span class="co"># Example 2: Simulated data - Clustered training points</span></span></span>
+<span class="r-in"><span><span class="co">########################################################################</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Simulate 100 clustered training points in a 100x100 square</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">poly</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">100</span>,<span class="fl">100</span>,<span class="fl">100</span>,<span class="fl">100</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">2</span>, byrow<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">sample_poly</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st.html" class="external-link">st_polygon</a></span><span class="op">(</span><span class="va">poly</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">train_points</span> <span class="op">&lt;-</span> <span class="fu"><a href="clustered_sample.html">clustered_sample</a></span><span class="op">(</span><span class="va">sample_poly</span>, <span class="fl">100</span>, <span class="fl">10</span>, <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">pred_points</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">sample_poly</span>, <span class="fl">100</span>, type <span class="op">=</span> <span class="st">"regular"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Run NNDM for the whole domain</span></span></span>
+<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, ppoints<span class="op">=</span><span class="va">pred_points</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">nndm_pred</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total number of points: 100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mean number of training points: 86.84</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Minimum number of training points: 50</span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="nndm-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">########################################################################</span></span></span>
-<span class="r-in"><span><span class="co"># Example 2: Real- world example; using a modeldomain instead of previously</span></span></span>
+<span class="r-in"><span><span class="co"># Example 3: Real- world example; using a modeldomain instead of previously</span></span></span>
 <span class="r-in"><span><span class="co"># sampled prediction locations</span></span></span>
 <span class="r-in"><span><span class="co">########################################################################</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/raster" class="external-link">raster</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/terra/" class="external-link">terra</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### prepare sample data:</span></span></span>
 <span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/get.html" class="external-link">get</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"Cookfarm.RData"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DEM"</span>,<span class="st">"TWI"</span>, <span class="st">"NDRE.M"</span>, <span class="st">"Easting"</span>, <span class="st">"Northing"</span>,<span class="st">"VW"</span><span class="op">)</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DEM"</span>,<span class="st">"TWI"</span>, <span class="st">"NDRE.M"</span>, <span class="st">"Easting"</span>, <span class="st">"Northing"</span>,<span class="st">"VW"</span><span class="op">)</span><span class="op">]</span>,</span></span>
 <span class="r-in"><span>   by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">SOURCEID</span><span class="op">)</span><span class="op">)</span>,<span class="va">mean</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">pts</span>,coords<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">26911</span></span></span>
-<span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu">raster</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/as.spatvector.html" class="external-link">as.polygons</a></span><span class="op">(</span><span class="va">studyArea</span>, values <span class="op">=</span> <span class="cn">F</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_combine.html" class="external-link">st_union</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span><span class="va">pts</span>, crs <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">nndm_folds</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">pts</span>, modeldomain<span class="op">=</span> <span class="va">studyArea</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_folds</span><span class="op">)</span></span></span>
@@ -214,7 +247,6 @@ You may need to consider alternatives following the ideas of Milà et al. (2022)
 <span class="r-in"><span>   <span class="va">dat</span><span class="op">$</span><span class="va">VW</span>,</span></span>
 <span class="r-in"><span>   method<span class="op">=</span><span class="st">"rf"</span>,</span></span>
 <span class="r-in"><span>   trControl <span class="op">=</span> <span class="va">ctrl</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">model_nndm</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">model_nndm</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>

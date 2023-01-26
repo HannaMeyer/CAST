@@ -78,7 +78,7 @@
                         <h4 data-toc-skip class="author">Hanna
 Meyer</h4>
             
-            <h4 data-toc-skip class="date">2023-01-25</h4>
+            <h4 data-toc-skip class="date">2023-01-26</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast02-AOA-tutorial.Rmd" class="external-link"><code>vignettes/cast02-AOA-tutorial.Rmd</code></a></small>
       <div class="d-none name"><code>cast02-AOA-tutorial.Rmd</code></div>
@@ -220,9 +220,9 @@ prediction error.</p>
 <span><span class="co">## Resampling results across tuning parameters:</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##   mtry  RMSE       Rsquared  MAE       </span></span>
-<span><span class="co">##   2     0.1137735  1         0.09937521</span></span>
-<span><span class="co">##   4     0.1207759  1         0.10354851</span></span>
-<span><span class="co">##   6     0.1217463  1         0.10361600</span></span>
+<span><span class="co">##   2     0.1144779  1         0.09980529</span></span>
+<span><span class="co">##   4     0.1174408  1         0.10153463</span></span>
+<span><span class="co">##   6     0.1201112  1         0.10197496</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## RMSE was used to select the optimal model using the smallest value.</span></span>
 <span><span class="co">## The final value used for the model was mtry = 2.</span></span></code></pre>
@@ -279,7 +279,7 @@ are given in form of a table).</p>
 <span><span class="co">## crs        : +proj=longlat +datum=WGS84 +no_defs </span></span>
 <span><span class="co">## source     : memory</span></span>
 <span><span class="co">## names      : DI </span></span>
-<span><span class="co">## values     : 0, 4.382591  (min, max)</span></span>
+<span><span class="co">## values     : 0, 4.383904  (min, max)</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## AOA:</span></span>
 <span><span class="co">## class      : RasterLayer </span></span>
@@ -294,11 +294,11 @@ are given in form of a table).</p>
 <span><span class="co">## </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Predictor Weights:</span></span>
-<span><span class="co">##   bio2     bio5    bio10    bio13    bio14   bio19</span></span>
-<span><span class="co">## 1    0 6.637384 10.87875 4.625447 8.523353 6.64575</span></span>
+<span><span class="co">##   bio2     bio5   bio10    bio13    bio14    bio19</span></span>
+<span><span class="co">## 1    0 6.731458 11.3517 5.286432 7.778692 4.890326</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## AOA Threshold: 0.8079989</span></span></code></pre>
+<span><span class="co">## AOA Threshold: 0.6381099</span></span></code></pre>
 <p>Plotting the <code>aoa</code> object shows the distribution of DI
 values within the training data and the DI of the new data.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -378,9 +378,9 @@ cross-validation.</p>
 <span><span class="co">## Resampling results across tuning parameters:</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##   mtry  RMSE        Rsquared   MAE       </span></span>
-<span><span class="co">##   2     0.04154057  0.9821241  0.02740501</span></span>
-<span><span class="co">##   4     0.04174888  0.9756575  0.02752494</span></span>
-<span><span class="co">##   6     0.04446809  0.9657428  0.02783056</span></span>
+<span><span class="co">##   2     0.04046123  0.9827420  0.02634983</span></span>
+<span><span class="co">##   4     0.04401946  0.9721995  0.02823231</span></span>
+<span><span class="co">##   6     0.04655323  0.9640626  0.02849635</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## RMSE was used to select the optimal model using the smallest value.</span></span>
 <span><span class="co">## The final value used for the model was mtry = 2.</span></span></code></pre>
@@ -402,18 +402,18 @@ cross-validation.</p>
 <span><span class="co">## </span></span>
 <span><span class="co">## No pre-processing</span></span>
 <span><span class="co">## Resampling: Cross-Validated (10 fold) </span></span>
-<span><span class="co">## Summary of sample sizes: 69, 69, 65, 69, 64, 64, ... </span></span>
+<span><span class="co">## Summary of sample sizes: 65, 64, 64, 64, 69, 69, ... </span></span>
 <span><span class="co">## Resampling results across tuning parameters:</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##   mtry  RMSE        Rsquared   MAE       </span></span>
-<span><span class="co">##   2     0.09015629  0.9341854  0.08032323</span></span>
-<span><span class="co">##   3     0.08628806  0.9535385  0.07688513</span></span>
-<span><span class="co">##   4     0.08484181  0.9448534  0.07543417</span></span>
-<span><span class="co">##   5     0.08592524  0.9355201  0.07518251</span></span>
-<span><span class="co">##   6     0.08721612  0.9058577  0.07428264</span></span>
+<span><span class="co">##   2     0.08800133  0.9142949  0.07131791</span></span>
+<span><span class="co">##   3     0.08868509  0.9310908  0.07088674</span></span>
+<span><span class="co">##   4     0.08552884  0.8911172  0.06768632</span></span>
+<span><span class="co">##   5     0.08238367  0.8854947  0.06486407</span></span>
+<span><span class="co">##   6     0.08418760  0.8742364  0.06621432</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## RMSE was used to select the optimal model using the smallest value.</span></span>
-<span><span class="co">## The final value used for the model was mtry = 4.</span></span></code></pre>
+<span><span class="co">## The final value used for the model was mtry = 5.</span></span></code></pre>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">model</span><span class="op">)</span></span></code></pre></div>
 <p>The AOA is then calculated (for comparison) using the model validated
@@ -458,31 +458,31 @@ model error applies inside the AOA but not outside.</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">###for the spatial CV:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/postResample.html" class="external-link">RMSE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 0.108744</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 0.122239</span></span></code></pre>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/postResample.html" class="external-link">RMSE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">0</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 0.5891731</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 0.5521566</span></span></code></pre>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model</span><span class="op">$</span><span class="va">results</span></span></code></pre></div>
 <pre><code><span><span class="co">##   mtry       RMSE  Rsquared        MAE     RMSESD RsquaredSD      MAESD</span></span>
-<span><span class="co">## 1    2 0.09015629 0.9341854 0.08032323 0.08276912 0.14942765 0.07658614</span></span>
-<span><span class="co">## 2    3 0.08628806 0.9535385 0.07688513 0.07212326 0.09544573 0.06762526</span></span>
-<span><span class="co">## 3    4 0.08484181 0.9448534 0.07543417 0.07049762 0.11777641 0.06757527</span></span>
-<span><span class="co">## 4    5 0.08592524 0.9355201 0.07518251 0.07258147 0.13767893 0.07134260</span></span>
-<span><span class="co">## 5    6 0.08721612 0.9058577 0.07428264 0.07512217 0.21525341 0.07463521</span></span></code></pre>
+<span><span class="co">## 1    2 0.08800133 0.9142949 0.07131791 0.06727672  0.1089310 0.05370516</span></span>
+<span><span class="co">## 2    3 0.08868509 0.9310908 0.07088674 0.06404283  0.0930314 0.05273012</span></span>
+<span><span class="co">## 3    4 0.08552884 0.8911172 0.06768632 0.05573474  0.1465743 0.04435589</span></span>
+<span><span class="co">## 4    5 0.08238367 0.8854947 0.06486407 0.05432379  0.1748167 0.04153601</span></span>
+<span><span class="co">## 5    6 0.08418760 0.8742364 0.06621432 0.05599809  0.1552535 0.04324134</span></span></code></pre>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">###and for the random CV:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/postResample.html" class="external-link">RMSE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">prediction_random</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 0.02973477</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 0.03166026</span></span></code></pre>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/postResample.html" class="external-link">RMSE</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">prediction_random</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">0</span><span class="op">]</span>,<span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 0.3222146</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 0.3346337</span></span></code></pre>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_random</span><span class="op">$</span><span class="va">results</span></span></code></pre></div>
 <pre><code><span><span class="co">##   mtry       RMSE  Rsquared        MAE     RMSESD RsquaredSD      MAESD</span></span>
-<span><span class="co">## 1    2 0.04154057 0.9821241 0.02740501 0.02733003 0.02377966 0.01759364</span></span>
-<span><span class="co">## 2    4 0.04174888 0.9756575 0.02752494 0.02717262 0.03804208 0.01718264</span></span>
-<span><span class="co">## 3    6 0.04446809 0.9657428 0.02783056 0.03184642 0.05262010 0.01849808</span></span></code></pre>
+<span><span class="co">## 1    2 0.04046123 0.9827420 0.02634983 0.02747882 0.02269490 0.01689855</span></span>
+<span><span class="co">## 2    4 0.04401946 0.9721995 0.02823231 0.02937718 0.04340195 0.01785521</span></span>
+<span><span class="co">## 3    6 0.04655323 0.9640626 0.02849635 0.03302504 0.05314285 0.01859027</span></span></code></pre>
 <p>The results indicate that there is a high agreement between the model
 CV error (RMSE) and the true prediction RMSE. This is the case for both,
 the random as well as the spatial model.</p>
@@ -593,9 +593,9 @@ predictors to model VW).</p>
 <span><span class="co">## Resampling results across tuning parameters:</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##   mtry  RMSE        Rsquared     MAE       </span></span>
-<span><span class="co">##   2     0.03855459  0.003973901  0.03055016</span></span>
-<span><span class="co">##   3     0.03899793  0.003196285  0.03101641</span></span>
-<span><span class="co">##   4     0.03930430  0.003937962  0.03168003</span></span>
+<span><span class="co">##   2     0.03826423  0.005760923  0.03027570</span></span>
+<span><span class="co">##   3     0.03900230  0.003847984  0.03105811</span></span>
+<span><span class="co">##   4     0.03956318  0.002382554  0.03194410</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## RMSE was used to select the optimal model using the smallest value.</span></span>
 <span><span class="co">## The final value used for the model was mtry = 2.</span></span></code></pre>
