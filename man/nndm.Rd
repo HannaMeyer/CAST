@@ -80,8 +80,8 @@ sample_poly <- sf::st_polygon(poly)
 train_points <- sf::st_sample(sample_poly, 100, type = "random")
 pred_points <- sf::st_sample(sample_poly, 100, type = "regular")
 plot(sample_poly)
-plot(pred_points, add = T, col = "blue")
-plot(train_points, add = T, col = "red")
+plot(pred_points, add = TRUE, col = "blue")
+plot(train_points, add = TRUE, col = "red")
 
 # Run NNDM for the whole domain, here the prediction points are known
 nndm_pred <- nndm(train_points, ppoints=pred_points)
@@ -107,8 +107,8 @@ sample_poly <- sf::st_polygon(poly)
 train_points <- clustered_sample(sample_poly, 100, 10, 5)
 pred_points <- sf::st_sample(sample_poly, 100, type = "regular")
 plot(sample_poly)
-plot(pred_points, add = T, col = "blue")
-plot(train_points, add = T, col = "red")
+plot(pred_points, add = TRUE, col = "blue")
+plot(train_points, add = TRUE, col = "red")
 
 # Run NNDM for the whole domain
 nndm_pred <- nndm(train_points, ppoints=pred_points)
@@ -136,7 +136,7 @@ studyArea <- as.polygons(studyArea, values = F, na.all = T) |>
     st_union()
 pts <- st_transform(pts, crs = st_crs(studyArea))
 plot(studyArea)
-plot(st_geometry(pts), add = T, col = "red")
+plot(st_geometry(pts), add = TRUE, col = "red")
 
 nndm_folds <- nndm(pts, modeldomain= studyArea)
 plot(nndm_folds)
