@@ -150,7 +150,7 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
                   k = 10, maxp = 0.5,
                   clustering = "kmeans", linkf = "ward.D2",
                   samplesize = 1000, sampling = "regular"){
-
+  
   # create sample points from modeldomain
   if(is.null(ppoints)&!is.null(modeldomain)){
     if(!identical(sf::st_crs(tpoints), sf::st_crs(modeldomain))){
@@ -158,13 +158,18 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
     }
     message(paste0(samplesize, " prediction points are sampled from the modeldomain"))
     ppoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
+    st_crs(ppoints) <- st_crs(modeldomain)
   }else if(!is.null(ppoints)){
     if(!identical(sf::st_crs(tpoints), sf::st_crs(ppoints))){
       stop("tpoints and ppoints must have the same CRS")
     }
   }
-
+  
   # Prior checks
+  if (!(clustering %in% c("kmeans", "hierarchical"))) {
+    stop("clustering must be one of `kmeans` or `hierarchical`")
+  }
+  
   if (any(class(tpoints) %in% "sfc")) {
     tpoints <- sf::st_sf(geom = tpoints)
   }
@@ -180,55 +185,56 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
     stop("kmeans works in the Euclidean space and therefore can only handle
          projected coordinates. Please use hierarchical clustering or project your data.")
   }
-
+  
+  
   # Gj: NN distance function for a cluster per point, i.e. LOO CV
   tcoords <- sf::st_coordinates(tpoints)[,1:2]
   Gj <- c(FNN::knn.dist(tcoords, k = 1))
-
+  
   # Gij: prediction to training NN distances
   Gij <- c(FNN::knnx.dist(query = sf::st_coordinates(ppoints)[,1:2],
                           data = tcoords, k = 1))
-
+  
   # Check if Gj > Gij (warning suppressed regarding ties)
   testks <- suppressWarnings(stats::ks.test(Gj, Gij, alternative = "great"))
   if(testks$p.value >= 0.05){
-
+    
     clust <- sample(rep(1:k, ceiling(nrow(tpoints)/k)), size = nrow(tpoints), replace=F)
     Gjstar <- distclust(tcoords, clust)
     k_final <- k
     W_final <- twosamples::wass_stat(Gjstar, Gij)
     message("Gij <= Gj, a random CV assignment is returned")
-
+    
   }else{
-
+    
     if(clustering == "hierarchical"){
       # For hierarchical clustering we need to compute the full distance matrix,
       # but we can integrate geographical distances
       distmat <- sf::st_distance(tpoints)
       hc <- stats::hclust(d = stats::as.dist(distmat), method = linkf)
     }
-
+    
     # Build grid of number of clusters to try - we sample low numbers more intensively
     clustgrid <- data.frame(nk = as.integer(round(exp(seq(log(k), log(nrow(tpoints)-1),
                                                           length.out = 100)))))
     clustgrid$W <- NA
     clustgrid <- clustgrid[!duplicated(clustgrid$nk),]
     clustgroups <- list()
-
+    
     # We test each number of clusters
     for(nk in clustgrid$nk){
-
+      
       # Create nk clusters
       if(clustering == "hierarchical"){
         clust_nk <- stats::cutree(hc, k=nk)
       }else if(clustering == "kmeans"){
         clust_nk <- stats::kmeans(tcoords, nk)$cluster
       }
-
+      
       tabclust <- as.data.frame(table(clust_nk))
       tabclust <- tabclust[order(tabclust$Freq, decreasing=T),]
       tabclust$clust_k <- NA
-
+      
       # We don't merge big clusters
       clust_i <- 1
       for(i in 1:nrow(tabclust)){
@@ -244,7 +250,7 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
       tabclust2 <- merge(tabclust2, tabclust, by = "clust_nk")
       tabclust2 <- tabclust2[order(tabclust2$ID),]
       clust_k <- tabclust2$clust_k
-
+      
       # Compute statistic if not exceeding limit
       if(!any(table(clust_k)/length(clust_k)>maxp)){
         Gjstar_i <- distclust(tcoords, clust_k)
@@ -258,7 +264,7 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
     clust <- clustgroups[[paste0("nk", k_final)]]
     Gjstar <- distclust(tcoords, clust)
   }
-
+  
   # Output
   cfolds <- CAST::CreateSpacetimeFolds(data.frame(clust=clust), spacevar = "clust", k = k)
   res <- list(clusters = clust,
@@ -270,14 +276,13 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
 }
 
 # Helper function: Compute out-of-fold NN distance
+# Helper function: Compute out-of-fold NN distance
 distclust <- function(tr_coords, folds){
-
-  alldist <- c()
+  
+  alldist <- rep(NA, length(folds))
   for(f in unique(folds)){
-    alldist <- c(alldist,
-                 c(FNN::knnx.dist(query = tr_coords[f == folds,],
-                                  data = tr_coords[f != folds,], k = 1)))
+    alldist[f == folds] <- c(FNN::knnx.dist(query = tr_coords[f == folds,,drop=FALSE], 
+                                            data = tr_coords[f != folds,], k = 1))
   }
   alldist
 }
-
