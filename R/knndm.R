@@ -166,7 +166,7 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
   }
   
   # Prior checks
-  if (!(clustering) %in% c("kmeans", "hierarchical")) {
+  if (!(clustering %in% c("kmeans", "hierarchical"))) {
     stop("clustering must be one of `kmeans` or `hierarchical`")
   }
   
