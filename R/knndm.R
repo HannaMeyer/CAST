@@ -9,13 +9,14 @@
 #' @param ppoints sf or sfc point object. Contains the target prediction points. Optional. Alternative to modeldomain (see Details).
 #' @param k integer. Number of folds desired for CV. Defaults to 10.
 #' @param maxp numeric. Maximum fold size allowed, defaults to 0.5, i.e. a single fold can hold a maximum of half of the sampling points.
-#' @param clustering character. Possible values include "kmeans" and "hierarchical". See details.
+#' @param clustering character. Possible values include "hierarchical" and "kmeans". See details.
 #' @param linkf character. Only relevant if clustering = "hierarchical". Link function for agglomerative hierarchical clustering.
 #' Defaults to "ward.D2". Check `stats::hclust` for other options.
 #' @param samplesize numeric. How many points in the modeldomain should be sampled as prediction points?
 #' Only required if modeldomain is used instead of ppoints.
 #' @param sampling character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
 #' Only required if modeldomain is used instead of ppoints.
+#' @param seed integer. For reproducibility purposes when `modeldomain` or `clustering=kmeans` are used.
 #'
 #' @return An object of class \emph{knndm} consisting of a list of seven elements:
 #' indx_train, indx_test (indices of the observations to use as
@@ -32,10 +33,16 @@
 #' neighbour distribution function (Gjstar) is minimised. It does it by performing clustering of the training
 #' points for different numbers of clusters that range from k to N (number of observations).
 #'
-#' As clustering algorithm, `kmeans` can only be used for projected CRS (`kmeans` works in the Euclidean space)
-#' while `hierarchical` can work with both projected and geographical coordinates, though it requires calculating the full
-#' distance matrix of the training points, which can have important memory requirements for large samples.
-#' A workaround for large geographical samples can be to project the training points so that `kmeans` can be used.
+#' Using a projected CRS in `knndm` has large computational advantages since fast nearest neighbour search can be
+#' done via the `FNN` package, while working with geographic coordinates requires computing the full
+#' geographical distance matrices. As a clustering algorithm, `kmeans` can only be used for
+#' projected CRS (`kmeans` works in the Euclidean space) while `hierarchical` can work with both projected and
+#' geographical coordinates, though it requires calculating the full distance matrix of the training points even
+#' for a projected CRS.
+#'
+#' In order to select between clustering algorithms and number of folds `k`, different `knndm` configurations can be run
+#' and compared, being the one with a lower W statistic the one that offers a better match. W statistics between `knndm`
+#' runs are comparable as long as `tpoints` and `ppoints` or `modeldomain` stay the same.
 #'
 #' Map validation using knndm should be used using `CAST::global_validation`, i.e. by stacking all out-of-sample
 #' predictions and evaluating them all at once. The reasons behind this are 1) The resulting folds can be
@@ -73,12 +80,13 @@
 #' plot(train_points, add = TRUE, col = "red")
 #'
 #' # Run kNNDM for the whole domain, here the prediction points are known.
-#' knndm_folds <- knndm(train_points, ppoints = pred_points)
+#' knndm_folds <- knndm(train_points, ppoints = pred_points, k = 5)
 #' knndm_folds
 #' plot(knndm_folds)
+#' folds <- as.character(knndm_folds$clusters)
 #' ggplot() +
 #'   geom_sf(data = simarea, alpha = 0) +
-#'   geom_sf(data = train_points, col = knndm_folds$clusters)
+#'   geom_sf(data = train_points, aes(col = folds))
 #'
 #' ########################################################################
 #' # Example 2: Simulated data - Clustered training points
@@ -98,12 +106,13 @@
 #' plot(train_points, add = TRUE, col = "red")
 #'
 #' # Run kNNDM for the whole domain, here the prediction points are known.
-#' knndm_folds <- knndm(train_points, ppoints = pred_points)
+#' knndm_folds <- knndm(train_points, ppoints = pred_points, k = 5)
 #' knndm_folds
 #' plot(knndm_folds)
+#' folds <- as.character(knndm_folds$clusters)
 #' ggplot() +
 #'   geom_sf(data = simarea, alpha = 0) +
-#'   geom_sf(data = train_points, col = knndm_folds$clusters)
+#'   geom_sf(data = train_points, aes(col = folds))
 #'
 #' ########################################################################
 #' # Example 3: Real- world example; using a modeldomain instead of previously
@@ -129,11 +138,12 @@
 #' plot(studyArea)
 #' plot(st_geometry(pts), add = TRUE, col = "red")
 #'
-#' knndm_folds <- knndm(pts, modeldomain=studyArea)
+#' knndm_folds <- knndm(pts, modeldomain=studyArea, k = 5)
 #' knndm_folds
 #' plot(knndm_folds)
+#' folds <- as.character(knndm_folds$clusters)
 #' ggplot() +
-#'   geom_sf(data = pts, col = knndm_folds$clusters)
+#'   geom_sf(data = pts, aes(col = folds))
 #'
 #' #use for cross-validation:
 #' library(caret)
@@ -148,9 +158,11 @@
 #'}
 knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
                   k = 10, maxp = 0.5,
-                  clustering = "kmeans", linkf = "ward.D2",
-                  samplesize = 1000, sampling = "regular"){
-  
+                  clustering = "hierarchical", linkf = "ward.D2",
+                  samplesize = 1000, sampling = "regular", seed = 123){
+
+  set.seed(seed)
+
   # create sample points from modeldomain
   if(is.null(ppoints)&!is.null(modeldomain)){
     if(!identical(sf::st_crs(tpoints), sf::st_crs(modeldomain))){
@@ -158,83 +170,111 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
     }
     message(paste0(samplesize, " prediction points are sampled from the modeldomain"))
     ppoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
-    st_crs(ppoints) <- st_crs(modeldomain)
+    sf::st_crs(ppoints) <- sf::st_crs(modeldomain)
   }else if(!is.null(ppoints)){
     if(!identical(sf::st_crs(tpoints), sf::st_crs(ppoints))){
       stop("tpoints and ppoints must have the same CRS")
     }
   }
-  
+
   # Prior checks
   if (!(clustering %in% c("kmeans", "hierarchical"))) {
     stop("clustering must be one of `kmeans` or `hierarchical`")
   }
-  
+  if (!(maxp < 1 & maxp > 1/k)) {
+    stop("maxp must be strictly between 1/k and 1")
+  }
   if (any(class(tpoints) %in% "sfc")) {
     tpoints <- sf::st_sf(geom = tpoints)
   }
   if (any(class(ppoints) %in% "sfc")) {
     ppoints <- sf::st_sf(geom = ppoints)
   }
-  if(!identical(sf::st_crs(tpoints), sf::st_crs(ppoints))){
-    stop("tpoints, ppoints and modeldomain must have the same CRS")
-  }
   if(is.na(sf::st_crs(tpoints))){
-    message("Missing CRS in training or prediction points. Assuming projected CRS.")
-  }else if(sf::st_is_longlat(tpoints) & clustering == "kmeans"){
+    warning("Missing CRS in training or prediction points. Assuming projected CRS.")
+    islonglat <- FALSE
+  }else{
+    islonglat <- sf::st_is_longlat(tpoints)
+  }
+  if(isTRUE(islonglat) & clustering == "kmeans"){
     stop("kmeans works in the Euclidean space and therefore can only handle
          projected coordinates. Please use hierarchical clustering or project your data.")
   }
-  
-  
-  # Gj: NN distance function for a cluster per point, i.e. LOO CV
+
+  # Gj and Gij calculation
   tcoords <- sf::st_coordinates(tpoints)[,1:2]
-  Gj <- c(FNN::knn.dist(tcoords, k = 1))
-  
-  # Gij: prediction to training NN distances
-  Gij <- c(FNN::knnx.dist(query = sf::st_coordinates(ppoints)[,1:2],
-                          data = tcoords, k = 1))
-  
+  if(isTRUE(islonglat)){
+    distmat <- sf::st_distance(tpoints)
+    units(distmat) <- NULL
+    diag(distmat) <- NA
+    Gj <- apply(distmat, 1, function(x) min(x, na.rm=TRUE))
+    Gij <- sf::st_distance(ppoints, tpoints)
+    units(Gij) <- NULL
+    Gij <- apply(Gij, 1, min)
+  }else{
+    Gj <- c(FNN::knn.dist(tcoords, k = 1))
+    Gij <- c(FNN::knnx.dist(query = sf::st_coordinates(ppoints)[,1:2],
+                            data = tcoords, k = 1))
+  }
+
   # Check if Gj > Gij (warning suppressed regarding ties)
   testks <- suppressWarnings(stats::ks.test(Gj, Gij, alternative = "great"))
   if(testks$p.value >= 0.05){
-    
+
     clust <- sample(rep(1:k, ceiling(nrow(tpoints)/k)), size = nrow(tpoints), replace=F)
-    Gjstar <- distclust(tcoords, clust)
-    k_final <- k
+
+    if(isTRUE(islonglat)){
+      Gjstar <- distclust_geo(distmat, clust)
+    }else{
+      Gjstar <- distclust_proj(tcoords, clust)
+    }
+    k_final <- "random CV"
     W_final <- twosamples::wass_stat(Gjstar, Gij)
-    message("Gij <= Gj, a random CV assignment is returned")
-    
+    message("Gij <= Gj; a random CV assignment is returned")
+
   }else{
-    
+
     if(clustering == "hierarchical"){
       # For hierarchical clustering we need to compute the full distance matrix,
       # but we can integrate geographical distances
-      distmat <- sf::st_distance(tpoints)
+      if(!isTRUE(islonglat)){
+        distmat <- sf::st_distance(tpoints)
+      }
       hc <- stats::hclust(d = stats::as.dist(distmat), method = linkf)
     }
-    
+
     # Build grid of number of clusters to try - we sample low numbers more intensively
-    clustgrid <- data.frame(nk = as.integer(round(exp(seq(log(k), log(nrow(tpoints)-1),
+    clustgrid <- data.frame(nk = as.integer(round(exp(seq(log(k), log(nrow(tpoints)-2),
                                                           length.out = 100)))))
     clustgrid$W <- NA
     clustgrid <- clustgrid[!duplicated(clustgrid$nk),]
     clustgroups <- list()
-    
+
+    # Compute 1st PC for ordering clusters
+    pcacoords <- stats::prcomp(tcoords, center = TRUE, scale. = FALSE, rank = 1)
+
     # We test each number of clusters
     for(nk in clustgrid$nk){
-      
+
       # Create nk clusters
       if(clustering == "hierarchical"){
         clust_nk <- stats::cutree(hc, k=nk)
       }else if(clustering == "kmeans"){
         clust_nk <- stats::kmeans(tcoords, nk)$cluster
       }
-      
+
       tabclust <- as.data.frame(table(clust_nk))
-      tabclust <- tabclust[order(tabclust$Freq, decreasing=T),]
       tabclust$clust_k <- NA
-      
+
+      # compute cluster centroids and apply PC loadings to shuffle along the 1st dimension
+      centr_tpoints <- sapply(tabclust$clust_nk, function(x){
+        centrpca <- matrix(apply(tcoords[clust_nk %in% x, , drop=FALSE], 2, mean), nrow = 1)
+        colnames(centrpca) <- colnames(tcoords)
+        return(predict(pcacoords, centrpca))
+      })
+      tabclust$centrpca <- centr_tpoints
+      tabclust <- tabclust[order(tabclust$centrpca),]
+
       # We don't merge big clusters
       clust_i <- 1
       for(i in 1:nrow(tabclust)){
@@ -244,27 +284,39 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
         }
       }
       rm("clust_i")
+
+      # And we merge the remaining into k groups
       clust_i <- setdiff(1:k, unique(tabclust$clust_k))
       tabclust$clust_k[is.na(tabclust$clust_k)] <- rep(clust_i, ceiling(nk/length(clust_i)))[1:sum(is.na(tabclust$clust_k))]
       tabclust2 <- data.frame(ID = 1:length(clust_nk), clust_nk = clust_nk)
       tabclust2 <- merge(tabclust2, tabclust, by = "clust_nk")
       tabclust2 <- tabclust2[order(tabclust2$ID),]
       clust_k <- tabclust2$clust_k
-      
-      # Compute statistic if not exceeding limit
+
+      # Compute W statistic if not exceeding maxp
       if(!any(table(clust_k)/length(clust_k)>maxp)){
-        Gjstar_i <- distclust(tcoords, clust_k)
+
+        if(isTRUE(islonglat)){
+          Gjstar_i <- distclust_geo(distmat, clust_k)
+        }else{
+          Gjstar_i <- distclust_proj(tcoords, clust_k)
+        }
         clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
         clustgroups[[paste0("nk", nk)]] <- clust_k
       }
     }
+
     # Final configuration
     k_final <- clustgrid$nk[which.min(clustgrid$W)]
     W_final <- min(clustgrid$W, na.rm=T)
     clust <- clustgroups[[paste0("nk", k_final)]]
-    Gjstar <- distclust(tcoords, clust)
+    if(isTRUE(islonglat)){
+      Gjstar <- distclust_geo(distmat, clust)
+    }else{
+      Gjstar <- distclust_proj(tcoords, clust)
+    }
   }
-  
+
   # Output
   cfolds <- CAST::CreateSpacetimeFolds(data.frame(clust=clust), spacevar = "clust", k = k)
   res <- list(clusters = clust,
@@ -275,14 +327,21 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
   res
 }
 
-# Helper function: Compute out-of-fold NN distance
-# Helper function: Compute out-of-fold NN distance
-distclust <- function(tr_coords, folds){
-  
+# Helper function: Compute out-of-fold NN distance (geographical)
+distclust_geo <- function(distm, folds){
   alldist <- rep(NA, length(folds))
   for(f in unique(folds)){
-    alldist[f == folds] <- c(FNN::knnx.dist(query = tr_coords[f == folds,,drop=FALSE], 
-                                            data = tr_coords[f != folds,], k = 1))
+    alldist[f == folds] <- apply(distm[f == folds, f != folds, drop=FALSE], 1, min)
+  }
+  alldist
+}
+
+# Helper function: Compute out-of-fold NN distance (projected)
+distclust_proj <- function(tr_coords, folds){
+  alldist <- rep(NA, length(folds))
+  for(f in unique(folds)){
+    alldist[f == folds] <- c(FNN::knnx.dist(query = tr_coords[f == folds,,drop=FALSE],
+                                            data = tr_coords[f != folds,,drop=FALSE], k = 1))
   }
   alldist
 }

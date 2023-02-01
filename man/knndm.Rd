@@ -10,10 +10,11 @@ knndm(
   ppoints = NULL,
   k = 10,
   maxp = 0.5,
-  clustering = "kmeans",
+  clustering = "hierarchical",
   linkf = "ward.D2",
   samplesize = 1000,
-  sampling = "regular"
+  sampling = "regular",
+  seed = 123
 )
 }
 \arguments{
@@ -27,7 +28,7 @@ knndm(
 
 \item{maxp}{numeric. Maximum fold size allowed, defaults to 0.5, i.e. a single fold can hold a maximum of half of the sampling points.}
 
-\item{clustering}{character. Possible values include "kmeans" and "hierarchical". See details.}
+\item{clustering}{character. Possible values include "hierarchical" and "kmeans". See details.}
 
 \item{linkf}{character. Only relevant if clustering = "hierarchical". Link function for agglomerative hierarchical clustering.
 Defaults to "ward.D2". Check `stats::hclust` for other options.}
@@ -37,6 +38,8 @@ Only required if modeldomain is used instead of ppoints.}
 
 \item{sampling}{character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
 Only required if modeldomain is used instead of ppoints.}
+
+\item{seed}{integer. For reproducibility purposes when `modeldomain` or `clustering=kmeans` are used.}
 }
 \value{
 An object of class \emph{knndm} consisting of a list of seven elements:
@@ -58,10 +61,16 @@ between the train-to-prediction nearest neighbour distribution function (Gij) an
 neighbour distribution function (Gjstar) is minimised. It does it by performing clustering of the training
 points for different numbers of clusters that range from k to N (number of observations).
 
-As clustering algorithm, `kmeans` can only be used for projected CRS (`kmeans` works in the Euclidean space)
-while `hierarchical` can work with both projected and geographical coordinates, though it requires calculating the full
-distance matrix of the training points, which can have important memory requirements for large samples.
-A workaround for large geographical samples can be to project the training points so that `kmeans` can be used.
+Using a projected CRS in `knndm` has large computational advantages since fast nearest neighbour search can be
+done via the `FNN` package, while working with geographic coordinates requires computing the full
+geographical distance matrices. As a clustering algorithm, `kmeans` can only be used for
+projected CRS (`kmeans` works in the Euclidean space) while `hierarchical` can work with both projected and
+geographical coordinates, though it requires calculating the full distance matrix of the training points even
+for a projected CRS.
+
+In order to select between clustering algorithms and number of folds `k`, different `knndm` configurations can be run
+and compared, being the one with a lower W statistic the one that offers a better match. W statistics between `knndm`
+runs are comparable as long as `tpoints` and `ppoints` or `modeldomain` stay the same.
 
 Map validation using knndm should be used using `CAST::global_validation`, i.e. by stacking all out-of-sample
 predictions and evaluating them all at once. The reasons behind this are 1) The resulting folds can be
@@ -100,12 +109,13 @@ plot(pred_points, add = TRUE, col = "blue")
 plot(train_points, add = TRUE, col = "red")
 
 # Run kNNDM for the whole domain, here the prediction points are known.
-knndm_folds <- knndm(train_points, ppoints = pred_points)
+knndm_folds <- knndm(train_points, ppoints = pred_points, k = 5)
 knndm_folds
 plot(knndm_folds)
+folds <- as.character(knndm_folds$clusters)
 ggplot() +
   geom_sf(data = simarea, alpha = 0) +
-  geom_sf(data = train_points, col = knndm_folds$clusters)
+  geom_sf(data = train_points, aes(col = folds))
 
 ########################################################################
 # Example 2: Simulated data - Clustered training points
@@ -125,12 +135,13 @@ plot(pred_points, add = TRUE, col = "blue")
 plot(train_points, add = TRUE, col = "red")
 
 # Run kNNDM for the whole domain, here the prediction points are known.
-knndm_folds <- knndm(train_points, ppoints = pred_points)
+knndm_folds <- knndm(train_points, ppoints = pred_points, k = 5)
 knndm_folds
 plot(knndm_folds)
+folds <- as.character(knndm_folds$clusters)
 ggplot() +
   geom_sf(data = simarea, alpha = 0) +
-  geom_sf(data = train_points, col = knndm_folds$clusters)
+  geom_sf(data = train_points, aes(col = folds))
 
 ########################################################################
 # Example 3: Real- world example; using a modeldomain instead of previously
@@ -156,11 +167,12 @@ pts <- st_transform(pts, crs = st_crs(studyArea))
 plot(studyArea)
 plot(st_geometry(pts), add = TRUE, col = "red")
 
-knndm_folds <- knndm(pts, modeldomain=studyArea)
+knndm_folds <- knndm(pts, modeldomain=studyArea, k = 5)
 knndm_folds
 plot(knndm_folds)
+folds <- as.character(knndm_folds$clusters)
 ggplot() +
-  geom_sf(data = pts, col = knndm_folds$clusters)
+  geom_sf(data = pts, aes(col = folds))
 
 #use for cross-validation:
 library(caret)
