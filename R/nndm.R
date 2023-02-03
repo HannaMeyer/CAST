@@ -39,7 +39,7 @@
 #' When using either \emph{modeldomain} or \emph{ppoints}, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
 #'
 #' @note NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
-#' You may need to consider alternatives following the ideas of Milà et al. (2022) for large data sets.
+#' A k-fold variant will be implemented shortly.
 #' @seealso \code{\link{plot_geodist}}
 #' @references
 #' \itemize{

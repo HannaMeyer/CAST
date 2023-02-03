@@ -64,7 +64,7 @@ When using either \emph{modeldomain} or \emph{ppoints}, we advise to plot the st
 }
 \note{
 NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
-You may need to consider alternatives following the ideas of Milà et al. (2022) for large data sets.
+A k-fold variant will be implemented shortly.
 }
 \examples{
 ########################################################################

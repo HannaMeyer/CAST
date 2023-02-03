@@ -1,11 +1,11 @@
 # `CAST` 0.7.1
 * new features:
-  * Mahalanobis distance for AOA assessment
+  * Mahalanobis distance for AOA assessment as option
 * modifications:
   * faster estimation of the AOA
   * parallel option for AOA deprecated (see vignette)
+    * delineation of the default threshold fixed as suggested in github.com/HannaMeyer/CAST/issues/46
 * bugfix:
-  * delineation of the default threshold fixed as suggested in github.com/HannaMeyer/CAST/issues/46
   * fixed issue github.com/ropensci/rnaturalearth/issues/69
   
 
