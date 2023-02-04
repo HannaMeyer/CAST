@@ -26,6 +26,7 @@
 #' @references
 #' Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.
 #' @examples
+#' \dontrun{
 #' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 #' ### Prepare for 10-fold Leave-Location-and-Time-Out cross validation
 #' indices <- CreateSpacetimeFolds(dat,"SOURCEID","Date")
@@ -37,6 +38,7 @@
 #' indices <- CreateSpacetimeFolds(dat,spacevar="SOURCEID",
 #'     k=length(unique(dat$SOURCEID)))
 #' str(indices)
+#' }
 #' @export CreateSpacetimeFolds
 #' @aliases CreateSpacetimeFolds
 
