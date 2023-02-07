@@ -170,10 +170,10 @@ plot.knndm <- function(x, ...){
     ggplot2::stat_ecdf(geom = "step", lwd = 1) +
     ggplot2::scale_colour_manual(values=c("#000000", "#E69F00", "#56B4E9"),
                                  labels=c(expression(hat(G)[ij](r)),
-                                          expression(hat(G)[j]^"*"*"(r)"),
+                                          expression(hat(G)[j]^"*"*"(r,L)"),
                                           expression(hat(G)[j](r)))) +
     ggplot2::ylab(expression(paste(hat(G)[ij](r), ", ",
-                                   hat(G)[j]^"*"*"(r)", ", ",
+                                   hat(G)[j]^"*"*"(r,L)", ", ",
                                    hat(G)[j](r))))
 }
 

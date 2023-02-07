@@ -1,14 +1,14 @@
 #' [EXPERIMENTAL] K-fold Nearest Neighbour Distance Matching
 #' @description
 #' This function implements the kNNDM algorithm and returns the necessary
-#' indices to perform a kfold-NNDM CV for map validation.
+#' indices to perform a k-fold NNDM CV for map validation.
 #'
 #' @author Carles Milà and Jan Linnenbrink
 #' @param tpoints sf or sfc point object. Contains the training points samples.
 #' @param modeldomain sf polygon object defining the prediction area (see Details).
 #' @param ppoints sf or sfc point object. Contains the target prediction points. Optional. Alternative to modeldomain (see Details).
 #' @param k integer. Number of folds desired for CV. Defaults to 10.
-#' @param maxp numeric. Maximum fold size allowed, defaults to 0.5, i.e. a single fold can hold a maximum of half of the sampling points.
+#' @param maxp numeric. Maximum fold size allowed, defaults to 0.5, i.e. a single fold can hold a maximum of half of the training points.
 #' @param clustering character. Possible values include "hierarchical" and "kmeans". See details.
 #' @param linkf character. Only relevant if clustering = "hierarchical". Link function for agglomerative hierarchical clustering.
 #' Defaults to "ward.D2". Check `stats::hclust` for other options.
@@ -16,7 +16,6 @@
 #' Only required if modeldomain is used instead of ppoints.
 #' @param sampling character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
 #' Only required if modeldomain is used instead of ppoints.
-#' @param seed integer. For reproducibility purposes when `modeldomain` or `clustering=kmeans` are used.
 #'
 #' @return An object of class \emph{knndm} consisting of a list of seven elements:
 #' indx_train, indx_test (indices of the observations to use as
@@ -27,18 +26,19 @@
 #' W (Wasserstein statistic).
 #'
 #' @details
-#' knndm is a k-fold version inspired in the concepts of NNDM LOO CV. Brielfy, the algorithm tries to
-#' find a k-fold configuration such that the integral of the absolute difference (Wasserstein statistic)
-#' between the train-to-prediction nearest neighbour distribution function (Gij) and the train-to-CV nearest
-#' neighbour distribution function (Gjstar) is minimised. It does it by performing clustering of the training
-#' points for different numbers of clusters that range from k to N (number of observations).
+#' knndm is a k-fold version of NNDM LOO CV for medium and large datasets. Brielfy, the algorithm tries to
+#' find a k-fold configuration such that the integral of the absolute differences (Wasserstein W statistic)
+#' between the empirical nearest neighbour distance distribution function between the test and training data during CV (Gj*),
+#' and the empirical nearest neighbour distance distribution function between the prediction and training points (Gij),
+#' is minimised. It does so by performing clustering of the training points' coordinates for different numbers of
+#' clusters that range from k to N (number of observations), merging them into k final folds,
+#' and selecting the configuration with the lowest W.
 #'
 #' Using a projected CRS in `knndm` has large computational advantages since fast nearest neighbour search can be
 #' done via the `FNN` package, while working with geographic coordinates requires computing the full
-#' geographical distance matrices. As a clustering algorithm, `kmeans` can only be used for
-#' projected CRS (`kmeans` works in the Euclidean space) while `hierarchical` can work with both projected and
-#' geographical coordinates, though it requires calculating the full distance matrix of the training points even
-#' for a projected CRS.
+#' spherical distance matrices. As a clustering algorithm, `kmeans` can only be used for
+#' projected CRS while `hierarchical` can work with both projected and geographical coordinates, though it requires
+#' calculating the full distance matrix of the training points even for a projected CRS.
 #'
 #' In order to select between clustering algorithms and number of folds `k`, different `knndm` configurations can be run
 #' and compared, being the one with a lower W statistic the one that offers a better match. W statistics between `knndm`
@@ -48,18 +48,18 @@
 #' predictions and evaluating them all at once. The reasons behind this are 1) The resulting folds can be
 #' unbalanced and 2) nearest neighbour functions are constructed and matched using all CV folds simultaneously.
 #'
-#' If the training data points are very clustered with respect to the prediction area and the presented knndm
-#' configuration still show signs of Gjstar > Gij, there are several things that can be tried. First, increase
+#' If training data points are very clustered with respect to the prediction area and the presented knndm
+#' configuration still show signs of Gj* > Gij, there are several things that can be tried. First, increase
 #' the `maxp` parameter; this may help to control for strong clustering (at the cost of having unbalanced folds).
 #' Secondly, decrease the number of final folds `k`, which may help to have larger clusters.
 #'
-#' The \emph{modeldomain} is a sf polygon that defines the prediction area. The function takes a regular point sample
-#' (amount defined by \emph{samplesize)} from the spatial extent. As an alternative use \emph{ppoints} instead of
-#' \emph{modeldomain}, if you have already defined the prediction locations (e.g. raster pixel centroids).
-#' When using either \emph{modeldomain} or \emph{ppoints}, we advise to plot the study area polygon and the
+#' The `modeldomain` is a sf polygon that defines the prediction area. The function takes a regular point sample
+#' (amount defined by `samplesize`) from the spatial extent. As an alternative use `ppoints` instead of
+#' `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
+#' When using either `modeldomain` or `ppoints`, we advise to plot the study area polygon and the
 #' training/prediction points as a previous step to ensure they are aligned.
 #'
-#' @note Experimental cycle.
+#' @note Experimental cycle. Article describing and testing the algorithm in preparation.
 #' @export
 #' @examples
 #' ########################################################################
@@ -159,9 +159,7 @@
 knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
                   k = 10, maxp = 0.5,
                   clustering = "hierarchical", linkf = "ward.D2",
-                  samplesize = 1000, sampling = "regular", seed = 123){
-
-  set.seed(seed)
+                  samplesize = 1000, sampling = "regular"){
 
   # create sample points from modeldomain
   if(is.null(ppoints)&!is.null(modeldomain)){
