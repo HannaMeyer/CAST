@@ -8,6 +8,8 @@
 \alias{show.aoa}
 \alias{print.nndm}
 \alias{show.nndm}
+\alias{print.knndm}
+\alias{show.knndm}
 \title{Print CAST classes}
 \usage{
 \method{print}{trainDI}(x, ...)
@@ -21,9 +23,13 @@ show.aoa(x, ...)
 \method{print}{nndm}(x, ...)
 
 show.nndm(x, ...)
+
+\method{print}{knndm}(x, ...)
+
+show.knndm(x, ...)
 }
 \arguments{
-\item{x}{An object of type \emph{nndm}.}
+\item{x}{An object of type \emph{knndm}.}
 
 \item{...}{other arguments.}
 }

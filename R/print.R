@@ -69,7 +69,6 @@ show.aoa = function(x, ...){
 #' @param x An object of type \emph{nndm}.
 #' @param ... other arguments.
 #' @export
-#'
 print.nndm <- function(x, ...){
   mean_train <- round(mean(sapply(x$indx_train, length)), 2)
   min_train <- round(min(sapply(x$indx_train, length)), 2)
@@ -83,8 +82,29 @@ print.nndm <- function(x, ...){
 #' @param x An object of type \emph{nndm}.
 #' @param ... other arguments.
 #' @export
-
 show.nndm = function(x, ...){
   print.nndm(x)
 }
 
+
+#' @name print
+#' @param x An object of type \emph{knndm}.
+#' @param ... other arguments.
+#' @export
+print.knndm <- function(x, ...){
+  cat(paste0("knndm object\n",
+             "Clustering algorithm: ", x$method, "\n",
+             "Intermediate clusters (q): ", x$q, "\n",
+             "W statistic: ", round(x$W, 4), "\n",
+             "Number of folds: ", length(unique(x$clusters)),  "\n",
+             "Observations in each fold: "),
+      table(x$clusters), "\n")
+}
+
+#' @name print
+#' @param x An object of type \emph{knndm}.
+#' @param ... other arguments.
+#' @export
+show.knndm = function(x, ...){
+  print.knndm(x)
+}

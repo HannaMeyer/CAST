@@ -5,6 +5,7 @@
 \alias{plot.trainDI}
 \alias{plot.aoa}
 \alias{plot.nndm}
+\alias{plot.knndm}
 \title{Plot CAST classes}
 \usage{
 \method{plot}{trainDI}(x, ...)
@@ -12,9 +13,11 @@
 \method{plot}{aoa}(x, samplesize = 1000, ...)
 
 \method{plot}{nndm}(x, ...)
+
+\method{plot}{knndm}(x, ...)
 }
 \arguments{
-\item{x}{An object of type \emph{nndm}.}
+\item{x}{An object of type \emph{knndm}.}
 
 \item{...}{other arguments.}
 
