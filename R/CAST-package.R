@@ -11,7 +11,7 @@
 #' @name CAST
 #' @docType package
 #' @title 'caret' Applications for Spatial-Temporal Models
-#' @author Hanna Meyer, Carles Milà, Marvin Ludwig
+#' @author Hanna Meyer, Carles Milà, Marvin Ludwig, Lan Linnenbrink
 #' @references
 #' \itemize{
 #' \item Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.
