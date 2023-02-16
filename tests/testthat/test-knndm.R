@@ -95,13 +95,13 @@ test_that("kNNDM works with modeldomain and no crs", {
     sf::st_cast("POINT")
 
   set.seed(1)
-  kout <- suppressWarnings(suppressMessages(knndm(tpoints, modeldomain = aoi, k=2, maxp=0.8, clustering = "hierarchical")))
+  kout <- suppressWarnings(suppressMessages(knndm(tpoints, modeldomain = aoi, k=2, maxp=0.8)))
 
   expect_identical(round(kout$W,4), 1.2004)
   expect_identical(kout$method, "hierarchical")
   expect_identical(kout$q, 3L)
 
-  expect_message(suppressWarnings(knndm(tpoints, modeldomain = aoi, k=2, maxp=0.8, clustering = "hierarchical")),
+  expect_message(suppressWarnings(knndm(tpoints, modeldomain = aoi, k=2, maxp=0.8)),
                  "1000 prediction points are sampled from the modeldomain")
 
 })
@@ -117,7 +117,7 @@ test_that("kNNDM works when no clustering is present", {
   ppoints <- sf::st_sample(aoi, 20, type="regular")
 
   set.seed(1)
-  kout <- suppressMessages(knndm(tpoints, ppoints = ppoints, k=2, maxp=0.8, clustering = "hierarchical"))
+  kout <- suppressMessages(knndm(tpoints, ppoints = ppoints, k=2, maxp=0.8, clustering = "kmeans"))
   expect_equal(kout$q, "random CV")
 
   # for geographical coordinates
