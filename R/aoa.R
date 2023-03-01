@@ -8,7 +8,7 @@
 #' variable importance of the machine learning algorithm used for model training.
 #' The AOA is derived by applying a threshold on the DI which is the (outlier-removed)
 #' maximum DI of the cross-validated training data.
-#' @param newdata A RasterStack, RasterBrick, stars object, SpatRaster or data.frame containing the data
+#' @param newdata A SpatRaster, stars object or data.frame containing the data
 #' the model was meant to make predictions for.
 #' @param model A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds.
 #' See examples for the case that no model is available or for models trained via e.g. mlr3.
@@ -38,8 +38,8 @@
 #' Will be fixed.
 #' @return An object of class \code{aoa} containing:
 #'  \item{parameters}{object of class trainDI. see \code{\link{trainDI}}}
-#'  \item{DI}{raster or data frame. Dissimilarity index of newdata}
-#'  \item{AOA}{raster or data frame. Area of Applicability of newdata.
+#'  \item{DI}{SpatRaster, stars object or data frame. Dissimilarity index of newdata}
+#'  \item{AOA}{SpatRaster, stars object or data frame. Area of Applicability of newdata.
 #'   AOA has values 0 (outside AOA) and 1 (inside AOA)}
 #'
 #' @author
@@ -51,7 +51,7 @@
 #' @examples
 #' \dontrun{
 #' library(sf)
-#' library(raster)
+#' library(terra)
 #' library(caret)
 #' library(viridis)
 #' library(latticeExtra)
@@ -63,7 +63,7 @@
 #' pts$ID <- 1:nrow(pts)
 #' set.seed(100)
 #' pts <- pts[1:30,]
-#' studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
+#' studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
 #' trainDat <- extract(studyArea,pts,df=TRUE)
 #' trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
 #'
@@ -79,7 +79,7 @@
 #' trainDat$VW, method="rf", importance=TRUE, tuneLength=1,
 #' trControl=trainControl(method="cv",number=5,savePredictions=T))
 #' print(model) #note that this is a quite poor prediction model
-#' prediction <- predict(studyArea,model)
+#' prediction <- predict(studyArea,model,na.rm=TRUE)
 #' plot(varImp(model,scale=FALSE))
 #'
 #' #...then calculate the AOA of the trained model for the study area:
@@ -146,22 +146,21 @@ aoa <- function(newdata,
 
   # handling of different raster formats
   as_stars <- FALSE
-  as_terra <- FALSE
+  as_raster <- FALSE
   leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
 
   if (inherits(newdata, "stars")) {
     if (!requireNamespace("stars", quietly = TRUE))
       stop("package stars required: install that first")
-    newdata = methods::as(newdata, "Raster")
+    newdata <- methods::as(newdata, "SpatRaster")
     as_stars <- TRUE
   }
-
-  if (inherits(newdata, "SpatRaster")) {
-    if (!requireNamespace("terra", quietly = TRUE))
-      stop("package terra required: install that first")
-
-    newdata <- methods::as(newdata, "Raster")
-    as_terra <- TRUE
+  if (inherits(newdata, "Raster")) {
+    if (!requireNamespace("raster", quietly = TRUE))
+      stop("package raster required: install that first")
+    message("Raster will soon not longer be supported. Use terra or stars instead")
+    newdata <- methods::as(newdata, "SpatRaster")
+    as_raster <- TRUE
   }
 
 
@@ -187,7 +186,7 @@ aoa <- function(newdata,
 
   # Prepare output as either as RasterLayer or vector:
   out <- NA
-  if (inherits(newdata, "Raster")){
+  if (inherits(newdata, "SpatRaster")){
     out <- newdata[[1]]
     names(out) <- "DI"
   }
@@ -195,13 +194,15 @@ aoa <- function(newdata,
 
 
   #### order data:
-  if (inherits(newdata, "Raster")){
+  if (inherits(newdata, "SpatRaster")){
     if (any(is.factor(newdata))){
-      newdata[[which(is.factor(newdata))]] <- raster::deratify(newdata[[which(is.factor(newdata))]],complete = TRUE)
+      newdata[[which(is.factor(newdata))]] <- as.numeric(newdata[[which(is.factor(newdata))]])
+      #newdata[[which(is.factor(newdata))]] <- raster::deratify(newdata[[which(is.factor(newdata))]],complete = TRUE)
     }
-    newdata <- raster::as.data.frame(newdata)
+    newdata <- terra::as.data.frame(newdata,na.rm=FALSE)
   }
   newdata <- newdata[,na.omit(match(trainDI$variables, names(newdata)))]
+
 
   ## Handling of categorical predictors:
   catvars <- trainDI$catvars
@@ -265,16 +266,15 @@ aoa <- function(newdata,
 
   DI_out <- mindist/trainDI$trainDist_avrgmean
 
-
   message("Computing AOA...")
 
   #### Create Mask for AOA and return statistics
-  if (inherits(out, "RasterLayer")){
-    raster::values(out) <- DI_out
+  if (inherits(out, "SpatRaster")){
+    terra::values(out) <- DI_out
     AOA <- out
-    raster::values(AOA) <- 1
+    terra::values(AOA) <- 1
     AOA[out>trainDI$thres] <- 0
-    AOA <- raster::mask(AOA,out)
+    AOA <- terra::mask(AOA,out)
     names(AOA) = "AOA"
 
 
@@ -283,9 +283,9 @@ aoa <- function(newdata,
       out <- stars::st_as_stars(out)
       AOA <- stars::st_as_stars(AOA)
     }
-    if(as_terra){
-      out <- methods::as(out, "SpatRaster")
-      AOA <- methods::as(AOA, "SpatRaster")
+    if(as_raster){
+      out <- methods::as(out, "Raster")
+      AOA <- methods::as(AOA, "Raster")
     }
 
   }else{
@@ -296,9 +296,9 @@ aoa <- function(newdata,
 
 
   # used in old versions of the AOA. eventually remove the attributes
-  attributes(AOA)$aoa_stats <- list("Mean_train" = trainDI$trainDist_avrgmean,
-                                    "threshold" = trainDI$thres)
-  attributes(AOA)$TrainDI <- trainDI$trainDI
+#  attributes(AOA)$aoa_stats <- list("Mean_train" = trainDI$trainDist_avrgmean,
+#                                    "threshold" = trainDI$thres)
+#  attributes(AOA)$TrainDI <- trainDI$trainDI
 
   result <- list(parameters = trainDI,
                  DI = out,

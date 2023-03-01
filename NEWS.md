@@ -1,7 +1,9 @@
 # `CAST` 0.7.2
 * new features:
   * knndm as an alternative to nndm for large training data
-  
+* modifications:
+  * start of transition from raster to terra
+
 # `CAST` 0.7.1
 * new features:
   * Mahalanobis distance for AOA assessment as option

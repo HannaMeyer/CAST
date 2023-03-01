@@ -18,7 +18,7 @@ aoa(
 )
 }
 \arguments{
-\item{newdata}{A RasterStack, RasterBrick, stars object, SpatRaster or data.frame containing the data
+\item{newdata}{A SpatRaster, stars object or data.frame containing the data
 the model was meant to make predictions for.}
 
 \item{model}{A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds.
@@ -48,8 +48,8 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 \value{
 An object of class \code{aoa} containing:
  \item{parameters}{object of class trainDI. see \code{\link{trainDI}}}
- \item{DI}{raster or data frame. Dissimilarity index of newdata}
- \item{AOA}{raster or data frame. Area of Applicability of newdata.
+ \item{DI}{SpatRaster, stars object or data frame. Dissimilarity index of newdata}
+ \item{AOA}{SpatRaster, stars object or data frame. Area of Applicability of newdata.
   AOA has values 0 (outside AOA) and 1 (inside AOA)}
 }
 \description{
@@ -80,7 +80,7 @@ Will be fixed.
 \examples{
 \dontrun{
 library(sf)
-library(raster)
+library(terra)
 library(caret)
 library(viridis)
 library(latticeExtra)
@@ -92,7 +92,7 @@ pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 pts$ID <- 1:nrow(pts)
 set.seed(100)
 pts <- pts[1:30,]
-studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
+studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
 trainDat <- extract(studyArea,pts,df=TRUE)
 trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
 
@@ -108,7 +108,7 @@ model <- train(trainDat[,which(names(trainDat)\%in\%variables)],
 trainDat$VW, method="rf", importance=TRUE, tuneLength=1,
 trControl=trainControl(method="cv",number=5,savePredictions=T))
 print(model) #note that this is a quite poor prediction model
-prediction <- predict(studyArea,model)
+prediction <- predict(studyArea,model,na.rm=TRUE)
 plot(varImp(model,scale=FALSE))
 
 #...then calculate the AOA of the trained model for the study area:

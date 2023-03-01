@@ -34,14 +34,14 @@
 #'
 #' # prepare sample data:
 #' library(sf)
-#' library(raster)
+#' library(terra)
 #' library(caret)
 #' # prepare sample data:
 #' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 #' dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
 #' pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 #' pts$ID <- 1:nrow(pts)
-#' studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
+#' studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
 #' dat <- extract(studyArea,pts,df=TRUE)
 #' trainDat <- merge(dat,pts,by.x="ID",by.y="ID")
 #'
@@ -68,25 +68,27 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
                           showPlot=TRUE,k=6,m=2){
 
   as_stars <- FALSE
-  as_terra <- FALSE
+  as_raster <- FALSE
   if (inherits(AOA$AOA, "stars")) {
     if (!requireNamespace("stars", quietly = TRUE))
       stop("package stars required: install that first")
     attr <- attributes(AOA)[c("aoa_stats","TrainDI")]
-    AOA$AOA <- methods::as(AOA$AOA, "Raster")
-    AOA$DI <- methods::as(AOA$DI, "Raster")
+    AOA$AOA <- methods::as(AOA$AOA, "SpatRaster")
+    AOA$DI <- methods::as(AOA$DI, "SpatRaster")
     attributes(AOA)<- c(attributes(AOA),attr)
     as_stars <- TRUE
   }
 
-  if (inherits(AOA$AOA, "SpatRaster")) {
-    if (!requireNamespace("terra", quietly = TRUE))
-      stop("package terra required: install that first")
+  if (inherits(AOA$AOA, "Raster")) {
+    if (!requireNamespace("raster", quietly = TRUE))
+      stop("package raster required: install that first")
+    message("Raster will soon not longer be supported. Use terra or stars instead")
+
     attr <- attributes(AOA)[c("aoa_stats","TrainDI")]
-    AOA$AOA <- methods::as(AOA$AOA, "Raster")
-    AOA$DI <- methods::as(AOA$DI, "Raster")
+    AOA$AOA <- methods::as(AOA$AOA, "SpatRaster")
+    AOA$DI <- methods::as(AOA$DI, "SpatRaster")
     attributes(AOA)<- c(attributes(AOA),attr)
-    as_terra <- TRUE
+    as_raster <- TRUE
   }
 
   if(multiCV){
@@ -208,14 +210,14 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
   ### Update AOA:
   if (multiCV){
-    if(inherits(AOA$AOA,"Raster")){
-      AOA$AOA <- raster::setValues(AOA$AOA, 0)
+    if(inherits(AOA$AOA,"SpatRaster")){
+      AOA$AOA <- terra::setValues(AOA$AOA, 0)
     }else{
       AOA$AOA <- 0
     }
     AOA$AOA[AOA$DI<=max(performance$DI,na.rm=T)] <- 1
-    if(inherits(AOA$AOA,"Raster")){
-      AOA$AOA <- raster::mask(AOA$AOA,AOA$DI)
+    if(inherits(AOA$AOA,"SpatRaster")){
+      AOA$AOA <- terra::mask(AOA$AOA,AOA$DI)
     }else{
       AOA$AOA[is.na(AOA$DI)] <- NA
     }
@@ -247,9 +249,9 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   DI_pred <- AOA$DI
   attr <- attributes(AOA)[c("aoa_stats","TrainDI","calib")]
   # predict and make sure it's not going beyond min observed values
-  if(inherits(DI_pred,"Raster")){
-    raster::values(DI_pred)[raster::values(AOA$DI)<min(performance$DI,na.rm=TRUE)] <- min(performance$DI,na.rm=TRUE)
-    AOA$expectedError <- raster::predict(DI_pred,errormodel)
+  if(inherits(DI_pred,"SpatRaster")){
+    terra::values(DI_pred)[terra::values(AOA$DI)<min(performance$DI,na.rm=TRUE)] <- min(performance$DI,na.rm=TRUE)
+    AOA$expectedError <- terra::predict(DI_pred,errormodel)
   }else{
     DI_pred[AOA$DI<min(performance$DI,na.rm=TRUE)] <- min(performance$DI,na.rm=TRUE)
     AOA$expectedError <- predict(errormodel,data.frame("DI"=DI_pred))
@@ -257,8 +259,8 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
 
 
   if(maskAOA){
-    if(inherits(AOA$expectedError,"Raster")){
-      AOA$expectedError <-  raster::mask(AOA$expectedError,AOA$AOA,maskvalue=0)
+    if(inherits(AOA$expectedError,"SpatRaster")){
+      AOA$expectedError <-  terra::mask(AOA$expectedError,AOA$AOA,maskvalue=0)
     }else{
       AOA$expectedError[AOA$AOA==0] <- NA
     }
@@ -304,12 +306,14 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   if (as_stars){
     AOA$AOA <- split(stars::st_as_stars(AOA$AOA), "band")
     AOA$DI <- split(stars::st_as_stars(AOA$DI), "band")
+    AOA$expectedError <- split(stars::st_as_stars(AOA$expectedError), "band")
     attributes(AOA$AOA)<- c(attributes(AOA$AOA),attr)
   }
 
-  if(as_terra){
-    AOA$AOA <- methods::as(AOA$AOA, "SpatRaster")
-    AOA$DI <- methods::as(AOA$DI, "SpatRaster")
+  if(as_raster){
+    AOA$AOA <- methods::as(AOA$AOA, "Raster")
+    AOA$DI <- methods::as(AOA$DI, "Raster")
+    AOA$expectedError <- methods::as(AOA$expectedError, "Raster")
     attributes(AOA$AOA)<- c(attributes(AOA$AOA),attr)
   }
   names(AOA)[names(AOA)=="expectedError"] <- paste0("expected_",model$metric)
