@@ -113,6 +113,9 @@ plot_geodist <- function(x,
 
 
   # input formatting ------------
+  if (inherits(modeldomain, "SpatRaster")) {
+    modeldomain <- as(modeldomain,"Raster") ########### CHANGE
+  }
   x <- sf::st_transform(x,4326)
   if(type == "feature"){
     if(is.null(variables)){
