@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,7 +78,7 @@
                         <h4 data-toc-skip class="author">Hanna
 Meyer</h4>
             
-            <h4 data-toc-skip class="date">2023-03-03</h4>
+            <h4 data-toc-skip class="date">2023-03-06</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast01-CAST-intro.Rmd" class="external-link"><code>vignettes/cast01-CAST-intro.Rmd</code></a></small>
       <div class="d-none name"><code>cast01-CAST-intro.Rmd</code></div>
@@ -151,7 +151,7 @@ was used for the analysis in <a href="https://www.sciencedirect.com/science/arti
 et al 2018</a>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/get.html" class="external-link">get</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"Cookfarm.RData"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##        SOURCEID    VW  Easting Northing altitude      DEM      TWI     NDRE.M</span></span>
 <span><span class="co">## 101689   CAF357 0.303 493828.1  5181021     -0.3 792.5756 3.791253 0.08161208</span></span>
 <span><span class="co">## 213001   CAF357 0.328 493828.1  5181021     -0.6 792.5756 3.791253 0.08161208</span></span>
@@ -187,7 +187,7 @@ have a look on the spatial distribution of the data loggers on the
 cookfarm:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
-<span><span class="va">data_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">data</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SOURCEID"</span>,<span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">data_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">data</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SOURCEID"</span>,<span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">data_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">data_sp</span>,coords<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span>,crs<span class="op">=</span><span class="fl">26911</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">data_sp</span>,axes<span class="op">=</span><span class="cn">T</span>,col<span class="op">=</span><span class="st">"black"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-4-1.png" width="847.68"></p>
@@ -213,7 +213,7 @@ time series measured by the data loggers.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[</span><span class="va">data</span><span class="op">$</span><span class="va">altitude</span><span class="op">==</span><span class="op">-</span><span class="fl">0.3</span><span class="op">&amp;</span></span>
 <span>                   <span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html" class="external-link">year</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">Date</span><span class="op">)</span><span class="op">==</span><span class="fl">2012</span><span class="op">&amp;</span></span>
-<span>                   <span class="fu"><a href="https://lubridate.tidyverse.org/reference/week.html" class="external-link">week</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">Date</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span><span class="op">:</span><span class="fl">12</span><span class="op">)</span>,<span class="op">]</span></span>
+<span>                   <span class="fu"><a href="https://lubridate.tidyverse.org/reference/week.html" class="external-link">week</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">Date</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/terra/man/match.html" class="external-link">%in%</a></span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span><span class="op">:</span><span class="fl">12</span><span class="op">)</span>,<span class="op">]</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">trainDat</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">Date</span>, y<span class="op">=</span><span class="va">VW</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>colour<span class="op">=</span><span class="va">SOURCEID</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-6-1.png" width="847.68"></p>
@@ -243,14 +243,14 @@ are comparably insensitive to tuning.</p>
 <span>               importance<span class="op">=</span><span class="cn">TRUE</span>,ntree<span class="op">=</span><span class="fl">50</span>,</span>
 <span>               trControl<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>,number<span class="op">=</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Based on the trained model we can make spatial predictions of soil
-moisture. To do this we load a RasterStack that contains spatial data of
-all predictor variables for the 25th of March 2012 (as an example). We
-then apply the trained model on this data set.</p>
+moisture. To do this we load a multiband raster that contains spatial
+data of all predictor variables for the 25th of March 2012 (as an
+example). We then apply the trained model on this data set.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/raster" class="external-link">raster</a></span><span class="op">)</span></span>
-<span><span class="va">predictors_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/stack.html" class="external-link">stack</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">model</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/terra/" class="external-link">terra</a></span><span class="op">)</span></span>
+<span><span class="va">predictors_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">model</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-8-1.png" width="847.68"></p>
 <p>The result is a spatially comprehensive map of soil moisture for this
 day. We see that simply creating a map using machine learning and caret
@@ -331,8 +331,9 @@ CV we split the data into five folds, hence five model runs are
 performed each leaving one fifth of all data loggers out for
 validation.</p>
 <p>Note that several suggestions of spatial CV exist. What we call LLO
-here is just a simple example. See references in Meyer and Pebesma
-(2022) for some examples.</p>
+here is just a simple example. See references in <a href="https://www.nature.com/articles/s41467-022-29838-9" class="external-link">Meyer and
+Pebesma 2022</a> for some examples and have a look at <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link">Mila et al 2022</a> for
+the methodology implemented in the CAST function nndm.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="va">indices</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CreateSpacetimeFolds.html">CreateSpacetimeFolds</a></span><span class="op">(</span><span class="va">trainDat</span>,spacevar <span class="op">=</span> <span class="st">"SOURCEID"</span>,</span>
@@ -446,8 +447,8 @@ to robust results.</p>
 <p>What effect does the new model has on the spatial representation of
 soil moisture?</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">prediction_ffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">ffsmodel_LLO</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction_ffs</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">prediction_ffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">ffsmodel_LLO</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">prediction_ffs</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-14-1.png" width="847.68"></p>
 <p>We see that the variable selection does not only have an effect on
 the statistical performance but also the predicted spatial patterns
@@ -469,15 +470,21 @@ details in the vignette on the Area of applicability and <a href="https://doi.or
 <span><span class="co">### AOA for which the spatial CV error applies:</span></span>
 <span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">ffsmodel_LLO</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction_ffs</span>,main<span class="op">=</span><span class="st">"prediction for the AOA \n(spatial CV error applied)"</span><span class="op">)</span><span class="op">+</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">prediction_ffs</span>,main<span class="op">=</span><span class="st">"prediction for the AOA \n(spatial CV error applied)"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-15-1.png" width="847.68"></p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">### AOA for which the random CV error applies:</span></span>
+<code class="sourceCode R"><span><span class="co">#spplot(prediction_ffs,main="prediction for the AOA \n(spatial CV error applied)")+</span></span>
+<span><span class="co">#spplot(AOA$AOA,col.regions=c("grey","transparent"))</span></span>
+<span></span>
+<span><span class="co">### AOA for which the random CV error applies:</span></span>
 <span><span class="va">AOA_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">model</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">prediction</span>,main<span class="op">=</span><span class="st">"prediction for the AOA \n(random CV error applied)"</span><span class="op">)</span><span class="op">+</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/sp/man/spplot.html" class="external-link">spplot</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span>,col.regions<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">prediction</span>,main<span class="op">=</span><span class="st">"prediction for the AOA \n(random CV error applied)"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-15-2.png" width="847.68"></p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#spplot(prediction,main="prediction for the AOA \n(random CV error applied)")+</span></span>
+<span><span class="co">#spplot(AOA_random$AOA,col.regions=c("grey","transparent"))</span></span></code></pre></div>
 <p>The figure shows in grey areas that are outside the area of
 applicability, hence predictions should not be considered for these
 locations. See tutorial on the AOA in this package for more
