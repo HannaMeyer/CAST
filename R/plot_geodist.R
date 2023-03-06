@@ -5,7 +5,7 @@
 #' The plot can be used to check the suitability of a chosen CV method to be representative to estimate map accuracy. Alternatively distances can also be calculated in the multivariate feature space.
 #'
 #' @param x object of class sf, training data locations
-#' @param modeldomain raster or sf object defining the prediction area (see Details)
+#' @param modeldomain SpatRaster, stars or sf object defining the prediction area (see Details)
 #' @param type "geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)
 #' @param cvfolds optional. list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
 #' Or a vector that contains the ID of the fold for each training point. See e.g. ?createFolds or ?CreateSpacetimeFolds or ?nndm
@@ -28,7 +28,6 @@
 #' @examples
 #' \dontrun{
 #' library(sf)
-#' library(raster)
 #' library(terra)
 #' library(caret)
 #'
@@ -40,7 +39,7 @@
 #' st_crs(pts) <- 26911
 #' pts_train <- pts[1:29,]
 #' pts_test <- pts[30:42,]
-#' studyArea <- raster::stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
+#' studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
 #' studyArea <- studyArea[[c("DEM","TWI", "NDRE.M", "NDRE.Sd", "Bt")]]
 #'
 #' ########### Distance between training data and new data:
@@ -113,9 +112,21 @@ plot_geodist <- function(x,
 
 
   # input formatting ------------
-  if (inherits(modeldomain, "SpatRaster")) {
-    modeldomain <- as(modeldomain,"Raster") ########### CHANGE
+  if (inherits(modeldomain, "Raster")) {
+#    if (!requireNamespace("raster", quietly = TRUE))
+#      stop("package raster required: install that first")
+    message("Raster will soon not longer be supported. Use terra or stars instead")
+    modeldomain <- methods::as(modeldomain,"SpatRaster")
   }
+  if (inherits(modeldomain, "stars")) {
+    if (!requireNamespace("stars", quietly = TRUE))
+      stop("package stars required: install that first")
+    modeldomain <- methods::as(modeldomain, "SpatRaster")
+  }
+
+
+
+
   x <- sf::st_transform(x,4326)
   if(type == "feature"){
     if(is.null(variables)){
@@ -129,13 +140,15 @@ plot_geodist <- function(x,
         x <- sf::st_as_sf(x)
       }
 
-      x <- sf::st_as_sf(raster::extract(modeldomain, x, df = TRUE, sp = TRUE))
+      #x <- sf::st_as_sf(raster::extract(modeldomain, x, df = TRUE, sp = TRUE))
+      x <- sf::st_as_sf(terra::extract(modeldomain, x, na.rm=FALSE,bind=TRUE))
       x <- sf::st_transform(x,4326)
     }
     if(!is.null(testdata)){
       if(any(!variables%in%names(testdata))){# extract variable values of raster:
         testdata <- sf::st_transform(testdata,sf::st_crs(modeldomain))
-        testdata <- sf::st_as_sf(raster::extract(modeldomain, testdata, df = TRUE, sp = TRUE))
+        #testdata <- sf::st_as_sf(raster::extract(modeldomain, testdata, df = TRUE, sp = TRUE))
+        testdata <- sf::st_as_sf(terra::extract(modeldomain, testdata, na.rm=FALSE,bind=TRUE))
 
         if(any(is.na(testdata))){
           testdata <- na.omit(testdata)
@@ -226,8 +239,6 @@ sample2sample <- function(x, type,variables){
 
 
 # Sample to Prediction
-
-
 sample2prediction = function(x, modeldomain, type, samplesize,variables){
 
   if(type == "geo"){
@@ -416,11 +427,11 @@ sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
   sf::sf_use_s2(FALSE)
   sf::st_as_sf(modeldomainextent) |>
     sf::st_transform(4326) -> bb
+
   methods::as(bb, "Spatial") |>
     sp::spsample(n = samplesize, type = sampling)  |>
     sf::st_as_sfc() |>
     sf::st_set_crs(4326) -> predictionloc
-
 
   predictionloc <- sf::st_as_sf(predictionloc)
 

@@ -22,7 +22,7 @@ plot_geodist(
 \arguments{
 \item{x}{object of class sf, training data locations}
 
-\item{modeldomain}{raster or sf object defining the prediction area (see Details)}
+\item{modeldomain}{SpatRaster, stars or sf object defining the prediction area (see Details)}
 
 \item{type}{"geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)}
 
@@ -64,7 +64,6 @@ See Meyer and Pebesma (2022) for an application of this plotting function
 \examples{
 \dontrun{
 library(sf)
-library(raster)
 library(terra)
 library(caret)
 
@@ -76,7 +75,7 @@ pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 st_crs(pts) <- 26911
 pts_train <- pts[1:29,]
 pts_test <- pts[30:42,]
-studyArea <- raster::stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
+studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
 studyArea <- studyArea[[c("DEM","TWI", "NDRE.M", "NDRE.Sd", "Bt")]]
 
 ########### Distance between training data and new data:

@@ -30,7 +30,7 @@ As example data, we use two different sets of global virtual reference data: One
 ```{r, message = FALSE, warning=FALSE}
 library(CAST)
 library(caret)
-library(raster)
+library(terra)
 library(sf)
 library(rnaturalearth)
 library(ggplot2)
@@ -250,7 +250,7 @@ The NNDM CV-distance still matches the sample-to-prediction distance function.
 So far we compared nearest neighbor distances in geographic space. We can also do so in feature space. Therefore, a set of bioclimatic variables are used (https://www.worldclim.org) as features (i.e. predictors) in this virtual prediction task. 
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
-predictors_global <- stack(system.file("extdata","bioclim_global.grd",package="CAST"))
+predictors_global <- rast(system.file("extdata","bioclim_global.grd",package="CAST"))
 
 plot(predictors_global)
 ```

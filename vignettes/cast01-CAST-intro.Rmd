@@ -7,8 +7,10 @@ output:
     toc: true
 vignette: >
   %\VignetteIndexEntry{Introduction to CAST}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, echo=FALSE}
@@ -113,14 +115,14 @@ model <- train(trainDat[,predictors],trainDat$VW,
 ```
 
 
-Based on the trained model we can make spatial predictions of soil moisture. To do this we load a RasterStack that contains spatial data of all predictor variables for the 25th of March 2012 (as an example). We then apply the trained model on this data set.
+Based on the trained model we can make spatial predictions of soil moisture. To do this we load a multiband raster that contains spatial data of all predictor variables for the 25th of March 2012 (as an example). We then apply the trained model on this data set.
 
 
 ```{r, message = FALSE, warning=FALSE}
-library(raster)
-predictors_sp <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
-prediction <- predict(predictors_sp,model)
-spplot(prediction)
+library(terra)
+predictors_sp <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
+prediction <- predict(predictors_sp,model,na.rm=TRUE)
+plot(prediction)
 ```
 
 The result is a spatially comprehensive map of soil moisture for this day.
@@ -152,7 +154,8 @@ To find this out, we need to repeatedly leave the complete time series of one or
 To do this we first need to create meaningful folds rather than random folds. CAST's function "CreateSpaceTimeFolds" is designed to provide index arguments used by caret's trainControl. The index defines which data points are used for model training during each model run and reversely defines which data points are held back. Hence, using the index argument we can account for the dependencies in the data by leaving the complete data from one or more data loggers out (LLO CV), from one or more time steps out (LTO CV) or from data loggers and time steps out (LLTO CV). In this example we're focusing on LLO CV, therefore we use the column "SOURCEID" to define the location of a data logger and split the data into folds using this information.
 Analog to the random CV we split the data into five folds, hence five model runs are performed each leaving one fifth of all data loggers out for validation.
 
-Note that several suggestions of spatial CV exist. What we call LLO here is just a simple example. See references in Meyer and Pebesma (2022) for some examples.
+Note that several suggestions of spatial CV exist. What we call LLO here is just a simple example. See references in [Meyer and Pebesma 2022](https://www.nature.com/articles/s41467-022-29838-9) for some examples and have a look at [Mila et al 2022](https://doi.org/10.1111/2041-210X.13851) for the methodology implemented in the CAST function nndm.
+
 
 
 ```{r, message = FALSE, warning=FALSE}
@@ -219,8 +222,8 @@ Note that the R² features a high standard deviation regardless of the variables
 What effect does the new model has on the spatial representation of soil moisture?
 
 ```{r, message = FALSE, warning=FALSE}
-prediction_ffs <- predict(predictors_sp,ffsmodel_LLO)
-spplot(prediction_ffs)
+prediction_ffs <- predict(predictors_sp,ffsmodel_LLO,na.rm=TRUE)
+plot(prediction_ffs)
 ```
 
 We see that the variable selection does not only have an effect on the statistical performance but also the predicted spatial patterns change considerably. It is of note that the linear feature is not any more in the resulting soil moisture map most likely because "Easting" was removed from the set of predictor variables by ffs.
@@ -235,13 +238,19 @@ library(latticeExtra)
 ### AOA for which the spatial CV error applies:
 AOA <- aoa(predictors_sp,ffsmodel_LLO)
 
-spplot(prediction_ffs,main="prediction for the AOA \n(spatial CV error applied)")+
-spplot(AOA$AOA,col.regions=c("grey","transparent"))
+plot(prediction_ffs,main="prediction for the AOA \n(spatial CV error applied)")
+plot(AOA$AOA,col=c("grey","transparent"),add=T)
+
+#spplot(prediction_ffs,main="prediction for the AOA \n(spatial CV error applied)")+
+#spplot(AOA$AOA,col.regions=c("grey","transparent"))
 
 ### AOA for which the random CV error applies:
 AOA_random <- aoa(predictors_sp,model)
-spplot(prediction,main="prediction for the AOA \n(random CV error applied)")+
-spplot(AOA_random$AOA,col.regions=c("grey","transparent"))
+plot(prediction,main="prediction for the AOA \n(random CV error applied)")
+plot(AOA_random$AOA,col=c("grey","transparent"),add=T)
+
+#spplot(prediction,main="prediction for the AOA \n(random CV error applied)")+
+#spplot(AOA_random$AOA,col.regions=c("grey","transparent"))
 
 ```
 

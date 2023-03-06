@@ -55,7 +55,7 @@ An object of class \code{aoa} containing:
 \description{
 This function estimates the Dissimilarity Index (DI) and the derived
 Area of Applicability (AOA) of spatial prediction models by
-considering the distance of new data (i.e. a Raster Stack of spatial predictors
+considering the distance of new data (i.e. a SpatRaster of spatial predictors
 used in the models) in the predictor variable space to the data used for model
 training. Predictors can be weighted based on the internal
 variable importance of the machine learning algorithm used for model training.
@@ -93,7 +93,7 @@ pts$ID <- 1:nrow(pts)
 set.seed(100)
 pts <- pts[1:30,]
 studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
-trainDat <- extract(studyArea,pts,df=TRUE)
+trainDat <- extract(studyArea,pts,na.rm=FALSE)
 trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
 
 # visualize data spatially:

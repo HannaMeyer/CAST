@@ -1,5 +1,6 @@
 #' Clustered samples simulation
 #'
+#' @description A simple procedure to simulate clustered points based on a two-step sampling.
 #' @param sarea polygon. Area where samples should be simulated.
 #' @param nsamples integer. Number of samples to be simulated.
 #' @param nparents integer. Number of parents.

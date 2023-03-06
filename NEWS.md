@@ -1,8 +1,8 @@
-# `CAST` 0.7.2
+# `CAST` 0.8.0
 * new features:
   * knndm as an alternative to nndm for large training data
 * modifications:
-  * start of transition from raster to terra
+  * transition from raster to terra
 
 # `CAST` 0.7.1
 * new features:

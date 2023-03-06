@@ -53,7 +53,7 @@
 #' @examples
 #' \dontrun{
 #' library(sf)
-#' library(raster)
+#' library(terra)
 #' library(caret)
 #' library(viridis)
 #' library(latticeExtra)
@@ -66,8 +66,8 @@
 #' pts$ID <- 1:nrow(pts)
 #' set.seed(100)
 #' pts <- pts[1:30,]
-#' studyArea <- stack(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
-#' trainDat <- extract(studyArea,pts,df=TRUE)
+#' studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
+#' trainDat <- extract(studyArea,pts,na.rm=FALSE)
 #' trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
 #'
 #' # visualize data spatially:

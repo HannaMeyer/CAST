@@ -45,7 +45,7 @@ calibrate_aoa(
 \item{m}{Numeric. See mgcv::s}
 }
 \value{
-A list of length 2 with the elements "AOA": rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected performance based on the relationship.
+A list of length 2 with the elements "AOA": SpatRaster or stars object which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected performance based on the relationship.
 Data used for calibration are stored in the attributes. The second element is a plot showing the relationship.
 }
 \description{
@@ -60,22 +60,18 @@ the AOA is updated accordingly. See Meyer and Pebesma (2021) for the full docume
 \examples{
 \dontrun{
 library(sf)
-library(raster)
+library(terra)
 library(caret)
 library(viridis)
 library(latticeExtra)
 
-# prepare sample data:
-library(sf)
-library(terra)
-library(caret)
-# prepare sample data:
+#' # prepare sample data:
 dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
 pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 pts$ID <- 1:nrow(pts)
 studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
-dat <- extract(studyArea,pts,df=TRUE)
+dat <- extract(studyArea,pts,na.rm=TRUE)
 trainDat <- merge(dat,pts,by.x="ID",by.y="ID")
 
 # train a model:
@@ -90,7 +86,6 @@ AOA <- aoa(studyArea,model)
 
 AOA_new <- calibrate_aoa(AOA,model)
 plot(AOA_new$AOA$expected_RMSE)
-# attributes(AOA_new$AOA) # data used for calibration
 }
 }
 \references{

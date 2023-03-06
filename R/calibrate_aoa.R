@@ -16,7 +16,7 @@
 #' ranging from three clusters to LOOCV. Hence, a large range of DI values is created during cross-validation.
 #' If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold (which is likely if extrapolation situations are created during CV),
 #' the AOA is updated accordingly. See Meyer and Pebesma (2021) for the full documentation of the methodology.
-#' @return A list of length 2 with the elements "AOA": rasterStack which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected performance based on the relationship.
+#' @return A list of length 2 with the elements "AOA": SpatRaster or stars object which contains the original DI and the AOA (which might be updated if new test data indicate this option), as well as the expected performance based on the relationship.
 #' Data used for calibration are stored in the attributes. The second element is a plot showing the relationship.
 #' @author
 #' Hanna Meyer
@@ -27,22 +27,18 @@
 #' @examples
 #' \dontrun{
 #' library(sf)
-#' library(raster)
+#' library(terra)
 #' library(caret)
 #' library(viridis)
 #' library(latticeExtra)
 #'
-#' # prepare sample data:
-#' library(sf)
-#' library(terra)
-#' library(caret)
-#' # prepare sample data:
+#' #' # prepare sample data:
 #' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
 #' dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
 #' pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 #' pts$ID <- 1:nrow(pts)
 #' studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
-#' dat <- extract(studyArea,pts,df=TRUE)
+#' dat <- extract(studyArea,pts,na.rm=TRUE)
 #' trainDat <- merge(dat,pts,by.x="ID",by.y="ID")
 #'
 #' # train a model:
@@ -58,7 +54,6 @@
 # '# and get the expected performance on a pixel-level:
 #' AOA_new <- calibrate_aoa(AOA,model)
 #' plot(AOA_new$AOA$expected_RMSE)
-#' # attributes(AOA_new$AOA) # data used for calibration
 #' }
 #' @export calibrate_aoa
 #' @aliases calibrate_aoa
@@ -68,7 +63,8 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
                           showPlot=TRUE,k=6,m=2){
 
   as_stars <- FALSE
-  as_raster <- FALSE
+#  as_raster <- FALSE
+
   if (inherits(AOA$AOA, "stars")) {
     if (!requireNamespace("stars", quietly = TRUE))
       stop("package stars required: install that first")
@@ -80,15 +76,14 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
   }
 
   if (inherits(AOA$AOA, "Raster")) {
-    if (!requireNamespace("raster", quietly = TRUE))
-      stop("package raster required: install that first")
+    #if (!requireNamespace("raster", quietly = TRUE))
+    #  stop("package raster required: install that first")
     message("Raster will soon not longer be supported. Use terra or stars instead")
-
     attr <- attributes(AOA)[c("aoa_stats","TrainDI")]
     AOA$AOA <- methods::as(AOA$AOA, "SpatRaster")
     AOA$DI <- methods::as(AOA$DI, "SpatRaster")
     attributes(AOA)<- c(attributes(AOA),attr)
-    as_raster <- TRUE
+#    as_raster <- TRUE
   }
 
   if(multiCV){
@@ -310,12 +305,12 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
     attributes(AOA$AOA)<- c(attributes(AOA$AOA),attr)
   }
 
-  if(as_raster){
-    AOA$AOA <- methods::as(AOA$AOA, "Raster")
-    AOA$DI <- methods::as(AOA$DI, "Raster")
-    AOA$expectedError <- methods::as(AOA$expectedError, "Raster")
-    attributes(AOA$AOA)<- c(attributes(AOA$AOA),attr)
-  }
+#  if(as_raster){
+#    AOA$AOA <- methods::as(AOA$AOA, "Raster")
+#    AOA$DI <- methods::as(AOA$DI, "Raster")
+#    AOA$expectedError <- methods::as(AOA$expectedError, "Raster")
+#    attributes(AOA$AOA)<- c(attributes(AOA$AOA),attr)
+#  }
   names(AOA)[names(AOA)=="expectedError"] <- paste0("expected_",model$metric)
   #return(AOA)
 

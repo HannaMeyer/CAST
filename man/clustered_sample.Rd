@@ -19,7 +19,7 @@ clustered_sample(sarea, nsamples, nparents, radius)
 sf object with the simulated points and the parent to which each point belongs to.
 }
 \description{
-Clustered samples simulation
+A simple procedure to simulate clustered points based on a two-step sampling.
 }
 \details{
 A simple procedure to simulate clustered points based on a two-step sampling.

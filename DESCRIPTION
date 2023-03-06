@@ -1,7 +1,7 @@
 Package: CAST
 Type: Package
 Title: 'caret' Applications for Spatial-Temporal Models
-Version: 0.7.1
+Version: 0.8.0
 Authors@R: c(person("Hanna", "Meyer", email = "hanna.meyer@uni-muenster.de", role = c("cre", "aut")),
              person("Carles", "Milà", role = c("aut")),
              person("Marvin", "Ludwig", role = c("aut")),
@@ -24,7 +24,6 @@ Suggests:
     doParallel,
     randomForest,
     lubridate,
-    raster,
     sp,
     knitr,
     mapview,
@@ -33,10 +32,8 @@ Suggests:
     scales,
     parallel,
     latticeExtra,
-    virtualspecies,
     gridExtra,
     viridis,
-    rgeos,
     stars,
     scam,
     terra,
