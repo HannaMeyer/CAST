@@ -166,7 +166,7 @@ trainDI <- function(model = NA,
 
 
   # multiply train data with variable weights (from variable importance)
-  if(!inherits(weight, "error")){
+  if(!inherits(weight, "error")&!is.null(unlist(weight))){
     train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
   }
 
@@ -270,7 +270,8 @@ aoa_categorial_train <- function(train, variables, weight){
       train[,catvar]<-droplevels(train[,catvar])
 
       # then create dummy variables for the remaining levels in train:
-      dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = train),train)
+      dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = train),
+                           train)
       train <- data.frame(train,dvi_train)
 
       if(!inherits(weight, "error")){
