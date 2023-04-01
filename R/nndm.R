@@ -148,6 +148,7 @@ nndm <- function(tpoints, modeldomain = NULL, ppoints = NULL, samplesize = 1000,
     }
     message(paste0(samplesize, " prediction points are sampled from the modeldomain"))
     ppoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
+    sf::st_crs(ppoints) <- sf::st_crs(modeldomain)
   }else if(!is.null(ppoints)){
     if(!identical(sf::st_crs(tpoints), sf::st_crs(ppoints))){
       stop("tpoints and ppoints must have the same CRS")
