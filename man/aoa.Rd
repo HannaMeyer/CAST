@@ -97,7 +97,7 @@ trainDat <- extract(studyArea,pts,na.rm=FALSE)
 trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
 
 # visualize data spatially:
-spplot(scale(studyArea))
+plot(studyArea)
 plot(studyArea$DEM)
 plot(pts[,1],add=TRUE,col="black")
 
@@ -114,18 +114,12 @@ plot(varImp(model,scale=FALSE))
 #...then calculate the AOA of the trained model for the study area:
 AOA <- aoa(studyArea,model)
 plot(AOA)
-spplot(AOA$DI, col.regions=viridis(100),main="Dissimilarity Index")
-#plot predictions for the AOA only:
-spplot(prediction, col.regions=viridis(100),main="prediction for the AOA")+
-spplot(AOA$AOA,col.regions=c("grey","transparent"))
 
 ####
 #The AOA can also be calculated without a trained model.
 #All variables are weighted equally in this case:
 ####
 AOA <- aoa(studyArea,train=trainDat,variables=variables)
-spplot(AOA$DI, col.regions=viridis(100),main="Dissimilarity Index")
-spplot(AOA$AOA,main="Area of Applicability")
 
 
 ####
@@ -149,7 +143,7 @@ lrn$train(task)
 rsmp_cv <- rsmp("cv", folds = 5L)$instantiate(task)
 
 ## predict:
-prediction <- predict(studyArea,lrn$model)
+prediction <- predict(studyArea,lrn$model,na.rm=TRUE)
 
 ### Estimate AOA
 AOA <- aoa(studyArea,

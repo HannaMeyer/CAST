@@ -81,7 +81,7 @@ trainDat <- extract(studyArea,pts,na.rm=FALSE)
 trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
 
 # visualize data spatially:
-spplot(scale(studyArea))
+plot(studyArea)
 plot(studyArea$DEM)
 plot(pts[,1],add=TRUE,col="black")
 
@@ -92,7 +92,7 @@ model <- train(trainDat[,which(names(trainDat)\%in\%variables)],
 trainDat$VW, method="rf", importance=TRUE, tuneLength=1,
 trControl=trainControl(method="cv",number=5,savePredictions=T))
 print(model) #note that this is a quite poor prediction model
-prediction <- predict(studyArea,model)
+prediction <- predict(studyArea,model,na.rm=TRUE)
 plot(varImp(model,scale=FALSE))
 
 #...then calculate the DI of the trained model:
