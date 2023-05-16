@@ -265,6 +265,8 @@ aoa_categorial_train <- function(train, variables, weight){
                       error=function(e) e)
 
   if (!inherits(catvars,"error")&length(catvars)>0){
+    message("warning: predictors contain categorical variables. The integration is currently still under development. Please check results carefully!")
+
     for (catvar in catvars){
       # mask all unknown levels in newdata as NA (even technically no predictions can be made)
       train[,catvar]<-droplevels(train[,catvar])
