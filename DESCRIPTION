@@ -38,10 +38,9 @@ Suggests:
     scam,
     terra,
     rnaturalearth,
-    rgdal,
     MASS,
     twosamples,
     testthat (>= 3.0.0)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr
 Config/testthat/edition: 3
