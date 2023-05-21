@@ -210,7 +210,7 @@ training/prediction points as a previous step to ensure they are aligned.</p>
 <span class="r-in"><span><span class="co">########################################################################</span></span></span>
 <span class="r-in"><span><span class="co"># Example 2: Simulated data - Clustered training points</span></span></span>
 <span class="r-in"><span><span class="co">########################################################################</span></span></span>
-<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -223,26 +223,16 @@ training/prediction points as a previous step to ensure they are aligned.</p>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">simarea</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">pred_points</span>, add <span class="op">=</span> <span class="cn">TRUE</span>, col <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">train_points</span>, add <span class="op">=</span> <span class="cn">TRUE</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="knndm-4.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Run kNNDM for the whole domain, here the prediction points are known.</span></span></span>
 <span class="r-in"><span><span class="va">knndm_folds</span> <span class="op">&lt;-</span> <span class="fu">knndm</span><span class="op">(</span><span class="va">train_points</span>, ppoints <span class="op">=</span> <span class="va">pred_points</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Missing CRS in training or prediction points. Assuming projected CRS.</span>
 <span class="r-in"><span><span class="va">knndm_folds</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> knndm object</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Clustering algorithm: hierarchical</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Intermediate clusters (q): 65</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> W statistic: 0.6851</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Number of folds: 5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Observations in each fold:  188 207 188 200 217 </span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">knndm_folds</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="knndm-5.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="va">folds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">knndm_folds</span><span class="op">$</span><span class="va">clusters</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">simarea</span>, alpha <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">train_points</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>col <span class="op">=</span> <span class="va">folds</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="knndm-6.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span><span class="co">########################################################################</span></span></span>
 <span class="r-in"><span><span class="co"># Example 3: Real- world example; using a modeldomain instead of previously</span></span></span>
 <span class="r-in"><span><span class="co"># sampled prediction locations</span></span></span>
