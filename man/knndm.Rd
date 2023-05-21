@@ -118,7 +118,7 @@ ggplot() +
 ########################################################################
 # Example 2: Simulated data - Clustered training points
 ########################################################################
-
+\dontrun{
 library(sf)
 library(ggplot2)
 
@@ -140,7 +140,7 @@ folds <- as.character(knndm_folds$clusters)
 ggplot() +
   geom_sf(data = simarea, alpha = 0) +
   geom_sf(data = train_points, aes(col = folds))
-
+}
 ########################################################################
 # Example 3: Real- world example; using a modeldomain instead of previously
 # sampled prediction locations

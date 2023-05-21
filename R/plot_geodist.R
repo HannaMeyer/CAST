@@ -186,7 +186,7 @@ plot_geodist <- function(x,
   }
 
   # Compile output and plot data ----
-  p <- plot.nnd(dists,type,unit,stat)
+  p <- .plot.nnd(dists,type,unit,stat)
 
   if(showPlot){
     print(p)
@@ -448,7 +448,7 @@ sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
 
 # plot results
 
-plot.nnd = function(x,type,unit,stat){
+.plot.nnd <- function(x,type,unit,stat){
   if(unit=="km"){
     x$dist <- x$dist/1000
     xlabs <- "geographic distances (km)"
