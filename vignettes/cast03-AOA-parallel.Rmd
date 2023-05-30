@@ -78,6 +78,7 @@ response <- generate_random_response (predictors, seed = 10)
 mask <- predictors[[1]]
 values(mask)[!is.na(values(mask))] <- 1
 mask <- st_as_sf(as.polygons(mask))
+mask <- st_make_valid(mask)
 
 set.seed(15)
 samplepoints <- clustered_sample(mask,75,15,radius=25000)
@@ -120,9 +121,9 @@ saveRDS(model_random_trainDI, "path/to/file")
 If you have a large raster, you divide it into multiple smaller tiles and apply the trainDI object afterwards to each tile.
 
 ```{r,  fig.show="hold", out.width="30%"}
-r1 = crop(predictors, c(0,7,42.33333,54.83333))
-r2 = crop(predictors, c(7,14,42.33333,54.83333))
-r3 = crop(predictors, c(14,21,42.33333,54.83333))
+r1 = crop(predictors, c(3496791,4073906,2143336,3579086))
+r2 = crop(predictors, c(4073906,4651021,2143336,3579086))
+r3 = crop(predictors, c(4651021,5228136,2143336,3579086))
 
 
 plot(r1[[1]],main = "Tile 1")

@@ -1,3 +1,8 @@
+# `CAST` 0.8.1
+* bugfix:
+  * failed checks on Fedora 34 fixed
+
+  
 # `CAST` 0.8.0
 * new features:
   * knndm as an alternative to nndm for large training data

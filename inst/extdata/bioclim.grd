@@ -1,25 +1,20 @@
 [general]
-creator=R package 'raster'
-created=2020-04-20 10:42:32
 [georeference]
-nrows=75
-ncols=126
-xmin=0
-ymin=42.3333333333333
-xmax=21
-ymax=54.8333333333333
-projection=+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0
+nrows=102
+ncols=123
+xmin=3496791.13337548822
+ymin=2143336.1046024058
+xmax=5228136.43094571959
+ymax=3579085.86356308544
+projection=+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs
 [data]
 datatype=FLT4S
+nodatavalue=nan
 byteorder=little
 nbands=6
 bandorder=BIL
-minvalue=49:75:37:52:8:65
-maxvalue=107:318:243:224:153:550
-nodatavalue=-3.4e+38
-[legend]
-legendtype=
-values=
-color=
+minvalue=-3.68934881474191032e+19:-3.68934881474191032e+19:-3.68934881474191032e+19:-3.68934881474191032e+19:-3.68934881474191032e+19:-3.68934881474191032e+19
+maxvalue=3.68934881474191032e+19:3.68934881474191032e+19:3.68934881474191032e+19:3.68934881474191032e+19:3.68934881474191032e+19:3.68934881474191032e+19
+categorical=FALSE
 [description]
 layername=bio2:bio5:bio10:bio13:bio14:bio19

@@ -57,7 +57,7 @@ As predictor variables, a set of bioclimatic variables are used (https://www.wor
 
 ```{r, message = FALSE, warning=FALSE}
 predictors <- rast(system.file("extdata","bioclim.grd",package="CAST"))
-plot(stretch(predictors,0,1),col=viridis(100))
+plot(predictors,col=viridis(100))
 ```
 
 
@@ -109,17 +109,20 @@ plot(response,col=viridis(100),main="virtual response")
 ### Simulate sampling locations
 To simulate a typical prediction task, field sampling locations are randomly selected.
 Here, we randomly select 20 points. Note that this is a very small data set, but used here to avoid long computation times.
+
 ```{r,message = FALSE, warning=FALSE}
 mask <- predictors[[1]]
 values(mask)[!is.na(values(mask))] <- 1
 mask <- st_as_sf(as.polygons(mask))
+mask <- st_make_valid(mask)
+```
 
+```{r,message = FALSE, warning=FALSE}
 set.seed(15)
 samplepoints <- st_as_sf(st_sample(mask,20,"random"))
 
 plot(response,col=viridis(100))
 plot(samplepoints,col="red",add=T,pch=3)
-
 ```
 
 ## Model training
@@ -186,7 +189,7 @@ We can plot the DI as well as predictions onyl in the AOA:
 plot(truediff,col=viridis(100),main="true prediction error")
 plot(AOA$DI,col=viridis(100),main="DI")
 plot(prediction, col=viridis(100),main="prediction for AOA")
-plot(AOA$AOA,col=c("grey","transparent"),add=T)
+plot(AOA$AOA,col=c("grey","transparent"),add=T,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 ```
 
 The patterns in the DI are in general agreement with the true prediction error.
@@ -208,7 +211,7 @@ Also the threshold for the AOA is not reliable, because it is based in distance 
 To show how this looks like, we use 15 spatial locations and simulate 5 data points around each location.
 
 ```{r,message = FALSE, warning=FALSE}
-set.seed(15)
+set.seed(25)
 samplepoints <- clustered_sample(mask,75,15,radius=25000)
 
 plot(response,col=viridis(100))
@@ -264,9 +267,9 @@ AOA_random <- aoa(predictors, model_random)
 ```{r,message = FALSE, warning=FALSE,  fig.show="hold", out.width="50%"}
 plot(AOA_spatial$DI,col=viridis(100),main="DI")
 plot(prediction, col=viridis(100),main="prediction for AOA \n(spatial CV error applies)")
-plot(AOA_spatial$AOA,col=c("grey","transparent"),add=TRUE)
+plot(AOA_spatial$AOA,col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 plot(prediction_random, col=viridis(100),main="prediction for AOA \n(random CV error applies)")
-plot(AOA_random$AOA,col=c("grey","transparent"),add=TRUE)
+plot(AOA_random$AOA,col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 ```
 
 Note that the AOA is much larger for the spatial CV approach. However, the spatial cross-validation error is considerably larger, hence also the area for which this error applies is larger.
@@ -311,7 +314,7 @@ This can be done using the result of calibrate_aoa which used the relationship a
 AOA_calib <- calibrate_aoa(AOA_spatial,model,window.size = 5,length.out = 5, multiCV=TRUE,showPlot=FALSE)
 AOA_calib$plot
 plot(AOA_calib$AOA$expected_RMSE,col=viridis(100),main="expected RMSE")
-plot(AOA$AOA,col=c("grey","transparent"),add=TRUE)
+plot(AOA_calib$AOA$AOA,col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 ```
 
 # Example 2: A real-world example
@@ -375,7 +378,7 @@ plot(AOA$DI,col=viridis(100),main="DI with sampling locations (red)")
 plot(pts,zcol="ID",col="red",add=TRUE)
 
 plot(prediction, col=viridis(100),main="prediction for AOA \n(LOOCV error applies)")
-plot(AOA$AOA,col=c("grey","transparent"),add=TRUE)
+plot(AOA$AOA,col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 
 ```
 
