@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,7 +78,7 @@
                         <h4 data-toc-skip class="author">Marvin
 Ludwig</h4>
             
-            <h4 data-toc-skip class="date">2023-05-21</h4>
+            <h4 data-toc-skip class="date">2023-05-30</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast03-AOA-parallel.Rmd" class="external-link"><code>vignettes/cast03-AOA-parallel.Rmd</code></a></small>
       <div class="d-none name"><code>cast03-AOA-parallel.Rmd</code></div>
@@ -146,6 +146,7 @@ the data are generated.</p>
 <code class="sourceCode R"><span><span class="va">mask</span> <span class="op">&lt;-</span> <span class="va">predictors</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">mask</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">mask</span><span class="op">)</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span><span class="va">mask</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/as.spatvector.html" class="external-link">as.polygons</a></span><span class="op">(</span><span class="va">mask</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">mask</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/valid.html" class="external-link">st_make_valid</a></span><span class="op">(</span><span class="va">mask</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">15</span><span class="op">)</span></span>
 <span><span class="va">samplepoints</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clustered_sample.html">clustered_sample</a></span><span class="op">(</span><span class="va">mask</span>,<span class="fl">75</span>,<span class="fl">15</span>,radius<span class="op">=</span><span class="fl">25000</span><span class="op">)</span></span>
@@ -182,15 +183,15 @@ e.g. in global mapping.</p>
 <pre><code><span><span class="co">## DI of 75 observation </span></span>
 <span><span class="co">## Predictors: bio2 bio5 bio10 bio13 bio14 bio19 </span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## AOA Threshold: 0.1825833</span></span></code></pre>
+<span><span class="co">## AOA Threshold: 0.3700483</span></span></code></pre>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/serialize.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">model_random_trainDI</span>, <span class="st">"path/to/file"</span><span class="op">)</span></span></code></pre></div>
 <p>If you have a large raster, you divide it into multiple smaller tiles
 and apply the trainDI object afterwards to each tile.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">r1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">7</span>,<span class="fl">42.33333</span>,<span class="fl">54.83333</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">r2</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>,<span class="fl">14</span>,<span class="fl">42.33333</span>,<span class="fl">54.83333</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">r3</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">14</span>,<span class="fl">21</span>,<span class="fl">42.33333</span>,<span class="fl">54.83333</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">r1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3496791</span>,<span class="fl">4073906</span>,<span class="fl">2143336</span>,<span class="fl">3579086</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">r2</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4073906</span>,<span class="fl">4651021</span>,<span class="fl">2143336</span>,<span class="fl">3579086</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">r3</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4651021</span>,<span class="fl">5228136</span>,<span class="fl">2143336</span>,<span class="fl">3579086</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">r1</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,main <span class="op">=</span> <span class="st">"Tile 1"</span><span class="op">)</span></span>
