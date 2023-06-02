@@ -247,7 +247,7 @@ sample2prediction = function(x, modeldomain, type, samplesize,variables){
     d0 <- sf::st_distance(modeldomain, x)
     min_d0 <- apply(d0, 1, min)
     sampletoprediction <- data.frame(dist = min_d0,
-                                     what = factor("sample-to-prediction"),
+                                     what = factor("prediction-to-sample"),
                                      dist_type = "geo")
 
   }else if(type == "feature"){
@@ -269,7 +269,7 @@ sample2prediction = function(x, modeldomain, type, samplesize,variables){
       target_dist_feature <- c(target_dist_feature,min(trainDist,na.rm=T))
     }
     sampletoprediction <- data.frame(dist = target_dist_feature,
-                                     what = "sample-to-prediction",
+                                     what = "prediction-to-sample",
                                      dist_type = "feature")
   }
 
@@ -288,7 +288,7 @@ sample2test <- function(x, testdata, type,variables){
     min_d_test <- apply(d_test, 1, min)
 
     dists_test <- data.frame(dist = min_d_test,
-                             what = factor("sample-to-test"),
+                             what = factor("test-to-sample"),
                              dist_type = "geo")
 
 
@@ -311,7 +311,7 @@ sample2test <- function(x, testdata, type,variables){
       test_dist_feature <- c(test_dist_feature,min(testDist,na.rm=T))
     }
     dists_test <- data.frame(dist = test_dist_feature,
-                             what = "sample-to-test",
+                             what = "test-to-sample",
                              dist_type = "feature")
 
 
