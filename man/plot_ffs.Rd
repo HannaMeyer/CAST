@@ -37,6 +37,7 @@ plot_ffs(
 \item{...}{Further arguments for base plot if type="selected"}
 }
 \description{
+plot_ffs() is deprecated and will be removed soon. Please use generic plot() function on ffs object.
 A plotting function for a forward feature selection result.
 Each point is the mean performance of a model run. Error bars represent
 the standard errors from cross validation.

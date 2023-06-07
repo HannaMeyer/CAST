@@ -213,7 +213,7 @@ Using the plot$\_$ffs function we can visualize how the performance of the model
 
 
 ```{r, message = FALSE, warning=FALSE}
-plot_ffs(ffsmodel_LLO)
+plot(ffsmodel_LLO)
 ```
 
 See that the best model using two variables led to an R² of slightly above 0.2. Using the third variable could slightly increase the R². Any further variable could not improve the LLO performance.

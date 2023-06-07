@@ -275,6 +275,7 @@ ffs <- function (predictors,
       bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
       bestmodel$minVar <- minVar
       bestmodel$type <- "ffs"
+      class(bestmodel) <- c("ffs", "train")
       return(bestmodel)
       break()
     }
@@ -392,5 +393,6 @@ ffs <- function (predictors,
   bestmodel$minVar <- minVar
   bestmodel$type <- "ffs"
   bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
+  class(bestmodel) <- c("ffs", "train")
   return(bestmodel)
 }

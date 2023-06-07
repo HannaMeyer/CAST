@@ -6,6 +6,9 @@
 \alias{plot.aoa}
 \alias{plot.nndm}
 \alias{plot.knndm}
+\alias{plot.ffs}
+\alias{plot_ffs}
+\alias{plot_bss}
 \title{Plot CAST classes}
 \usage{
 \method{plot}{trainDI}(x, ...)
@@ -15,19 +18,69 @@
 \method{plot}{nndm}(x, ...)
 
 \method{plot}{knndm}(x, ...)
+
+\method{plot}{ffs}(
+  ffs_model,
+  plotType = "all",
+  palette = rainbow,
+  reverse = FALSE,
+  marker = "black",
+  size = 1.5,
+  lwd = 0.5,
+  pch = 21,
+  ...
+)
 }
 \arguments{
 \item{x}{An object of type \emph{knndm}.}
 
-\item{...}{other arguments.}
+\item{...}{Further arguments for base plot if type="selected"}
 
 \item{samplesize}{numeric. How many prediction samples should be plotted?}
+
+\item{ffs_model}{Result of a forward feature selection see \code{\link{ffs}}}
+
+\item{plotType}{character. Either "all" or "selected"}
+
+\item{palette}{A color palette}
+
+\item{reverse}{Character. Should the palette be reversed?}
+
+\item{marker}{Character. Color to mark the best models}
+
+\item{size}{Numeric. Size of the points}
+
+\item{lwd}{Numeric. Width of the error bars}
+
+\item{pch}{Numeric. Type of point marking the best models}
 }
 \description{
 Generic plot function for trainDI and aoa
+
+A plotting function for a forward feature selection result.
+Each point is the mean performance of a model run. Error bars represent
+the standard errors from cross validation.
+Marked points show the best model from each number of variables until a further variable
+could not improve the results.
+If type=="selected", the contribution of the selected variables to the model
+performance is shown.
+}
+\examples{
+\dontrun{
+data(iris)
+ffsmodel <- ffs(iris[,1:4],iris$Species)
+plot_ffs(ffsmodel)
+#plot performance of selected variables only:
+plot_ffs(ffsmodel,plotType="selected")
+}
+}
+\seealso{
+\code{\link{ffs}}, \code{\link{bss}}
 }
 \author{
 Marvin Ludwig, Hanna Meyer
 
 Carles Milà
+
+Marvin Ludwig and Hanna Meyer
 }
