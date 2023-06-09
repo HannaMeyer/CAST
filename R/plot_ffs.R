@@ -22,9 +22,9 @@
 #' \dontrun{
 #' data(iris)
 #' ffsmodel <- ffs(iris[,1:4],iris$Species)
-#' plot_ffs(ffsmodel)
+#' plot(ffsmodel)
 #' #plot performance of selected variables only:
-#' plot_ffs(ffsmodel,plotType="selected")
+#' plot(ffsmodel,plotType="selected")
 #'}
 #' @export
 
@@ -33,7 +33,7 @@ plot_ffs <- function(ffs_model,plotType="all",palette=rainbow,reverse=FALSE,
                      marker="black",size=1.5,lwd=0.5,
                      pch=21,...){
   message("plot_ffs() is deprecated and will be removed soon. Please use generic plot() function on ffs object.")
-  plot.ffs(ffs_model, ...)
+  plot.ffs(x=ffs_model,plotType=plotType,palette=palette,reverse=reverse,marker=marker,size=size,lwd=lwd,pch=pch,...)
 
 
 }

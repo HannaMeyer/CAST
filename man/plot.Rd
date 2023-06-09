@@ -65,9 +65,9 @@ performance is shown.
 \dontrun{
 data(iris)
 ffsmodel <- ffs(iris[,1:4],iris$Species)
-plot_ffs(ffsmodel)
+plot(ffsmodel)
 #plot performance of selected variables only:
-plot_ffs(ffsmodel,plotType="selected")
+plot(ffsmodel,plotType="selected")
 }
 }
 \seealso{

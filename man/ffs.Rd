@@ -132,6 +132,7 @@ set.seed(10)
 ffsmodel <- ffs(trainDat[,predictors],trainDat$VW,method="rf",
 tuneLength=1,trControl=ctrl)
 ffsmodel
+plot(ffsmodel)
 
 #compare to model without ffs:
 model <- train(trainDat[,predictors],trainDat$VW,method="rf",
