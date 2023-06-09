@@ -142,5 +142,6 @@ bss <- function (predictors,
   bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
   bestmodel$perf_all <- bestmodel$perf_all[order(bestmodel$perf_all$nvar),]
   bestmodel$type <- "bss"
+  class(bestmodel) <- c("ffs", "bss", "train")
   return(bestmodel)
 }

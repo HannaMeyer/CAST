@@ -10,6 +10,8 @@
 \alias{show.nndm}
 \alias{print.knndm}
 \alias{show.knndm}
+\alias{print.ffs}
+\alias{show.ffs}
 \title{Print CAST classes}
 \usage{
 \method{print}{trainDI}(x, ...)
@@ -27,9 +29,13 @@ show.nndm(x, ...)
 \method{print}{knndm}(x, ...)
 
 show.knndm(x, ...)
+
+\method{print}{ffs}(x, ...)
+
+show.ffs(x, ...)
 }
 \arguments{
-\item{x}{An object of type \emph{knndm}.}
+\item{x}{An object of type \emph{ffs}}
 
 \item{...}{other arguments.}
 }

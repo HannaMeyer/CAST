@@ -108,3 +108,34 @@ print.knndm <- function(x, ...){
 show.knndm = function(x, ...){
   print.knndm(x)
 }
+
+
+
+#' @name print
+#' @param x An object of type \emph{ffs}
+#' @param ... other arguments.
+#' @export
+
+
+print.ffs = function(x, ...){
+  cat("Selected Variables: \n")
+  cat(x$selectedvars)
+  cat("\n")
+  cat("---\n")
+  print.train(x)
+}
+
+
+#' @name print
+#' @param x An object of type \emph{ffs}
+#' @param ... other arguments.
+#' @export
+
+show.ffs = function(x, ...){
+  print.ffs(x)
+
+}
+
+
+
+

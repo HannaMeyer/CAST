@@ -2,7 +2,6 @@
 % Please edit documentation in R/plot_ffs.R
 \name{plot_ffs}
 \alias{plot_ffs}
-\alias{plot_bss}
 \title{Plot results of a Forward feature selection or best subset selection}
 \usage{
 plot_ffs(
@@ -37,6 +36,7 @@ plot_ffs(
 \item{...}{Further arguments for base plot if type="selected"}
 }
 \description{
+plot_ffs() is deprecated and will be removed soon. Please use generic plot() function on ffs object.
 A plotting function for a forward feature selection result.
 Each point is the mean performance of a model run. Error bars represent
 the standard errors from cross validation.
