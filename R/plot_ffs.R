@@ -26,8 +26,7 @@
 #' #plot performance of selected variables only:
 #' plot_ffs(ffsmodel,plotType="selected")
 #'}
-#' @export plot_ffs
-#' @aliases plot_ffs plot_bss
+#' @export
 
 
 plot_ffs <- function(ffs_model,plotType="all",palette=rainbow,reverse=FALSE,

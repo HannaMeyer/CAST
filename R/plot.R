@@ -187,7 +187,7 @@ plot.knndm <- function(x, ...){
 #' could not improve the results.
 #' If type=="selected", the contribution of the selected variables to the model
 #' performance is shown.
-#' @param ffs_model Result of a forward feature selection see \code{\link{ffs}}
+#' @param x Result of a forward feature selection see \code{\link{ffs}}
 #' @param plotType character. Either "all" or "selected"
 #' @param palette A color palette
 #' @param reverse Character. Should the palette be reversed?
@@ -208,52 +208,52 @@ plot.knndm <- function(x, ...){
 #'}
 #' @name plot
 #' @export
-#' @aliases plot_ffs plot_bss
 
 
-plot.ffs <- function(ffs_model,plotType="all",palette=rainbow,reverse=FALSE,
+
+plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
                      marker="black",size=1.5,lwd=0.5,
                      pch=21,...){
-  metric <- ffs_model$metric
-  if (is.null(ffs_model$type)){
-    ffs_model$type <- "ffs"
+  metric <- x$metric
+  if (is.null(x$type)){
+    x$type <- "ffs"
   }
-  if(is.null(ffs_model$minVar)){
-    ffs_model$minVar <- 2
+  if(is.null(x$minVar)){
+    x$minVar <- 2
   }
-  if(ffs_model$type=="bss"&plotType=="selected"){
+  if(x$type=="bss"&plotType=="selected"){
     type <- "all"
     print("warning: type must be 'all' for a bss model")
   }
   if (plotType=="selected"){
-    labels <- paste0(ffs_model$selectedvars[1:ffs_model$minVar],collapse="+")
-    for (i in ((ffs_model$minVar+1):length(ffs_model$selectedvars))){
-      labels <- c(labels,paste0("+",ffs_model$selectedvars[i]))
+    labels <- paste0(x$selectedvars[1:x$minVar],collapse="+")
+    for (i in ((x$minVar+1):length(x$selectedvars))){
+      labels <- c(labels,paste0("+",x$selectedvars[i]))
     }
-    plot(ffs_model$selectedvars_perf,xaxt="n",xlab="",
+    plot(x$selectedvars_perf,xaxt="n",xlab="",
          ylab=metric,
-         ylim=c(min(ffs_model$selectedvars_perf-ffs_model$selectedvars_perf_SE,na.rm=TRUE),
-                max(ffs_model$selectedvars_perf+ffs_model$selectedvars_perf_SE,na.rm=TRUE)),
+         ylim=c(min(x$selectedvars_perf-x$selectedvars_perf_SE,na.rm=TRUE),
+                max(x$selectedvars_perf+x$selectedvars_perf_SE,na.rm=TRUE)),
          ...)
-    segments(1:(length(ffs_model$selectedvars)-1),
-             ffs_model$selectedvars_perf-ffs_model$selectedvars_perf_SE,
-             1:(length(ffs_model$selectedvars)-1),
-             ffs_model$selectedvars_perf+ffs_model$selectedvars_perf_SE)
-    axis(1,at=1:(length(ffs_model$selectedvars)-1),labels=labels,las=2)
+    segments(1:(length(x$selectedvars)-1),
+             x$selectedvars_perf-x$selectedvars_perf_SE,
+             1:(length(x$selectedvars)-1),
+             x$selectedvars_perf+x$selectedvars_perf_SE)
+    axis(1,at=1:(length(x$selectedvars)-1),labels=labels,las=2)
   }else{
 
 
-    output_df <- ffs_model$perf_all
+    output_df <- x$perf_all
     output_df$run <- seq(nrow(output_df))
     names(output_df)[which(names(output_df)==metric)] <- "value"
 
-    if (ffs_model$type=="bss"){
-      bestmodels <- output_df$run[which(output_df$value==ffs_model$selectedvars_perf)]
+    if (x$type=="bss"){
+      bestmodels <- output_df$run[which(output_df$value==x$selectedvars_perf)]
     }else{
 
       bestmodels <- c()
       for (i in unique(output_df$nvar)){
-        if (ffs_model$maximize){
+        if (x$maximize){
           bestmodels <- c(bestmodels,
                           output_df$run[output_df$nvar==i][which(output_df$value[
                             output_df$nvar==i]==max(output_df$value[output_df$nvar==i]))][1])
@@ -263,7 +263,7 @@ plot.ffs <- function(ffs_model,plotType="all",palette=rainbow,reverse=FALSE,
                             output_df$nvar==i]==min(output_df$value[output_df$nvar==i]))][1])
         }
       }
-      bestmodels <- bestmodels[1:(length(ffs_model$selectedvars)-1)]
+      bestmodels <- bestmodels[1:(length(x$selectedvars)-1)]
     }
 
     if (!reverse){

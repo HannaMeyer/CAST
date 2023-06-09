@@ -7,8 +7,6 @@
 \alias{plot.nndm}
 \alias{plot.knndm}
 \alias{plot.ffs}
-\alias{plot_ffs}
-\alias{plot_bss}
 \title{Plot CAST classes}
 \usage{
 \method{plot}{trainDI}(x, ...)
@@ -20,7 +18,7 @@
 \method{plot}{knndm}(x, ...)
 
 \method{plot}{ffs}(
-  ffs_model,
+  x,
   plotType = "all",
   palette = rainbow,
   reverse = FALSE,
@@ -32,13 +30,11 @@
 )
 }
 \arguments{
-\item{x}{An object of type \emph{knndm}.}
+\item{x}{Result of a forward feature selection see \code{\link{ffs}}}
 
 \item{...}{Further arguments for base plot if type="selected"}
 
 \item{samplesize}{numeric. How many prediction samples should be plotted?}
-
-\item{ffs_model}{Result of a forward feature selection see \code{\link{ffs}}}
 
 \item{plotType}{character. Either "all" or "selected"}
 

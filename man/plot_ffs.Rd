@@ -2,7 +2,6 @@
 % Please edit documentation in R/plot_ffs.R
 \name{plot_ffs}
 \alias{plot_ffs}
-\alias{plot_bss}
 \title{Plot results of a Forward feature selection or best subset selection}
 \usage{
 plot_ffs(
