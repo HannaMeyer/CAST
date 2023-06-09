@@ -78,7 +78,7 @@
                         <h4 data-toc-skip class="author">Hanna
 Meyer</h4>
             
-            <h4 data-toc-skip class="date">2023-06-02</h4>
+            <h4 data-toc-skip class="date">2023-06-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast01-CAST-intro.Rmd" class="external-link"><code>vignettes/cast01-CAST-intro.Rmd</code></a></small>
       <div class="d-none name"><code>cast01-CAST-intro.Rmd</code></div>
@@ -411,7 +411,10 @@ the optimal variables. This process will take 1-2 minutes…</p>
 <span>                    trControl<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>,</span>
 <span>                                           index <span class="op">=</span> <span class="va">indices</span><span class="op">$</span><span class="va">index</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">ffsmodel_LLO</span></span></code></pre></div>
-<pre><code><span><span class="co">## Random Forest </span></span>
+<pre><code><span><span class="co">## Selected Variables: </span></span>
+<span><span class="co">## DEM NDRE.M Northing</span></span>
+<span><span class="co">## ---</span></span>
+<span><span class="co">## Random Forest </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## 654 samples</span></span>
 <span><span class="co">##   3 predictor</span></span>
@@ -436,7 +439,7 @@ small example) no spatial meaning or are even counterproductive.</p>
 can visualize how the performance of the model changed depending on the
 variables being used:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_ffs.html">plot_ffs</a></span><span class="op">(</span><span class="va">ffsmodel_LLO</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">ffsmodel_LLO</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-13-1.png" width="847.68"></p>
 <p>See that the best model using two variables led to an R² of slightly
 above 0.2. Using the third variable could slightly increase the R². Any
