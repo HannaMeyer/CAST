@@ -67,6 +67,7 @@ indices to perform a k-fold NNDM CV for map validation.</p>
 <span>  <span class="va">tpoints</span>,</span>
 <span>  modeldomain <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ppoints <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  space <span class="op">=</span> <span class="st">"geographical"</span>,</span>
 <span>  k <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  maxp <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  clustering <span class="op">=</span> <span class="st">"hierarchical"</span>,</span>
@@ -83,11 +84,15 @@ indices to perform a k-fold NNDM CV for map validation.</p>
 
 
 <dt>modeldomain</dt>
-<dd><p>sf polygon object defining the prediction area (see Details).</p></dd>
+<dd><p>sf polygon object defining the prediction area. Optional; alternative to ppoints (see Details).</p></dd>
 
 
 <dt>ppoints</dt>
-<dd><p>sf or sfc point object. Contains the target prediction points. Optional. Alternative to modeldomain (see Details).</p></dd>
+<dd><p>sf or sfc point object. Contains the target prediction points. Optional; alternative to modeldomain (see Details).</p></dd>
+
+
+<dt>space</dt>
+<dd><p>character. Only "geographical" knndm, i.e. kNNDM in the geographical space, is currently implemented.</p></dd>
 
 
 <dt>k</dt>
@@ -121,13 +126,13 @@ Only required if modeldomain is used instead of ppoints.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>An object of class <em>knndm</em> consisting of a list of seven elements:
+<p>An object of class <em>knndm</em> consisting of a list of eight elements:
 indx_train, indx_test (indices of the observations to use as
 training/test data in each kNNDM CV iteration), Gij (distances for
 G function construction between prediction and target points), Gj
 (distances for G function construction during LOO CV), Gjstar (distances
-for modified G function during kNNDM CV), clusters (list of cluster IDs), and
-W (Wasserstein statistic).</p>
+for modified G function during kNNDM CV), clusters (list of cluster IDs),
+W (Wasserstein statistic), and space (stated by the user in the function call).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -194,6 +199,7 @@ training/prediction points as a previous step to ensure they are aligned.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Gij &lt;= Gj; a random CV assignment is returned</span>
 <span class="r-in"><span><span class="va">knndm_folds</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> knndm object</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Space: geographical</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Clustering algorithm: hierarchical</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Intermediate clusters (q): random CV</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> W statistic: 0.1338</span>
@@ -250,7 +256,7 @@ training/prediction points as a previous step to ensure they are aligned.</p>
 <span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">pts</span>,coords<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">26911</span></span></span>
 <span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/as.spatvector.html" class="external-link">as.polygons</a></span><span class="op">(</span><span class="va">studyArea</span>, values <span class="op">=</span> <span class="cn">FALSE</span>, na.all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/as.polygons.html" class="external-link">as.polygons</a></span><span class="op">(</span><span class="va">studyArea</span>, values <span class="op">=</span> <span class="cn">FALSE</span>, na.all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>    <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>    <span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_combine.html" class="external-link">st_union</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span><span class="va">pts</span>, crs <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">)</span><span class="op">)</span></span></span>
