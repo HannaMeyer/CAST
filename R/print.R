@@ -93,6 +93,7 @@ show.nndm = function(x, ...){
 #' @export
 print.knndm <- function(x, ...){
   cat(paste0("knndm object\n",
+             "Space: ", x$space, "\n",
              "Clustering algorithm: ", x$method, "\n",
              "Intermediate clusters (q): ", x$q, "\n",
              "W statistic: ", round(x$W, 4), "\n",

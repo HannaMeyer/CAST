@@ -5,8 +5,9 @@
 #'
 #' @author Carles Milà and Jan Linnenbrink
 #' @param tpoints sf or sfc point object. Contains the training points samples.
-#' @param modeldomain sf polygon object defining the prediction area (see Details).
-#' @param ppoints sf or sfc point object. Contains the target prediction points. Optional. Alternative to modeldomain (see Details).
+#' @param modeldomain sf polygon object defining the prediction area. Optional; alternative to ppoints (see Details).
+#' @param ppoints sf or sfc point object. Contains the target prediction points. Optional; alternative to modeldomain (see Details).
+#' @param space character. Only "geographical" knndm, i.e. kNNDM in the geographical space, is currently implemented.
 #' @param k integer. Number of folds desired for CV. Defaults to 10.
 #' @param maxp numeric. Maximum fold size allowed, defaults to 0.5, i.e. a single fold can hold a maximum of half of the training points.
 #' @param clustering character. Possible values include "hierarchical" and "kmeans". See details.
@@ -17,13 +18,13 @@
 #' @param sampling character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
 #' Only required if modeldomain is used instead of ppoints.
 #'
-#' @return An object of class \emph{knndm} consisting of a list of seven elements:
+#' @return An object of class \emph{knndm} consisting of a list of eight elements:
 #' indx_train, indx_test (indices of the observations to use as
 #' training/test data in each kNNDM CV iteration), Gij (distances for
 #' G function construction between prediction and target points), Gj
 #' (distances for G function construction during LOO CV), Gjstar (distances
-#' for modified G function during kNNDM CV), clusters (list of cluster IDs), and
-#' W (Wasserstein statistic).
+#' for modified G function during kNNDM CV), clusters (list of cluster IDs),
+#' W (Wasserstein statistic), and space (stated by the user in the function call).
 #'
 #' @details
 #' knndm is a k-fold version of NNDM LOO CV for medium and large datasets. Brielfy, the algorithm tries to
@@ -157,6 +158,7 @@
 #' global_validation(model_knndm)
 #'}
 knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
+                  space = "geographical",
                   k = 10, maxp = 0.5,
                   clustering = "hierarchical", linkf = "ward.D2",
                   samplesize = 1000, sampling = "regular"){
@@ -169,19 +171,9 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
     message(paste0(samplesize, " prediction points are sampled from the modeldomain"))
     ppoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
     sf::st_crs(ppoints) <- sf::st_crs(modeldomain)
-  }else if(!is.null(ppoints)){
-    if(!identical(sf::st_crs(tpoints), sf::st_crs(ppoints))){
-      stop("tpoints and ppoints must have the same CRS")
-    }
   }
 
-  # Prior checks
-  if (!(clustering %in% c("kmeans", "hierarchical"))) {
-    stop("clustering must be one of `kmeans` or `hierarchical`")
-  }
-  if (!(maxp < 1 & maxp > 1/k)) {
-    stop("maxp must be strictly between 1/k and 1")
-  }
+  # Conditional preprocessing actions
   if (any(class(tpoints) %in% "sfc")) {
     tpoints <- sf::st_sf(geom = tpoints)
   }
@@ -194,10 +186,44 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
   }else{
     islonglat <- sf::st_is_longlat(tpoints)
   }
+
+  # Prior checks
+  check_knndm(tpoints, ppoints, space, k, maxp, clustering, islonglat)
+
+  # kNNDM in the geographical space (currently only option)
+  if(isTRUE(space == "geographical")){
+    knndm_res <- knndm_geo(tpoints, ppoints, k, maxp, clustering, linkf, islonglat)
+  }
+
+  # Output
+  knndm_res
+}
+
+
+
+# kNNDM checks
+check_knndm <- function(tpoints, ppoints, space, k, maxp, clustering, islonglat){
+
+  if(!identical(sf::st_crs(tpoints), sf::st_crs(ppoints))){
+    stop("tpoints and ppoints must have the same CRS")
+  }
+  if (!(clustering %in% c("kmeans", "hierarchical"))) {
+    stop("clustering must be one of `kmeans` or `hierarchical`")
+  }
+  if (space != "geographical") {
+    stop("Only kNNDM in the geographical space is currently implemented.")
+  }
+  if (!(maxp < 1 & maxp > 1/k)) {
+    stop("maxp must be strictly between 1/k and 1")
+  }
   if(isTRUE(islonglat) & clustering == "kmeans"){
     stop("kmeans works in the Euclidean space and therefore can only handle
          projected coordinates. Please use hierarchical clustering or project your data.")
   }
+}
+
+# kNNDM in the geographical space
+knndm_geo <- function(tpoints, ppoints, k, maxp, clustering, linkf, islonglat){
 
   # Gj and Gij calculation
   tcoords <- sf::st_coordinates(tpoints)[,1:2]
@@ -320,7 +346,7 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
   res <- list(clusters = clust,
               indx_train = cfolds$index, indx_test = cfolds$indexOut,
               Gij = Gij, Gj = Gj, Gjstar = Gjstar,
-              W = W_final, method = clustering, q = k_final)
+              W = W_final, method = clustering, q = k_final, space = "geographical")
   class(res) <- c("knndm", "list")
   res
 }
