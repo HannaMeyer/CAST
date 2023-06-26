@@ -226,20 +226,21 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
     print("warning: type must be 'all' for a bss model")
   }
   if (plotType=="selected"){
-    labels <- paste0(x$selectedvars[1:x$minVar],collapse="+")
-    for (i in ((x$minVar+1):length(x$selectedvars))){
-      labels <- c(labels,paste0("+",x$selectedvars[i]))
-    }
-    plot(x$selectedvars_perf,xaxt="n",xlab="",
-         ylab=metric,
-         ylim=c(min(x$selectedvars_perf-x$selectedvars_perf_SE,na.rm=TRUE),
-                max(x$selectedvars_perf+x$selectedvars_perf_SE,na.rm=TRUE)),
-         ...)
-    segments(1:(length(x$selectedvars)-1),
-             x$selectedvars_perf-x$selectedvars_perf_SE,
-             1:(length(x$selectedvars)-1),
-             x$selectedvars_perf+x$selectedvars_perf_SE)
-    axis(1,at=1:(length(x$selectedvars)-1),labels=labels,las=2)
+
+    plot_df = data.frame(labels = c(paste(x$selectedvars[1:x$minVar], collapse = "\n"),
+                                    paste(x$selectedvars[-1:-x$minVar], sep = "+")),
+                         perf = x$selectedvars_perf,
+                         perfse = x$selectedvars_perf_SE)
+    par(mar = c(5,5,5,10))
+    bp = barplot(plot_df$perf, horiz = TRUE, names.arg = plot_df$labels, beside = T,
+                 xlim = c(0, max(plot_df$perf + plot_df$perfse)),
+                 xlab = metric)
+    arrows(y0 = bp,
+           y1 = bp,
+           x0 = plot_df$perf - plot_df$perfse,
+           x1 = plot_df$perf + plot_df$perfse,
+           angle=90, code=3)
+
   }else{
 
 
@@ -305,6 +306,59 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
     return(p)
   }
 }
+
+
+#' @name plot
+#' @description Density plot of nearest neighbor distances in geographic space or feature space between training data as well as between training data and prediction locations.
+#' Optional, the nearest neighbor distances between training data and test data or between training data and CV iterations is shown.
+#' The plot can be used to check the suitability of a chosen CV method to be representative to estimate map accuracy.
+#' @param x geodist, see \code{\link{geodist}}
+#' @param unit character. Only if type=="geo" and only applied to the plot. Supported: "m" or "km".
+#' @param stat "density" for density plot or "ecdf" for empirical cumulative distribution function plot.
+#' @export
+#' @return a ggplot
+#'
+
+
+
+plot.geodist <- function(x, unit = "m", stat = "density", ...){
+
+
+  type <- attr(x, "type")
+
+  if(unit=="km"){
+    x$dist <- x$dist/1000
+    xlabs <- "geographic distances (km)"
+  }else{
+    xlabs <- "geographic distances (m)"
+  }
+
+  if( type=="feature"){ xlabs <- "feature space distances"}
+  what <- "" #just to avoid check note
+  if (type=="feature"){unit ="unitless"}
+  if(stat=="density"){
+    p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, fill=what)) +
+      ggplot2::geom_density(adjust=1.5, alpha=.4, stat=stat) +
+      ggplot2::scale_fill_discrete(name = "distance function") +
+      ggplot2::xlab(xlabs) +
+      ggplot2::theme(legend.position="bottom",
+                     plot.margin = unit(c(0,0.5,0,0),"cm"))
+  }else if(stat=="ecdf"){
+    p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, col=what)) +
+      ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
+      ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
+      ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
+      ggplot2::stat_ecdf(geom = "step", lwd = 1) +
+      ggplot2::scale_color_discrete(name = "distance function") +
+      ggplot2::xlab(xlabs) +
+      ggplot2::ylab("ECDF") +
+      ggplot2::theme(legend.position="bottom",
+                     plot.margin = unit(c(0,0.5,0,0),"cm"))
+  }
+  p
+}
+
+
 
 
 
