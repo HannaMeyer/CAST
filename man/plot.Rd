@@ -77,8 +77,9 @@ The plot can be used to check the suitability of a chosen CV method to be repres
 }
 \examples{
 \dontrun{
-data(iris)
-ffsmodel <- ffs(iris[,1:4],iris$Species)
+data(splotdata)
+splotdata <- st_drop_geometry(splotdata)
+ffsmodel <- ffs(splotdata[,6:16], splotdata$Species_richness, ntree = 10)
 plot(ffsmodel)
 #plot performance of selected variables only:
 plot(ffsmodel,plotType="selected")

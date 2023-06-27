@@ -200,13 +200,15 @@ plot.knndm <- function(x, ...){
 #' @seealso \code{\link{ffs}}, \code{\link{bss}}
 #' @examples
 #' \dontrun{
-#' data(iris)
-#' ffsmodel <- ffs(iris[,1:4],iris$Species)
+#' data(splotdata)
+#' splotdata <- st_drop_geometry(splotdata)
+#' ffsmodel <- ffs(splotdata[,6:16], splotdata$Species_richness, ntree = 10)
 #' plot(ffsmodel)
 #' #plot performance of selected variables only:
 #' plot(ffsmodel,plotType="selected")
 #'}
 #' @name plot
+#' @importFrom forcats fct_rev fct_inorder
 #' @export
 
 
@@ -227,19 +229,19 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
   }
   if (plotType=="selected"){
 
-    plot_df = data.frame(labels = c(paste(x$selectedvars[1:x$minVar], collapse = "\n"),
-                                    paste(x$selectedvars[-1:-x$minVar], sep = "+")),
+    plot_df = data.frame(labels = forcats::fct_rev(forcats::fct_inorder(c(paste(x$selectedvars[1:x$minVar], collapse = "\n + "),
+                                    paste("+", x$selectedvars[-1:-x$minVar], sep = " ")))),
                          perf = x$selectedvars_perf,
                          perfse = x$selectedvars_perf_SE)
-    par(mar = c(5,5,5,10))
-    bp = barplot(plot_df$perf, horiz = TRUE, names.arg = plot_df$labels, beside = T,
-                 xlim = c(0, max(plot_df$perf + plot_df$perfse)),
-                 xlab = metric)
-    arrows(y0 = bp,
-           y1 = bp,
-           x0 = plot_df$perf - plot_df$perfse,
-           x1 = plot_df$perf + plot_df$perfse,
-           angle=90, code=3)
+
+
+    p <- ggplot(plot_df, aes_string(x = "perf", y = "labels"))+
+      geom_point()+
+      geom_segment(aes_string(x = "perf - perfse", xend = "perf + perfse",
+                       y = "labels", yend = "labels"))+
+      xlab(x$metric)+
+      ylab(NULL)
+    return(p)
 
   }else{
 
