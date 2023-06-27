@@ -10,8 +10,8 @@
 #'   \item{geometry}{Lat/Lon}
 #' }
 #' @source \itemize{
-#' \item{Plot with Species_richness from sPlotOpen: \link{https://onlinelibrary.wiley.com/doi/full/10.1111/geb.13346}}
-#' \item{predictors acquired via R package geodata \link{https://github.com/rspatial/geodata}}
+#' \item{Plot with Species_richness from \href{https://onlinelibrary.wiley.com/doi/full/10.1111/geb.13346}{sPlotOpen}}
+#' \item{predictors acquired via R package \href{https://github.com/rspatial/geodata}{geodata}}
 #' }
 #'
 #' @references \itemize{
