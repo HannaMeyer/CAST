@@ -78,7 +78,7 @@
                         <h4 data-toc-skip class="author">Hanna
 Meyer</h4>
             
-            <h4 data-toc-skip class="date">2023-06-22</h4>
+            <h4 data-toc-skip class="date">2023-06-29</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast04-plotgeodist.Rmd" class="external-link"><code>vignettes/cast04-plotgeodist.Rmd</code></a></small>
       <div class="d-none name"><code>cast04-plotgeodist.Rmd</code></div>
@@ -143,7 +143,7 @@ entire global prediction area.</p>
 <span><span class="co">### See points on the map:</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">co.ee</span>, fill<span class="op">=</span><span class="st">"#00BFC4"</span>,col<span class="op">=</span><span class="st">"#00BFC4"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">pts_random</span>, color <span class="op">=</span> <span class="st">"#F8766D"</span>,size<span class="op">=</span><span class="fl">0.5</span>, shape<span class="op">=</span><span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="cn">FALSE</span>, col <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"none"</span>, col <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-4-1.png" width="595.2"></p>
 </div>
@@ -158,7 +158,7 @@ entire global prediction area.</p>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">co.ee</span>, fill<span class="op">=</span><span class="st">"#00BFC4"</span>,col<span class="op">=</span><span class="st">"#00BFC4"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">pts_clustered</span>, color <span class="op">=</span> <span class="st">"#F8766D"</span>,size<span class="op">=</span><span class="fl">0.5</span>, shape<span class="op">=</span><span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="cn">FALSE</span>, col <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html" class="external-link">guides</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"none"</span>, col <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-5-1.png" width="595.2"></p>
 </div>
@@ -176,19 +176,15 @@ global case study here, throughout this tutorial we use
 sampling=Fibonacci to draw prediction locations with constant point
 density on the sphere.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dist_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random</span>,<span class="va">co.ee</span>,</span>
-<span>                            sampling<span class="op">=</span><span class="st">"Fibonacci"</span>,</span>
-<span>                            unit<span class="op">=</span><span class="st">"km"</span>,</span>
-<span>                            showPlot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
-<span>                           sampling<span class="op">=</span><span class="st">"Fibonacci"</span>,</span>
-<span>                           unit<span class="op">=</span><span class="st">"km"</span>,</span>
-<span>                           showPlot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">dist_random</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">pts_random</span>,<span class="va">co.ee</span>,</span>
+<span>                            sampling<span class="op">=</span><span class="st">"Fibonacci"</span><span class="op">)</span></span>
+<span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
+<span>                           sampling<span class="op">=</span><span class="st">"Fibonacci"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">dist_random</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Randomly distributed reference data"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dist_random</span>, unit <span class="op">=</span> <span class="st">"km"</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Randomly distributed reference data"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-6-1.png" width="595.2"></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dist_clstr</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dist_clstr</span>, unit <span class="op">=</span> <span class="st">"km"</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-6-2.png" width="595.2"></p>
 <p>Note that for the random data set the nearest neighbor distance
 distribution of the training data is quasi identical to the nearest
@@ -213,12 +209,10 @@ this might not be a good idea).</p>
 <code class="sourceCode R"><span><span class="va">randomfolds</span> <span class="op">&lt;-</span> <span class="fu">caret</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/createDataPartition.html" class="external-link">createFolds</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pts_clustered</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-8-1.png" width="595.2"></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
+<code class="sourceCode R"><span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
 <span>                           sampling<span class="op">=</span><span class="st">"Fibonacci"</span>, </span>
-<span>                           cvfolds<span class="op">=</span> <span class="va">randomfolds</span>, </span>
-<span>                           unit<span class="op">=</span><span class="st">"km"</span>,</span>
-<span>                           showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">dist_clstr</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
+<span>                           cvfolds<span class="op">=</span> <span class="va">randomfolds</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dist_clstr</span>, unit <span class="op">=</span> <span class="st">"km"</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-9-1.png" width="595.2"></p>
 <p>Obviously the CV folds are not representative for the prediction
 locations (at least not in terms of distance to a nearest training data
@@ -237,17 +231,15 @@ that in each iteration, one of the spatial clusters is held back.</p>
 <code class="sourceCode R"><span><span class="va">spatialfolds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CreateSpacetimeFolds.html">CreateSpacetimeFolds</a></span><span class="op">(</span><span class="va">pts_clustered</span>,spacevar<span class="op">=</span><span class="st">"parent"</span>,k<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">pts_clustered</span><span class="op">$</span><span class="va">parent</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-11-1.png" width="595.2"></p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
+<code class="sourceCode R"><span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
 <span>                           sampling<span class="op">=</span><span class="st">"Fibonacci"</span>,</span>
-<span>                           cvfolds<span class="op">=</span> <span class="va">spatialfolds</span><span class="op">$</span><span class="va">indexOut</span>, </span>
-<span>                           unit<span class="op">=</span><span class="st">"km"</span>,</span>
-<span>                           showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">dist_clstr</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
+<span>                           cvfolds<span class="op">=</span> <span class="va">spatialfolds</span><span class="op">$</span><span class="va">indexOut</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dist_clstr</span>, unit <span class="op">=</span> <span class="st">"km"</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-12-1.png" width="595.2"></p>
 <p>See that this fits the nearest neighbor distribution of the
-prediction area much better. Note that plot_geodist also allows
+prediction area much better. Note that <code>geodist</code> also allows
 inspecting independent test data instead of cross validation folds. See
-?plot_geodist.</p>
+<code><a href="../reference/geodist.html">?geodist</a></code> and <code><a href="../reference/plot.html">?plot.geodist</a></code>.</p>
 </div>
 <div class="section level4">
 <h4 id="why-has-spatial-cv-sometimes-blamed-for-being-too-pessimistic">Why has spatial CV sometimes blamed for being too pessimistic ?<a class="anchor" aria-label="anchor" href="#why-has-spatial-cv-sometimes-blamed-for-being-too-pessimistic"></a>
@@ -278,12 +270,10 @@ randomly distributed reference data.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">spfolds_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CreateSpacetimeFolds.html">CreateSpacetimeFolds</a></span><span class="op">(</span><span class="va">pts_random_co</span>,spacevar <span class="op">=</span> <span class="st">"subregion"</span>,</span>
 <span>                                     k<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">pts_random_co</span><span class="op">$</span><span class="va">subregion</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">dist_rand_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random_co</span>,<span class="va">co.ee</span>,</span>
+<span><span class="va">dist_rand_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">pts_random_co</span>,<span class="va">co.ee</span>,</span>
 <span>                             sampling<span class="op">=</span><span class="st">"Fibonacci"</span>, </span>
-<span>                             cvfolds<span class="op">=</span> <span class="va">spfolds_rand</span><span class="op">$</span><span class="va">indexOut</span>, </span>
-<span>                             unit<span class="op">=</span><span class="st">"km"</span>,</span>
-<span>                             showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">dist_rand_sp</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
+<span>                             cvfolds<span class="op">=</span> <span class="va">spfolds_rand</span><span class="op">$</span><span class="va">indexOut</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dist_rand_sp</span>, unit <span class="op">=</span> <span class="st">"km"</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-14-1.png" width="595.2"></p>
 <p>We see that the nearest neighbor distances during cross-validation
 don’t match the nearest neighbor distances during prediction. But
@@ -307,26 +297,22 @@ the empirical distribution function of nearest neighbour distances found
 during prediction is matched during the CV process.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nndmfolds_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">pts_clustered</span>, modeldomain<span class="op">=</span><span class="va">co.ee</span>, samplesize <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
-<span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
+<span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
 <span>                           sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,</span>
 <span>                           cvfolds <span class="op">=</span> <span class="va">nndmfolds_clstr</span><span class="op">$</span><span class="va">indx_test</span>, </span>
-<span>                           cvtrain <span class="op">=</span> <span class="va">nndmfolds_clstr</span><span class="op">$</span><span class="va">indx_train</span>,</span>
-<span>                           unit<span class="op">=</span><span class="st">"km"</span>,</span>
-<span>                           showPlot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">dist_clstr</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
+<span>                           cvtrain <span class="op">=</span> <span class="va">nndmfolds_clstr</span><span class="op">$</span><span class="va">indx_train</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dist_clstr</span>, unit <span class="op">=</span> <span class="st">"km"</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-15-1.png" width="595.2"></p>
 <p>The NNDM CV-distance distribution matches the sample-to-prediction
 distribution very well. What happens if we use NNDM CV for the
 randomly-distributed sampling points instead?</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nndmfolds_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">pts_random_co</span>,  modeldomain<span class="op">=</span><span class="va">co.ee</span>, samplesize <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
-<span><span class="va">dist_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_random_co</span>,<span class="va">co.ee</span>,</span>
+<span><span class="va">dist_rand</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">pts_random_co</span>,<span class="va">co.ee</span>,</span>
 <span>                          sampling <span class="op">=</span> <span class="st">"Fibonacci"</span>,</span>
 <span>                          cvfolds <span class="op">=</span> <span class="va">nndmfolds_rand</span><span class="op">$</span><span class="va">indx_test</span>, </span>
-<span>                          cvtrain <span class="op">=</span> <span class="va">nndmfolds_rand</span><span class="op">$</span><span class="va">indx_train</span>,</span>
-<span>                          unit<span class="op">=</span><span class="st">"km"</span>,</span>
-<span>                          showPlot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">dist_rand</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
+<span>                          cvtrain <span class="op">=</span> <span class="va">nndmfolds_rand</span><span class="op">$</span><span class="va">indx_train</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dist_rand</span>, unit <span class="op">=</span> <span class="st">"km"</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-16-1.png" width="595.2"></p>
 <p>The NNDM CV-distance still matches the sample-to-prediction distance
 function.</p>
@@ -349,24 +335,22 @@ in this virtual prediction task.</p>
 consideration of cross-validation.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># use random CV:</span></span>
-<span><span class="va">dist_clstr_rCV</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">predictors_global</span>,</span>
+<span><span class="va">dist_clstr_rCV</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">predictors_global</span>,</span>
 <span>                               type <span class="op">=</span> <span class="st">"feature"</span>, </span>
 <span>                               sampling<span class="op">=</span><span class="st">"Fibonacci"</span>,</span>
-<span>                               cvfolds <span class="op">=</span> <span class="va">randomfolds</span>,</span>
-<span>                               showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span>                               cvfolds <span class="op">=</span> <span class="va">randomfolds</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># use spatial CV:</span></span>
-<span><span class="va">dist_clstr_sCV</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_geodist.html">plot_geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">predictors_global</span>,</span>
+<span><span class="va">dist_clstr_sCV</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">predictors_global</span>,</span>
 <span>                               type <span class="op">=</span> <span class="st">"feature"</span>, sampling<span class="op">=</span><span class="st">"Fibonacci"</span>,</span>
-<span>                               cvfolds <span class="op">=</span> <span class="va">spatialfolds</span><span class="op">$</span><span class="va">indexOut</span>,</span>
-<span>                               showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span>                               cvfolds <span class="op">=</span> <span class="va">spatialfolds</span><span class="op">$</span><span class="va">indexOut</span><span class="op">)</span></span>
 <span></span>
 <span></span>
 <span><span class="co"># Plot results:</span></span>
-<span><span class="va">dist_clstr_rCV</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data and random CV"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dist_clstr_rCV</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data and random CV"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-18-1.png" width="595.2"></p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dist_clstr_sCV</span><span class="op">$</span><span class="va">plot</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data and spatial CV"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">dist_clstr_sCV</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Clustered reference data and spatial CV"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-plotgeodist_files/figure-html/unnamed-chunk-18-2.png" width="595.2"></p>
 <p>With regard to the chosen predictor variables we see that again the
 nearest neighbor distance of the clustered training data is rather
