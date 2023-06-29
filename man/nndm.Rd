@@ -163,7 +163,7 @@ global_validation(model_nndm)
 }
 }
 \seealso{
-\code{\link{plot_geodist}}
+\code{\link{geodist}}
 }
 \author{
 Carles Milà

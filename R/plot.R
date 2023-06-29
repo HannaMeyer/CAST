@@ -200,13 +200,15 @@ plot.knndm <- function(x, ...){
 #' @seealso \code{\link{ffs}}, \code{\link{bss}}
 #' @examples
 #' \dontrun{
-#' data(iris)
-#' ffsmodel <- ffs(iris[,1:4],iris$Species)
+#' data(splotdata)
+#' splotdata <- st_drop_geometry(splotdata)
+#' ffsmodel <- ffs(splotdata[,6:16], splotdata$Species_richness, ntree = 10)
 #' plot(ffsmodel)
 #' #plot performance of selected variables only:
 #' plot(ffsmodel,plotType="selected")
 #'}
 #' @name plot
+#' @importFrom forcats fct_rev fct_inorder
 #' @export
 
 
@@ -226,20 +228,21 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
     print("warning: type must be 'all' for a bss model")
   }
   if (plotType=="selected"){
-    labels <- paste0(x$selectedvars[1:x$minVar],collapse="+")
-    for (i in ((x$minVar+1):length(x$selectedvars))){
-      labels <- c(labels,paste0("+",x$selectedvars[i]))
-    }
-    plot(x$selectedvars_perf,xaxt="n",xlab="",
-         ylab=metric,
-         ylim=c(min(x$selectedvars_perf-x$selectedvars_perf_SE,na.rm=TRUE),
-                max(x$selectedvars_perf+x$selectedvars_perf_SE,na.rm=TRUE)),
-         ...)
-    segments(1:(length(x$selectedvars)-1),
-             x$selectedvars_perf-x$selectedvars_perf_SE,
-             1:(length(x$selectedvars)-1),
-             x$selectedvars_perf+x$selectedvars_perf_SE)
-    axis(1,at=1:(length(x$selectedvars)-1),labels=labels,las=2)
+
+    plot_df = data.frame(labels = forcats::fct_rev(forcats::fct_inorder(c(paste(x$selectedvars[1:x$minVar], collapse = "\n + "),
+                                    paste("+", x$selectedvars[-1:-x$minVar], sep = " ")))),
+                         perf = x$selectedvars_perf,
+                         perfse = x$selectedvars_perf_SE)
+
+
+    p <- ggplot(plot_df, aes_string(x = "perf", y = "labels"))+
+      geom_point()+
+      geom_segment(aes_string(x = "perf - perfse", xend = "perf + perfse",
+                       y = "labels", yend = "labels"))+
+      xlab(x$metric)+
+      ylab(NULL)
+    return(p)
+
   }else{
 
 
@@ -305,6 +308,59 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
     return(p)
   }
 }
+
+
+#' @name plot
+#' @description Density plot of nearest neighbor distances in geographic space or feature space between training data as well as between training data and prediction locations.
+#' Optional, the nearest neighbor distances between training data and test data or between training data and CV iterations is shown.
+#' The plot can be used to check the suitability of a chosen CV method to be representative to estimate map accuracy.
+#' @param x geodist, see \code{\link{geodist}}
+#' @param unit character. Only if type=="geo" and only applied to the plot. Supported: "m" or "km".
+#' @param stat "density" for density plot or "ecdf" for empirical cumulative distribution function plot.
+#' @export
+#' @return a ggplot
+#'
+
+
+
+plot.geodist <- function(x, unit = "m", stat = "density", ...){
+
+
+  type <- attr(x, "type")
+
+  if(unit=="km"){
+    x$dist <- x$dist/1000
+    xlabs <- "geographic distances (km)"
+  }else{
+    xlabs <- "geographic distances (m)"
+  }
+
+  if( type=="feature"){ xlabs <- "feature space distances"}
+  what <- "" #just to avoid check note
+  if (type=="feature"){unit ="unitless"}
+  if(stat=="density"){
+    p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, fill=what)) +
+      ggplot2::geom_density(adjust=1.5, alpha=.4, stat=stat) +
+      ggplot2::scale_fill_discrete(name = "distance function") +
+      ggplot2::xlab(xlabs) +
+      ggplot2::theme(legend.position="bottom",
+                     plot.margin = unit(c(0,0.5,0,0),"cm"))
+  }else if(stat=="ecdf"){
+    p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, col=what)) +
+      ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
+      ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
+      ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
+      ggplot2::stat_ecdf(geom = "step", lwd = 1) +
+      ggplot2::scale_color_discrete(name = "distance function") +
+      ggplot2::xlab(xlabs) +
+      ggplot2::ylab("ECDF") +
+      ggplot2::theme(legend.position="bottom",
+                     plot.margin = unit(c(0,0.5,0,0),"cm"))
+  }
+  p
+}
+
+
 
 
 

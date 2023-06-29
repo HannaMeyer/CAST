@@ -7,6 +7,7 @@
 \alias{plot.nndm}
 \alias{plot.knndm}
 \alias{plot.ffs}
+\alias{plot.geodist}
 \title{Plot CAST classes}
 \usage{
 \method{plot}{trainDI}(x, ...)
@@ -28,9 +29,11 @@
   pch = 21,
   ...
 )
+
+\method{plot}{geodist}(x, unit = "m", stat = "density", ...)
 }
 \arguments{
-\item{x}{Result of a forward feature selection see \code{\link{ffs}}}
+\item{x}{geodist, see \code{\link{geodist}}}
 
 \item{...}{Further arguments for base plot if type="selected"}
 
@@ -49,6 +52,13 @@
 \item{lwd}{Numeric. Width of the error bars}
 
 \item{pch}{Numeric. Type of point marking the best models}
+
+\item{unit}{character. Only if type=="geo" and only applied to the plot. Supported: "m" or "km".}
+
+\item{stat}{"density" for density plot or "ecdf" for empirical cumulative distribution function plot.}
+}
+\value{
+a ggplot
 }
 \description{
 Generic plot function for trainDI and aoa
@@ -60,11 +70,16 @@ Marked points show the best model from each number of variables until a further 
 could not improve the results.
 If type=="selected", the contribution of the selected variables to the model
 performance is shown.
+
+Density plot of nearest neighbor distances in geographic space or feature space between training data as well as between training data and prediction locations.
+Optional, the nearest neighbor distances between training data and test data or between training data and CV iterations is shown.
+The plot can be used to check the suitability of a chosen CV method to be representative to estimate map accuracy.
 }
 \examples{
 \dontrun{
-data(iris)
-ffsmodel <- ffs(iris[,1:4],iris$Species)
+data(splotdata)
+splotdata <- st_drop_geometry(splotdata)
+ffsmodel <- ffs(splotdata[,6:16], splotdata$Species_richness, ntree = 10)
 plot(ffsmodel)
 #plot performance of selected variables only:
 plot(ffsmodel,plotType="selected")
