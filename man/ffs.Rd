@@ -133,6 +133,8 @@ ffsmodel <- ffs(trainDat[,predictors],trainDat$VW,method="rf",
 tuneLength=1,trControl=ctrl)
 ffsmodel
 plot(ffsmodel)
+#or only selected variables:
+plot(ffsmodel,plotType="selected")
 
 #compare to model without ffs:
 model <- train(trainDat[,predictors],trainDat$VW,method="rf",
