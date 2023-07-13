@@ -56,7 +56,6 @@
 #' library(terra)
 #' library(caret)
 #' library(viridis)
-#' library(latticeExtra)
 #' library(ggplot2)
 #'
 #' # prepare sample data:
@@ -244,7 +243,8 @@ trainDI <- function(model = NA,
     trainDist_avrg = trainDist_avrg,
     trainDist_avrgmean = trainDist_avrgmean,
     trainDI = TrainDI,
-    threshold = thres
+    threshold = thres,
+    method = method
   )
 
   class(aoa_results) = "trainDI"

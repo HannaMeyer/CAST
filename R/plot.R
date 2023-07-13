@@ -1,5 +1,5 @@
 #' Plot CAST classes
-#' @description Generic plot function for trainDI and aoa
+#' @description Generic plot function for CAST Classes
 #'
 #' @name plot
 #' @param x trainDI object
@@ -361,6 +361,33 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
 }
 
 
+#' @name plot
+#' @description Plot the DI and errormetric from Cross-Validation with the modelled relationship
+#' @param x errorModel, see \code{\link{DItoErrormetric}}
+#' @param ... other params
+#' @export
+#' @return a ggplot
+#'
+
+
+plot.errorModel <- function(x, ...){
+
+  performance = attr(x, "performance")[,c("DI", "metric")]
+  performance$what = "cross-validation"
+
+  model_line = data.frame(DI = performance$DI,
+                          metric = predict(x, performance),
+                          what = "model")
+
+
+  p = ggplot()+
+    geom_point(data = performance, mapping = aes_string(x = "DI", y = "metric", shape = "what"))+
+    geom_line(data = model_line, mapping =  aes_string(x = "DI", y = "metric", linetype = "what"), lwd = 1)+
+    theme(legend.title = element_blank(), legend.position = "bottom")
+
+  return(p)
+
+}
 
 
 

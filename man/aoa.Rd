@@ -83,7 +83,6 @@ library(sf)
 library(terra)
 library(caret)
 library(viridis)
-library(latticeExtra)
 
 # prepare sample data:
 dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
