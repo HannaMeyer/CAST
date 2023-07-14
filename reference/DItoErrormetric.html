@@ -82,7 +82,7 @@
 
 
 <dt>trainDI</dt>
-<dd><p>the result of <code><a href="trainDI.html">trainDI</a></code> or the parameters of <code><a href="aoa.html">aoa</a></code></p></dd>
+<dd><p>the result of <code><a href="trainDI.html">trainDI</a></code> or aoa object <code><a href="aoa.html">aoa</a></code></p></dd>
 
 
 <dt>multiCV</dt>
@@ -164,7 +164,7 @@ Estimating the area of applicability of spatial prediction models.
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="va">model</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>  <span class="va">errormodel</span> <span class="op">&lt;-</span> <span class="fu">DItoErrormetric</span><span class="op">(</span><span class="va">model</span>, <span class="va">AOA</span><span class="op">$</span><span class="va">parameters</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">errormodel</span> <span class="op">&lt;-</span> <span class="fu">DItoErrormetric</span><span class="op">(</span><span class="va">model</span>, <span class="va">AOA</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">errormodel</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">expected_error</span> <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>, <span class="va">errormodel</span><span class="op">)</span></span></span>
@@ -172,7 +172,7 @@ Estimating the area of applicability of spatial prediction models.
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># with multiCV = TRUE</span></span></span>
-<span class="r-in"><span>  <span class="va">errormodel</span> <span class="op">=</span> <span class="fu">DItoErrormetric</span><span class="op">(</span><span class="va">model</span>, <span class="va">AOA</span><span class="op">$</span><span class="va">parameters</span>, multiCV <span class="op">=</span> <span class="cn">TRUE</span>, length.out <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">errormodel</span> <span class="op">=</span> <span class="fu">DItoErrormetric</span><span class="op">(</span><span class="va">model</span>, <span class="va">AOA</span>, multiCV <span class="op">=</span> <span class="cn">TRUE</span>, length.out <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">errormodel</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">expected_error</span> <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>, <span class="va">errormodel</span><span class="op">)</span></span></span>
