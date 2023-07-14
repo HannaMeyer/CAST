@@ -20,7 +20,7 @@ DItoErrormetric(
 \arguments{
 \item{model}{the model used to get the AOA}
 
-\item{trainDI}{the result of \code{\link{trainDI}} or the parameters of \code{\link{aoa}}}
+\item{trainDI}{the result of \code{\link{trainDI}} or aoa object \code{\link{aoa}}}
 
 \item{multiCV}{Logical. Re-run model fitting and validation with different CV strategies. See details.}
 
@@ -68,7 +68,7 @@ the AOA threshold changes accordingly. See Meyer and Pebesma (2021) for the full
 
   AOA <- aoa(predictors, model)
 
-  errormodel <- DItoErrormetric(model, AOA$parameters)
+  errormodel <- DItoErrormetric(model, AOA)
   plot(errormodel)
 
   expected_error = terra::predict(AOA$DI, errormodel)
@@ -76,7 +76,7 @@ the AOA threshold changes accordingly. See Meyer and Pebesma (2021) for the full
 
 
   # with multiCV = TRUE
-  errormodel = DItoErrormetric(model, AOA$parameters, multiCV = TRUE, length.out = 3)
+  errormodel = DItoErrormetric(model, AOA, multiCV = TRUE, length.out = 3)
   plot(errormodel)
 
   expected_error = terra::predict(AOA$DI, errormodel)

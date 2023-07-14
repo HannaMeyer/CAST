@@ -1,7 +1,7 @@
 #' Model the relationship between the DI and the prediction error
 #' @description Performance metrics are calculated for moving windows of DI values of cross-validated training data
 #' @param model the model used to get the AOA
-#' @param trainDI the result of \code{\link{trainDI}} or the parameters of \code{\link{aoa}}
+#' @param trainDI the result of \code{\link{trainDI}} or aoa object \code{\link{aoa}}
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
 #' @param window.size Numeric. Size of the moving window. See \code{\link{rollapply}}.
 #' @param calib Character. Function to model the DI~performance relationship. Currently lm and scam are supported
@@ -32,6 +32,12 @@ DItoErrormetric <- function(model, trainDI, multiCV=FALSE,
                             length.out = 10, window.size = 5, calib = "scam",
                             method= "L2", useWeight=TRUE,
                             k = 6, m = 2){
+
+
+  if(class(trainDI) == "aoa"){
+    trainDI = trainDI$parameters
+  }
+
 
   # get DIs and Errormetrics OR calculate new ones from multiCV
   if(!multiCV){
