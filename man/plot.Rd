@@ -8,6 +8,7 @@
 \alias{plot.knndm}
 \alias{plot.ffs}
 \alias{plot.geodist}
+\alias{plot.errorModel}
 \title{Plot CAST classes}
 \usage{
 \method{plot}{trainDI}(x, ...)
@@ -31,11 +32,13 @@
 )
 
 \method{plot}{geodist}(x, unit = "m", stat = "density", ...)
+
+\method{plot}{errorModel}(x, ...)
 }
 \arguments{
-\item{x}{geodist, see \code{\link{geodist}}}
+\item{x}{errorModel, see \code{\link{DItoErrormetric}}}
 
-\item{...}{Further arguments for base plot if type="selected"}
+\item{...}{other params}
 
 \item{samplesize}{numeric. How many prediction samples should be plotted?}
 
@@ -59,9 +62,11 @@
 }
 \value{
 a ggplot
+
+a ggplot
 }
 \description{
-Generic plot function for trainDI and aoa
+Generic plot function for CAST Classes
 
 A plotting function for a forward feature selection result.
 Each point is the mean performance of a model run. Error bars represent
@@ -74,6 +79,8 @@ performance is shown.
 Density plot of nearest neighbor distances in geographic space or feature space between training data as well as between training data and prediction locations.
 Optional, the nearest neighbor distances between training data and test data or between training data and CV iterations is shown.
 The plot can be used to check the suitability of a chosen CV method to be representative to estimate map accuracy.
+
+Plot the DI and errormetric from Cross-Validation with the modelled relationship
 }
 \examples{
 \dontrun{

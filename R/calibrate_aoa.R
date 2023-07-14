@@ -62,6 +62,9 @@ calibrate_aoa <- function(AOA,model, window.size=5, calib="scam",multiCV=FALSE,
                           length.out = 10, maskAOA=TRUE, method= "L2", useWeight=TRUE,
                           showPlot=TRUE,k=6,m=2){
 
+
+  message("Note: calibrate_aoa is deprecated and will be removed soon. Please use and refere to DItoErrormetric instead.")
+
   as_stars <- FALSE
 #  as_raster <- FALSE
 

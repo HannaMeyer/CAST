@@ -66,7 +66,6 @@ library(sf)
 library(terra)
 library(caret)
 library(viridis)
-library(latticeExtra)
 library(ggplot2)
 
 # prepare sample data:

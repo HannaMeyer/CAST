@@ -34,10 +34,8 @@ For further information see: Meyer, H., & Pebesma, E. (2021). Predicting into un
 library(CAST)
 library(caret)
 library(terra)
-#library(sp)
 library(sf)
 library(viridis)
-library(latticeExtra)
 library(gridExtra)
 ```
 
@@ -100,7 +98,6 @@ length(predictornames)-1, replace = TRUE),
 
 
 ```{r,message = FALSE, warning=FALSE}
-
 response <- generate_random_response (predictors, seed = 10)
 plot(response,col=viridis(100),main="virtual response")
 ```
@@ -308,13 +305,21 @@ The results indicate that there is a high agreement between the model CV error (
 ## Relationship between the DI and the performance measure
 
 The relationship between error and DI can be used to limit predictions to an area (within the AOA) where a required performance (e.g. RMSE, R2, Kappa, Accuracy) applies.
-This can be done using the result of calibrate_aoa which used the relationship analyzed in a window of DI values. The corresponding model (here: shape constrained additive models which is the default: Monotone increasing P-splines with the dimension of the basis used to represent the smooth term is 6 and a 2nd order penalty.) can be used to estimate the performance on a pixel level, which then allows limiting predictions using a threshold. Note that we used a multi-purpose CV to estimate the relationship between the DI and the RMSE here (see details in the paper).
+This can be done using the result of DItoErrormetric which used the relationship analyzed in a window of DI values. The corresponding model (here: shape constrained additive models which is the default: Monotone increasing P-splines with the dimension of the basis used to represent the smooth term is 6 and a 2nd order penalty.) can be used to estimate the performance on a pixel level, which then allows limiting predictions using a threshold. Note that we used a multi-purpose CV to estimate the relationship between the DI and the RMSE here (see details in the paper).
 
 ```{r,message = FALSE, warning=FALSE}
-AOA_calib <- calibrate_aoa(AOA_spatial,model,window.size = 5,length.out = 5, multiCV=TRUE,showPlot=FALSE)
-AOA_calib$plot
-plot(AOA_calib$AOA$expected_RMSE,col=viridis(100),main="expected RMSE")
-plot(AOA_calib$AOA$AOA,col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
+DI_RMSE_relation <- DItoErrormetric(model, AOA_spatial$parameters, multiCV=TRUE,
+                                    window.size = 5, length.out = 5)
+plot(DI_RMSE_relation)
+
+expected_RMSE = terra::predict(AOA_spatial$DI, DI_RMSE_relation)
+
+# account for multiCV changing the DI threshold
+updated_AOA = AOA_spatial$DI > attr(DI_RMSE_relation, "AOA_threshold")
+
+
+plot(expected_RMSE,col=viridis(100),main="expected RMSE")
+plot(updated_AOA, col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 ```
 
 # Example 2: A real-world example

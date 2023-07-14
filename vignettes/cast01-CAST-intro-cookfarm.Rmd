@@ -1,12 +1,12 @@
 ---
-title: "1. Introduction to CAST"
+title: "1. Introduction to CAST 0.8.1"
 author: "Hanna Meyer"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Introduction to CAST}
+  %\VignetteIndexEntry{Introduction to CAST 0.8.1}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -233,8 +233,6 @@ Still it is required to analyse if the model can be applied to the entire study 
 [Meyer and Pebesma 2021](https://doi.org/10.1111/2041-210X.13650).
 
 ```{r, message = FALSE, warning=FALSE}
-library(latticeExtra)
-
 ### AOA for which the spatial CV error applies:
 AOA <- aoa(predictors_sp,ffsmodel_LLO)
 
