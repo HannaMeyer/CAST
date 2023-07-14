@@ -15,7 +15,7 @@
 
   AOA <- aoa(predictors, model)
 
-  errormodel <- DItoErrormetric(model, AOA$parameters)
+  errormodel <- DItoErrormetric(model, AOA)
   plot(errormodel)
 
   expected_error = terra::predict(AOA$DI, errormodel)
@@ -23,7 +23,7 @@
 
 
   # with multiCV = TRUE
-  errormodel = DItoErrormetric(model, AOA$parameters, multiCV = TRUE, length.out = 3)
+  errormodel = DItoErrormetric(model, AOA, multiCV = TRUE, length.out = 3)
   plot(errormodel)
 
   expected_error = terra::predict(AOA$DI, errormodel)
