@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,7 +41,8 @@
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/cast01-CAST-intro.html">1. Introduction to CAST</a>
+    <a class="dropdown-item" href="../articles/cast01-CAST-intro-cookfarm.html">1. Introduction to CAST 0.8.1</a>
+    <a class="dropdown-item" href="../articles/cast01-CAST-intro-splot.html">1. Introduction to CAST 1.0.0</a>
     <a class="dropdown-item" href="../articles/cast02-AOA-tutorial.html">2. Area of applicability of spatial prediction models</a>
     <a class="dropdown-item" href="../articles/cast03-AOA-parallel.html">3. AOA in Parallel</a>
     <a class="dropdown-item" href="../articles/cast04-plotgeodist.html">4. Visualization of nearest neighbor distance distributions</a>
@@ -78,7 +79,7 @@
                         <h4 data-toc-skip class="author">Hanna
 Meyer</h4>
             
-            <h4 data-toc-skip class="date">2023-06-29</h4>
+            <h4 data-toc-skip class="date">2023-07-14</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast02-AOA-tutorial.Rmd" class="external-link"><code>vignettes/cast02-AOA-tutorial.Rmd</code></a></small>
       <div class="d-none name"><code>cast02-AOA-tutorial.Rmd</code></div>
@@ -123,10 +124,8 @@ spatial prediction models. Methods in Ecology and Evolution, 12, 1620–
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/HannaMeyer/CAST" class="external-link">CAST</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/topepo/caret/" class="external-link">caret</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
-<span><span class="co">#library(sp)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sjmgarnier.github.io/viridis/" class="external-link">viridis</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://latticeextra.r-forge.r-project.org/" class="external-link">latticeExtra</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">gridExtra</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -530,21 +529,28 @@ the random as well as the spatial model.</p>
 <p>The relationship between error and DI can be used to limit
 predictions to an area (within the AOA) where a required performance
 (e.g. RMSE, R2, Kappa, Accuracy) applies. This can be done using the
-result of calibrate_aoa which used the relationship analyzed in a window
-of DI values. The corresponding model (here: shape constrained additive
-models which is the default: Monotone increasing P-splines with the
-dimension of the basis used to represent the smooth term is 6 and a 2nd
-order penalty.) can be used to estimate the performance on a pixel
+result of DItoErrormetric which used the relationship analyzed in a
+window of DI values. The corresponding model (here: shape constrained
+additive models which is the default: Monotone increasing P-splines with
+the dimension of the basis used to represent the smooth term is 6 and a
+2nd order penalty.) can be used to estimate the performance on a pixel
 level, which then allows limiting predictions using a threshold. Note
 that we used a multi-purpose CV to estimate the relationship between the
 DI and the RMSE here (see details in the paper).</p>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">AOA_calib</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate_aoa.html">calibrate_aoa</a></span><span class="op">(</span><span class="va">AOA_spatial</span>,<span class="va">model</span>,window.size <span class="op">=</span> <span class="fl">5</span>,length.out <span class="op">=</span> <span class="fl">5</span>, multiCV<span class="op">=</span><span class="cn">TRUE</span>,showPlot<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">AOA_calib</span><span class="op">$</span><span class="va">plot</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">DI_RMSE_relation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/DItoErrormetric.html">DItoErrormetric</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">AOA_spatial</span><span class="op">$</span><span class="va">parameters</span>, multiCV<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>                                    window.size <span class="op">=</span> <span class="fl">5</span>, length.out <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">DI_RMSE_relation</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-23-1.png" width="847.68"></p>
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_calib</span><span class="op">$</span><span class="va">AOA</span><span class="op">$</span><span class="va">expected_RMSE</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"expected RMSE"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_calib</span><span class="op">$</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">TRUE</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>,title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">expected_RMSE</span> <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">DI</span>, <span class="va">DI_RMSE_relation</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># account for multiCV changing the DI threshold</span></span>
+<span><span class="va">updated_AOA</span> <span class="op">=</span> <span class="va">AOA_spatial</span><span class="op">$</span><span class="va">DI</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">DI_RMSE_relation</span>, <span class="st">"AOA_threshold"</span><span class="op">)</span></span>
+<span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">expected_RMSE</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"expected RMSE"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">updated_AOA</span>, col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">TRUE</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>,title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-AOA-tutorial_files/figure-html/unnamed-chunk-23-2.png" width="847.68"></p>
 </div>
 </div>

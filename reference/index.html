@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,7 +24,8 @@
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/cast01-CAST-intro.html">1. Introduction to CAST</a>
+    <a class="dropdown-item" href="../articles/cast01-CAST-intro-cookfarm.html">1. Introduction to CAST 0.8.1</a>
+    <a class="dropdown-item" href="../articles/cast01-CAST-intro-splot.html">1. Introduction to CAST 1.0.0</a>
     <a class="dropdown-item" href="../articles/cast02-AOA-tutorial.html">2. Area of applicability of spatial prediction models</a>
     <a class="dropdown-item" href="../articles/cast03-AOA-parallel.html">3. AOA in Parallel</a>
     <a class="dropdown-item" href="../articles/cast04-plotgeodist.html">4. Visualization of nearest neighbor distance distributions</a>
@@ -75,6 +76,11 @@
         <dd>Create Space-time Folds</dd>
       </dl><dl><dt>
           
+          <code><a href="DItoErrormetric.html">DItoErrormetric()</a></code> 
+        </dt>
+        <dd>Model the relationship between the DI and the prediction error</dd>
+      </dl><dl><dt>
+          
           <code><a href="aoa.html">aoa()</a></code> 
         </dt>
         <dd>Area of Applicability</dd>
@@ -95,6 +101,11 @@
         <dd>Clustered samples simulation</dd>
       </dl><dl><dt>
           
+          <code><a href="errorModel.html">errorModel()</a></code> 
+        </dt>
+        <dd>Model expected error between Metric and DI</dd>
+      </dl><dl><dt>
+          
           <code><a href="ffs.html">ffs()</a></code> 
         </dt>
         <dd>Forward feature selection</dd>
@@ -103,6 +114,11 @@
           <code><a href="geodist.html">geodist()</a></code> 
         </dt>
         <dd>Calculate euclidean nearest neighbor distances in geographic space or feature space</dd>
+      </dl><dl><dt>
+          
+          <code><a href="get_preds_all.html">get_preds_all()</a></code> 
+        </dt>
+        <dd>Get Preds all</dd>
       </dl><dl><dt>
           
           <code><a href="global_validation.html">global_validation()</a></code> 
@@ -115,12 +131,17 @@
         <dd>[EXPERIMENTAL] K-fold Nearest Neighbour Distance Matching</dd>
       </dl><dl><dt>
           
+          <code><a href="multiCV.html">multiCV()</a></code> 
+        </dt>
+        <dd>MultiCV</dd>
+      </dl><dl><dt>
+          
           <code><a href="nndm.html">nndm()</a></code> 
         </dt>
         <dd>Nearest Neighbour Distance Matching (NNDM) algorithm</dd>
       </dl><dl><dt>
           
-          <code><a href="plot.html">plot(<i>&lt;trainDI&gt;</i>)</a></code> <code><a href="plot.html">plot(<i>&lt;aoa&gt;</i>)</a></code> <code><a href="plot.html">plot(<i>&lt;nndm&gt;</i>)</a></code> <code><a href="plot.html">plot(<i>&lt;knndm&gt;</i>)</a></code> <code><a href="plot.html">plot(<i>&lt;ffs&gt;</i>)</a></code> <code><a href="plot.html">plot(<i>&lt;geodist&gt;</i>)</a></code> 
+          <code><a href="plot.html">plot(<i>&lt;trainDI&gt;</i>)</a></code> <code><a href="plot.html">plot(<i>&lt;aoa&gt;</i>)</a></code> <code><a href="plot.html">plot(<i>&lt;nndm&gt;</i>)</a></code> <code><a href="plot.html">plot(<i>&lt;knndm&gt;</i>)</a></code> <code><a href="plot.html">plot(<i>&lt;ffs&gt;</i>)</a></code> <code><a href="plot.html">plot(<i>&lt;geodist&gt;</i>)</a></code> <code><a href="plot.html">plot(<i>&lt;errorModel&gt;</i>)</a></code> 
         </dt>
         <dd>Plot CAST classes</dd>
       </dl><dl><dt>

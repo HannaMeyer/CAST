@@ -4,7 +4,10 @@
     <loc>https://hannameyer.github.io/CAST/404.html</loc>
   </url>
   <url>
-    <loc>https://hannameyer.github.io/CAST/articles/cast01-CAST-intro.html</loc>
+    <loc>https://hannameyer.github.io/CAST/articles/cast01-CAST-intro-cookfarm.html</loc>
+  </url>
+  <url>
+    <loc>https://hannameyer.github.io/CAST/articles/cast01-CAST-intro-splot.html</loc>
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/articles/cast02-AOA-tutorial.html</loc>
@@ -34,6 +37,9 @@
     <loc>https://hannameyer.github.io/CAST/reference/CreateSpacetimeFolds.html</loc>
   </url>
   <url>
+    <loc>https://hannameyer.github.io/CAST/reference/DItoErrormetric.html</loc>
+  </url>
+  <url>
     <loc>https://hannameyer.github.io/CAST/reference/aoa.html</loc>
   </url>
   <url>
@@ -46,10 +52,16 @@
     <loc>https://hannameyer.github.io/CAST/reference/clustered_sample.html</loc>
   </url>
   <url>
+    <loc>https://hannameyer.github.io/CAST/reference/errorModel.html</loc>
+  </url>
+  <url>
     <loc>https://hannameyer.github.io/CAST/reference/ffs.html</loc>
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/reference/geodist.html</loc>
+  </url>
+  <url>
+    <loc>https://hannameyer.github.io/CAST/reference/get_preds_all.html</loc>
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/reference/global_validation.html</loc>
@@ -59,6 +71,9 @@
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/reference/knndm.html</loc>
+  </url>
+  <url>
+    <loc>https://hannameyer.github.io/CAST/reference/multiCV.html</loc>
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/reference/nndm.html</loc>
