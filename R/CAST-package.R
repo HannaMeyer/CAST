@@ -27,5 +27,6 @@
 #' @importFrom grDevices rainbow
 #' @importFrom graphics axis plot segments
 #' @keywords package
+#' @aliases CAST-package
 #'
 NULL

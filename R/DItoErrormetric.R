@@ -34,7 +34,7 @@ DItoErrormetric <- function(model, trainDI, multiCV=FALSE,
                             k = 6, m = 2){
 
 
-  if(class(trainDI) == "aoa"){
+  if(inherits(trainDI,"aoa")){
     trainDI = trainDI$parameters
   }
 
