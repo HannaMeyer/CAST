@@ -23,6 +23,7 @@
 #' @examples
 #' \dontrun{
 #' library(CAST)
+#' library(sf)
 #' library(terra)
 #' library(rnaturalearth)
 #' library(ggplot2)
@@ -175,6 +176,20 @@ geodist <- function(x,
   }
   class(dists) <- c("geodist", class(dists))
   attr(dists, "type") <- type
+
+  ##### Compute W if type=="geo" and test data and/or CV folds are provided
+  if(type == "geo"){
+    if(!is.null(testdata)){
+      W_test <- twosamples::wass_stat(dists[dists$what == "test-to-sample", "dist"],
+                                      dists[dists$what == "prediction-to-sample", "dist"])
+      attr(dists, "W_test") <- W_test
+    }
+    if(!is.null(cvfolds)){
+      W_CV <- twosamples::wass_stat(dists[dists$what == "CV-distances", "dist"],
+                                    dists[dists$what == "prediction-to-sample", "dist"])
+      attr(dists, "W_CV") <- W_CV
+    }
+  }
 
   return(dists)
 }

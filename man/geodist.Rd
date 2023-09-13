@@ -54,6 +54,7 @@ See Meyer and Pebesma (2022) for an application of this plotting function
 \examples{
 \dontrun{
 library(CAST)
+library(sf)
 library(terra)
 library(rnaturalearth)
 library(ggplot2)
