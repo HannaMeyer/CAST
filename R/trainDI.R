@@ -227,6 +227,10 @@ trainDI <- function(model = NA,
   threshold_quantile <- stats::quantile(TrainDI, 0.75,na.rm=TRUE)
   threshold_iqr <- (1.5 * stats::IQR(TrainDI,na.rm=T))
   thres <- threshold_quantile + threshold_iqr
+  # account for case that threshold_quantile + threshold_iqr is larger than maximum DI.
+  if (thres>max(TrainDI,na.rm=T)){
+    thres <- max(TrainDI,na.rm=T)
+  }
 
   # note: previous versions of CAST derived the threshold this way:
   #thres <- grDevices::boxplot.stats(TrainDI)$stats[5]
