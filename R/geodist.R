@@ -12,10 +12,11 @@
 #' @param samplesize numeric. How many prediction samples should be used?
 #' @param sampling character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.
 #' @param variables character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.
-#' @return A data.frame containing the distances. Unit of returned geographic distances is meters.
+#' @return A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
 #'     If type = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster.
 #'     If not provided they are extracted from the modeldomain rasterStack.
+#'     W statistic describes the match between the distributions. See Mila et al (2023) and Linnenbrink et al (2023) for further details.
 #' @note See Meyer and Pebesma (2022) for an application of this plotting function
 #' @seealso \code{\link{nndm}} \code{\link{knndm}}
 #' @import ggplot2
@@ -179,6 +180,9 @@ geodist <- function(x,
 
   ##### Compute W if type=="geo" and test data and/or CV folds are provided
   if(type == "geo"){
+    W_sample <- twosamples::wass_stat(dists[dists$what == "sample-to-sample", "dist"],
+                                    dists[dists$what == "prediction-to-sample", "dist"])
+    attr(dists, "W_sample") <- W_sample
     if(!is.null(testdata)){
       W_test <- twosamples::wass_stat(dists[dists$what == "test-to-sample", "dist"],
                                       dists[dists$what == "prediction-to-sample", "dist"])

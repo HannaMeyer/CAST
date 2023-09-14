@@ -37,7 +37,7 @@ Or a vector that contains the ID of the fold for each training point. See e.g. ?
 \item{variables}{character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.}
 }
 \value{
-A data.frame containing the distances. Unit of returned geographic distances is meters.
+A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
 }
 \description{
 Calculates nearest neighbor distances in geographic space or feature space between training data as well as between training data and prediction locations.
@@ -47,6 +47,7 @@ Optional, the nearest neighbor distances between training data and test data or 
 The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
     If type = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster.
     If not provided they are extracted from the modeldomain rasterStack.
+    W statistic describes the match between the distributions. See Mila et al (2023) and Linnenbrink et al (2023) for further details.
 }
 \note{
 See Meyer and Pebesma (2022) for an application of this plotting function
