@@ -179,22 +179,22 @@ geodist <- function(x,
   class(dists) <- c("geodist", class(dists))
   attr(dists, "type") <- type
 
-  ##### Compute W if type=="geo" and test data and/or CV folds are provided
-  if(type == "geo"){ # take this condition out once tested for feature space as well
-    W_sample <- twosamples::wass_stat(dists[dists$what == "sample-to-sample", "dist"],
-                                      dists[dists$what == "prediction-to-sample", "dist"])
-    attr(dists, "W_sample") <- W_sample
-    if(!is.null(testdata)){
-      W_test <- twosamples::wass_stat(dists[dists$what == "test-to-sample", "dist"],
-                                      dists[dists$what == "prediction-to-sample", "dist"])
-      attr(dists, "W_test") <- W_test
-    }
-    if(!is.null(cvfolds)){
-      W_CV <- twosamples::wass_stat(dists[dists$what == "CV-distances", "dist"],
+  ##### Compute W statistics
+  #  if(type == "geo"){ # take this condition out once tested for feature space as well
+  W_sample <- twosamples::wass_stat(dists[dists$what == "sample-to-sample", "dist"],
                                     dists[dists$what == "prediction-to-sample", "dist"])
-      attr(dists, "W_CV") <- W_CV
-    }
+  attr(dists, "W_sample") <- W_sample
+  if(!is.null(testdata)){
+    W_test <- twosamples::wass_stat(dists[dists$what == "test-to-sample", "dist"],
+                                    dists[dists$what == "prediction-to-sample", "dist"])
+    attr(dists, "W_test") <- W_test
   }
+  if(!is.null(cvfolds)){
+    W_CV <- twosamples::wass_stat(dists[dists$what == "CV-distances", "dist"],
+                                  dists[dists$what == "prediction-to-sample", "dist"])
+    attr(dists, "W_CV") <- W_CV
+  }
+  #  }
 
   return(dists)
 }

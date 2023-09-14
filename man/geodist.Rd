@@ -57,6 +57,7 @@ See Meyer and Pebesma (2022) for an application of this plotting function
 library(CAST)
 library(sf)
 library(terra)
+library(caret)
 library(rnaturalearth)
 library(ggplot2)
 
