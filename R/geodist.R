@@ -26,6 +26,7 @@
 #' library(CAST)
 #' library(sf)
 #' library(terra)
+#' library(caret)
 #' library(rnaturalearth)
 #' library(ggplot2)
 #'
