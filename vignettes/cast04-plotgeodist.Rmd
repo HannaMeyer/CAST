@@ -231,6 +231,32 @@ plot(dist_rand, unit = "km")+scale_x_log10(labels=round)
 The NNDM CV-distance still matches the sample-to-prediction distance function.
 
 
+#### k-fold Nearest Neighbour Distance Matching CV
+Since NNDM CV is highly time consuming, the k-fold version may provide a good trade-off.
+See (see [Linnenbrink et al., 2023](https://doi.org/10.5194/egusphere-2023-1308) for more details)
+
+```{r,message = FALSE, warning=FALSE, results='hide'}
+
+knndmfolds_clstr <- knndm(pts_clustered, modeldomain=co.ee, samplesize = 2000)
+pts_clustered$knndmCV <- as.character(knndmfolds_clstr$clusters)
+
+ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
+  geom_sf(data = pts_clustered, aes(color=knndmCV),size=0.5, shape=3) +
+  scale_color_manual(values=rainbow(length(unique(pts_clustered$knndmCV))))+
+  guides(fill = FALSE, col = FALSE) +
+  labs(x = NULL, y = NULL)+ ggtitle("spatial fold membership by color")
+
+
+dist_clstr <- geodist(pts_clustered,co.ee,
+                           sampling = "Fibonacci",
+                           cvfolds = knndmfolds_clstr$indx_test, 
+                           cvtrain = knndmfolds_clstr$indx_train)
+plot(dist_clstr, unit = "km")+scale_x_log10(labels=round)
+
+```
+
+
+
 ## Distances in feature space
 
 So far we compared nearest neighbor distances in geographic space. We can also do so in feature space. Therefore, a set of bioclimatic variables are used (https://www.worldclim.org) as features (i.e. predictors) in this virtual prediction task. 
