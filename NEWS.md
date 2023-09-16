@@ -6,6 +6,8 @@
   * calibrate_aoa is now DItoErrormetric and return a model (see function documentation)
   * plot_geodist turned into geodist function with plot()
   * plot_ffs is now plot(ffs)
+* bug fix:
+  * fix issue #65 (threshold)
 * deprecated (soon):
   * plot_geodist, plot_ffs, calibrate_aoa
   

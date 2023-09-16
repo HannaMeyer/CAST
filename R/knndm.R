@@ -61,6 +61,13 @@
 #' training/prediction points as a previous step to ensure they are aligned.
 #'
 #' @note Experimental cycle. Article describing and testing the algorithm in preparation.
+#' @references
+#' \itemize{
+#' \item Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM: k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2023-1308, 2023.
+#' \item Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.
+#' }
+#' @seealso \code{\link{geodist}}, \code{\link{nndm}}
+#'
 #' @export
 #' @examples
 #' ########################################################################

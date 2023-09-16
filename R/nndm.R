@@ -40,7 +40,7 @@
 #'
 #' @note NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
 #' A k-fold variant will be implemented shortly.
-#' @seealso \code{\link{geodist}}
+#' @seealso \code{\link{geodist}}, \code{\link{knndm}}
 #' @references
 #' \itemize{
 #' \item Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.
