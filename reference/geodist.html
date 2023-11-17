@@ -71,6 +71,7 @@ Optional, the nearest neighbor distances between training data and test data or 
 <span>  cvfolds <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cvtrain <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  testdata <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  preddata <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  samplesize <span class="op">=</span> <span class="fl">2000</span>,</span>
 <span>  sampling <span class="op">=</span> <span class="st">"regular"</span>,</span>
 <span>  variables <span class="op">=</span> <span class="cn">NULL</span></span>
@@ -101,7 +102,12 @@ Or a vector that contains the ID of the fold for each training point. See e.g. ?
 
 
 <dt>testdata</dt>
-<dd><p>optional. object of class sf: Data used for independent validation</p></dd>
+<dd><p>optional. object of class sf: Point data used for independent validation</p></dd>
+
+
+<dt>preddata</dt>
+<dd><p>optional. object of class sf: Point data indicating the locations within the modeldomain to be used as target prediction points. Useful when the prediction objective is a subset of
+locations within the modeldomain rather than the whole area.</p></dd>
 
 
 <dt>samplesize</dt>
@@ -125,9 +131,9 @@ Or a vector that contains the ID of the fold for each training point. See e.g. ?
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
-    If type = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster.
+    If type = "feature", the argument modeldomain (and if provided then also the testdata and/or preddata) has to include predictors. Predictor values for x, testdata and preddata are optional if modeldomain is a raster.
     If not provided they are extracted from the modeldomain rasterStack.
-    W statistic describes the match between the distributions. See Mila et al (2023) and Linnenbrink et al (2023) for further details.</p>
+    W statistic describes the match between the distributions. See Linnenbrink et al (2023) for further details.</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
