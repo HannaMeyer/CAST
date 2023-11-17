@@ -11,6 +11,7 @@ geodist(
   cvfolds = NULL,
   cvtrain = NULL,
   testdata = NULL,
+  preddata = NULL,
   samplesize = 2000,
   sampling = "regular",
   variables = NULL
@@ -28,7 +29,10 @@ Or a vector that contains the ID of the fold for each training point. See e.g. ?
 
 \item{cvtrain}{optional. List of row indices of x to fit the model to in each CV iteration. If cvtrain is null but cvfolds is not, all samples but those included in cvfolds are used as training data}
 
-\item{testdata}{optional. object of class sf: Data used for independent validation}
+\item{testdata}{optional. object of class sf: Point data used for independent validation}
+
+\item{preddata}{optional. object of class sf: Point data indicating the locations within the modeldomain to be used as target prediction points. Useful when the prediction objective is a subset of
+locations within the modeldomain rather than the whole area.}
 
 \item{samplesize}{numeric. How many prediction samples should be used?}
 
@@ -45,9 +49,9 @@ Optional, the nearest neighbor distances between training data and test data or 
 }
 \details{
 The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
-    If type = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster.
+    If type = "feature", the argument modeldomain (and if provided then also the testdata and/or preddata) has to include predictors. Predictor values for x, testdata and preddata are optional if modeldomain is a raster.
     If not provided they are extracted from the modeldomain rasterStack.
-    W statistic describes the match between the distributions. See Mila et al (2023) and Linnenbrink et al (2023) for further details.
+    W statistic describes the match between the distributions. See Linnenbrink et al (2023) for further details.
 }
 \note{
 See Meyer and Pebesma (2022) for an application of this plotting function

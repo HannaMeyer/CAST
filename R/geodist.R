@@ -8,15 +8,17 @@
 #' @param cvfolds optional. list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
 #' Or a vector that contains the ID of the fold for each training point. See e.g. ?createFolds or ?CreateSpacetimeFolds or ?nndm
 #' @param cvtrain optional. List of row indices of x to fit the model to in each CV iteration. If cvtrain is null but cvfolds is not, all samples but those included in cvfolds are used as training data
-#' @param testdata optional. object of class sf: Data used for independent validation
+#' @param testdata optional. object of class sf: Point data used for independent validation
+#' @param preddata optional. object of class sf: Point data indicating the locations within the modeldomain to be used as target prediction points. Useful when the prediction objective is a subset of
+#' locations within the modeldomain rather than the whole area.
 #' @param samplesize numeric. How many prediction samples should be used?
 #' @param sampling character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.
 #' @param variables character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.
 #' @return A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
-#'     If type = "feature", the argument modeldomain (and if provided then also the testdata) has to include predictors. Predictor values for x are optional if modeldomain is a raster.
+#'     If type = "feature", the argument modeldomain (and if provided then also the testdata and/or preddata) has to include predictors. Predictor values for x, testdata and preddata are optional if modeldomain is a raster.
 #'     If not provided they are extracted from the modeldomain rasterStack.
-#'     W statistic describes the match between the distributions. See Mila et al (2023) and Linnenbrink et al (2023) for further details.
+#'     W statistic describes the match between the distributions. See Linnenbrink et al (2023) for further details.
 #' @note See Meyer and Pebesma (2022) for an application of this plotting function
 #' @seealso \code{\link{nndm}} \code{\link{knndm}}
 #' @import ggplot2
@@ -98,6 +100,7 @@ geodist <- function(x,
                     cvfolds=NULL,
                     cvtrain=NULL,
                     testdata=NULL,
+                    preddata=NULL,
                     samplesize=2000,
                     sampling = "regular",
                     variables=NULL){
@@ -150,13 +153,31 @@ geodist <- function(x,
         testdata <- sf::st_transform(testdata,4326)
       }
     }
+    if(!is.null(preddata)){
+      if(any(!variables%in%names(preddata))){# extract variable values of raster:
+        preddata <- sf::st_transform(preddata,sf::st_crs(modeldomain))
+        #preddata <- sf::st_as_sf(raster::extract(modeldomain, preddata, df = TRUE, sp = TRUE))
+        preddata <- sf::st_as_sf(terra::extract(modeldomain, preddata, na.rm=FALSE,bind=TRUE))
+
+        if(any(is.na(preddata))){
+          preddata <- na.omit(preddata)
+          message("some prediction data were removed because of NA in extracted predictor values")
+        }
+
+        preddata <- sf::st_transform(preddata,4326)
+      }
+    }
   }
 
 
   # required steps ----
 
-  ## Sample prediction location from the study area:
-  modeldomain <- sampleFromArea(modeldomain, samplesize, type,variables,sampling)
+  ## Sample prediction location from the study area if preddata not available:
+  if(is.null(preddata)){
+    modeldomain <- sampleFromArea(modeldomain, samplesize, type,variables,sampling)}
+  else{
+    modeldomain <- preddata
+  }
 
   # always do sample-to-sample and sample-to-prediction
   s2s <- sample2sample(x, type,variables)
