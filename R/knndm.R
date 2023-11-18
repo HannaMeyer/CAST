@@ -139,6 +139,7 @@
 #' pts <- st_as_sf(pts,coords=c("Easting","Northing"))
 #' st_crs(pts) <- 26911
 #' studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
+#' studyArea[!is.na(studyArea)] <- 1
 #' studyArea <- as.polygons(studyArea, values = FALSE, na.all = TRUE) |>
 #'     st_as_sf() |>
 #'     st_union()
