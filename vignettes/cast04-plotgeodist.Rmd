@@ -262,7 +262,7 @@ plot(dist_clstr, unit = "km")+scale_x_log10(labels=round)
 So far we compared nearest neighbor distances in geographic space. We can also do so in feature space. Therefore, a set of bioclimatic variables are used (https://www.worldclim.org) as features (i.e. predictors) in this virtual prediction task. 
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
-predictors_global <- rast(system.file("extdata","bioclim_global.grd",package="CAST"))
+predictors_global <- rast(system.file("extdata","bioclim_global.tif",package="CAST"))
 
 plot(predictors_global)
 ```

@@ -54,7 +54,7 @@ RMSE = function(a, b){
 As predictor variables, a set of bioclimatic variables are used (https://www.worldclim.org). For this tutorial, they have been originally downloaded using the getData function from the raster package but cropped to an area in central Europe. The cropped data are provided in the CAST package.
 
 ```{r, message = FALSE, warning=FALSE}
-predictors <- rast(system.file("extdata","bioclim.grd",package="CAST"))
+predictors <- rast(system.file("extdata","bioclim.tif",package="CAST"))
 plot(predictors,col=viridis(100))
 ```
 
@@ -331,14 +331,14 @@ To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al
 We will use soil moisture (VW) as response variable here. Hence, we're aiming at making a spatial continuous prediction based on limited measurements from data loggers.
 
 ```{r, message = FALSE, warning=FALSE}
-dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
+dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
 # calculate average of VW for each sampling site:
 dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
 # create sf object from the data:
 pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 
 ##### Extract Predictors for the locations of the sampling points
-studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
+studyArea <- rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
 st_crs(pts) <- crs(studyArea)
 trainDat <- extract(studyArea,pts,na.rm=FALSE)
 pts$ID <- 1:nrow(pts)

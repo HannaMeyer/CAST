@@ -53,7 +53,7 @@ To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al
 
 
 ```{r, message = FALSE, warning=FALSE}
-data <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
+data <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
 head(data)
 ```
 
@@ -120,7 +120,7 @@ Based on the trained model we can make spatial predictions of soil moisture. To 
 
 ```{r, message = FALSE, warning=FALSE}
 library(terra)
-predictors_sp <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
+predictors_sp <- rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
 prediction <- predict(predictors_sp,model,na.rm=TRUE)
 plot(prediction)
 ```
