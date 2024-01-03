@@ -32,14 +32,14 @@
 #' library(caret)
 #'
 #' ########### prepare sample data:
-#' dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
+#' dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
 #' dat <- aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing")],
 #'   by=list(as.character(dat$SOURCEID)),mean)
 #' pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 #' st_crs(pts) <- 26911
 #' pts_train <- pts[1:29,]
 #' pts_test <- pts[30:42,]
-#' studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))
+#' studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
 #' studyArea <- studyArea[[c("DEM","TWI", "NDRE.M", "NDRE.Sd", "Bt")]]
 #'
 #' ########### Distance between training data and new data:

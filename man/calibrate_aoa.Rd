@@ -66,11 +66,11 @@ library(viridis)
 library(latticeExtra)
 
 #' # prepare sample data:
-dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
+dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
 dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
 pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 pts$ID <- 1:nrow(pts)
-studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
+studyArea <- rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))[[1:8]]
 dat <- extract(studyArea,pts,na.rm=TRUE)
 trainDat <- merge(dat,pts,by.x="ID",by.y="ID")
 

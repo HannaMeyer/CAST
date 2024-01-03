@@ -22,7 +22,7 @@ the model to explain the entire gradient of the response.
 Comparable to LOOCV, predictions from all held back folds are used here together to calculate validation statistics.
 }
 \examples{
-dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
+dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
 dat <- dat[sample(1:nrow(dat),500),]
 indices <- CreateSpacetimeFolds(dat,"SOURCEID","Date")
 ctrl <- caret::trainControl(method="cv",index = indices$index,savePredictions="final")

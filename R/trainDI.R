@@ -199,6 +199,7 @@ trainDI <- function(model = NA,
     whichfold <- NA
     if(!is.null(CVtrain)&!is.null(CVtest)){
       whichfold <-  as.numeric(which(lapply(CVtest,function(x){any(x==i)})==TRUE)) # index of the fold where i is held back
+      if(length(whichfold)>1){stop("a datapoint is used for testing in more than one fold. currently this option is not implemented")}
       if(length(whichfold)!=0){ # in case that a data point is never used for testing
         trainDist[!seq(nrow(train))%in%CVtrain[[whichfold]]] <- NA # everything that is not in the training data for i is ignored
       }

@@ -112,7 +112,7 @@ cl <- makeCluster(3)
 registerDoParallel(cl)
 
 #load and prepare dataset:
-dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
+dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
 trainDat <- dat[dat$altitude==-0.3&year(dat$Date)==2012&week(dat$Date)\%in\%c(13:14),]
 
 #visualize dataset:

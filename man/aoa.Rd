@@ -85,13 +85,13 @@ library(caret)
 library(viridis)
 
 # prepare sample data:
-dat <- get(load(system.file("extdata","Cookfarm.RData",package="CAST")))
+dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
 dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
 pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 pts$ID <- 1:nrow(pts)
 set.seed(100)
 pts <- pts[1:30,]
-studyArea <- rast(system.file("extdata","predictors_2012-03-25.grd",package="CAST"))[[1:8]]
+studyArea <- rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))[[1:8]]
 trainDat <- extract(studyArea,pts,na.rm=FALSE)
 trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
 
