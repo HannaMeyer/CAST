@@ -14,7 +14,7 @@ editor_options:
 ---
 
 ```{r setup, echo=FALSE}
-knitr::opts_chunk$set(fig.width = 8.83,cache = TRUE)
+knitr::opts_chunk$set(fig.width = 8.83,cache = FALSE)
 user_hanna <- Sys.getenv("USER") %in% c("hanna")
 ```
 
@@ -34,14 +34,14 @@ In order to follow this tutorial, I assume that the reader is familiar with the 
 
 To work with the tutorial, first install the CAST package and load the library:
 
-```{r, message = FALSE, warning=FALSE}
+```{r c1, message = FALSE, warning=FALSE}
 #install.packages("CAST")
 library(CAST)
 ```
 
 If you need help, see
 
-```{r, message = FALSE, warning=FALSE}
+```{r c2, message = FALSE, warning=FALSE}
 help(CAST)
 ```
 
@@ -52,7 +52,7 @@ The example prediction task for this tutorial is the following: we have a set of
 To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251/) and available via the GSIF package ([Hengl 2017](https://CRAN.R-project.org/package=GSIF)). The dataset included in the CAST package is a re-structured dataset which was used for the analysis in [Meyer et al 2018](https://www.sciencedirect.com/science/article/pii/S1364815217310976).
 
 
-```{r, message = FALSE, warning=FALSE}
+```{r c3, message = FALSE, warning=FALSE}
 data <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
 head(data)
 ```
@@ -62,7 +62,7 @@ See [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S221167
 
 To get an impression on the spatial properties of the dataset, let's have a look on the spatial distribution of the data loggers on the cookfarm:
 
-```{r, message = FALSE, warning=FALSE}
+```{r c4, message = FALSE, warning=FALSE}
 
 library(sf)
 data_sp <- unique(data[,c("SOURCEID","Easting","Northing")])
@@ -70,7 +70,7 @@ data_sp <- st_as_sf(data_sp,coords=c("Easting","Northing"),crs=26911)
 plot(data_sp,axes=T,col="black")
 ```
 
-```{r, message = FALSE, warning=FALSE, eval=user_hanna}
+```{r c5, message = FALSE, warning=FALSE, eval=user_hanna}
 #...or plot the data with mapview:
 library(mapview)
 mapviewOptions(basemaps = c("Esri.WorldImagery"))
@@ -84,7 +84,7 @@ We see that the data are taken at 42 locations (SOURCEID) over the field. The lo
 To reduce the data to an amount that can be handled in a tutorial, let's restrict the data to the depth of -0.3 and to two weeks of the year 2012. After subsetting let's have an overview on the soil moisture time series measured by the data loggers.
 
 
-```{r, message = FALSE, warning=FALSE}
+```{r c6, message = FALSE, warning=FALSE}
 library(lubridate)
 library(ggplot2)
 trainDat <- data[data$altitude==-0.3&
@@ -102,7 +102,7 @@ In the following we will use this subset of the cookfarm data as an example to s
 To start with, lets use this dataset to create a "default" Random Forest model that predicts soil moisture based on some predictor variables.
 To keep computation time at a minimum, we don't include hyperparameter tuning (hence mtry was set to 2) which is reasonable as Random Forests are comparably insensitive to tuning.
 
-```{r, message = FALSE, warning=FALSE}
+```{r c7, message = FALSE, warning=FALSE}
 library(caret)
 predictors <- c("DEM","TWI","Precip_cum","cday",
                 "MaxT_wrcc","Precip_wrcc","BLD",
@@ -118,7 +118,7 @@ model <- train(trainDat[,predictors],trainDat$VW,
 Based on the trained model we can make spatial predictions of soil moisture. To do this we load a multiband raster that contains spatial data of all predictor variables for the 25th of March 2012 (as an example). We then apply the trained model on this data set.
 
 
-```{r, message = FALSE, warning=FALSE}
+```{r c8, message = FALSE, warning=FALSE}
 library(terra)
 predictors_sp <- rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
 prediction <- predict(predictors_sp,model,na.rm=TRUE)
@@ -139,7 +139,7 @@ In the example above we used a random k-fold CV that we defined in caret's train
 To assess the performance of the model let's have a look on the output of the Random CV:
 
 
-```{r, message = FALSE, warning=FALSE}
+```{r c9, message = FALSE, warning=FALSE}
 model
 ```
 
@@ -158,7 +158,7 @@ Note that several suggestions of spatial CV exist. What we call LLO here is just
 
 
 
-```{r, message = FALSE, warning=FALSE}
+```{r c10, message = FALSE, warning=FALSE}
 set.seed(10)
 indices <- CreateSpacetimeFolds(trainDat,spacevar = "SOURCEID",
                                 k=3)
@@ -177,7 +177,7 @@ Apparently, there is considerable overfitting in the model, causing a good rando
 
 Let's have a look at the variable importance ranking of Random Forest and see if we find something suspicious:
 
-```{r, message = FALSE, warning=FALSE}
+```{r c11, message = FALSE, warning=FALSE}
 plot(varImp(model_LLO))
 ```
 
@@ -195,7 +195,7 @@ ffs is doing this job by first training models using all possible pairs of two p
 
 So let's run the ffs on our case study using R² as a metric to select the optimal variables. This process will take 1-2 minutes...
 
-```{r, message = FALSE, warning=FALSE}
+```{r c12, message = FALSE, warning=FALSE}
 set.seed(10)
 ffsmodel_LLO <- ffs(trainDat[,predictors],trainDat$VW,metric="Rsquared",
                     method="rf", tuneGrid=data.frame("mtry"=2),
@@ -212,7 +212,7 @@ Using the ffs with LLO CV, the R² could be increased from 0.16 to 0.28. The var
 Using the plot$\_$ffs function we can visualize how the performance of the model changed depending on the variables being used:
 
 
-```{r, message = FALSE, warning=FALSE}
+```{r c13, message = FALSE, warning=FALSE}
 plot(ffsmodel_LLO)
 ```
 
@@ -221,7 +221,7 @@ Note that the R² features a high standard deviation regardless of the variables
 
 What effect does the new model has on the spatial representation of soil moisture?
 
-```{r, message = FALSE, warning=FALSE}
+```{r c14, message = FALSE, warning=FALSE}
 prediction_ffs <- predict(predictors_sp,ffsmodel_LLO,na.rm=TRUE)
 plot(prediction_ffs)
 ```
@@ -232,7 +232,7 @@ We see that the variable selection does not only have an effect on the statistic
 Still it is required to analyse if the model can be applied to the entire study area of if there are locations that are very different in their predictor properties to what the model has learned from. See more details in the vignette on the Area of applicability and 
 [Meyer and Pebesma 2021](https://doi.org/10.1111/2041-210X.13650).
 
-```{r, message = FALSE, warning=FALSE}
+```{r c15, message = FALSE, warning=FALSE}
 ### AOA for which the spatial CV error applies:
 AOA <- aoa(predictors_sp,ffsmodel_LLO)
 
