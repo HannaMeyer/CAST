@@ -1,4 +1,4 @@
-# `CAST` 1.0.0
+# `CAST` 0.9.0
 * new features:
   * CAST functions now return classes with generic plotting and printing
   * new dataset for examples, tutorials and testing: data(splotdata)
