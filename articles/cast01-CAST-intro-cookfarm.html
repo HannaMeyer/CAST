@@ -8,8 +8,8 @@
 <meta name="description" content="CAST">
 <title>1. Introduction to CAST 0.8.1 • CAST</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="1. Introduction to CAST 0.8.1">
 <meta property="og:description" content="CAST">
@@ -42,7 +42,6 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/cast01-CAST-intro-cookfarm.html">1. Introduction to CAST 0.8.1</a>
-    <a class="dropdown-item" href="../articles/cast01-CAST-intro-splot.html">1. Introduction to CAST 1.0.0</a>
     <a class="dropdown-item" href="../articles/cast02-AOA-tutorial.html">2. Area of applicability of spatial prediction models</a>
     <a class="dropdown-item" href="../articles/cast03-AOA-parallel.html">3. AOA in Parallel</a>
     <a class="dropdown-item" href="../articles/cast04-plotgeodist.html">4. Visualization of nearest neighbor distance distributions</a>
@@ -79,7 +78,7 @@
                         <h4 data-toc-skip class="author">Hanna
 Meyer</h4>
             
-            <h4 data-toc-skip class="date">2023-11-18</h4>
+            <h4 data-toc-skip class="date">2024-01-03</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast01-CAST-intro-cookfarm.Rmd" class="external-link"><code>vignettes/cast01-CAST-intro-cookfarm.Rmd</code></a></small>
       <div class="d-none name"><code>cast01-CAST-intro-cookfarm.Rmd</code></div>
@@ -151,7 +150,7 @@ dataset included in the CAST package is a re-structured dataset which
 was used for the analysis in <a href="https://www.sciencedirect.com/science/article/pii/S1364815217310976" class="external-link">Meyer
 et al 2018</a>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/get.html" class="external-link">get</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"Cookfarm.RData"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/serialize.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"Cookfarm.RDS"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##        SOURCEID    VW  Easting Northing altitude      DEM      TWI     NDRE.M</span></span>
 <span><span class="co">## 101689   CAF357 0.303 493828.1  5181021     -0.3 792.5756 3.791253 0.08161208</span></span>
@@ -160,20 +159,20 @@ et al 2018</a>.</p>
 <span><span class="co">## 435625   CAF357 0.350 493828.1  5181021     -1.2 792.5756 3.791253 0.08161208</span></span>
 <span><span class="co">## 546937   CAF357 0.323 493828.1  5181021     -1.5 792.5756 3.791253 0.08161208</span></span>
 <span><span class="co">## 101690   CAF357 0.297 493828.1  5181021     -0.3 792.5756 3.791253 0.08161208</span></span>
-<span><span class="co">##          NDRE.Sd     Bt  BLD  PHI Crop       Date Precip_wrcc MaxT_wrcc</span></span>
-<span><span class="co">## 101689 0.2805182 0.0000 1.22 5.84   SL 2010-01-01         5.8       2.8</span></span>
-<span><span class="co">## 213001 0.2805182 0.0000 1.36 6.32   SL 2010-01-01         5.8       2.8</span></span>
-<span><span class="co">## 324313 0.2805182 0.0000 1.48 6.52   SL 2010-01-01         5.8       2.8</span></span>
-<span><span class="co">## 435625 0.2805182 0.0000 1.56 6.68   SL 2010-01-01         5.8       2.8</span></span>
-<span><span class="co">## 546937 0.2805182 0.0106 1.60 6.72   SL 2010-01-01         5.8       2.8</span></span>
-<span><span class="co">## 101690 0.2805182 0.0000 1.22 5.84   SL 2010-01-02         6.9       6.1</span></span>
-<span><span class="co">##        MinT_wrcc Precip_cum  cday       cdayt</span></span>
-<span><span class="co">## 101689      -3.3        5.8 14611 -0.05233596</span></span>
-<span><span class="co">## 213001      -3.3        5.8 14611 -0.05233596</span></span>
-<span><span class="co">## 324313      -3.3        5.8 14611 -0.05233596</span></span>
-<span><span class="co">## 435625      -3.3        5.8 14611 -0.05233596</span></span>
-<span><span class="co">## 546937      -3.3        5.8 14611 -0.05233596</span></span>
-<span><span class="co">## 101690       0.6       12.7 14612 -0.03489950</span></span></code></pre>
+<span><span class="co">##          NDRE.Sd     Bt  BLD       Date Precip_wrcc MaxT_wrcc MinT_wrcc</span></span>
+<span><span class="co">## 101689 0.2805182 0.0000 1.22 2010-01-01         5.8       2.8      -3.3</span></span>
+<span><span class="co">## 213001 0.2805182 0.0000 1.36 2010-01-01         5.8       2.8      -3.3</span></span>
+<span><span class="co">## 324313 0.2805182 0.0000 1.48 2010-01-01         5.8       2.8      -3.3</span></span>
+<span><span class="co">## 435625 0.2805182 0.0000 1.56 2010-01-01         5.8       2.8      -3.3</span></span>
+<span><span class="co">## 546937 0.2805182 0.0106 1.60 2010-01-01         5.8       2.8      -3.3</span></span>
+<span><span class="co">## 101690 0.2805182 0.0000 1.22 2010-01-02         6.9       6.1       0.6</span></span>
+<span><span class="co">##        Precip_cum  cday</span></span>
+<span><span class="co">## 101689        5.8 14611</span></span>
+<span><span class="co">## 213001        5.8 14611</span></span>
+<span><span class="co">## 324313        5.8 14611</span></span>
+<span><span class="co">## 435625        5.8 14611</span></span>
+<span><span class="co">## 546937        5.8 14611</span></span>
+<span><span class="co">## 101690       12.7 14612</span></span></code></pre>
 <p>I want to point out on the following information of this dataset: The
 “SOURCEID” represents the ID for the data logger, “VW” is soil moisture
 which is our response variable, “Easting” and “Northing” are the
@@ -249,7 +248,7 @@ data of all predictor variables for the 25th of March 2012 (as an
 example). We then apply the trained model on this data set.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
-<span><span class="va">predictors_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.grd"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">predictors_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.tif"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">model</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro-cookfarm_files/figure-html/unnamed-chunk-8-1.png" width="847.68"></p>
