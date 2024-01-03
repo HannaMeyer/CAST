@@ -1,12 +1,12 @@
 ---
-title: "1. Introduction to CAST 0.8.1"
+title: "1. Introduction to CAST"
 author: "Hanna Meyer"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Introduction to CAST 0.8.1}
+  %\VignetteIndexEntry{Introduction to CAST}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
