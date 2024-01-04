@@ -3,8 +3,8 @@
   * CAST functions now return classes with generic plotting and printing
   * new dataset for examples, tutorials and testing: data(splotdata)
 * modifications:
-  * calibrate_aoa is now DItoErrormetric and return a model (see function documentation)
-  * plot_geodist turned into geodist function with plot()
+  * calibrate_aoa is now DItoErrormetric and returns a model (see function documentation)
+  * plot_geodist is now geodist. The result can be visualized with plot()
   * plot_ffs is now plot(ffs)
 * bug fix:
   * fix issue #65 (threshold)
