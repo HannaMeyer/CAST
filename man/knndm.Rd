@@ -2,7 +2,7 @@
 % Please edit documentation in R/knndm.R
 \name{knndm}
 \alias{knndm}
-\title{[EXPERIMENTAL] K-fold Nearest Neighbour Distance Matching}
+\title{K-fold Nearest Neighbour Distance Matching}
 \usage{
 knndm(
   tpoints,
