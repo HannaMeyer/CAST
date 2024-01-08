@@ -1,4 +1,4 @@
-#' [EXPERIMENTAL] K-fold Nearest Neighbour Distance Matching
+#' K-fold Nearest Neighbour Distance Matching
 #' @description
 #' This function implements the kNNDM algorithm and returns the necessary
 #' indices to perform a k-fold NNDM CV for map validation.
