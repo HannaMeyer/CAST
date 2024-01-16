@@ -12,7 +12,8 @@ trainDI(
   CVtest = NULL,
   CVtrain = NULL,
   method = "L2",
-  useWeight = TRUE
+  useWeight = TRUE,
+  LPD = FALSE
 )
 }
 \arguments{
@@ -36,6 +37,8 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 \item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.}
 
 \item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
+
+\item{LPD}{Logical. Indicates wheather the LPD should be calculated or not.}
 }
 \value{
 A list of class \code{trainDI} containing:
@@ -48,6 +51,8 @@ A list of class \code{trainDI} containing:
  \item{trainDist_avrgmean}{The mean of trainDist_avrg. Used for normalizing the DI}
  \item{trainDI}{Dissimilarity Index of the training data}
  \item{threshold}{The DI threshold used for inside/outside AOA}
+ \item{trainLPD}{LPD of the training data}
+ \item{avrgLPD}{Average LPD of the training data}
 }
 \description{
 This function estimates the Dissimilarity Index (DI) of

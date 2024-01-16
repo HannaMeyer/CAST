@@ -44,39 +44,70 @@ plot.aoa = function(x, samplesize = 1000, ...){
   trainDI = data.frame(DI = x$parameters$trainDI,
                        what = "trainDI")
 
+  trainLPD = data.frame(LPD = x$parameters$trainLPD,
+                        what = "trainLPD")
+
 
 
   if(inherits(x$AOA, "RasterLayer")){
     targetDI = terra::spatSample(methods::as(x$DI, "SpatRaster"),
-                                 size = samplesize, method="regular")
-    targetDI = data.frame(DI = as.numeric(targetDI[,1]),
+                                 size = samplesize, method = "regular")
+    targetDI = data.frame(DI = as.numeric(targetDI[, 1]),
                           what = "predictionDI")
+
+    targetLPD = terra::spatSample(methods::as(x$LPD, "SpatRaster"),
+                                  size = samplesize, method = "regular")
+    targetLPD = data.frame(LPD = as.numeric(targetLPD[, 1]),
+                           what = "predictionLPD")
   }else if(inherits(x$AOA, "stars")){
     targetDI = terra::spatSample(methods::as(x$DI, "SpatRaster"),
-                                 size = samplesize,method="regular")
-    targetDI = data.frame(DI = as.numeric(targetDI[,1]),
+                                 size = samplesize, method = "regular")
+    targetDI = data.frame(DI = as.numeric(targetDI[, 1]),
                           what = "predictionDI")
+
+    targetLPD = terra::spatSample(methods::as(x$LPD, "SpatRaster"),
+                                  size = samplesize, method = "regular")
+    targetLPD = data.frame(LPD = as.numeric(targetLPD[, 1]),
+                           what = "predictionLPD")
   }else if(inherits(x$AOA, "SpatRaster")){
-    targetDI = terra::spatSample(x$DI, size = samplesize,method="regular")
-    targetDI = data.frame(DI = as.numeric(targetDI[,1]),
+    targetDI = terra::spatSample(x$DI, size = samplesize, method = "regular")
+    targetDI = data.frame(DI = as.numeric(targetDI[, 1]),
                           what = "predictionDI")
+
+    targetLPD = terra::spatSample(x$LPD, size = samplesize, method = "regular")
+    targetLPD = data.frame(LPD = as.numeric(targetLPD[, 1]),
+                           what = "predictionLPD")
   }else{
     targetDI = data.frame(DI = sample(x$DI, size = samplesize),
                           what = "predictionDI")
+
+    targetLPD = data.frame(LPD = sample(x$LPD, size = samplesize),
+                          what = "predictionLPD")
   }
 
 
 
   dfDI = rbind(trainDI, targetDI)
+  dfLPD = rbind(trainLPD, targetLPD)
 
 
-  ggplot(dfDI, aes_string(x = "DI", group = "what", fill = "what"))+
+  plotDI = ggplot(dfDI, aes_string(x = "DI", group = "what", fill = "what"))+
     geom_density(adjust=1.5, alpha=.4)+
     scale_fill_discrete(name = "Set")+
     geom_vline(aes(xintercept = x$parameters$threshold, linetype = "AOA_threshold"))+
     scale_linetype_manual(name = "", values = c(AOA_threshold = "dashed"))+
     theme_bw()+
     theme(legend.position = "bottom")
+
+  plotLPD = ggplot(dfLPD, aes_string(x = "LPD", group = "what", fill = "what"))+
+    geom_density(adjust=1.5, alpha=0.4)+
+    scale_fill_discrete(name = "Set")+
+    geom_vline(aes(xintercept = x$parameters$maxLPD, linetype = "maxLPD"))+
+    scale_linetype_manual(name = "", values = c(maxLPD = "dashed"))+
+    theme_bw()+
+    theme(legend.position = "bottom")
+
+  return(list(plotDI, plotLPD))
 }
 
 
@@ -370,7 +401,7 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
 #'
 
 
-plot.errorModel <- function(x, ...){
+plot.errorModelDI <- function(x, ...){
 
   performance = attr(x, "performance")[,c("DI", "metric")]
   performance$what = "cross-validation"
@@ -390,8 +421,89 @@ plot.errorModel <- function(x, ...){
 }
 
 
+#' @name plot
+#' @description Plot the LPD and errormetric from Cross-Validation with the modelled relationship
+#' @param x errorModelLPD, see \code{\link{LPDtoErrormetric}}
+#' @param ... other params
+#' @export
+#' @return a ggplot
+#'
 
 
+plot.errorModelLPD <- function(x, ...){
+
+  performance = attr(x, "performance")[,c("LPD", "metric")]
+  performance$what = "cross-validation"
+
+  model_line = data.frame(LPD = performance$LPD,
+                          metric = predict(x, performance),
+                          what = "model")
 
 
+  p = ggplot()+
+    geom_point(data = performance, mapping = aes_string(x = "LPD", y = "metric", shape = "what"))+
+    geom_line(data = model_line, mapping =  aes_string(x = "LPD", y = "metric", linetype = "what"), lwd = 1)+
+    theme(legend.title = element_blank(), legend.position = "bottom")
 
+  return(p)
+
+}
+
+
+#' @name plot
+#' @description Plot the DI and LPD and errormetric from Cross-Validation with the modelled relationship
+#' @param x errorModelDI_LPD, see \code{\link{DI_LPDtoErrormetric}}
+#' @param ... other params
+#' @export
+#' @return a plotly
+#'
+
+
+plot.errorModelDI_LPD <- function(x, ...){
+
+  performance = attr(x, "performance")[,c("DI", "LPD", "metric")]
+  performance$what = "cross-validation"
+
+  model_surface = data.frame(DI = performance$DI,
+                             LPD = performance$LPD,
+                             metric = predict(x, performance),
+                             what = "model")
+
+  #Graph Resolution (more important for more complex shapes)
+  graph_reso_DI <- 0.01
+  graph_reso_LPD <- 1
+
+  #Setup Axis
+  axis_x <- seq(min(model_surface$DI), max(model_surface$DI), by = graph_reso_DI)
+  axis_y <- seq(min(model_surface$LPD), max(model_surface$LPD), by = graph_reso_LPD)
+
+  #Create sample surface
+  surface <- expand.grid(DI = axis_x,LPD = axis_y,KEEP.OUT.ATTRS = F)
+  surface$metric <- predict(x, newdata = surface)
+  metric <- surface$metric
+  surface <- acast(surface, LPD ~ DI, value.var = "metric")
+
+  p <- plot_ly(type = "scatter3d")
+
+
+  p <- p %>% add_surface(x = axis_x,
+                         y = axis_y,
+                         z = surface,
+                         type = "surface",
+                         name = "model",
+                         opacity = 0.8,
+                         hovertemplate = paste0("DI: %{x}<br>LPD: %{y}<br>metric: %{z}<br>"))
+
+  p <- p %>% add_markers(x = ~DI,
+                         y = ~LPD,
+                         z = ~metric,
+                         data = performance,
+                         color = I("black"),
+                         size = I(20),
+                         name = "cross-validation",
+                         opacity = 1,
+                         hovertemplate = paste0("DI: %{x}<br>LPD: %{y}<br>metric: %{z}<br>"))
+
+
+  return(p)
+}

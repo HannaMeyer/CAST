@@ -41,18 +41,18 @@ DItoErrormetric <- function(model, trainDI, multiCV=FALSE,
 
   # get DIs and Errormetrics OR calculate new ones from multiCV
   if(!multiCV){
-    preds_all <- get_preds_all(model, trainDI)
+    preds_all <- get_preds_all_DI(model, trainDI)
   }
   if(multiCV){
-    preds_all <- multiCV(model, length.out, method, useWeight)
+    preds_all <- multiCV_DI(model, length.out, method, useWeight)
   }
 
   # train model between DI and Errormetric
-  error_model = errorModel(preds_all, model, window.size, calib,  k, m)
+  error_model = errorModel_DI(preds_all, model, window.size, calib,  k, m)
 
   # save AOA threshold and raw data
   attr(error_model, "AOA_threshold") <- attr(preds_all, "AOA_threshold")
-  class(error_model) <- c("errorModel", class(error_model))
+  class(error_model) <- c("errorModelDI", class(error_model))
   return(error_model)
 }
 
@@ -71,7 +71,7 @@ DItoErrormetric <- function(model, trainDI, multiCV=FALSE,
 #' @return scam or lm
 #'
 
-errorModel <- function(preds_all, model, window.size, calib, k, m){
+errorModel_DI <- function(preds_all, model, window.size, calib, k, m){
 
   ## use performance metric from the model:
   rmse <- function(pred,obs){sqrt( mean((pred - obs)^2, na.rm = TRUE) )}
@@ -137,6 +137,7 @@ errorModel <- function(preds_all, model, window.size, calib, k, m){
                              data=performance,
                              family=stats::gaussian(link="identity"))
   }
+
   attr(errormodel, "performance") = performance
 
   return(errormodel)
@@ -155,7 +156,7 @@ errorModel <- function(preds_all, model, window.size, calib, k, m){
 #'
 #'
 
-multiCV <- function(model, length.out, method, useWeight,...){
+multiCV_DI <- function(model, length.out, method, useWeight,...){
 
   preds_all <- data.frame()
   train_predictors <- model$trainingData[,-which(names(model$trainingData)==".outcome")]
@@ -207,7 +208,7 @@ multiCV <- function(model, length.out, method, useWeight,...){
 #' @param trainDI, a trainDI
 #'
 
-get_preds_all <- function(model, trainDI){
+get_preds_all_DI <- function(model, trainDI){
 
   if(is.null(model$pred)){
     stop("no cross-predictions can be retrieved from the model. Train with savePredictions=TRUE or provide calibration data")
