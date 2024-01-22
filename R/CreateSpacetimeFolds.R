@@ -47,6 +47,9 @@ CreateSpacetimeFolds <- function(x,spacevar=NA,timevar=NA,
   x <- data.frame(x)
   ### if classification is used, make sure that classes are equally distributed across folds
   if(!is.na(class)){
+    if(is.numeric(x[,class])){
+      stop("argument class only works for categorical data")
+      }
     unit <- unique(x[,c(spacevar,class)])
     unit$CAST_fold <- createFolds(unit[,which(names(unit)==class)],k = k,list=FALSE)
     #x <- merge(x,unit,by.x=c(spacevar,class),by.y=c(spacevar,class),all.x=TRUE,sort=FALSE)
