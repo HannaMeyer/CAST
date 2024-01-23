@@ -45,19 +45,20 @@ plot.aoa = function(x, samplesize = 1000, ...){
                        what = "trainDI")
 
 
+
   if(inherits(x$AOA, "RasterLayer")){
     targetDI = terra::spatSample(methods::as(x$DI, "SpatRaster"),
-                                 size = samplesize, method = "regular")
-    targetDI = data.frame(DI = as.numeric(targetDI[, 1]),
+                                 size = samplesize, method="regular")
+    targetDI = data.frame(DI = as.numeric(targetDI[,1]),
                           what = "predictionDI")
   }else if(inherits(x$AOA, "stars")){
     targetDI = terra::spatSample(methods::as(x$DI, "SpatRaster"),
-                                 size = samplesize, method = "regular")
-    targetDI = data.frame(DI = as.numeric(targetDI[, 1]),
+                                 size = samplesize,method="regular")
+    targetDI = data.frame(DI = as.numeric(targetDI[,1]),
                           what = "predictionDI")
   }else if(inherits(x$AOA, "SpatRaster")){
-    targetDI = terra::spatSample(x$DI, size = samplesize, method = "regular")
-    targetDI = data.frame(DI = as.numeric(targetDI[, 1]),
+    targetDI = terra::spatSample(x$DI, size = samplesize, method="regular")
+    targetDI = data.frame(DI = as.numeric(targetDI[,1]),
                           what = "predictionDI")
   }else{
     targetDI = data.frame(DI = sample(x$DI, size = samplesize),
