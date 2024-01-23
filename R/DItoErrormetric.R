@@ -75,7 +75,7 @@ DItoErrormetric <- function(model, trainDI, multiCV=FALSE,
 #' @return scam or lm
 #'
 
-errorModel <- function(preds_all, model, window.size, calib, k, m, what){
+.errorModel <- function(preds_all, model, window.size, calib, k, m, what){
 
   ## use performance metric from the model:
   rmse <- function(pred,obs){sqrt( mean((pred - obs)^2, na.rm = TRUE) )}
@@ -182,7 +182,7 @@ errorModel <- function(preds_all, model, window.size, calib, k, m, what){
 #'
 #'
 
-multiCV <- function(model, length.out, method, useWeight, what,...){
+.multiCV <- function(model, length.out, method, useWeight, what,...){
 
   preds_all <- data.frame()
   train_predictors <- model$trainingData[,-which(names(model$trainingData)==".outcome")]
@@ -250,7 +250,7 @@ multiCV <- function(model, length.out, method, useWeight, what,...){
 #' @param trainDI, a trainDI
 #'
 
-get_preds_all <- function(model, trainDI, what){
+.get_preds_all <- function(model, trainDI, what){
 
   if(is.null(model$pred)){
     stop("no cross-predictions can be retrieved from the model. Train with savePredictions=TRUE or provide calibration data")
