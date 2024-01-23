@@ -14,7 +14,8 @@ DItoErrormetric(
   method = "L2",
   useWeight = TRUE,
   k = 6,
-  m = 2
+  m = 2,
+  what = "DI"
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ DItoErrormetric(
 \item{k}{Numeric. See mgcv::s}
 
 \item{m}{Numeric. See mgcv::s}
+
+\item{what}{Character. Which measure to use for the error metric. "DI" or "LPD"}
 }
 \value{
 A scam or linear model

@@ -49,7 +49,7 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
 \item{LPD}{Logical. Indicates wheather the LPD should be calculated or not.}
 
-\item{maxLPD}{numeric or integer. Only if \code{LPD = TRUE}. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training data is considered, a fitted raltionship between LPD and error metric will not make sense (@seealso \code{\link{LPDtoErrormetri}})}
+\item{maxLPD}{numeric or integer. Only if \code{LPD = TRUE}. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso \code{\link{LPDtoErrormetri}})}
 }
 \value{
 An object of class \code{aoa} containing:
@@ -69,7 +69,7 @@ The AOA is derived by applying a threshold on the DI which is the (outlier-remov
 maximum DI of the cross-validated training data.
 }
 \details{
-The Dissimilarity Index (DI), the Loacal Data Point Density (LPD) and the corresponding Area of Applicability (AOA) are calculated.
+The Dissimilarity Index (DI), the Local Data Point Density (LPD) and the corresponding Area of Applicability (AOA) are calculated.
 If variables are factors, dummy variables are created prior to weighting and distance calculation.
 
 Interpretation of results: If a location is very similar to the properties
@@ -117,6 +117,8 @@ prediction <- predict(studyArea,model,na.rm=TRUE)
 plot(varImp(model,scale=FALSE))
 
 #...then calculate the AOA of the trained model for the study area:
+AOA <- aoa(studyArea, model)
+#... or if preferred calculate the aoa and the LPD of the study area:
 AOA <- aoa(studyArea, model, LPD = TRUE, maxLPD = 1)
 plot(AOA)
 

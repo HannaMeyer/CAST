@@ -103,8 +103,12 @@ plot(varImp(model,scale=FALSE))
 DI = trainDI(model=model)
 plot(DI)
 
-# the DI can now be used to compute the AOA:
+#...or calculate the DI and LPD of the trained model:
+# DI = trainDI(model=model, LPD = TRUE)
+
+# the DI can now be used to compute the AOA (with LPD):
 AOA = aoa(studyArea, model = model, trainDI = DI)
+# AOA = aoa(studyArea, model = model, trainDI = DI, LPD = TRUE, maxLPD = 1)
 print(AOA)
 plot(AOA)
 }

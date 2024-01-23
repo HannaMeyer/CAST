@@ -84,6 +84,8 @@
 #' plot(varImp(model,scale=FALSE))
 #'
 #' #...then calculate the AOA of the trained model for the study area:
+#' AOA <- aoa(studyArea, model)
+#' #... or if preferred calculate the aoa and the LPD of the study area:
 #' AOA <- aoa(studyArea, model, LPD = TRUE, maxLPD = 1)
 #' plot(AOA)
 #'
@@ -295,32 +297,6 @@ aoa <- function(newdata,
       .mindistfun(newdataCC, train_scaled, method, S_inv)
     DI_out <- mindist / trainDI$trainDist_avrgmean
   }
-
-  # if (calc_LPD == TRUE) {
-  #   message("Computing LPD of newdata...")
-  #
-  #   knndist <- matrix(NA, nrow(newdata), maxLPD)
-  #   knndist[okrows,] <- .knndistfun(newdataCC, train_scaled, method, S_inv, maxLPD = maxLPD)
-  #
-  #   DI_out_knndist <- knndist / trainDI$trainDist_avrgmean
-  #   DI_out <- c(DI_out_knndist[,1])
-  #
-  #   # start_time <- Sys.time()
-  #   LPD_out <-
-  #     apply(DI_out_knndist, 1, function(row)
-  #       sum(row < trainDI$threshold))
-  #   # end_time <- Sys.time()
-  #
-  #   # set maxLPD to max of LPD_out if
-  #   realMaxLPD <- max(LPD_out, na.rm = T)
-  #   if (maxLPD > realMaxLPD) {
-  #     if (inherits(maxLPD, c("numeric", "integer"))) {
-  #       message("Your specified maxLPD is bigger than the real maxLPD of you predictor data.")
-  #     }
-  #     message(paste("maxLPD is set to", realMaxLPD))
-  #     trainDI$maxLPD <- realMaxLPD
-  #   }
-  # }
 
   if (calc_LPD == TRUE) {
     message("Computing DI and LPD of new data...")
