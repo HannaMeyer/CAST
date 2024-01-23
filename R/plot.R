@@ -57,7 +57,7 @@ plot.aoa = function(x, samplesize = 1000, ...){
     targetDI = data.frame(DI = as.numeric(targetDI[,1]),
                           what = "predictionDI")
   }else if(inherits(x$AOA, "SpatRaster")){
-    targetDI = terra::spatSample(x$DI, size = samplesize, method="regular")
+    targetDI = terra::spatSample(x$DI, size = samplesize,method="regular")
     targetDI = data.frame(DI = as.numeric(targetDI[,1]),
                           what = "predictionDI")
   }else{
