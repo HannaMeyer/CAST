@@ -39,7 +39,7 @@
 \method{plot}{errorModelLPD}(x, ...)
 }
 \arguments{
-\item{x}{errorModelLPD, see \code{\link{LPDtoErrormetric}}}
+\item{x}{errorModelLPD, see \code{\link{DItoErrormetric}}}
 
 \item{...}{other params}
 

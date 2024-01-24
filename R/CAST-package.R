@@ -24,7 +24,7 @@
 #'
 #' @import caret
 #' @importFrom stats sd dist na.omit lm predict quantile na.exclude complete.cases
-#' @importFrom utils combn txtProgressBar
+#' @importFrom utils combn txtProgressBar setTxtProgressBar
 #' @importFrom grDevices rainbow
 #' @importFrom graphics axis plot segments
 #' @keywords package

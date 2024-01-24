@@ -10,6 +10,8 @@ get_preds_all(model, trainDI, what)
 \item{model, }{a model}
 
 \item{trainDI, }{a trainDI}
+
+\item{what}{Character. Which measure to use for the error metric. "DI" or "LPD"}
 }
 \description{
 Get Preds all

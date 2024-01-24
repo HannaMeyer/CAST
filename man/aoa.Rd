@@ -49,7 +49,7 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
 \item{LPD}{Logical. Indicates wheather the LPD should be calculated or not.}
 
-\item{maxLPD}{numeric or integer. Only if \code{LPD = TRUE}. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso \code{\link{LPDtoErrormetri}})}
+\item{maxLPD}{numeric or integer. Only if \code{LPD = TRUE}. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso \code{\link{DItoErrormetric}})}
 }
 \value{
 An object of class \code{aoa} containing:

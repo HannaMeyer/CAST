@@ -94,7 +94,8 @@ the AOA threshold changes accordingly. See Meyer and Pebesma (2021) for the full
   plot(expected_error_DI)
 
   # mask AOA based on new threshold from multiCV
-  mask_aoa = terra::mask(expected_error_DI, AOA$DI > attr(errormodel_DI, 'AOA_threshold'), maskvalues = 1)
+  mask_aoa = terra::mask(expected_error_DI, AOA$DI > attr(errormodel_DI, 'AOA_threshold'),
+                          maskvalues = 1)
   plot(mask_aoa)
 
 

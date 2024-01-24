@@ -248,6 +248,7 @@ multiCV <- function(model, length.out, method, useWeight, what,...){
 #' Get Preds all
 #' @param model, a model
 #' @param trainDI, a trainDI
+#' @param what Character. Which measure to use for the error metric. "DI" or "LPD"
 #'
 
 get_preds_all <- function(model, trainDI, what){

@@ -392,7 +392,7 @@ plot.errorModelDI <- function(x, ...){
 
 #' @name plot
 #' @description Plot the LPD and errormetric from Cross-Validation with the modelled relationship
-#' @param x errorModelLPD, see \code{\link{LPDtoErrormetric}}
+#' @param x errorModelLPD, see \code{\link{DItoErrormetric}}
 #' @param ... other params
 #' @export
 #' @return a ggplot
