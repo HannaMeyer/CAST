@@ -38,7 +38,7 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
 \item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
 
-\item{LPD}{Logical. Indicates wheather the LPD should be calculated or not.}
+\item{LPD}{Logical. Indicates wheather the local point density should be calculated or not.}
 }
 \value{
 A list of class \code{trainDI} containing:
@@ -55,8 +55,9 @@ A list of class \code{trainDI} containing:
  \item{avrgLPD}{Average LPD of the training data}
 }
 \description{
-This function estimates the Dissimilarity Index (DI) of
+This function estimates the Dissimilarity Index (DI)
 within the training data set used for a prediction model.
+Optionally, the local point density can also be calculated.
 Predictors can be weighted based on the internal
 variable importance of the machine learning algorithm used for model training.
 }
@@ -106,9 +107,8 @@ plot(DI)
 #...or calculate the DI and LPD of the trained model:
 # DI = trainDI(model=model, LPD = TRUE)
 
-# the DI can now be used to compute the AOA (with LPD):
-AOA = aoa(studyArea, model = model, trainDI = DI)
-# AOA = aoa(studyArea, model = model, trainDI = DI, LPD = TRUE, maxLPD = 1)
+# the DI can now be used to compute the AOA (here with LPD):
+AOA = aoa(studyArea, model = model, trainDI = DI, LPD = TRUE, maxLPD = 1)
 print(AOA)
 plot(AOA)
 }

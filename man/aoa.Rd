@@ -47,7 +47,7 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
 \item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
 
-\item{LPD}{Logical. Indicates wheather the LPD should be calculated or not.}
+\item{LPD}{Logical. Indicates weather the local point density should be calculated or not.}
 
 \item{maxLPD}{numeric or integer. Only if \code{LPD = TRUE}. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso \code{\link{DItoErrormetric}})}
 }
@@ -67,6 +67,7 @@ training. Predictors can be weighted based on the internal
 variable importance of the machine learning algorithm used for model training.
 The AOA is derived by applying a threshold on the DI which is the (outlier-removed)
 maximum DI of the cross-validated training data.
+Optionally, the local point density is calculated which indicates the number of similar training data points up to the DI threshold.
 }
 \details{
 The Dissimilarity Index (DI), the Local Data Point Density (LPD) and the corresponding Area of Applicability (AOA) are calculated.
@@ -118,9 +119,11 @@ plot(varImp(model,scale=FALSE))
 
 #...then calculate the AOA of the trained model for the study area:
 AOA <- aoa(studyArea, model)
+plot(AOA)
+plot(AOA$AOA)
 #... or if preferred calculate the aoa and the LPD of the study area:
 AOA <- aoa(studyArea, model, LPD = TRUE, maxLPD = 1)
-plot(AOA)
+plot(AOA$LPD)
 
 ####
 #The AOA can also be calculated without a trained model.

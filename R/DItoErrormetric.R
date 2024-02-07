@@ -15,7 +15,7 @@
 #' ranging from three clusters to LOOCV. Hence, a large range of DI/LPD values is created during cross-validation.
 #' If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold (which is likely if extrapolation situations are created during CV),
 #' the AOA threshold changes accordingly. See Meyer and Pebesma (2021) for the full documentation of the methodology.
-#' @return A scam, linear model or exponential model (only LPD)
+#' @return A scam, linear model or exponential model
 #' @author
 #' Hanna Meyer, Marvin Ludwig, Fabian Schumacher
 #' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
@@ -146,7 +146,7 @@ errorModel <- function(preds_all, model, window.size, calib, k, m, variable){
   }
   if(calib=="exp"){
     if (variable == "DI") {
-      stop("You can't build a exponential model for the DI~error relationship")
+      stop("Eexponential model currently only implemented for LPD")
     } else if (variable == "LPD") {
       errormodel <- lm(metric ~ log(LPD), data = performance)
     }

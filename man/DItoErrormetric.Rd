@@ -42,7 +42,7 @@ DItoErrormetric(
 \item{variable}{Character. Which measure to use for the error metric. "DI" or "LPD"}
 }
 \value{
-A scam, linear model or exponential model (only LPD)
+A scam, linear model or exponential model
 }
 \description{
 Performance metrics are calculated for moving windows of DI/LPD values of cross-validated training data

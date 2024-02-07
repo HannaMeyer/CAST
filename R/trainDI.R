@@ -1,7 +1,8 @@
 #' Calculate Dissimilarity Index of training data
 #' @description
-#' This function estimates the Dissimilarity Index (DI) of
+#' This function estimates the Dissimilarity Index (DI)
 #' within the training data set used for a prediction model.
+#' Optionally, the local point density can also be calculated.
 #' Predictors can be weighted based on the internal
 #' variable importance of the machine learning algorithm used for model training.
 #' @note
@@ -22,7 +23,7 @@
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
 #' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
-#' @param LPD Logical. Indicates wheather the LPD should be calculated or not.
+#' @param LPD Logical. Indicates wheather the local point density should be calculated or not.
 #'
 #' @seealso \code{\link{aoa}}
 #' @importFrom graphics boxplot
@@ -90,13 +91,12 @@
 #' #...then calculate the DI of the trained model:
 #' DI = trainDI(model=model)
 #' plot(DI)
-#' 
+#'
 #' #...or calculate the DI and LPD of the trained model:
 #' # DI = trainDI(model=model, LPD = TRUE)
 #'
-#' # the DI can now be used to compute the AOA (with LPD):
-#' AOA = aoa(studyArea, model = model, trainDI = DI)
-#' # AOA = aoa(studyArea, model = model, trainDI = DI, LPD = TRUE, maxLPD = 1)
+#' # the DI can now be used to compute the AOA (here with LPD):
+#' AOA = aoa(studyArea, model = model, trainDI = DI, LPD = TRUE, maxLPD = 1)
 #' print(AOA)
 #' plot(AOA)
 #' }

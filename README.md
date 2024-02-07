@@ -33,6 +33,8 @@ https://doi.org/10.1111/2041-210X.13851
 * Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM (2023): k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation. EGUsphere [preprint]. 
 https://doi.org/10.5194/egusphere-2023-1308
 
+* Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauss, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software, 101, 1-9. https://doi.org/10.1016/j.envsoft.2017.12.001
+
 ### Spatial variable selection
 * Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauss, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software, 101, 1-9. https://doi.org/10.1016/j.envsoft.2017.12.001
 
