@@ -91,7 +91,9 @@ maximum DI of the cross-validated training data.</p>
 <span>  CVtest <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  CVtrain <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"L2"</span>,</span>
-<span>  useWeight <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  useWeight <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  LPD <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  maxLPD <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -143,6 +145,14 @@ Relevant if some data points are excluded, e.g. when using <code><a href="nndm.h
 <dt>useWeight</dt>
 <dd><p>Logical. Only if a model is given. Weight variables according to importance in the model?</p></dd>
 
+
+<dt>LPD</dt>
+<dd><p>Logical. Indicates wheather the LPD should be calculated or not.</p></dd>
+
+
+<dt>maxLPD</dt>
+<dd><p>numeric or integer. Only if <code>LPD = TRUE</code>. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso <code><a href="DItoErrormetric.html">DItoErrormetric</a></code>)</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -155,14 +165,16 @@ Relevant if some data points are excluded, e.g. when using <code><a href="nndm.h
  <dt>DI</dt>
 <dd><p>SpatRaster, stars object or data frame. Dissimilarity index of newdata</p></dd>
 
+ <dt>LPD</dt>
+<dd><p>SpatRaster, stars object or data frame. Local Point Density of newdata.</p></dd>
+
  <dt>AOA</dt>
-<dd><p>SpatRaster, stars object or data frame. Area of Applicability of newdata.
-  AOA has values 0 (outside AOA) and 1 (inside AOA)</p></dd>
+<dd><p>SpatRaster, stars object or data frame. Area of Applicability of newdata. AOA has values 0 (outside AOA) and 1 (inside AOA)</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
+    <p>The Dissimilarity Index (DI), the Local Data Point Density (LPD) and the corresponding Area of Applicability (AOA) are calculated.
 If variables are factors, dummy variables are created prior to weighting and distance calculation.</p>
 <p>Interpretation of results: If a location is very similar to the properties
 of the training data it will have a low distance in the predictor variable space
@@ -188,7 +200,7 @@ Methods in Ecology and Evolution 12: 1620-1633. <a href="https://doi.org/10.1111
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
-    <p>Hanna Meyer</p>
+    <p>Hanna Meyer, Fabian Schumacher</p>
     </div>
 
     <div class="section level2">
@@ -200,15 +212,15 @@ Methods in Ecology and Evolution 12: 1620-1633. <a href="https://doi.org/10.1111
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sjmgarnier.github.io/viridis/" class="external-link">viridis</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># prepare sample data:</span></span></span>
-<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/serialize.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"Cookfarm.RDS"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VW"</span>,<span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">]</span>,by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">SOURCEID</span><span class="op">)</span><span class="op">)</span>,<span class="va">mean</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/serialize.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"Cookfarm.RDS"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VW"</span>,<span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">]</span>,by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">SOURCEID</span><span class="op">)</span><span class="op">)</span>,<span class="va">mean</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">dat</span>,coords<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">pts</span><span class="op">$</span><span class="va">ID</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">pts</span><span class="op">$</span><span class="va">ID</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="va">pts</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">30</span>,<span class="op">]</span></span></span>
-<span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.tif"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span><span class="op">]</span></span></span>
-<span class="r-in"><span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">pts</span>,na.rm<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">trainDat</span>,<span class="va">pts</span>,by.x<span class="op">=</span><span class="st">"ID"</span>,by.y<span class="op">=</span><span class="st">"ID"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.tif"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">pts</span>,na.rm<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">trainDat</span>,<span class="va">pts</span>,by.x<span class="op">=</span><span class="st">"ID"</span>,by.y<span class="op">=</span><span class="st">"ID"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># visualize data spatially:</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">)</span></span></span>
@@ -218,15 +230,17 @@ Methods in Ecology and Evolution 12: 1620-1633. <a href="https://doi.org/10.1111
 <span class="r-in"><span><span class="co"># train a model:</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">variables</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DEM"</span>,<span class="st">"NDRE.Sd"</span>,<span class="st">"TWI"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">)</span><span class="op"><a href="https://rdrr.io/pkg/terra/man/match.html" class="external-link">%in%</a></span><span class="va">variables</span><span class="op">)</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">)</span><span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span><span class="va">variables</span><span class="op">)</span><span class="op">]</span>,</span></span>
 <span class="r-in"><span><span class="va">trainDat</span><span class="op">$</span><span class="va">VW</span>, method<span class="op">=</span><span class="st">"rf"</span>, importance<span class="op">=</span><span class="cn">TRUE</span>, tuneLength<span class="op">=</span><span class="fl">1</span>,</span></span>
 <span class="r-in"><span>trControl<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>,number<span class="op">=</span><span class="fl">5</span>,savePredictions<span class="op">=</span><span class="cn">T</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="print.html">print</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span> <span class="co">#note that this is a quite poor prediction model</span></span></span>
-<span class="r-in"><span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/varImp.html" class="external-link">varImp</a></span><span class="op">(</span><span class="va">model</span>,scale<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#...then calculate the AOA of the trained model for the study area:</span></span></span>
-<span class="r-in"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu">aoa</span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu">aoa</span><span class="op">(</span><span class="va">studyArea</span>, <span class="va">model</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co">#... or if preferred calculate the aoa and the LPD of the study area:</span></span></span>
+<span class="r-in"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu">aoa</span><span class="op">(</span><span class="va">studyArea</span>, <span class="va">model</span>, LPD <span class="op">=</span> <span class="cn">TRUE</span>, maxLPD <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">####</span></span></span>
@@ -257,13 +271,13 @@ Methods in Ecology and Evolution 12: 1620-1633. <a href="https://doi.org/10.1111
 <span class="r-in"><span><span class="va">rsmp_cv</span> <span class="op">&lt;-</span> <span class="fu">rsmp</span><span class="op">(</span><span class="st">"cv"</span>, folds <span class="op">=</span> <span class="fl">5L</span><span class="op">)</span><span class="op">$</span><span class="fu">instantiate</span><span class="op">(</span><span class="va">task</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## predict:</span></span></span>
-<span class="r-in"><span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">lrn</span><span class="op">$</span><span class="va">model</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">lrn</span><span class="op">$</span><span class="va">model</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### Estimate AOA</span></span></span>
 <span class="r-in"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu">aoa</span><span class="op">(</span><span class="va">studyArea</span>,</span></span>
-<span class="r-in"><span>           train <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/terra/man/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">task</span><span class="op">$</span><span class="fu">data</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>           train <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">task</span><span class="op">$</span><span class="fu">data</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>           variables <span class="op">=</span> <span class="va">task</span><span class="op">$</span><span class="va">feature_names</span>,</span></span>
-<span class="r-in"><span>           weight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/transpose.html" class="external-link">t</a></span><span class="op">(</span><span class="va">lrn</span><span class="op">$</span><span class="fu">importance</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>           weight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/transpose.html" class="external-link">t</a></span><span class="op">(</span><span class="va">lrn</span><span class="op">$</span><span class="fu">importance</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>           CVtest <span class="op">=</span> <span class="va">rsmp_cv</span><span class="op">$</span><span class="va">instance</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">row_id</span><span class="op">)</span><span class="op">]</span><span class="op">$</span><span class="va">fold</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
@@ -274,7 +288,7 @@ Methods in Ecology and Evolution 12: 1620-1633. <a href="https://doi.org/10.1111
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Hanna Meyer, Carles Milà, Marvin Ludwig, Jan Linnenbrink.</p>
+  <p></p><p>Developed by Hanna Meyer, Carles Milà, Marvin Ludwig, Jan Linnenbrink, Fabian Schumacher.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -49,16 +49,10 @@
     <loc>https://hannameyer.github.io/CAST/reference/clustered_sample.html</loc>
   </url>
   <url>
-    <loc>https://hannameyer.github.io/CAST/reference/errorModel.html</loc>
-  </url>
-  <url>
     <loc>https://hannameyer.github.io/CAST/reference/ffs.html</loc>
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/reference/geodist.html</loc>
-  </url>
-  <url>
-    <loc>https://hannameyer.github.io/CAST/reference/get_preds_all.html</loc>
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/reference/global_validation.html</loc>
@@ -68,9 +62,6 @@
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/reference/knndm.html</loc>
-  </url>
-  <url>
-    <loc>https://hannameyer.github.io/CAST/reference/multiCV.html</loc>
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/reference/nndm.html</loc>

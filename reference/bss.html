@@ -64,7 +64,7 @@
 <span>  <span class="va">predictors</span>,</span>
 <span>  <span class="va">response</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"rf"</span>,</span>
-<span>  metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/is.bool.html" class="external-link">is.factor</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span>, <span class="st">"Accuracy"</span>, <span class="st">"RMSE"</span><span class="op">)</span>,</span>
+<span>  metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/is.bool.html" class="external-link">is.factor</a></span><span class="op">(</span><span class="va">response</span><span class="op">)</span>, <span class="st">"Accuracy"</span>, <span class="st">"RMSE"</span><span class="op">)</span>,</span>
 <span>  maximize <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">metric</span> <span class="op">==</span> <span class="st">"RMSE"</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>  globalval <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  trControl <span class="op">=</span> <span class="fu">caret</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -180,7 +180,7 @@ A more time efficient alternative is the forward feature selection (<code><a hre
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Hanna Meyer, Carles Milà, Marvin Ludwig, Jan Linnenbrink.</p>
+  <p></p><p>Developed by Hanna Meyer, Carles Milà, Marvin Ludwig, Jan Linnenbrink, Fabian Schumacher.</p>
 </div>
 
 <div class="pkgdown-footer-right">
