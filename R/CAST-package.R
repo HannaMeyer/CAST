@@ -11,7 +11,7 @@
 #' @name CAST
 #' @docType package
 #' @title 'caret' Applications for Spatial-Temporal Models
-#' @author Hanna Meyer, Carles Milà, Marvin Ludwig, Lan Linnenbrink
+#' @author Hanna Meyer, Carles Milà, Marvin Ludwig, Lan Linnenbrink, Fabian Schumacher
 #' @references
 #' \itemize{
 #' \item Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM: k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2023-1308, 2023.
@@ -24,7 +24,7 @@
 #'
 #' @import caret
 #' @importFrom stats sd dist na.omit lm predict quantile na.exclude complete.cases
-#' @importFrom utils combn
+#' @importFrom utils combn txtProgressBar setTxtProgressBar
 #' @importFrom grDevices rainbow
 #' @importFrom graphics axis plot segments
 #' @keywords package

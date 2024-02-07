@@ -25,7 +25,9 @@
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
 #' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
-#' @details The Dissimilarity Index (DI) and the corresponding Area of Applicability (AOA) are calculated.
+#' @param LPD Logical. Indicates wheather the LPD should be calculated or not.
+#' @param maxLPD numeric or integer. Only if \code{LPD = TRUE}. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso \code{\link{DItoErrormetric}})
+#' @details The Dissimilarity Index (DI), the Local Data Point Density (LPD) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
 #'
 #' Interpretation of results: If a location is very similar to the properties
@@ -39,11 +41,11 @@
 #' @return An object of class \code{aoa} containing:
 #'  \item{parameters}{object of class trainDI. see \code{\link{trainDI}}}
 #'  \item{DI}{SpatRaster, stars object or data frame. Dissimilarity index of newdata}
-#'  \item{AOA}{SpatRaster, stars object or data frame. Area of Applicability of newdata.
-#'   AOA has values 0 (outside AOA) and 1 (inside AOA)}
+#'  \item{LPD}{SpatRaster, stars object or data frame. Local Point Density of newdata.}
+#'  \item{AOA}{SpatRaster, stars object or data frame. Area of Applicability of newdata. AOA has values 0 (outside AOA) and 1 (inside AOA)}
 #'
 #' @author
-#' Hanna Meyer
+#' Hanna Meyer, Fabian Schumacher
 #' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
 #' Methods in Ecology and Evolution 12: 1620-1633. \doi{10.1111/2041-210X.13650}
@@ -82,7 +84,9 @@
 #' plot(varImp(model,scale=FALSE))
 #'
 #' #...then calculate the AOA of the trained model for the study area:
-#' AOA <- aoa(studyArea,model)
+#' AOA <- aoa(studyArea, model)
+#' #... or if preferred calculate the aoa and the LPD of the study area:
+#' AOA <- aoa(studyArea, model, LPD = TRUE, maxLPD = 1)
 #' plot(AOA)
 #'
 #' ####
@@ -126,6 +130,8 @@
 #' @export aoa
 #' @aliases aoa
 
+
+
 aoa <- function(newdata,
                 model=NA,
                 trainDI = NA,
@@ -135,7 +141,9 @@ aoa <- function(newdata,
                 CVtest=NULL,
                 CVtrain=NULL,
                 method="L2",
-                useWeight=TRUE) {
+                useWeight=TRUE,
+                LPD = FALSE,
+                maxLPD = 1) {
 
   # handling of different raster formats
   as_stars <- FALSE
@@ -154,16 +162,49 @@ aoa <- function(newdata,
     newdata <- methods::as(newdata, "SpatRaster")
   }
 
-
+  calc_LPD <- LPD
+  # validate maxLPD input
+  if (LPD == TRUE) {
+    if (is.numeric(maxLPD)) {
+      if (maxLPD <= 0) {
+        stop("maxLPD can not be negative or equal to 0. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+      }
+      if (maxLPD <= 1) {
+        if (inherits(model, "train")) {
+          maxLPD <- round(maxLPD * as.integer(length(model$trainingData[[1]])))
+        } else if (!is.null(train)) {
+          maxLPD <- round(maxLPD * as.integer(length(train[[1]])))
+        }
+        if (maxLPD <= 1) {
+          stop("The percentage you provided for maxLPD is too small.")
+        }
+      }
+      if (maxLPD > 1) {
+        if (maxLPD %% 1 == 0) {
+          maxLPD <- as.integer(maxLPD)
+        } else if (maxLPD %% 1 != 0) {
+          stop("If maxLPD is bigger than 0, it should be a whole number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+        }
+      }
+      if ((maxLPD > length(if (inherits(model, "train")) { model$trainingData[[1]] } else if (!is.null(train)) { train[[1]] })) || maxLPD %% 1 != 0) {
+        stop("maxLPD can not be bigger than the number of training samples. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+      }
+    } else {
+      stop("maxLPD must be a number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+    }
+  }
 
 
   # if not provided, compute train DI
-  if(!inherits(trainDI, "trainDI")){
-    message("No trainDI provided. Computing DI of training data...")
-    trainDI <- trainDI(model, train, variables, weight, CVtest, CVtrain,method, useWeight)
+  if(!inherits(trainDI, "trainDI")) {
+    message("No trainDI provided.")
+    trainDI <- trainDI(model, train, variables, weight, CVtest, CVtrain, method, useWeight, LPD)
   }
 
-  message("Computing DI of newdata...")
+  if (calc_LPD == TRUE) {
+    # maxLPD <- trainDI$avrgLPD
+    trainDI$maxLPD <- maxLPD
+  }
 
 
   # check if variables are in newdata
@@ -235,64 +276,138 @@ aoa <- function(newdata,
 
 
   # Distance Calculation ---------
+  okrows <- which(apply(newdata, 1, function(x)
+    all(!is.na(x))))
+  newdataCC <- newdata[okrows, ]
 
-  mindist <- rep(NA, nrow(newdata))
-  okrows <- which(apply(newdata, 1, function(x) all(!is.na(x))))
-  newdataCC <- newdata[okrows,]
-
-
-  if(method=="MD"){
-    if(dim(train_scaled)[2] == 1){
+  if (method == "MD") {
+    if (dim(train_scaled)[2] == 1) {
       S <- matrix(stats::var(train_scaled), 1, 1)
-      newdataCC <- as.matrix(newdataCC,ncol=1)
+      newdataCC <- as.matrix(newdataCC, ncol = 1)
     } else {
       S <- stats::cov(train_scaled)
     }
     S_inv <- MASS::ginv(S)
   }
 
-  mindist[okrows] <- .mindistfun(newdataCC, train_scaled, method, S_inv)
+  if (calc_LPD == FALSE) {
+    message("Computing DI of new data...")
+    mindist <- rep(NA, nrow(newdata))
+    mindist[okrows] <-
+      .mindistfun(newdataCC, train_scaled, method, S_inv)
+    DI_out <- mindist / trainDI$trainDist_avrgmean
+  }
 
+  if (calc_LPD == TRUE) {
+    message("Computing DI and LPD of new data...")
 
-  DI_out <- mindist/trainDI$trainDist_avrgmean
+    pb <- txtProgressBar(min = 0,
+                         max = nrow(newdataCC),
+                         style = 3)
+
+    DI_out <- rep(NA, nrow(newdata))
+    LPD_out <- rep(NA, nrow(newdata))
+    for (i in seq(nrow(newdataCC))) {
+      knnDist  <- .knndistfun(t(matrix(newdataCC[i,])), train_scaled, method, S_inv, maxLPD = maxLPD)
+      knnDI <- knnDist / trainDI$trainDist_avrgmean
+      knnDI <- c(knnDI)
+
+      DI_out[okrows[i]] <- knnDI[1]
+      LPD_out[okrows[i]] <- sum(knnDI < trainDI$threshold)
+      setTxtProgressBar(pb, i)
+    }
+
+    close(pb)
+
+    # set maxLPD to max of LPD_out if
+    realMaxLPD <- max(LPD_out, na.rm = T)
+    if (maxLPD > realMaxLPD) {
+      if (inherits(maxLPD, c("numeric", "integer"))) {
+        message("Your specified maxLPD is bigger than the real maxLPD of you predictor data.")
+      }
+      message(paste("maxLPD is set to", realMaxLPD))
+      trainDI$maxLPD <- realMaxLPD
+    }
+  }
+
 
   message("Computing AOA...")
 
   #### Create Mask for AOA and return statistics
-  if (inherits(out, "SpatRaster")){
+  if (inherits(out, "SpatRaster")) {
     terra::values(out) <- DI_out
+
     AOA <- out
     terra::values(AOA) <- 1
-    AOA[out>trainDI$thres] <- 0
-    AOA <- terra::mask(AOA,out)
+    AOA[out > trainDI$thres] <- 0
+    AOA <- terra::mask(AOA, out)
     names(AOA) = "AOA"
+
+    if (calc_LPD == TRUE) {
+      LPD <- out
+      terra::values(LPD) <- LPD_out
+      names(LPD) = "LPD"
+    }
 
 
     # handling of different raster formats.
-    if (as_stars){
+    if (as_stars) {
       out <- stars::st_as_stars(out)
       AOA <- stars::st_as_stars(AOA)
+
+      if (calc_LPD == TRUE) {
+        LPD <- stars::st_as_stars(LPD)
+      }
     }
 
-  }else{
+  } else{
     out <- DI_out
-    AOA <- rep(1,length(out))
-    AOA[out>trainDI$thres] <- 0
+    AOA <- rep(1, length(out))
+    AOA[out > trainDI$thres] <- 0
+
+    if (calc_LPD == TRUE) {
+      LPD <- LPD_out
+    }
   }
 
 
-  # used in old versions of the AOA. eventually remove the attributes
-#  attributes(AOA)$aoa_stats <- list("Mean_train" = trainDI$trainDist_avrgmean,
-#                                    "threshold" = trainDI$thres)
-#  attributes(AOA)$TrainDI <- trainDI$trainDI
+  #  # used in old versions of the AOA. eventually remove the attributes
+  #  attributes(AOA)$aoa_stats <- list("Mean_train" = trainDI$trainDist_avrgmean,
+  #                                    "threshold" = trainDI$thres)
+  #  attributes(AOA)$TrainDI <- trainDI$trainDI
 
-  result <- list(parameters = trainDI,
-                 DI = out,
-                 AOA = AOA)
+  result <- list(
+    parameters = trainDI,
+    DI = out,
+    AOA = AOA
+  )
+
+  if (calc_LPD == TRUE) {
+    result$LPD <- LPD
+  }
+
+  message("Finished!")
 
   class(result) <- "aoa"
   return(result)
-
 }
 
+
+.knndistfun <-
+  function (point,
+            reference,
+            method,
+            S_inv = NULL,
+            maxLPD = maxLPD) {
+    if (method == "L2") {
+      # Euclidean Distance
+      return(FNN::knnx.dist(reference, point, k = maxLPD))
+    } else if (method == "MD") {
+      return(t(sapply(1:dim(point)[1],
+                      function(y)
+                        sort(sapply(1:dim(reference)[1],
+                                    function(x)
+                                      sqrt(t(point[y, ] - reference[x, ]) %*% S_inv %*% (point[y, ] - reference[x,]) )))[1:maxLPD])))
+    }
+  }
 

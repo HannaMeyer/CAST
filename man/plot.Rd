@@ -80,7 +80,7 @@ Density plot of nearest neighbor distances in geographic space or feature space 
 Optional, the nearest neighbor distances between training data and test data or between training data and CV iterations is shown.
 The plot can be used to check the suitability of a chosen CV method to be representative to estimate map accuracy.
 
-Plot the DI and errormetric from Cross-Validation with the modelled relationship
+Plot the DI/LPD and errormetric from Cross-Validation with the modeled relationship
 }
 \examples{
 \dontrun{

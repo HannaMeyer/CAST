@@ -14,7 +14,8 @@ DItoErrormetric(
   method = "L2",
   useWeight = TRUE,
   k = 6,
-  m = 2
+  m = 2,
+  variable = "DI"
 )
 }
 \arguments{
@@ -28,7 +29,7 @@ DItoErrormetric(
 
 \item{window.size}{Numeric. Size of the moving window. See \code{\link{rollapply}}.}
 
-\item{calib}{Character. Function to model the DI~performance relationship. Currently lm and scam are supported}
+\item{calib}{Character. Function to model the DI/LPD~performance relationship. Currently lm and scam are supported}
 
 \item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer. See ?aoa for further explanation}
 
@@ -37,16 +38,18 @@ DItoErrormetric(
 \item{k}{Numeric. See mgcv::s}
 
 \item{m}{Numeric. See mgcv::s}
+
+\item{variable}{Character. Which measure to use for the error metric. "DI" or "LPD"}
 }
 \value{
-A scam or linear model
+A scam, linear model or exponential model (only LPD)
 }
 \description{
-Performance metrics are calculated for moving windows of DI values of cross-validated training data
+Performance metrics are calculated for moving windows of DI/LPD values of cross-validated training data
 }
 \details{
 If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
-ranging from three clusters to LOOCV. Hence, a large range of DI values is created during cross-validation.
+ranging from three clusters to LOOCV. Hence, a large range of DI/LPD values is created during cross-validation.
 If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold (which is likely if extrapolation situations are created during CV),
 the AOA threshold changes accordingly. See Meyer and Pebesma (2021) for the full documentation of the methodology.
 }
@@ -66,24 +69,33 @@ the AOA threshold changes accordingly. See Meyer and Pebesma (2021) for the full
   model <- caret::train(splotdata[,6:16], splotdata$Species_richness, ntree = 10,
                         trControl = trainControl(method = "cv", savePredictions = TRUE))
 
-  AOA <- aoa(predictors, model)
+  AOA <- aoa(predictors, model, LPD = TRUE, maxLPD = 1)
 
-  errormodel <- DItoErrormetric(model, AOA)
-  plot(errormodel)
+  # DI ~ error
+  errormodel_DI <- DItoErrormetric(model, AOA, variable = "DI")
+  plot(errormodel_DI)
 
-  expected_error = terra::predict(AOA$DI, errormodel)
-  plot(expected_error)
+  expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
+  plot(expected_error_DI)
+
+  # LPD ~ error
+  errormodel_LPD <- DItoErrormetric(model, AOA, variable = "LPD")
+  plot(errormodel_LPD)
+
+  expected_error_LPD = terra::predict(AOA$LPD, errormodel_LPD)
+  plot(expected_error_LPD)
 
 
-  # with multiCV = TRUE
-  errormodel = DItoErrormetric(model, AOA, multiCV = TRUE, length.out = 3)
-  plot(errormodel)
+  # with multiCV = TRUE (for DI ~ error)
+  errormodel_DI = DItoErrormetric(model, AOA, multiCV = TRUE, length.out = 3, variable = "DI")
+  plot(errormodel_DI)
 
-  expected_error = terra::predict(AOA$DI, errormodel)
-  plot(expected_error)
+  expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
+  plot(expected_error_DI)
 
   # mask AOA based on new threshold from multiCV
-  mask_aoa = terra::mask(expected_error, AOA$DI > attr(errormodel, 'AOA_threshold'), maskvalues = 1)
+  mask_aoa = terra::mask(expected_error_DI, AOA$DI > attr(errormodel_DI, 'AOA_threshold'),
+                          maskvalues = 1)
   plot(mask_aoa)
 
 
@@ -101,5 +113,5 @@ Estimating the area of applicability of spatial prediction models.
 \code{\link{aoa}}
 }
 \author{
-Hanna Meyer, Marvin Ludwig
+Hanna Meyer, Marvin Ludwig, Fabian Schumacher
 }

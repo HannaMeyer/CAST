@@ -362,7 +362,7 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
 
 
 #' @name plot
-#' @description Plot the DI and errormetric from Cross-Validation with the modelled relationship
+#' @description Plot the DI/LPD and errormetric from Cross-Validation with the modeled relationship
 #' @param x errorModel, see \code{\link{DItoErrormetric}}
 #' @param ... other params
 #' @export
@@ -372,26 +372,22 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
 
 plot.errorModel <- function(x, ...){
 
-  performance = attr(x, "performance")[,c("DI", "metric")]
+  variable = attr(x, "variable")
+  metric = attr(x, "metric")
+
+  performance = attr(x, "performance")[,c(variable, "metric")]
   performance$what = "cross-validation"
 
-  model_line = data.frame(DI = performance$DI,
+  model_line = data.frame(variable = performance[, variable],
                           metric = predict(x, performance),
                           what = "model")
 
-
   p = ggplot()+
-    geom_point(data = performance, mapping = aes_string(x = "DI", y = "metric", shape = "what"))+
-    geom_line(data = model_line, mapping =  aes_string(x = "DI", y = "metric", linetype = "what"), lwd = 1)+
+    geom_point(data = performance, mapping = aes_string(x = variable, y = "metric", shape = "what"))+
+    geom_line(data = model_line, mapping =  aes_string(x = "variable", y = "metric", linetype = "what"), lwd = 1)+
+    labs(x = variable, y = metric)+
     theme(legend.title = element_blank(), legend.position = "bottom")
 
   return(p)
 
 }
-
-
-
-
-
-
-
