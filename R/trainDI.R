@@ -46,7 +46,7 @@
 #' @export trainDI
 #'
 #' @author
-#' Hanna Meyer, Marvin Ludwig
+#' Hanna Meyer, Marvin Ludwig, Fabian Schumacher
 #'
 #' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.

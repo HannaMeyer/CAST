@@ -8,8 +8,7 @@
 \alias{plot.knndm}
 \alias{plot.ffs}
 \alias{plot.geodist}
-\alias{plot.errorModelDI}
-\alias{plot.errorModelLPD}
+\alias{plot.errorModel}
 \title{Plot CAST classes}
 \usage{
 \method{plot}{trainDI}(x, ...)
@@ -34,12 +33,10 @@
 
 \method{plot}{geodist}(x, unit = "m", stat = "density", ...)
 
-\method{plot}{errorModelDI}(x, ...)
-
-\method{plot}{errorModelLPD}(x, ...)
+\method{plot}{errorModel}(x, ...)
 }
 \arguments{
-\item{x}{errorModelLPD, see \code{\link{DItoErrormetric}}}
+\item{x}{errorModel, see \code{\link{DItoErrormetric}}}
 
 \item{...}{other params}
 
@@ -67,8 +64,6 @@
 a ggplot
 
 a ggplot
-
-a ggplot
 }
 \description{
 Generic plot function for CAST Classes
@@ -85,9 +80,7 @@ Density plot of nearest neighbor distances in geographic space or feature space 
 Optional, the nearest neighbor distances between training data and test data or between training data and CV iterations is shown.
 The plot can be used to check the suitability of a chosen CV method to be representative to estimate map accuracy.
 
-Plot the DI and errormetric from Cross-Validation with the modelled relationship
-
-Plot the LPD and errormetric from Cross-Validation with the modelled relationship
+Plot the DI/LPD and errormetric from Cross-Validation with the modeled relationship
 }
 \examples{
 \dontrun{

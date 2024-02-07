@@ -170,5 +170,5 @@ Methods in Ecology and Evolution 12: 1620-1633. \doi{10.1111/2041-210X.13650}
 \code{\link{calibrate_aoa}}, \code{\link{trainDI}}
 }
 \author{
-Hanna Meyer
+Hanna Meyer, Fabian Schumacher
 }

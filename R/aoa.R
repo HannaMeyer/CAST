@@ -45,7 +45,7 @@
 #'  \item{AOA}{SpatRaster, stars object or data frame. Area of Applicability of newdata. AOA has values 0 (outside AOA) and 1 (inside AOA)}
 #'
 #' @author
-#' Hanna Meyer
+#' Hanna Meyer, Fabian Schumacher
 #' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
 #' Methods in Ecology and Evolution 12: 1620-1633. \doi{10.1111/2041-210X.13650}
@@ -371,24 +371,19 @@ aoa <- function(newdata,
   }
 
 
-  # used in old versions of the AOA. eventually remove the attributes
-#  attributes(AOA)$aoa_stats <- list("Mean_train" = trainDI$trainDist_avrgmean,
-#                                    "threshold" = trainDI$thres)
-#  attributes(AOA)$TrainDI <- trainDI$trainDI
+  #  # used in old versions of the AOA. eventually remove the attributes
+  #  attributes(AOA)$aoa_stats <- list("Mean_train" = trainDI$trainDist_avrgmean,
+  #                                    "threshold" = trainDI$thres)
+  #  attributes(AOA)$TrainDI <- trainDI$trainDI
 
-  if (calc_LPD == FALSE) {
-    result <- list(
-      parameters = trainDI,
-      DI = out,
-      AOA = AOA
-    )
-  } else {
-    result <- list(
-      parameters = trainDI,
-      DI = out,
-      AOA = AOA,
-      LPD = LPD
-    )
+  result <- list(
+    parameters = trainDI,
+    DI = out,
+    AOA = AOA
+  )
+
+  if (calc_LPD == TRUE) {
+    result$LPD <- LPD
   }
 
   message("Finished!")

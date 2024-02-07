@@ -30,6 +30,6 @@ Methods are described in Meyer et al. (2018); Meyer et al. (2019); Meyer and Peb
 }
 }
 \author{
-Hanna Meyer, Carles Milà, Marvin Ludwig, Lan Linnenbrink
+Hanna Meyer, Carles Milà, Marvin Ludwig, Lan Linnenbrink, Fabian Schumacher
 }
 \keyword{package}

@@ -123,5 +123,5 @@ Estimating the area of applicability of spatial prediction models.
 \code{\link{aoa}}
 }
 \author{
-Hanna Meyer, Marvin Ludwig
+Hanna Meyer, Marvin Ludwig, Fabian Schumacher
 }

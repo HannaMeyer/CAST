@@ -1,23 +1,23 @@
 #' Model the relationship between the DI and the prediction error
-#' @description Performance metrics are calculated for moving windows of DI values of cross-validated training data
+#' @description Performance metrics are calculated for moving windows of DI/LPD values of cross-validated training data
 #' @param model the model used to get the AOA
 #' @param trainDI the result of \code{\link{trainDI}} or aoa object \code{\link{aoa}}
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
 #' @param window.size Numeric. Size of the moving window. See \code{\link{rollapply}}.
-#' @param calib Character. Function to model the DI~performance relationship. Currently lm and scam are supported
+#' @param calib Character. Function to model the DI/LPD~performance relationship. Currently lm and scam are supported
 #' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
 #' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer. See ?aoa for further explanation
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param k Numeric. See mgcv::s
 #' @param m Numeric. See mgcv::s
-#' @param what Character. Which measure to use for the error metric. "DI" or "LPD"
+#' @param variable Character. Which measure to use for the error metric. "DI" or "LPD"
 #' @details If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
-#' ranging from three clusters to LOOCV. Hence, a large range of DI values is created during cross-validation.
+#' ranging from three clusters to LOOCV. Hence, a large range of DI/LPD values is created during cross-validation.
 #' If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold (which is likely if extrapolation situations are created during CV),
 #' the AOA threshold changes accordingly. See Meyer and Pebesma (2021) for the full documentation of the methodology.
-#' @return A scam or linear model
+#' @return A scam, linear model or exponential model (only LPD)
 #' @author
-#' Hanna Meyer, Marvin Ludwig
+#' Hanna Meyer, Marvin Ludwig, Fabian Schumacher
 #' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
 #' \doi{10.1111/2041-210X.13650}
@@ -27,10 +27,11 @@
 #'
 #' @export
 
+
 DItoErrormetric <- function(model, trainDI, multiCV=FALSE,
                             length.out = 10, window.size = 5, calib = "scam",
                             method= "L2", useWeight=TRUE,
-                            k = 6, m = 2, what = "DI"){
+                            k = 6, m = 2, variable = "DI"){
 
 
   if(inherits(trainDI,"aoa")){
@@ -40,22 +41,20 @@ DItoErrormetric <- function(model, trainDI, multiCV=FALSE,
 
   # get DIs and Errormetrics OR calculate new ones from multiCV
   if(!multiCV){
-    preds_all <- get_preds_all(model, trainDI, what)
+    preds_all <- get_preds_all(model, trainDI, variable)
   }
   if(multiCV){
-    preds_all <- multiCV(model, length.out, method, useWeight, what)
+    preds_all <- multiCV(model, length.out, method, useWeight, variable)
   }
 
   # train model between DI and Errormetric
-  error_model = errorModel(preds_all, model, window.size, calib,  k, m, what)
+  error_model = errorModel(preds_all, model, window.size, calib,  k, m, variable)
 
   # save AOA threshold and raw data
   attr(error_model, "AOA_threshold") <- attr(preds_all, "AOA_threshold")
-  if (what == "DI") {
-    class(error_model) <- c("errorModelDI", class(error_model))
-  } else if (what == "LPD") {
-    class(error_model) <- c("errorModelLPD", class(error_model))
-  }
+  attr(error_model, "variable") <- attr(preds_all, "variable")
+  attr(error_model, "metric") <- attr(preds_all, "metric")
+  class(error_model) <- c("errorModel", class(error_model))
   return(error_model)
 }
 
@@ -64,18 +63,8 @@ DItoErrormetric <- function(model, trainDI, multiCV=FALSE,
 
 
 
-#' Model expected error between Metric and DI
-#' @param preds_all data.frame: pred, obs, DI
-#' @param model the model used to get the AOA
-#' @param window.size Numeric. Size of the moving window. See \code{\link{rollapply}}.
-#' @param calib Character. Function to model the DI~performance relationship. Currently lm and scam are supported
-#' @param k Numeric. See mgcv::s
-#' @param m Numeric. See mgcv::s
-#' @param what Character. Which measure to use for the error metric. "DI" or "LPD"
-#' @return scam or lm
-#'
-
-errorModel <- function(preds_all, model, window.size, calib, k, m, what){
+# Model expected error between Metric and DI/LPD
+errorModel <- function(preds_all, model, window.size, calib, k, m, variable){
 
   ## use performance metric from the model:
   rmse <- function(pred,obs){sqrt( mean((pred - obs)^2, na.rm = TRUE) )}
@@ -113,20 +102,20 @@ errorModel <- function(preds_all, model, window.size, calib, k, m, what){
 
 
   # order data according to DI/LPD:
-  performance <- preds_all[order(preds_all[,what]),]
+  performance <- preds_all[order(preds_all[,variable]),]
   # calculate performance for moving window:
   performance$metric <- zoo::rollapply(performance[,1:2], window.size,
                                        FUN=function(x){evalfunc(x[,1],x[,2])},
                                        by.column=F,align = "center",fill=NA)
-  performance$ll <- data.table::shift(performance[,what],window.size/2)
-  performance$ul <- data.table::shift(performance[,what],-round(window.size/2),0)
+  performance$ll <- data.table::shift(performance[,variable],window.size/2)
+  performance$ul <- data.table::shift(performance[,variable],-round(window.size/2),0)
   performance <- performance[!is.na(performance$metric),]
 
   ### Estimate Error:
   if(calib=="lm"){
-    if (what == "DI") {
+    if (variable == "DI") {
       errormodel <- lm(metric ~ DI, data = performance)
-    } else if (what == "LPD") {
+    } else if (variable == "LPD") {
       errormodel <- lm(metric ~ LPD, data = performance)
     }
   }
@@ -135,7 +124,7 @@ errorModel <- function(preds_all, model, window.size, calib, k, m, what){
       stop("Package \"scam\" needed for this function to work. Please install it.",
            call. = FALSE)
     }
-    if (what == "DI") {
+    if (variable == "DI") {
       if (model$maximize){ # e.g. accuracy, kappa, r2
         bs="mpd"
       }else{
@@ -144,7 +133,7 @@ errorModel <- function(preds_all, model, window.size, calib, k, m, what){
       errormodel <- scam::scam(metric~s(DI, k=k, bs=bs, m=m),
                               data=performance,
                               family=stats::gaussian(link="identity"))
-    } else if (what == "LPD") {
+    } else if (variable == "LPD") {
       if (model$maximize){ # e.g. accuracy, kappa, r2
         bs="mpi"
       }else{
@@ -156,9 +145,9 @@ errorModel <- function(preds_all, model, window.size, calib, k, m, what){
     }
   }
   if(calib=="exp"){
-    if (what == "DI") {
+    if (variable == "DI") {
       stop("You can't build a exponential model for the DI~error relationship")
-    } else if (what == "LPD") {
+    } else if (variable == "LPD") {
       errormodel <- lm(metric ~ log(LPD), data = performance)
     }
   }
@@ -169,20 +158,8 @@ errorModel <- function(preds_all, model, window.size, calib, k, m, what){
 }
 
 
-#' MultiCV
-#' @description
-#' Multiple Cross-Validation with increasing feature space clusteres
-#' @param model the model used to get the AOA
-#' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
-#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer. See ?aoa for further explanation
-#' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
-#' @param what Character. Which measure to use for the error metric. "DI" or "LPD"
-#' @param ... additional parameters to trainDI
-#' @returns preds_all
-#'
-#'
-
-multiCV <- function(model, length.out, method, useWeight, what,...){
+# MultiCV
+multiCV <- function(model, length.out, method, useWeight, variable,...){
 
   preds_all <- data.frame()
   train_predictors <- model$trainingData[,-which(names(model$trainingData)==".outcome")]
@@ -209,9 +186,9 @@ multiCV <- function(model, length.out, method, useWeight, what,...){
 
     # retrain model and calculate AOA
     model_new <- do.call(caret::train,mcall)
-    if (what == "DI") {
+    if (variable == "DI") {
       trainDI_new <- trainDI(model_new, method=method, useWeight=useWeight)
-    } else if (what == "LPD") {
+    } else if (variable == "LPD") {
       trainDI_new <- trainDI(model_new, method=method, useWeight=useWeight, LPD = TRUE)
     }
 
@@ -219,39 +196,29 @@ multiCV <- function(model, length.out, method, useWeight, what,...){
     preds <- model_new$pred
     preds <- preds[order(preds$rowIndex),c("pred","obs")]
     # get cross-validated predictions, order them  and use only those located in the AOA
-    if (what == "DI"){
+    if (variable == "DI"){
       preds_dat_tmp <- data.frame(preds,"DI"=trainDI_new$trainDI)
       preds_dat_tmp <-  preds_dat_tmp[preds_dat_tmp$DI <= trainDI_new$threshold,]
       preds_all <- rbind(preds_all,preds_dat_tmp)
-    } else if (what == "LPD"){
+    } else if (variable == "LPD"){
       preds_dat_tmp <- data.frame(preds,"LPD"=trainDI_new$trainLPD)
       preds_dat_tmp <-  preds_dat_tmp[preds_dat_tmp$LPD > 0,]
       preds_all <- rbind(preds_all,preds_dat_tmp)
     }
   }
 
-  if (what == "DI") {
-    attr(preds_all, "AOA_threshold") <- trainDI_new$threshold
-    message(paste0("Note: multiCV=TRUE calculated new AOA threshold of ", round(trainDI_new$threshold, 5),
-                  "\nThreshold is stored in the attributes, access with attr(error_model, 'AOA_threshold').",
-                  "\nPlease refere to examples and details for further information."))
-  } else if (what == "LPD") {
-    attr(preds_all, "Avrg. trainLPD") <- trainDI_new$threshold
-    message(paste0("Note: multiCV=TRUE calculated new average LPD of ", trainDI_new$avrgLPD,
-                  "\nAverage LPD is stored in the attributes, access with attr(error_model, 'avrgLPD').",
-                  "\nPlease refere to examples and details for further information."))
-  }
+  attr(preds_all, "AOA_threshold") <- trainDI_new$threshold
+  attr(preds_all, "variable") <- variable
+  attr(preds_all, "metric") <- model$metric
+  message(paste0("Note: multiCV=TRUE calculated new AOA threshold of ", round(trainDI_new$threshold, 5),
+                "\nThreshold is stored in the attributes, access with attr(error_model, 'AOA_threshold').",
+                "\nPlease refere to examples and details for further information."))
   return(preds_all)
 }
 
 
-#' Get Preds all
-#' @param model, a model
-#' @param trainDI, a trainDI
-#' @param what Character. Which measure to use for the error metric. "DI" or "LPD"
-#'
-
-get_preds_all <- function(model, trainDI, what){
+# Get Preds all
+get_preds_all <- function(model, trainDI, variable){
 
   if(is.null(model$pred)){
     stop("no cross-predictions can be retrieved from the model. Train with savePredictions=TRUE or provide calibration data")
@@ -266,19 +233,21 @@ get_preds_all <- function(model, trainDI, what){
   preds_all <- preds_all[order(preds_all$rowIndex),c("pred","obs")]
 
 
-  if (what == "DI") {
+  if (variable == "DI") {
     ## add DI from trainDI
     preds_all$DI <- trainDI$trainDI[!is.na(trainDI$trainDI)]
     ## only take predictions from inside the AOA:
     preds_all <-  preds_all[preds_all$DI<=trainDI$threshold,]
-    attr(preds_all, "AOA_threshold") <- trainDI$threshold
-  } else if (what == "LPD") {
+  } else if (variable == "LPD") {
     ## add LPD from trainLPD
     preds_all$LPD <- trainDI$trainLPD[!is.na(trainDI$trainLPD)]
     ## only take predictions from inside the AOA:
     preds_all <-  preds_all[preds_all$LPD>0,]
-    attr(preds_all, "avrgLPD") <- trainDI$avrgLPD
   }
+
+  attr(preds_all, "AOA_threshold") <- trainDI$threshold
+  attr(preds_all, "variable") <- variable
+  attr(preds_all, "metric") <- model$metric
   return(preds_all)
 }
 

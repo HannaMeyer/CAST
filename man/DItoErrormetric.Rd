@@ -15,7 +15,7 @@ DItoErrormetric(
   useWeight = TRUE,
   k = 6,
   m = 2,
-  what = "DI"
+  variable = "DI"
 )
 }
 \arguments{
@@ -29,7 +29,7 @@ DItoErrormetric(
 
 \item{window.size}{Numeric. Size of the moving window. See \code{\link{rollapply}}.}
 
-\item{calib}{Character. Function to model the DI~performance relationship. Currently lm and scam are supported}
+\item{calib}{Character. Function to model the DI/LPD~performance relationship. Currently lm and scam are supported}
 
 \item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer. See ?aoa for further explanation}
 
@@ -39,17 +39,17 @@ DItoErrormetric(
 
 \item{m}{Numeric. See mgcv::s}
 
-\item{what}{Character. Which measure to use for the error metric. "DI" or "LPD"}
+\item{variable}{Character. Which measure to use for the error metric. "DI" or "LPD"}
 }
 \value{
-A scam or linear model
+A scam, linear model or exponential model (only LPD)
 }
 \description{
-Performance metrics are calculated for moving windows of DI values of cross-validated training data
+Performance metrics are calculated for moving windows of DI/LPD values of cross-validated training data
 }
 \details{
 If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
-ranging from three clusters to LOOCV. Hence, a large range of DI values is created during cross-validation.
+ranging from three clusters to LOOCV. Hence, a large range of DI/LPD values is created during cross-validation.
 If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold (which is likely if extrapolation situations are created during CV),
 the AOA threshold changes accordingly. See Meyer and Pebesma (2021) for the full documentation of the methodology.
 }
@@ -72,14 +72,14 @@ the AOA threshold changes accordingly. See Meyer and Pebesma (2021) for the full
   AOA <- aoa(predictors, model, LPD = TRUE, maxLPD = 1)
 
   # DI ~ error
-  errormodel_DI <- DItoErrormetric(model, AOA, what = "DI")
+  errormodel_DI <- DItoErrormetric(model, AOA, variable = "DI")
   plot(errormodel_DI)
 
   expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
   plot(expected_error_DI)
 
   # LPD ~ error
-  errormodel_LPD <- DItoErrormetric(model, AOA, what = "LPD")
+  errormodel_LPD <- DItoErrormetric(model, AOA, variable = "LPD")
   plot(errormodel_LPD)
 
   expected_error_LPD = terra::predict(AOA$LPD, errormodel_LPD)
@@ -87,7 +87,7 @@ the AOA threshold changes accordingly. See Meyer and Pebesma (2021) for the full
 
 
   # with multiCV = TRUE (for DI ~ error)
-  errormodel_DI = DItoErrormetric(model, AOA, multiCV = TRUE, length.out = 3, what = "DI")
+  errormodel_DI = DItoErrormetric(model, AOA, multiCV = TRUE, length.out = 3, variable = "DI")
   plot(errormodel_DI)
 
   expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
@@ -113,5 +113,5 @@ Estimating the area of applicability of spatial prediction models.
 \code{\link{aoa}}
 }
 \author{
-Hanna Meyer, Marvin Ludwig
+Hanna Meyer, Marvin Ludwig, Fabian Schumacher
 }
