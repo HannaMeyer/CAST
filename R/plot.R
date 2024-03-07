@@ -283,7 +283,7 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
         ggplot2::geom_point(ggplot2::aes_string(colour="nvar"),size=size)+
         ggplot2::geom_point(data=output_df[bestmodels, ],
                             ggplot2::aes_string(x = "run", y = "value"),
-                            pch=pch,colour=marker,lwd=size)+
+                            pch=pch,colour=marker,size=size)+
         ggplot2::scale_x_continuous(name = "Model run", breaks = pretty(output_df$run))+
         ggplot2::scale_y_continuous(name = metric)+
         ggplot2::scale_colour_gradientn(breaks=seq(2,max(output_df$nvar),
@@ -298,7 +298,7 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
         ggplot2::geom_point(ggplot2::aes_string(colour="nvar"),size=size)+
         ggplot2::geom_point(data=output_df[bestmodels, ],
                             ggplot2::aes_string(x = "run", y = "value"),
-                            pch=pch,colour=marker,lwd=size)+
+                            pch=pch,colour=marker,size=size)+
         ggplot2::scale_x_continuous(name = "Model run", breaks = pretty(dfint$run))+
         ggplot2::scale_y_continuous(name = metric)+
         ggplot2::scale_colour_manual(values = cols, name = "variables")
