@@ -38,7 +38,7 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
 \item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
 
-\item{LPD}{Logical. Indicates wheather the local point density should be calculated or not.}
+\item{LPD}{Logical. Indicates whether the local point density should be calculated or not.}
 }
 \value{
 A list of class \code{trainDI} containing:

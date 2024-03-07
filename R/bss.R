@@ -42,6 +42,7 @@
 #' data(iris)
 #' bssmodel <- bss(iris[,1:4],iris$Species)
 #' bssmodel$perf_all
+#' plot(bssmodel)
 #' }
 #' @export bss
 #' @aliases bss
