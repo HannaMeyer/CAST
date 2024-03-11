@@ -81,7 +81,7 @@ indices to perform a NNDM LOO CV for map validation.</p>
 
 
 <dt>modeldomain</dt>
-<dd><p>sf polygon object defining the prediction area (see Details).</p></dd>
+<dd><p>sf polygon object or SpatRaster defining the prediction area (see Details).</p></dd>
 
 
 <dt>ppoints</dt>
@@ -131,14 +131,15 @@ distance distribution function between the prediction and training points. Detai
 Distances are only matched up to <em>phi</em>. Beyond that range, all data points are used for training, without exclusions.
 When <em>phi</em> is set to "max", nearest neighbor distance matching is performed for the entire prediction area. Euclidean distances are used for projected
 and non-defined CRS, great circle distances are used for geographic CRS (units in meters).</p>
-<p>The <em>modeldomain</em> is a sf polygon that defines the prediction area. The function takes a regular point sample (amount defined by <em>samplesize)</em> from the spatial extent.
+<p>The <em>modeldomain</em> is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
+transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
+Then, the function takes a regular point sample (amount defined by <em>samplesize)</em> from the spatial extent.
 As an alternative use <em>ppoints</em> instead of <em>modeldomain</em>, if you have already defined the prediction locations (e.g. raster pixel centroids).
 When using either <em>modeldomain</em> or <em>ppoints</em>, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
-    <p>NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
-A k-fold variant will be implemented shortly.</p>
+    <p>NNDM is a variation of LOOCV and therefore may take a long time for large training data sets. See <code><a href="knndm.html">knndm</a></code> for a more efficient k-fold variant of the method.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -223,8 +224,8 @@ A k-fold variant will be implemented shortly.</p>
 <span class="r-plt img"><img src="nndm-5.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">########################################################################</span></span></span>
-<span class="r-in"><span><span class="co"># Example 3: Real- world example; using a modeldomain instead of previously</span></span></span>
-<span class="r-in"><span><span class="co"># sampled prediction locations</span></span></span>
+<span class="r-in"><span><span class="co"># Example 3: Real- world example; using a SpatRast modeldomain instead</span></span></span>
+<span class="r-in"><span><span class="co"># of previously sampled prediction locations</span></span></span>
 <span class="r-in"><span><span class="co">########################################################################</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span></span>
@@ -238,15 +239,11 @@ A k-fold variant will be implemented shortly.</p>
 <span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">pts</span>,coords<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Easting"</span>,<span class="st">"Northing"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">26911</span></span></span>
 <span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_2012-03-25.tif"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">studyArea</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span></span>
-<span class="r-in"><span><span class="va">studyArea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/as.polygons.html" class="external-link">as.polygons</a></span><span class="op">(</span><span class="va">studyArea</span>, values <span class="op">=</span> <span class="cn">FALSE</span>, na.all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_combine.html" class="external-link">st_union</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html" class="external-link">st_transform</a></span><span class="op">(</span><span class="va">pts</span>, crs <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html" class="external-link">st_crs</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">TRUE</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">[[</span><span class="st">"DEM"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="va">pts</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">nndm_folds</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">pts</span>, modeldomain<span class="op">=</span> <span class="va">studyArea</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">nndm_folds</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">pts</span>, modeldomain <span class="op">=</span> <span class="va">studyArea</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_folds</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#use for cross-validation:</span></span></span>
