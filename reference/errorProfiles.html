@@ -62,7 +62,8 @@
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">errorProfiles</span><span class="op">(</span></span>
 <span>  <span class="va">model</span>,</span>
-<span>  <span class="va">trainDI</span>,</span>
+<span>  trainDI <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  locations <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  variable <span class="op">=</span> <span class="st">"DI"</span>,</span>
 <span>  multiCV <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  length.out <span class="op">=</span> <span class="fl">10</span>,</span>
@@ -83,6 +84,10 @@
 
 <dt>trainDI</dt>
 <dd><p>the result of <code><a href="trainDI.html">trainDI</a></code> or aoa object <code><a href="aoa.html">aoa</a></code></p></dd>
+
+
+<dt>locations</dt>
+<dd><p>Optional. sf object for the training data used in model. Only used if variable=="geodist". Note that they must be in the same order as model$trainingData.</p></dd>
 
 
 <dt>variable</dt>
@@ -160,22 +165,21 @@ Estimating the area of applicability of spatial prediction models.
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="va">splotdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_drop_geometry</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="va">predictors</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"predictors_chile.tif"</span>, package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>  <span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">caret</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">[</span>,<span class="fl">6</span><span class="op">:</span><span class="fl">16</span><span class="op">]</span>, <span class="va">splotdata</span><span class="op">$</span><span class="va">Species_richness</span>, ntree <span class="op">=</span> <span class="fl">10</span>,</span></span>
+<span class="r-in"><span>  <span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">caret</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_drop_geometry</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span><span class="op">[</span>,<span class="fl">6</span><span class="op">:</span><span class="fl">16</span><span class="op">]</span>, <span class="va">splotdata</span><span class="op">$</span><span class="va">Species_richness</span>, ntree <span class="op">=</span> <span class="fl">10</span>,</span></span>
 <span class="r-in"><span>                        trControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"cv"</span>, savePredictions <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors</span>, <span class="va">model</span>, LPD <span class="op">=</span> <span class="cn">TRUE</span>, maxLPD <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>  <span class="co"># DI ~ error</span></span></span>
+<span class="r-in"><span>  <span class="co">### DI ~ error</span></span></span>
 <span class="r-in"><span>  <span class="va">errormodel_DI</span> <span class="op">&lt;-</span> <span class="fu">errorProfiles</span><span class="op">(</span><span class="va">model</span>, <span class="va">AOA</span>, variable <span class="op">=</span> <span class="st">"DI"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">errormodel_DI</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">expected_error_DI</span> <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>, <span class="va">errormodel_DI</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">expected_error_DI</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>  <span class="co"># LPD ~ error</span></span></span>
+<span class="r-in"><span>  <span class="co">### LPD ~ error</span></span></span>
 <span class="r-in"><span>  <span class="va">errormodel_LPD</span> <span class="op">&lt;-</span> <span class="fu">errorProfiles</span><span class="op">(</span><span class="va">model</span>, <span class="va">AOA</span>, variable <span class="op">=</span> <span class="st">"LPD"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">errormodel_LPD</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -183,7 +187,19 @@ Estimating the area of applicability of spatial prediction models.
 <span class="r-in"><span>  <span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">expected_error_LPD</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>  <span class="co"># with multiCV = TRUE (for DI ~ error)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co">### geodist ~ error</span></span></span>
+<span class="r-in"><span>  <span class="va">errormodel_geodist</span> <span class="op">=</span> <span class="fu">errorProfiles</span><span class="op">(</span><span class="va">model</span>, locations<span class="op">=</span><span class="va">splotdata</span>,</span></span>
+<span class="r-in"><span>                                     variable <span class="op">=</span> <span class="st">"geodist"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">errormodel_geodist</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="va">dist</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/distance.html" class="external-link">distance</a></span><span class="op">(</span><span class="va">predictors</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,<span class="fu"><a href="https://rspatial.github.io/terra/reference/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">dist</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"geodist"</span></span></span>
+<span class="r-in"><span>  <span class="va">expected_error_DI</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">dist</span>, <span class="va">errormodel_geodist</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">expected_error_DI</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co">### with multiCV = TRUE (for DI ~ error)</span></span></span>
 <span class="r-in"><span>  <span class="va">errormodel_DI</span> <span class="op">=</span> <span class="fu">errorProfiles</span><span class="op">(</span><span class="va">model</span>, <span class="va">AOA</span>, multiCV <span class="op">=</span> <span class="cn">TRUE</span>, length.out <span class="op">=</span> <span class="fl">3</span>, variable <span class="op">=</span> <span class="st">"DI"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">errormodel_DI</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -194,8 +210,6 @@ Estimating the area of applicability of spatial prediction models.
 <span class="r-in"><span>  <span class="va">mask_aoa</span> <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/mask.html" class="external-link">mask</a></span><span class="op">(</span><span class="va">expected_error_DI</span>, <span class="va">AOA</span><span class="op">$</span><span class="va">DI</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">errormodel_DI</span>, <span class="st">'AOA_threshold'</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                          maskvalues <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">mask_aoa</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>

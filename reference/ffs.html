@@ -74,6 +74,7 @@
 <span>  tuneGrid <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">1000</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  cores <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -132,6 +133,10 @@ See Details.</p></dd>
 
 <dt>verbose</dt>
 <dd><p>Logical. Should information about the progress be printed?</p></dd>
+
+
+<dt>cores</dt>
+<dd><p>Numeric. If &gt; 2, mclapply will be used. see <code><a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">mclapply</a></code></p></dd>
 
 
 <dt>...</dt>
