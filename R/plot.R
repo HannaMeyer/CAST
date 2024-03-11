@@ -21,15 +21,11 @@ plot.trainDI = function(x, ...){
 
 
 
-
-
-
-
-
 #' @name plot
 #'
 #' @param x aoa object
 #' @param samplesize numeric. How many prediction samples should be plotted?
+#' @param variable character. Variable for which to generate the density plot. 'DI' or 'LPD'
 #' @param ... other params
 #'
 #' @import ggplot2
@@ -38,47 +34,83 @@ plot.trainDI = function(x, ...){
 #'
 #' @export
 
-plot.aoa = function(x, samplesize = 1000, ...){
+plot.aoa = function(x, samplesize = 1000, variable = "DI", ...){
 
+  if (variable == "DI") {
+    trainDI = data.frame(DI = x$parameters$trainDI,
+                         what = "trainDI")
 
-  trainDI = data.frame(DI = x$parameters$trainDI,
-                       what = "trainDI")
+    if(inherits(x$AOA, "RasterLayer")){
+      targetDI = terra::spatSample(methods::as(x$DI, "SpatRaster"),
+                                   size = samplesize, method = "regular")
+      targetDI = data.frame(DI = as.numeric(targetDI[, 1]),
+                            what = "predictionDI")
+    }else if(inherits(x$AOA, "stars")){
+      targetDI = terra::spatSample(methods::as(x$DI, "SpatRaster"),
+                                   size = samplesize, method = "regular")
+      targetDI = data.frame(DI = as.numeric(targetDI[, 1]),
+                            what = "predictionDI")
+    }else if(inherits(x$AOA, "SpatRaster")){
+      targetDI = terra::spatSample(x$DI, size = samplesize, method = "regular")
+      targetDI = data.frame(DI = as.numeric(targetDI[, 1]),
+                            what = "predictionDI")
+    }else{
+      targetDI = data.frame(DI = sample(x$DI, size = samplesize),
+                            what = "predictionDI")
+    }
 
+    dfDI = rbind(trainDI, targetDI)
 
-
-  if(inherits(x$AOA, "RasterLayer")){
-    targetDI = terra::spatSample(methods::as(x$DI, "SpatRaster"),
-                                 size = samplesize, method="regular")
-    targetDI = data.frame(DI = as.numeric(targetDI[,1]),
-                          what = "predictionDI")
-  }else if(inherits(x$AOA, "stars")){
-    targetDI = terra::spatSample(methods::as(x$DI, "SpatRaster"),
-                                 size = samplesize,method="regular")
-    targetDI = data.frame(DI = as.numeric(targetDI[,1]),
-                          what = "predictionDI")
-  }else if(inherits(x$AOA, "SpatRaster")){
-    targetDI = terra::spatSample(x$DI, size = samplesize,method="regular")
-    targetDI = data.frame(DI = as.numeric(targetDI[,1]),
-                          what = "predictionDI")
-  }else{
-    targetDI = data.frame(DI = sample(x$DI, size = samplesize),
-                          what = "predictionDI")
+    plot = ggplot(dfDI, aes_string(x = "DI", group = "what", fill = "what"))+
+      geom_density(adjust=1.5, alpha=.4)+
+      scale_fill_discrete(name = "Set")+
+      geom_vline(aes(xintercept = x$parameters$threshold, linetype = "AOA_threshold"))+
+      scale_linetype_manual(name = "", values = c(AOA_threshold = "dashed"))+
+      theme_bw()+
+      theme(legend.position = "bottom")
   }
 
 
+  if (variable == "LPD") {
+    trainLPD = data.frame(LPD = x$parameters$trainLPD,
+                          what = "trainLPD")
 
-  dfDI = rbind(trainDI, targetDI)
 
 
-  ggplot(dfDI, aes_string(x = "DI", group = "what", fill = "what"))+
-    geom_density(adjust=1.5, alpha=.4)+
-    scale_fill_discrete(name = "Set")+
-    geom_vline(aes(xintercept = x$parameters$threshold, linetype = "AOA_threshold"))+
-    scale_linetype_manual(name = "", values = c(AOA_threshold = "dashed"))+
-    theme_bw()+
-    theme(legend.position = "bottom")
+    if(inherits(x$AOA, "RasterLayer")){
+      targetLPD = terra::spatSample(methods::as(x$LPD, "SpatRaster"),
+                                    size = samplesize, method = "regular")
+      targetLPD = data.frame(LPD = as.numeric(targetLPD[, 1]),
+                             what = "predictionLPD")
+    }else if(inherits(x$AOA, "stars")){
+      targetLPD = terra::spatSample(methods::as(x$LPD, "SpatRaster"),
+                                    size = samplesize, method = "regular")
+      targetLPD = data.frame(LPD = as.numeric(targetLPD[, 1]),
+                             what = "predictionLPD")
+    }else if(inherits(x$AOA, "SpatRaster")){
+      targetLPD = terra::spatSample(x$LPD, size = samplesize, method = "regular")
+      targetLPD = data.frame(LPD = as.numeric(targetLPD[, 1]),
+                             what = "predictionLPD")
+    }else{
+      targetLPD = data.frame(LPD = sample(x$LPD, size = samplesize),
+                             what = "predictionLPD")
+    }
+
+    dfLPD = rbind(trainLPD, targetLPD)
+
+
+    plot = ggplot(dfLPD, aes_string(x = "LPD", group = "what", fill = "what"))+
+      geom_density(adjust=1.5, alpha=0.4)+
+      scale_fill_discrete(name = "Set")+
+      geom_vline(aes(xintercept = median(x$parameters$trainLPD), linetype = "MtrainLPD"))+
+      scale_linetype_manual(name = "", values = c(MtrainLPD = "dashed"))+
+      theme_bw()+
+      theme(legend.position = "bottom")
+
+  }
+
+  return(plot)
 }
-
 
 
 #' @name plot
