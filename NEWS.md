@@ -1,3 +1,9 @@
+# `CAST` 0.9.2
+* new features:
+  * normalize_DI for a more intuitive interpretation
+* modifications:
+  * function DItoErrormetric renamed to errorProfiles and allows for other dissimilarity measures
+  
 # `CAST` 0.9.1
 * new features:
   * calculate local point density within AOA

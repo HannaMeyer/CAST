@@ -1,7 +1,8 @@
-#' Model the relationship between the DI and the prediction error
-#' @description Performance metrics are calculated for moving windows of DI/LPD values of cross-validated training data
+#' Model and inspect the relationship between the prediction error and measures of dissimilarities and distances
+#' @description Performance metrics are calculated for moving windows of dissimilarity values based on cross-validated training data
 #' @param model the model used to get the AOA
 #' @param trainDI the result of \code{\link{trainDI}} or aoa object \code{\link{aoa}}
+#' @param variable Character. Which dissimilarity or distance measure to use for the error metric. Current options are "DI" or "LPD"
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
 #' @param window.size Numeric. Size of the moving window. See \code{\link{rollapply}}.
 #' @param calib Character. Function to model the DI/LPD~performance relationship. Currently lm and scam are supported
@@ -10,9 +11,8 @@
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param k Numeric. See mgcv::s
 #' @param m Numeric. See mgcv::s
-#' @param variable Character. Which measure to use for the error metric. "DI" or "LPD"
 #' @details If multiCV=TRUE the model is re-fitted and validated by length.out new cross-validations where the cross-validation folds are defined by clusters in the predictor space,
-#' ranging from three clusters to LOOCV. Hence, a large range of DI/LPD values is created during cross-validation.
+#' ranging from three clusters to LOOCV. Hence, a large range of dissimilarity values is created during cross-validation.
 #' If the AOA threshold based on the calibration data from multiple CV is larger than the original AOA threshold (which is likely if extrapolation situations are created during CV),
 #' the AOA threshold changes accordingly. See Meyer and Pebesma (2021) for the full documentation of the methodology.
 #' @return A scam, linear model or exponential model
@@ -22,16 +22,25 @@
 #' Estimating the area of applicability of spatial prediction models.
 #' \doi{10.1111/2041-210X.13650}
 #' @seealso \code{\link{aoa}}
-#' @example inst/examples/ex_DItoErrormetric.R
+#' @example inst/examples/ex_errorProfiles.R
 #'
 #'
-#' @export
+#' @export errorProfiles
+#' @aliases errorProfiles DItoErrormetric
 
 
-DItoErrormetric <- function(model, trainDI, multiCV=FALSE,
-                            length.out = 10, window.size = 5, calib = "scam",
-                            method= "L2", useWeight=TRUE,
-                            k = 6, m = 2, variable = "DI"){
+
+errorProfiles <- function(model,
+                          trainDI,
+                          variable = "DI",
+                          multiCV=FALSE,
+                          length.out = 10,
+                          window.size = 5,
+                          calib = "scam",
+                          method= "L2",
+                          useWeight=TRUE,
+                          k = 6,
+                          m = 2){
 
 
   if(inherits(trainDI,"aoa")){
