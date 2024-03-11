@@ -66,7 +66,7 @@ indices to perform a k-fold NNDM CV for map validation.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">knndm</span><span class="op">(</span></span>
 <span>  <span class="va">tpoints</span>,</span>
 <span>  modeldomain <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ppoints <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  predpoints <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  space <span class="op">=</span> <span class="st">"geographical"</span>,</span>
 <span>  k <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  maxp <span class="op">=</span> <span class="fl">0.5</span>,</span>
@@ -84,10 +84,10 @@ indices to perform a k-fold NNDM CV for map validation.</p>
 
 
 <dt>modeldomain</dt>
-<dd><p>sf polygon object or SpatRaster defining the prediction area. Optional; alternative to ppoints (see Details).</p></dd>
+<dd><p>sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).</p></dd>
 
 
-<dt>ppoints</dt>
+<dt>predpoints</dt>
 <dd><p>sf or sfc point object. Contains the target prediction points. Optional; alternative to modeldomain (see Details).</p></dd>
 
 
@@ -114,12 +114,12 @@ Defaults to "ward.D2". Check `stats::hclust` for other options.</p></dd>
 
 <dt>samplesize</dt>
 <dd><p>numeric. How many points in the modeldomain should be sampled as prediction points?
-Only required if modeldomain is used instead of ppoints.</p></dd>
+Only required if modeldomain is used instead of predpoints.</p></dd>
 
 
 <dt>sampling</dt>
 <dd><p>character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
-Only required if modeldomain is used instead of ppoints.</p></dd>
+Only required if modeldomain is used instead of predpoints.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -150,7 +150,7 @@ projected CRS while `hierarchical` can work with both projected and geographical
 calculating the full distance matrix of the training points even for a projected CRS.</p>
 <p>In order to select between clustering algorithms and number of folds `k`, different `knndm` configurations can be run
 and compared, being the one with a lower W statistic the one that offers a better match. W statistics between `knndm`
-runs are comparable as long as `tpoints` and `ppoints` or `modeldomain` stay the same.</p>
+runs are comparable as long as `tpoints` and `predpoints` or `modeldomain` stay the same.</p>
 <p>Map validation using knndm should be used using `CAST::global_validation`, i.e. by stacking all out-of-sample
 predictions and evaluating them all at once. The reasons behind this are 1) The resulting folds can be
 unbalanced and 2) nearest neighbour functions are constructed and matched using all CV folds simultaneously.</p>
@@ -161,8 +161,8 @@ Secondly, decrease the number of final folds `k`, which may help to have larger 
 <p>#' The `modeldomain` is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
 transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
 Then, the function takes a regular point sample (amount defined by `samplesize`) from the spatial extent.
-As an alternative use `ppoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
-When using either `modeldomain` or `ppoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.</p>
+As an alternative use `predpoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
+When using either `modeldomain` or `predpoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -200,7 +200,7 @@ When using either `modeldomain` or `ppoints`, we advise to plot the study area p
 <span class="r-plt img"><img src="knndm-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Run kNNDM for the whole domain, here the prediction points are known.</span></span></span>
-<span class="r-in"><span><span class="va">knndm_folds</span> <span class="op">&lt;-</span> <span class="fu">knndm</span><span class="op">(</span><span class="va">train_points</span>, ppoints <span class="op">=</span> <span class="va">pred_points</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">knndm_folds</span> <span class="op">&lt;-</span> <span class="fu">knndm</span><span class="op">(</span><span class="va">train_points</span>, predpoints <span class="op">=</span> <span class="va">pred_points</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Missing CRS in training or prediction points. Assuming projected CRS.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Gij &lt;= Gj; a random CV assignment is returned</span>
 <span class="r-in"><span><span class="va">knndm_folds</span></span></span>
@@ -237,7 +237,7 @@ When using either `modeldomain` or `ppoints`, we advise to plot the study area p
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">train_points</span>, add <span class="op">=</span> <span class="cn">TRUE</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Run kNNDM for the whole domain, here the prediction points are known.</span></span></span>
-<span class="r-in"><span><span class="va">knndm_folds</span> <span class="op">&lt;-</span> <span class="fu">knndm</span><span class="op">(</span><span class="va">train_points</span>, ppoints <span class="op">=</span> <span class="va">pred_points</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">knndm_folds</span> <span class="op">&lt;-</span> <span class="fu">knndm</span><span class="op">(</span><span class="va">train_points</span>, predpoints <span class="op">=</span> <span class="va">pred_points</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">knndm_folds</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">knndm_folds</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">folds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">knndm_folds</span><span class="op">$</span><span class="va">clusters</span><span class="op">)</span></span></span>

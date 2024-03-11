@@ -66,7 +66,7 @@ indices to perform a NNDM LOO CV for map validation.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">nndm</span><span class="op">(</span></span>
 <span>  <span class="va">tpoints</span>,</span>
 <span>  modeldomain <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ppoints <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  predpoints <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  samplesize <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  sampling <span class="op">=</span> <span class="st">"regular"</span>,</span>
 <span>  phi <span class="op">=</span> <span class="st">"max"</span>,</span>
@@ -81,27 +81,27 @@ indices to perform a NNDM LOO CV for map validation.</p>
 
 
 <dt>modeldomain</dt>
-<dd><p>sf polygon object or SpatRaster defining the prediction area. Optional; alternative to ppoints (see Details).</p></dd>
+<dd><p>sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).</p></dd>
 
 
-<dt>ppoints</dt>
+<dt>predpoints</dt>
 <dd><p>sf or sfc point object. Contains the target prediction points.
 Optional. Optional; alternative to modeldomain (see Details).</p></dd>
 
 
 <dt>samplesize</dt>
 <dd><p>numeric. How many points in the modeldomain should be sampled as prediction points?
-Only required if modeldomain is used instead of ppoints.</p></dd>
+Only required if modeldomain is used instead of predpoints.</p></dd>
 
 
 <dt>sampling</dt>
 <dd><p>character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
-Only required if modeldomain is used instead of ppoints.</p></dd>
+Only required if modeldomain is used instead of predpoints.</p></dd>
 
 
 <dt>phi</dt>
 <dd><p>Numeric. Estimate of the landscape autocorrelation range in the
-same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.
+same units as the tpoints and predpoints for projected CRS, in meters for geographic CRS.
 Per default (phi="max"), the size of the prediction area is used. See Details.</p></dd>
 
 
@@ -134,8 +134,8 @@ and non-defined CRS, great circle distances are used for geographic CRS (units i
 <p>The <em>modeldomain</em> is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
 transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
 Then, the function takes a regular point sample (amount defined by <em>samplesize)</em> from the spatial extent.
-As an alternative use <em>ppoints</em> instead of <em>modeldomain</em>, if you have already defined the prediction locations (e.g. raster pixel centroids).
-When using either <em>modeldomain</em> or <em>ppoints</em>, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.</p>
+As an alternative use <em>predpoints</em> instead of <em>modeldomain</em>, if you have already defined the prediction locations (e.g. raster pixel centroids).
+When using either <em>modeldomain</em> or <em>predpoints</em>, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
@@ -176,7 +176,7 @@ When using either <em>modeldomain</em> or <em>ppoints</em>, we advise to plot th
 <span class="r-plt img"><img src="nndm-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Run NNDM for the whole domain, here the prediction points are known</span></span></span>
-<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, ppoints<span class="op">=</span><span class="va">pred_points</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, predpoints<span class="op">=</span><span class="va">pred_points</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total number of points: 100</span>
@@ -187,7 +187,7 @@ When using either <em>modeldomain</em> or <em>ppoints</em>, we advise to plot th
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ...or run NNDM with a known autocorrelation range of 10</span></span></span>
 <span class="r-in"><span><span class="co"># to restrict the matching to distances lower than that.</span></span></span>
-<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, ppoints<span class="op">=</span><span class="va">pred_points</span>, phi <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, predpoints<span class="op">=</span><span class="va">pred_points</span>, phi <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total number of points: 100</span>
@@ -214,7 +214,7 @@ When using either <em>modeldomain</em> or <em>ppoints</em>, we advise to plot th
 <span class="r-plt img"><img src="nndm-4.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Run NNDM for the whole domain</span></span></span>
-<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, ppoints<span class="op">=</span><span class="va">pred_points</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, predpoints<span class="op">=</span><span class="va">pred_points</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> nndm object</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total number of points: 100</span>
