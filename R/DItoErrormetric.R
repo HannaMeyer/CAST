@@ -187,9 +187,9 @@ multiCV <- function(model, length.out, method, useWeight, variable,...){
     # retrain model and calculate AOA
     model_new <- do.call(caret::train,mcall)
     if (variable == "DI") {
-      trainDI_new <- trainDI(model_new, method=method, useWeight=useWeight)
+      trainDI_new <- trainDI(model_new, method=method, useWeight=useWeight, verbose = FALSE)
     } else if (variable == "LPD") {
-      trainDI_new <- trainDI(model_new, method=method, useWeight=useWeight, LPD = TRUE)
+      trainDI_new <- trainDI(model_new, method=method, useWeight=useWeight, LPD = TRUE, verbose = FALSE)
     }
 
 
