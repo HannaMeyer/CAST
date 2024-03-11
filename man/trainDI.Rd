@@ -13,7 +13,8 @@ trainDI(
   CVtrain = NULL,
   method = "L2",
   useWeight = TRUE,
-  LPD = FALSE
+  LPD = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
