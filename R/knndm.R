@@ -5,8 +5,8 @@
 #'
 #' @author Carles Milà and Jan Linnenbrink
 #' @param tpoints sf or sfc point object. Contains the training points samples.
-#' @param modeldomain sf polygon object or SpatRaster defining the prediction area. Optional; alternative to ppoints (see Details).
-#' @param ppoints sf or sfc point object. Contains the target prediction points. Optional; alternative to modeldomain (see Details).
+#' @param modeldomain sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).
+#' @param predpoints sf or sfc point object. Contains the target prediction points. Optional; alternative to modeldomain (see Details).
 #' @param space character. Only "geographical" knndm, i.e. kNNDM in the geographical space, is currently implemented.
 #' @param k integer. Number of folds desired for CV. Defaults to 10.
 #' @param maxp numeric. Maximum fold size allowed, defaults to 0.5, i.e. a single fold can hold a maximum of half of the training points.
@@ -14,9 +14,9 @@
 #' @param linkf character. Only relevant if clustering = "hierarchical". Link function for agglomerative hierarchical clustering.
 #' Defaults to "ward.D2". Check `stats::hclust` for other options.
 #' @param samplesize numeric. How many points in the modeldomain should be sampled as prediction points?
-#' Only required if modeldomain is used instead of ppoints.
+#' Only required if modeldomain is used instead of predpoints.
 #' @param sampling character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
-#' Only required if modeldomain is used instead of ppoints.
+#' Only required if modeldomain is used instead of predpoints.
 #'
 #' @return An object of class \emph{knndm} consisting of a list of eight elements:
 #' indx_train, indx_test (indices of the observations to use as
@@ -43,7 +43,7 @@
 #'
 #' In order to select between clustering algorithms and number of folds `k`, different `knndm` configurations can be run
 #' and compared, being the one with a lower W statistic the one that offers a better match. W statistics between `knndm`
-#' runs are comparable as long as `tpoints` and `ppoints` or `modeldomain` stay the same.
+#' runs are comparable as long as `tpoints` and `predpoints` or `modeldomain` stay the same.
 #'
 #' Map validation using knndm should be used using `CAST::global_validation`, i.e. by stacking all out-of-sample
 #' predictions and evaluating them all at once. The reasons behind this are 1) The resulting folds can be
@@ -57,8 +57,8 @@
 #' #' The `modeldomain` is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
 #' transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
 #' Then, the function takes a regular point sample (amount defined by `samplesize`) from the spatial extent.
-#' As an alternative use `ppoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
-#' When using either `modeldomain` or `ppoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
+#' As an alternative use `predpoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
+#' When using either `modeldomain` or `predpoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
 #'
 #' @references
 #' \itemize{
@@ -87,7 +87,7 @@
 #' plot(train_points, add = TRUE, col = "red")
 #'
 #' # Run kNNDM for the whole domain, here the prediction points are known.
-#' knndm_folds <- knndm(train_points, ppoints = pred_points, k = 5)
+#' knndm_folds <- knndm(train_points, predpoints = pred_points, k = 5)
 #' knndm_folds
 #' plot(knndm_folds)
 #' folds <- as.character(knndm_folds$clusters)
@@ -113,7 +113,7 @@
 #' plot(train_points, add = TRUE, col = "red")
 #'
 #' # Run kNNDM for the whole domain, here the prediction points are known.
-#' knndm_folds <- knndm(train_points, ppoints = pred_points, k = 5)
+#' knndm_folds <- knndm(train_points, predpoints = pred_points, k = 5)
 #' knndm_folds
 #' plot(knndm_folds)
 #' folds <- as.character(knndm_folds$clusters)
@@ -160,14 +160,14 @@
 #'    trControl = ctrl)
 #' global_validation(model_knndm)
 #'}
-knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
+knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
                   space = "geographical",
                   k = 10, maxp = 0.5,
                   clustering = "hierarchical", linkf = "ward.D2",
                   samplesize = 1000, sampling = "regular"){
 
   # create sample points from modeldomain
-  if(is.null(ppoints)&!is.null(modeldomain)){
+  if(is.null(predpoints)&!is.null(modeldomain)){
 
     # Check modeldomain is indeed a sf/SpatRaster
     if(!any(c("sfc", "sf", "SpatRaster") %in% class(modeldomain))){
@@ -195,12 +195,12 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
 
     # We sample
     message(paste0(samplesize, " prediction points are sampled from the modeldomain"))
-    ppoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
-    sf::st_crs(ppoints) <- sf::st_crs(modeldomain)
+    predpoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
+    sf::st_crs(predpoints) <- sf::st_crs(modeldomain)
 
-  }else if(!is.null(ppoints)){
-    if(!identical(sf::st_crs(tpoints), sf::st_crs(ppoints))){
-      stop("tpoints and ppoints must have the same CRS")
+  }else if(!is.null(predpoints)){
+    if(!identical(sf::st_crs(tpoints), sf::st_crs(predpoints))){
+      stop("tpoints and predpoints must have the same CRS")
     }
   }
 
@@ -208,8 +208,8 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
   if (any(class(tpoints) %in% "sfc")) {
     tpoints <- sf::st_sf(geom = tpoints)
   }
-  if (any(class(ppoints) %in% "sfc")) {
-    ppoints <- sf::st_sf(geom = ppoints)
+  if (any(class(predpoints) %in% "sfc")) {
+    predpoints <- sf::st_sf(geom = predpoints)
   }
   if(is.na(sf::st_crs(tpoints))){
     warning("Missing CRS in training or prediction points. Assuming projected CRS.")
@@ -219,11 +219,11 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
   }
 
   # Prior checks
-  check_knndm(tpoints, ppoints, space, k, maxp, clustering, islonglat)
+  check_knndm(tpoints, predpoints, space, k, maxp, clustering, islonglat)
 
   # kNNDM in the geographical space (currently only option)
   if(isTRUE(space == "geographical")){
-    knndm_res <- knndm_geo(tpoints, ppoints, k, maxp, clustering, linkf, islonglat)
+    knndm_res <- knndm_geo(tpoints, predpoints, k, maxp, clustering, linkf, islonglat)
   }
 
   # Output
@@ -232,10 +232,10 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
 
 
 # kNNDM checks
-check_knndm <- function(tpoints, ppoints, space, k, maxp, clustering, islonglat){
+check_knndm <- function(tpoints, predpoints, space, k, maxp, clustering, islonglat){
 
-  if(!identical(sf::st_crs(tpoints), sf::st_crs(ppoints))){
-    stop("tpoints and ppoints must have the same CRS")
+  if(!identical(sf::st_crs(tpoints), sf::st_crs(predpoints))){
+    stop("tpoints and predpoints must have the same CRS")
   }
   if (!(clustering %in% c("kmeans", "hierarchical"))) {
     stop("clustering must be one of `kmeans` or `hierarchical`")
@@ -253,7 +253,7 @@ check_knndm <- function(tpoints, ppoints, space, k, maxp, clustering, islonglat)
 }
 
 # kNNDM in the geographical space
-knndm_geo <- function(tpoints, ppoints, k, maxp, clustering, linkf, islonglat){
+knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat){
 
   # Gj and Gij calculation
   tcoords <- sf::st_coordinates(tpoints)[,1:2]
@@ -262,12 +262,12 @@ knndm_geo <- function(tpoints, ppoints, k, maxp, clustering, linkf, islonglat){
     units(distmat) <- NULL
     diag(distmat) <- NA
     Gj <- apply(distmat, 1, function(x) min(x, na.rm=TRUE))
-    Gij <- sf::st_distance(ppoints, tpoints)
+    Gij <- sf::st_distance(predpoints, tpoints)
     units(Gij) <- NULL
     Gij <- apply(Gij, 1, min)
   }else{
     Gj <- c(FNN::knn.dist(tcoords, k = 1))
-    Gij <- c(FNN::knnx.dist(query = sf::st_coordinates(ppoints)[,1:2],
+    Gij <- c(FNN::knnx.dist(query = sf::st_coordinates(predpoints)[,1:2],
                             data = tcoords, k = 1))
   }
 

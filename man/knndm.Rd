@@ -7,7 +7,7 @@
 knndm(
   tpoints,
   modeldomain = NULL,
-  ppoints = NULL,
+  predpoints = NULL,
   space = "geographical",
   k = 10,
   maxp = 0.5,
@@ -20,9 +20,9 @@ knndm(
 \arguments{
 \item{tpoints}{sf or sfc point object. Contains the training points samples.}
 
-\item{modeldomain}{sf polygon object or SpatRaster defining the prediction area. Optional; alternative to ppoints (see Details).}
+\item{modeldomain}{sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).}
 
-\item{ppoints}{sf or sfc point object. Contains the target prediction points. Optional; alternative to modeldomain (see Details).}
+\item{predpoints}{sf or sfc point object. Contains the target prediction points. Optional; alternative to modeldomain (see Details).}
 
 \item{space}{character. Only "geographical" knndm, i.e. kNNDM in the geographical space, is currently implemented.}
 
@@ -36,10 +36,10 @@ knndm(
 Defaults to "ward.D2". Check `stats::hclust` for other options.}
 
 \item{samplesize}{numeric. How many points in the modeldomain should be sampled as prediction points?
-Only required if modeldomain is used instead of ppoints.}
+Only required if modeldomain is used instead of predpoints.}
 
 \item{sampling}{character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
-Only required if modeldomain is used instead of ppoints.}
+Only required if modeldomain is used instead of predpoints.}
 }
 \value{
 An object of class \emph{knndm} consisting of a list of eight elements:
@@ -71,7 +71,7 @@ calculating the full distance matrix of the training points even for a projected
 
 In order to select between clustering algorithms and number of folds `k`, different `knndm` configurations can be run
 and compared, being the one with a lower W statistic the one that offers a better match. W statistics between `knndm`
-runs are comparable as long as `tpoints` and `ppoints` or `modeldomain` stay the same.
+runs are comparable as long as `tpoints` and `predpoints` or `modeldomain` stay the same.
 
 Map validation using knndm should be used using `CAST::global_validation`, i.e. by stacking all out-of-sample
 predictions and evaluating them all at once. The reasons behind this are 1) The resulting folds can be
@@ -85,8 +85,8 @@ Secondly, decrease the number of final folds `k`, which may help to have larger 
 #' The `modeldomain` is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
 transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
 Then, the function takes a regular point sample (amount defined by `samplesize`) from the spatial extent.
-As an alternative use `ppoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
-When using either `modeldomain` or `ppoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
+As an alternative use `predpoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
+When using either `modeldomain` or `predpoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
 }
 \examples{
 ########################################################################
@@ -107,7 +107,7 @@ plot(pred_points, add = TRUE, col = "blue")
 plot(train_points, add = TRUE, col = "red")
 
 # Run kNNDM for the whole domain, here the prediction points are known.
-knndm_folds <- knndm(train_points, ppoints = pred_points, k = 5)
+knndm_folds <- knndm(train_points, predpoints = pred_points, k = 5)
 knndm_folds
 plot(knndm_folds)
 folds <- as.character(knndm_folds$clusters)
@@ -133,7 +133,7 @@ plot(pred_points, add = TRUE, col = "blue")
 plot(train_points, add = TRUE, col = "red")
 
 # Run kNNDM for the whole domain, here the prediction points are known.
-knndm_folds <- knndm(train_points, ppoints = pred_points, k = 5)
+knndm_folds <- knndm(train_points, predpoints = pred_points, k = 5)
 knndm_folds
 plot(knndm_folds)
 folds <- as.character(knndm_folds$clusters)

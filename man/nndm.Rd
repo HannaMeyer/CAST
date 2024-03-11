@@ -7,7 +7,7 @@
 nndm(
   tpoints,
   modeldomain = NULL,
-  ppoints = NULL,
+  predpoints = NULL,
   samplesize = 1000,
   sampling = "regular",
   phi = "max",
@@ -17,19 +17,19 @@ nndm(
 \arguments{
 \item{tpoints}{sf or sfc point object. Contains the training points samples.}
 
-\item{modeldomain}{sf polygon object or SpatRaster defining the prediction area. Optional; alternative to ppoints (see Details).}
+\item{modeldomain}{sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).}
 
-\item{ppoints}{sf or sfc point object. Contains the target prediction points.
+\item{predpoints}{sf or sfc point object. Contains the target prediction points.
 Optional. Optional; alternative to modeldomain (see Details).}
 
 \item{samplesize}{numeric. How many points in the modeldomain should be sampled as prediction points?
-Only required if modeldomain is used instead of ppoints.}
+Only required if modeldomain is used instead of predpoints.}
 
 \item{sampling}{character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
-Only required if modeldomain is used instead of ppoints.}
+Only required if modeldomain is used instead of predpoints.}
 
 \item{phi}{Numeric. Estimate of the landscape autocorrelation range in the
-same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.
+same units as the tpoints and predpoints for projected CRS, in meters for geographic CRS.
 Per default (phi="max"), the size of the prediction area is used. See Details.}
 
 \item{min_train}{Numeric between 0 and 1. Minimum proportion of training
@@ -61,8 +61,8 @@ and non-defined CRS, great circle distances are used for geographic CRS (units i
 The \emph{modeldomain} is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
 transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
 Then, the function takes a regular point sample (amount defined by \emph{samplesize)} from the spatial extent.
-As an alternative use \emph{ppoints} instead of \emph{modeldomain}, if you have already defined the prediction locations (e.g. raster pixel centroids).
-When using either \emph{modeldomain} or \emph{ppoints}, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
+As an alternative use \emph{predpoints} instead of \emph{modeldomain}, if you have already defined the prediction locations (e.g. raster pixel centroids).
+When using either \emph{modeldomain} or \emph{predpoints}, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
 }
 \note{
 NNDM is a variation of LOOCV and therefore may take a long time for large training data sets. See \code{\link{knndm}} for a more efficient k-fold variant of the method.
@@ -85,13 +85,13 @@ plot(pred_points, add = TRUE, col = "blue")
 plot(train_points, add = TRUE, col = "red")
 
 # Run NNDM for the whole domain, here the prediction points are known
-nndm_pred <- nndm(train_points, ppoints=pred_points)
+nndm_pred <- nndm(train_points, predpoints=pred_points)
 nndm_pred
 plot(nndm_pred)
 
 # ...or run NNDM with a known autocorrelation range of 10
 # to restrict the matching to distances lower than that.
-nndm_pred <- nndm(train_points, ppoints=pred_points, phi = 10)
+nndm_pred <- nndm(train_points, predpoints=pred_points, phi = 10)
 nndm_pred
 plot(nndm_pred)
 
@@ -112,7 +112,7 @@ plot(pred_points, add = TRUE, col = "blue")
 plot(train_points, add = TRUE, col = "red")
 
 # Run NNDM for the whole domain
-nndm_pred <- nndm(train_points, ppoints=pred_points)
+nndm_pred <- nndm(train_points, predpoints=pred_points)
 nndm_pred
 plot(nndm_pred)
 

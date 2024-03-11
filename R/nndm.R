@@ -4,15 +4,15 @@
 #' indices to perform a NNDM LOO CV for map validation.
 #' @author Carles Milà
 #' @param tpoints sf or sfc point object. Contains the training points samples.
-#' @param modeldomain sf polygon object or SpatRaster defining the prediction area. Optional; alternative to ppoints (see Details).
-#' @param ppoints sf or sfc point object. Contains the target prediction points.
+#' @param modeldomain sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).
+#' @param predpoints sf or sfc point object. Contains the target prediction points.
 #' Optional. Optional; alternative to modeldomain (see Details).
 #' @param samplesize numeric. How many points in the modeldomain should be sampled as prediction points?
-#' Only required if modeldomain is used instead of ppoints.
+#' Only required if modeldomain is used instead of predpoints.
 #' @param sampling character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
-#' Only required if modeldomain is used instead of ppoints.
+#' Only required if modeldomain is used instead of predpoints.
 #' @param phi Numeric. Estimate of the landscape autocorrelation range in the
-#' same units as the tpoints and ppoints for projected CRS, in meters for geographic CRS.
+#' same units as the tpoints and predpoints for projected CRS, in meters for geographic CRS.
 #' Per default (phi="max"), the size of the prediction area is used. See Details.
 #' @param min_train Numeric between 0 and 1. Minimum proportion of training
 #' data that must be used in each CV fold. Defaults to 0.5 (i.e. half of the training points).
@@ -37,8 +37,8 @@
 #' The \emph{modeldomain} is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
 #' transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
 #' Then, the function takes a regular point sample (amount defined by \emph{samplesize)} from the spatial extent.
-#' As an alternative use \emph{ppoints} instead of \emph{modeldomain}, if you have already defined the prediction locations (e.g. raster pixel centroids).
-#' When using either \emph{modeldomain} or \emph{ppoints}, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
+#' As an alternative use \emph{predpoints} instead of \emph{modeldomain}, if you have already defined the prediction locations (e.g. raster pixel centroids).
+#' When using either \emph{modeldomain} or \emph{predpoints}, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
 #'
 #' @note NNDM is a variation of LOOCV and therefore may take a long time for large training data sets. See \code{\link{knndm}} for a more efficient k-fold variant of the method.
 #' @seealso \code{\link{geodist}}, \code{\link{knndm}}
@@ -66,13 +66,13 @@
 #' plot(train_points, add = TRUE, col = "red")
 #'
 #' # Run NNDM for the whole domain, here the prediction points are known
-#' nndm_pred <- nndm(train_points, ppoints=pred_points)
+#' nndm_pred <- nndm(train_points, predpoints=pred_points)
 #' nndm_pred
 #' plot(nndm_pred)
 #'
 #' # ...or run NNDM with a known autocorrelation range of 10
 #' # to restrict the matching to distances lower than that.
-#' nndm_pred <- nndm(train_points, ppoints=pred_points, phi = 10)
+#' nndm_pred <- nndm(train_points, predpoints=pred_points, phi = 10)
 #' nndm_pred
 #' plot(nndm_pred)
 #'
@@ -93,7 +93,7 @@
 #' plot(train_points, add = TRUE, col = "red")
 #'
 #' # Run NNDM for the whole domain
-#' nndm_pred <- nndm(train_points, ppoints=pred_points)
+#' nndm_pred <- nndm(train_points, predpoints=pred_points)
 #' nndm_pred
 #' plot(nndm_pred)
 #'
@@ -135,11 +135,11 @@
 #'
 
 
-nndm <- function(tpoints, modeldomain = NULL, ppoints = NULL, samplesize = 1000, sampling = "regular",
+nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL, samplesize = 1000, sampling = "regular",
                  phi = "max", min_train = 0.5){
 
   # create sample points from modeldomain
-  if(is.null(ppoints)&!is.null(modeldomain)){
+  if(is.null(predpoints)&!is.null(modeldomain)){
 
     # Check modeldomain is indeed a sf/SpatRaster
     if(!any(c("sfc", "sf", "SpatRaster") %in% class(modeldomain))){
@@ -167,12 +167,12 @@ nndm <- function(tpoints, modeldomain = NULL, ppoints = NULL, samplesize = 1000,
 
     # We sample
     message(paste0(samplesize, " prediction points are sampled from the modeldomain"))
-    ppoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
-    sf::st_crs(ppoints) <- sf::st_crs(modeldomain)
+    predpoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
+    sf::st_crs(predpoints) <- sf::st_crs(modeldomain)
 
-  }else if(!is.null(ppoints)){
-    if(!identical(sf::st_crs(tpoints), sf::st_crs(ppoints))){
-      stop("tpoints and ppoints must have the same CRS")
+  }else if(!is.null(predpoints)){
+    if(!identical(sf::st_crs(tpoints), sf::st_crs(predpoints))){
+      stop("tpoints and predpoints must have the same CRS")
     }
   }
 
@@ -181,27 +181,27 @@ nndm <- function(tpoints, modeldomain = NULL, ppoints = NULL, samplesize = 1000,
     tpoints <- sf::st_sf(geom=tpoints)
   }
 
-  # If ppoints is sfc, coerce to sf.
-  if(any(class(ppoints) %in% "sfc")){
-    ppoints <- sf::st_sf(geom=ppoints)
+  # If predpoints is sfc, coerce to sf.
+  if(any(class(predpoints) %in% "sfc")){
+    predpoints <- sf::st_sf(geom=predpoints)
   }
 
   # Input data checks
-  nndm_checks(tpoints, ppoints, phi, min_train)
+  nndm_checks(tpoints, predpoints, phi, min_train)
 
   # if phi==max calculate the range of the size area
   if(phi=="max"){
-    xmin <- min(sf::st_coordinates(ppoints)[,1])
-    xmax <- max(sf::st_coordinates(ppoints)[,1])
-    ymin <- min(sf::st_coordinates(ppoints)[,2])
-    ymax <-  max(sf::st_coordinates(ppoints)[,2])
+    xmin <- min(sf::st_coordinates(predpoints)[,1])
+    xmax <- max(sf::st_coordinates(predpoints)[,1])
+    ymin <- min(sf::st_coordinates(predpoints)[,2])
+    ymax <-  max(sf::st_coordinates(predpoints)[,2])
     p <- sf::st_sfc(sf::st_point(c(xmin,ymin)), sf::st_point(c(xmax,ymax)))
-    sf::st_crs(p) <- sf::st_crs(ppoints)
+    sf::st_crs(p) <- sf::st_crs(predpoints)
     phi <- as.numeric(max(sf::st_distance(p)))
   }
 
   # Compute nearest neighbour distances between training and prediction points
-  Gij <- sf::st_distance(ppoints, tpoints)
+  Gij <- sf::st_distance(predpoints, tpoints)
   units(Gij) <- NULL
   Gij <- apply(Gij, 1, min)
 
@@ -256,7 +256,7 @@ nndm <- function(tpoints, modeldomain = NULL, ppoints = NULL, samplesize = 1000,
 
 
 # Input data checks for NNDM
-nndm_checks <- function(tpoints, ppoints, phi, min_train){
+nndm_checks <- function(tpoints, predpoints, phi, min_train){
 
   # Check for valid range of phi
   if(phi < 0 | (!is.numeric(phi) & phi!= "max")){
@@ -275,11 +275,11 @@ nndm_checks <- function(tpoints, ppoints, phi, min_train){
     stop("tpoints must be a sf/sfc point object.")
   }
 
-  # Check class and geometry type of ppoints
-  if(!any(c("sfc", "sf") %in% class(ppoints))){
-    stop("ppoints must be a sf/sfc object.")
-  }else if(!any(class(sf::st_geometry(ppoints)) %in% c("sfc_POINT"))){
-    stop("ppoints must be a sf/sfc point object.")
+  # Check class and geometry type of predpoints
+  if(!any(c("sfc", "sf") %in% class(predpoints))){
+    stop("predpoints must be a sf/sfc object.")
+  }else if(!any(class(sf::st_geometry(predpoints)) %in% c("sfc_POINT"))){
+    stop("predpoints must be a sf/sfc point object.")
   }
 
 }
