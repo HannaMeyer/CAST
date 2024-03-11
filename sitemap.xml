@@ -34,9 +34,6 @@
     <loc>https://hannameyer.github.io/CAST/reference/CreateSpacetimeFolds.html</loc>
   </url>
   <url>
-    <loc>https://hannameyer.github.io/CAST/reference/DItoErrormetric.html</loc>
-  </url>
-  <url>
     <loc>https://hannameyer.github.io/CAST/reference/aoa.html</loc>
   </url>
   <url>
@@ -47,6 +44,9 @@
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/reference/clustered_sample.html</loc>
+  </url>
+  <url>
+    <loc>https://hannameyer.github.io/CAST/reference/errorProfiles.html</loc>
   </url>
   <url>
     <loc>https://hannameyer.github.io/CAST/reference/ffs.html</loc>

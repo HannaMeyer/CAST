@@ -26,7 +26,7 @@ Optionally, the local point density is calculated which indicates the number of 
     
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -155,7 +155,11 @@ Relevant if some data points are excluded, e.g. when using <code><a href="nndm.h
 
 
 <dt>maxLPD</dt>
-<dd><p>numeric or integer. Only if <code>LPD = TRUE</code>. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso <code><a href="DItoErrormetric.html">DItoErrormetric</a></code>)</p></dd>
+<dd><p>numeric or integer. Only if <code>LPD = TRUE</code>. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso <code><a href="errorProfiles.html">DItoErrormetric</a></code>)</p></dd>
+
+
+<dt>verbose</dt>
+<dd><p>Logical. Print progress or not?</p></dd>
 
 </dl></div>
     <div class="section level2">
