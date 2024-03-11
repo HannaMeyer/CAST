@@ -143,7 +143,7 @@ geodist <- function(x,
       if(any(!variables%in%names(testdata))){# extract variable values of raster:
         testdata <- sf::st_transform(testdata,sf::st_crs(modeldomain))
         #testdata <- sf::st_as_sf(raster::extract(modeldomain, testdata, df = TRUE, sp = TRUE))
-        testdata <- sf::st_as_sf(terra::extract(modeldomain, testdata, na.rm=FALSE,bind=TRUE))
+        testdata <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(testdata), na.rm=FALSE,bind=TRUE))
 
         if(any(is.na(testdata))){
           testdata <- na.omit(testdata)
@@ -157,7 +157,7 @@ geodist <- function(x,
       if(any(!variables%in%names(preddata))){# extract variable values of raster:
         preddata <- sf::st_transform(preddata,sf::st_crs(modeldomain))
         #preddata <- sf::st_as_sf(raster::extract(modeldomain, preddata, df = TRUE, sp = TRUE))
-        preddata <- sf::st_as_sf(terra::extract(modeldomain, preddata, na.rm=FALSE,bind=TRUE))
+        preddata <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(preddata), na.rm=FALSE,bind=TRUE))
 
         if(any(is.na(preddata))){
           preddata <- na.omit(preddata)
@@ -194,6 +194,12 @@ geodist <- function(x,
 
   ##### Distance to CV data:
   if(!is.null(cvfolds)){
+
+    # check if any CV fold contains less than 2 points
+    if(any(lapply(cvfolds, length) < 2)) {
+      stop("At least one CV fold only contains one observation")
+    }
+
     cvd <- cvdistance(x, cvfolds, cvtrain, type, variables)
     dists <- rbind(dists, cvd)
   }

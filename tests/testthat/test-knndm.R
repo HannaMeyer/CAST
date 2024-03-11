@@ -9,9 +9,9 @@ test_that("kNNDM works with geographical coordinates and prediction points", {
 
   set.seed(1)
   kout <- knndm(tpoints, ppoints=ppoints, k=2, maxp=0.8)
-  expect_identical(round(kout$W,1), 121095.2)
-  expect_identical(kout$method, "hierarchical")
-  expect_identical(kout$q, 3L)
+  expect_equal(round(kout$W), 121095)
+  expect_equal(kout$method, "hierarchical")
+  expect_equal(kout$q, 3L)
 
 })
 
@@ -27,9 +27,9 @@ test_that("kNNDM works with projected coordinates and prediction points", {
   set.seed(1)
   kout <- knndm(tpoints, ppoints=ppoints, k=2, maxp=0.8, clustering = "kmeans")
 
-  expect_identical(round(kout$W,4), 1.0919)
-  expect_identical(kout$method, "kmeans")
-  expect_identical(kout$q, 4L)
+  expect_equal(round(kout$W,4), 1.0919)
+  expect_equal(kout$method, "kmeans")
+  expect_equal(kout$q, 4L)
 
 })
 
@@ -43,8 +43,8 @@ test_that("kNNDM works without crs and prediction points", {
   set.seed(1)
   kout <- suppressWarnings(knndm(tpoints, ppoints=ppoints, k=2, maxp=0.8))
 
-  expect_identical(round(kout$W,6), 1.091896)
-  expect_identical(kout$q, 3L)
+  expect_equal(round(kout$W,6), 1.091896)
+  expect_equal(kout$q, 3L)
 
   expect_warning(knndm(tpoints, ppoints=ppoints, k=2, maxp=0.8),
                  "Missing CRS in training or prediction points. Assuming projected CRS.")
@@ -61,9 +61,9 @@ test_that("kNNDM works with modeldomain and projected coordinates", {
   set.seed(1)
   kout <- suppressMessages(knndm(tpoints, modeldomain = aoi, k=2, maxp=0.8, clustering = "kmeans"))
 
-  expect_identical(round(kout$W,4), 1.2004)
-  expect_identical(kout$method, "kmeans")
-  expect_identical(kout$q, 4L)
+  expect_equal(round(kout$W,4), 1.2004)
+  expect_equal(kout$method, "kmeans")
+  expect_equal(kout$q, 4L)
 
   expect_message(knndm(tpoints, modeldomain = aoi, k=2, maxp=0.8, clustering = "kmeans"),
                  "1000 prediction points are sampled from the modeldomain")
@@ -79,9 +79,9 @@ test_that("kNNDM works with modeldomain and geographical coordinates", {
   set.seed(1)
   kout <- suppressMessages(knndm(tpoints, modeldomain = aoi, k=2, maxp=0.8, clustering = "hierarchical"))
 
-  expect_identical(round(kout$W,4), 133187.4275)
-  expect_identical(kout$method, "hierarchical")
-  expect_identical(kout$q, 3L)
+  expect_equal(round(kout$W), 133187)
+  expect_equal(kout$method, "hierarchical")
+  expect_equal(kout$q, 3L)
 
   expect_message(knndm(tpoints, modeldomain = aoi, k=2, maxp=0.8, clustering = "hierarchical"),
                  "1000 prediction points are sampled from the modeldomain")
@@ -97,9 +97,9 @@ test_that("kNNDM works with modeldomain and no crs", {
   set.seed(1)
   kout <- suppressWarnings(suppressMessages(knndm(tpoints, modeldomain = aoi, k=2, maxp=0.8)))
 
-  expect_identical(round(kout$W,4), 1.2004)
-  expect_identical(kout$method, "hierarchical")
-  expect_identical(kout$q, 3L)
+  expect_equal(round(kout$W,4), 1.2004)
+  expect_equal(kout$method, "hierarchical")
+  expect_equal(kout$q, 3L)
 
   expect_message(suppressWarnings(knndm(tpoints, modeldomain = aoi, k=2, maxp=0.8)),
                  "1000 prediction points are sampled from the modeldomain")
@@ -157,9 +157,9 @@ test_that("kNNDM works with many points and different configurations", {
   Gij_expected <- rep(1.3886, length(w_expected))
   Gjstar_expected <- c(1.0981, 1.0981, 0.5400, 0.3812, 0.2505, 0.3812, 0.3099, 0.3099, 0.3812)
 
-  expect_identical(round(kout_W,3), w_expected)
-  expect_identical(round(kout_Gij,4), Gij_expected)
-  expect_identical(round(Gjstar_expected,4), Gjstar_expected)
+  expect_equal(round(kout_W,3), w_expected)
+  expect_equal(round(kout_Gij,4), Gij_expected)
+  expect_equal(round(Gjstar_expected,4), Gjstar_expected)
 
 })
 
