@@ -13,9 +13,9 @@ loaddata <- function() {
   # train a model:
   set.seed(100)
   variables <- c("DEM","NDRE.Sd","TWI")
-  model <- train(trainDat[,which(names(trainDat)%in%variables)],
+  model <- caret::train(trainDat[,which(names(trainDat)%in%variables)],
                  trainDat$VW, method="rf", importance=TRUE, tuneLength=1,
-                 trControl=trainControl(method="cv",number=5,savePredictions=T))
+                 trControl=caret::trainControl(method="cv",number=5,savePredictions=T))
 
 
   data <- list(
