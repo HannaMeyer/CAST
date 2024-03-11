@@ -20,7 +20,7 @@ knndm(
 \arguments{
 \item{tpoints}{sf or sfc point object. Contains the training points samples.}
 
-\item{modeldomain}{sf polygon object defining the prediction area. Optional; alternative to ppoints (see Details).}
+\item{modeldomain}{sf polygon object or SpatRaster defining the prediction area. Optional; alternative to ppoints (see Details).}
 
 \item{ppoints}{sf or sfc point object. Contains the target prediction points. Optional; alternative to modeldomain (see Details).}
 
@@ -82,14 +82,11 @@ configuration still show signs of Gj* > Gij, there are several things that can b
 the `maxp` parameter; this may help to control for strong clustering (at the cost of having unbalanced folds).
 Secondly, decrease the number of final folds `k`, which may help to have larger clusters.
 
-The `modeldomain` is a sf polygon that defines the prediction area. The function takes a regular point sample
-(amount defined by `samplesize`) from the spatial extent. As an alternative use `ppoints` instead of
-`modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
-When using either `modeldomain` or `ppoints`, we advise to plot the study area polygon and the
-training/prediction points as a previous step to ensure they are aligned.
-}
-\note{
-Experimental cycle. Article describing and testing the algorithm in preparation.
+#' The `modeldomain` is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
+transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
+Then, the function takes a regular point sample (amount defined by `samplesize`) from the spatial extent.
+As an alternative use `ppoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
+When using either `modeldomain` or `ppoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
 }
 \examples{
 ########################################################################
@@ -161,13 +158,9 @@ pts <- dat[,-1]
 pts <- st_as_sf(pts,coords=c("Easting","Northing"))
 st_crs(pts) <- 26911
 studyArea <- rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
-studyArea[!is.na(studyArea)] <- 1
-studyArea <- as.polygons(studyArea, values = FALSE, na.all = TRUE) |>
-    st_as_sf() |>
-    st_union()
 pts <- st_transform(pts, crs = st_crs(studyArea))
-plot(studyArea)
-plot(st_geometry(pts), add = TRUE, col = "red")
+terra::plot(studyArea[["DEM"]])
+terra::plot(vect(pts), add = T)
 
 knndm_folds <- knndm(pts, modeldomain=studyArea, k = 5)
 knndm_folds

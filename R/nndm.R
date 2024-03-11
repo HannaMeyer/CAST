@@ -4,9 +4,9 @@
 #' indices to perform a NNDM LOO CV for map validation.
 #' @author Carles Milà
 #' @param tpoints sf or sfc point object. Contains the training points samples.
-#' @param modeldomain sf polygon object or SpatRaster defining the prediction area (see Details).
+#' @param modeldomain sf polygon object or SpatRaster defining the prediction area. Optional; alternative to ppoints (see Details).
 #' @param ppoints sf or sfc point object. Contains the target prediction points.
-#' Optional. Alternative to modeldomain (see Details).
+#' Optional. Optional; alternative to modeldomain (see Details).
 #' @param samplesize numeric. How many points in the modeldomain should be sampled as prediction points?
 #' Only required if modeldomain is used instead of ppoints.
 #' @param sampling character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
