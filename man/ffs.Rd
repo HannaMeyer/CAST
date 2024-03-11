@@ -18,6 +18,7 @@ ffs(
   tuneGrid = NULL,
   seed = sample(1:1000, 1),
   verbose = TRUE,
+  cores = 1,
   ...
 )
 }
@@ -49,6 +50,8 @@ See Details.}
 \item{seed}{A random number used for model training}
 
 \item{verbose}{Logical. Should information about the progress be printed?}
+
+\item{cores}{Numeric. If > 2, mclapply will be used. see \code{\link{mclapply}}}
 
 \item{...}{arguments passed to the classification or regression routine
 (such as randomForest).}
