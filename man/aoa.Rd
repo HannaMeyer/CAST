@@ -16,7 +16,8 @@ aoa(
   method = "L2",
   useWeight = TRUE,
   LPD = FALSE,
-  maxLPD = 1
+  maxLPD = 1,
+  verbose = TRUE
 )
 }
 \arguments{

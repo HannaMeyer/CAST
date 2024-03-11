@@ -24,6 +24,7 @@
 #' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
+#' @param verbose Logical. Print progress or not?
 #'
 #' @seealso \code{\link{aoa}}
 #' @importFrom graphics boxplot
