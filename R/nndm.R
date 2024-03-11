@@ -143,12 +143,24 @@ nndm <- function(tpoints, modeldomain = NULL, ppoints = NULL, samplesize = 1000,
 
   # create sample points from modeldomain
   if(is.null(ppoints)&!is.null(modeldomain)){
+
+    # Check modeldomain is indeed a polygon
+    if(!any(c("sfc", "sf") %in% class(modeldomain))){
+      stop("modeldomain must be a sf/sfc object.")
+    }else if(!any(class(sf::st_geometry(modeldomain)) %in% c("sfc_POLYGON", "sfc_MULTIPOLYGON"))){
+      stop("modeldomain must be a sf/sfc polygon object.")
+    }
+
+    # Check whether modeldomain has the same crs as tpoints
     if(!identical(sf::st_crs(tpoints), sf::st_crs(modeldomain))){
       stop("tpoints and modeldomain must have the same CRS")
     }
+
+    # We sample
     message(paste0(samplesize, " prediction points are sampled from the modeldomain"))
     ppoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
     sf::st_crs(ppoints) <- sf::st_crs(modeldomain)
+
   }else if(!is.null(ppoints)){
     if(!identical(sf::st_crs(tpoints), sf::st_crs(ppoints))){
       stop("tpoints and ppoints must have the same CRS")
@@ -165,6 +177,9 @@ nndm <- function(tpoints, modeldomain = NULL, ppoints = NULL, samplesize = 1000,
     ppoints <- sf::st_sf(geom=ppoints)
   }
 
+  # Input data checks
+  nndm_checks(tpoints, ppoints, phi, min_train)
+
   # if phi==max calculate the range of the size area
   if(phi=="max"){
     xmin <- min(sf::st_coordinates(ppoints)[,1])
@@ -175,9 +190,6 @@ nndm <- function(tpoints, modeldomain = NULL, ppoints = NULL, samplesize = 1000,
     sf::st_crs(p) <- sf::st_crs(ppoints)
     phi <- as.numeric(max(sf::st_distance(p)))
   }
-
-  # Input data checks
-  nndm_checks(tpoints, ppoints, phi, min_train)
 
   # Compute nearest neighbour distances between training and prediction points
   Gij <- sf::st_distance(ppoints, tpoints)
@@ -238,8 +250,8 @@ nndm <- function(tpoints, modeldomain = NULL, ppoints = NULL, samplesize = 1000,
 nndm_checks <- function(tpoints, ppoints, phi, min_train){
 
   # Check for valid range of phi
-  if(phi < 0 | !is.numeric(phi)){
-    stop("phi must be positive.")
+  if(phi < 0 | (!is.numeric(phi) & phi!= "max")){
+    stop("phi must be positive or set to 'max'.")
   }
 
   # min_train must be a single positive numeric
