@@ -17,7 +17,7 @@ nndm(
 \arguments{
 \item{tpoints}{sf or sfc point object. Contains the training points samples.}
 
-\item{modeldomain}{sf polygon object defining the prediction area (see Details).}
+\item{modeldomain}{sf polygon object or SpatRaster defining the prediction area (see Details).}
 
 \item{ppoints}{sf or sfc point object. Contains the target prediction points.
 Optional. Alternative to modeldomain (see Details).}
@@ -58,13 +58,14 @@ Distances are only matched up to \emph{phi}. Beyond that range, all data points 
 When \emph{phi} is set to "max", nearest neighbor distance matching is performed for the entire prediction area. Euclidean distances are used for projected
 and non-defined CRS, great circle distances are used for geographic CRS (units in meters).
 
-The \emph{modeldomain} is a sf polygon that defines the prediction area. The function takes a regular point sample (amount defined by \emph{samplesize)} from the spatial extent.
+The \emph{modeldomain} is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
+transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
+Then, the function takes a regular point sample (amount defined by \emph{samplesize)} from the spatial extent.
 As an alternative use \emph{ppoints} instead of \emph{modeldomain}, if you have already defined the prediction locations (e.g. raster pixel centroids).
 When using either \emph{modeldomain} or \emph{ppoints}, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
 }
 \note{
-NNDM is a variation of LOOCV and therefore may take a long time for large training data sets.
-A k-fold variant will be implemented shortly.
+NNDM is a variation of LOOCV and therefore may take a long time for large training data sets. See \code{\link{knndm}} for a more efficient k-fold variant of the method.
 }
 \examples{
 ########################################################################
@@ -116,8 +117,8 @@ nndm_pred
 plot(nndm_pred)
 
 ########################################################################
-# Example 3: Real- world example; using a modeldomain instead of previously
-# sampled prediction locations
+# Example 3: Real- world example; using a SpatRast modeldomain instead
+# of previously sampled prediction locations
 ########################################################################
 \dontrun{
 library(sf)
@@ -131,15 +132,11 @@ pts <- dat[,-1]
 pts <- st_as_sf(pts,coords=c("Easting","Northing"))
 st_crs(pts) <- 26911
 studyArea <- rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
-studyArea[!is.na(studyArea)] <- 1
-studyArea <- as.polygons(studyArea, values = FALSE, na.all = TRUE) |>
-    st_as_sf() |>
-    st_union()
 pts <- st_transform(pts, crs = st_crs(studyArea))
-plot(studyArea)
-plot(st_geometry(pts), add = TRUE, col = "red")
+terra::plot(studyArea[["DEM"]])
+terra::plot(vect(pts), add = T)
 
-nndm_folds <- nndm(pts, modeldomain= studyArea)
+nndm_folds <- nndm(pts, modeldomain = studyArea)
 plot(nndm_folds)
 
 #use for cross-validation:
