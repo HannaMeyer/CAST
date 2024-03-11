@@ -1,5 +1,5 @@
 
-test_that("DItoErrormetric works in default settings", {
+test_that("errorProfiles works in default settings", {
   data(splotdata)
   splotdata <- sf::st_drop_geometry(splotdata)
   predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
@@ -11,7 +11,7 @@ test_that("DItoErrormetric works in default settings", {
   AOA <- CAST::aoa(predictors, model)
 
   # DI ~ error
-  errormodel_DI <- CAST::DItoErrormetric(model, AOA, variable = "DI")
+  errormodel_DI <- CAST::errorProfiles(model, AOA, variable = "DI")
 
   expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
 
@@ -28,7 +28,7 @@ test_that("DItoErrormetric works in default settings", {
 })
 
 
-test_that("DItoErrormetric works in with LPD", {
+test_that("errorProfiles works in with LPD", {
   data(splotdata)
   splotdata <- sf::st_drop_geometry(splotdata)
   predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
@@ -38,7 +38,7 @@ test_that("DItoErrormetric works in with LPD", {
                         trControl = caret::trainControl(method = "cv", savePredictions = TRUE))
 
   AOA <- CAST::aoa(predictors, model, LPD = TRUE, maxLPD = 1)
-  errormodel_LPD <- CAST::DItoErrormetric(model, AOA, variable = "LPD")
+  errormodel_LPD <- CAST::errorProfiles(model, AOA, variable = "LPD")
   expected_error_LPD = terra::predict(AOA$LPD, errormodel_LPD)
 
 
@@ -55,7 +55,7 @@ test_that("DItoErrormetric works in with LPD", {
 
 
 
-test_that("DItoErrormetric works for multiCV", {
+test_that("errorProfiles works for multiCV", {
   data(splotdata)
   splotdata <- sf::st_drop_geometry(splotdata)
   predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
@@ -67,7 +67,7 @@ test_that("DItoErrormetric works for multiCV", {
   AOA <- CAST::aoa(predictors, model)
   # with multiCV = TRUE (for DI ~ error)
   set.seed(100)
-  errormodel_DI = suppressWarnings(DItoErrormetric(model, AOA, multiCV = TRUE, length.out = 3))
+  errormodel_DI = suppressWarnings(errorProfiles(model, AOA, multiCV = TRUE, length.out = 3))
   expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
 
   #test model fit:
