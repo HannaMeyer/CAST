@@ -111,7 +111,8 @@ trainDI <- function(model = NA,
                     CVtrain = NULL,
                     method="L2",
                     useWeight = TRUE,
-                    LPD = FALSE){
+                    LPD = FALSE,
+                    verbose = TRUE){
 
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
@@ -192,10 +193,12 @@ trainDI <- function(model = NA,
     S_inv <- MASS::ginv(S)
   }
 
-  message("Computing DI of training data...")
-  pb <- txtProgressBar(min = 0,
-                       max = nrow(train),
-                       style = 3)
+  if (verbose) {
+    message("Computing DI of training data...")
+    pb <- txtProgressBar(min = 0,
+                         max = nrow(train),
+                         style = 3)
+  }
 
   for(i in seq(nrow(train))){
 
@@ -228,9 +231,14 @@ trainDI <- function(model = NA,
     }else{
       trainDist_min <- append(trainDist_min, min(trainDist, na.rm = TRUE))
     }
-    setTxtProgressBar(pb, i)
+    if (verbose) {
+      setTxtProgressBar(pb, i)
+    }
   }
-  close(pb)
+
+  if (verbose) {
+    close(pb)
+  }
   trainDist_avrgmean <- mean(trainDist_avrg,na.rm=TRUE)
 
 
@@ -254,10 +262,12 @@ trainDI <- function(model = NA,
 
   # calculate trainLPD and avrgLPD according to the CV folds
   if (LPD == TRUE) {
-    message("Computing LPD of training data...")
-    pb <- txtProgressBar(min = 0,
-                         max = nrow(train),
-                         style = 3)
+    if (verbose) {
+      message("Computing LPD of training data...")
+      pb <- txtProgressBar(min = 0,
+                           max = nrow(train),
+                           style = 3)
+    }
 
     trainLPD <- c()
     for (j in  seq(nrow(train))) {
@@ -287,10 +297,14 @@ trainDI <- function(model = NA,
       } else {
         trainLPD <- append(trainLPD, sum(DItrainDist[,1] < thres, na.rm = TRUE))
       }
-      setTxtProgressBar(pb, j)
+      if (verbose) {
+        setTxtProgressBar(pb, j)
+      }
     }
 
-    close(pb)
+    if (verbose) {
+      close(pb)
+    }
 
     # Average LPD in trainData
     avrgLPD <- round(mean(trainLPD))
