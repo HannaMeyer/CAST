@@ -7,22 +7,21 @@
 
 
   data(splotdata)
-  splotdata <- st_drop_geometry(splotdata)
   predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
 
-  model <- caret::train(splotdata[,6:16], splotdata$Species_richness, ntree = 10,
+  model <- caret::train(st_drop_geometry(splotdata)[,6:16], splotdata$Species_richness, ntree = 10,
                         trControl = trainControl(method = "cv", savePredictions = TRUE))
 
   AOA <- aoa(predictors, model, LPD = TRUE, maxLPD = 1)
 
-  # DI ~ error
+  ### DI ~ error
   errormodel_DI <- errorProfiles(model, AOA, variable = "DI")
   plot(errormodel_DI)
 
   expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
   plot(expected_error_DI)
 
-  # LPD ~ error
+  ### LPD ~ error
   errormodel_LPD <- errorProfiles(model, AOA, variable = "LPD")
   plot(errormodel_LPD)
 
@@ -30,7 +29,19 @@
   plot(expected_error_LPD)
 
 
-  # with multiCV = TRUE (for DI ~ error)
+
+  ### geodist ~ error
+  errormodel_geodist = errorProfiles(model, locations=splotdata,
+                                     variable = "geodist")
+  plot(errormodel_geodist)
+
+  dist <- terra::distance(predictors[[1]],vect(splotdata))
+  names(dist) <- "geodist"
+  expected_error_DI <- terra::predict(dist, errormodel_geodist)
+  plot(expected_error_DI)
+
+
+  ### with multiCV = TRUE (for DI ~ error)
   errormodel_DI = errorProfiles(model, AOA, multiCV = TRUE, length.out = 3, variable = "DI")
   plot(errormodel_DI)
 
@@ -41,8 +52,6 @@
   mask_aoa = terra::mask(expected_error_DI, AOA$DI > attr(errormodel_DI, 'AOA_threshold'),
                           maskvalues = 1)
   plot(mask_aoa)
-
-
 
 
 }
