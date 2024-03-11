@@ -16,14 +16,14 @@
   AOA <- aoa(predictors, model, LPD = TRUE, maxLPD = 1)
 
   # DI ~ error
-  errormodel_DI <- DItoErrormetric(model, AOA, variable = "DI")
+  errormodel_DI <- errorProfiles(model, AOA, variable = "DI")
   plot(errormodel_DI)
 
   expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
   plot(expected_error_DI)
 
   # LPD ~ error
-  errormodel_LPD <- DItoErrormetric(model, AOA, variable = "LPD")
+  errormodel_LPD <- errorProfiles(model, AOA, variable = "LPD")
   plot(errormodel_LPD)
 
   expected_error_LPD = terra::predict(AOA$LPD, errormodel_LPD)
@@ -31,7 +31,7 @@
 
 
   # with multiCV = TRUE (for DI ~ error)
-  errormodel_DI = DItoErrormetric(model, AOA, multiCV = TRUE, length.out = 3, variable = "DI")
+  errormodel_DI = errorProfiles(model, AOA, multiCV = TRUE, length.out = 3, variable = "DI")
   plot(errormodel_DI)
 
   expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
