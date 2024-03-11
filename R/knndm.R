@@ -5,7 +5,7 @@
 #'
 #' @author Carles Milà and Jan Linnenbrink
 #' @param tpoints sf or sfc point object. Contains the training points samples.
-#' @param modeldomain sf polygon object defining the prediction area. Optional; alternative to ppoints (see Details).
+#' @param modeldomain sf polygon object or SpatRaster defining the prediction area. Optional; alternative to ppoints (see Details).
 #' @param ppoints sf or sfc point object. Contains the target prediction points. Optional; alternative to modeldomain (see Details).
 #' @param space character. Only "geographical" knndm, i.e. kNNDM in the geographical space, is currently implemented.
 #' @param k integer. Number of folds desired for CV. Defaults to 10.
@@ -54,13 +54,12 @@
 #' the `maxp` parameter; this may help to control for strong clustering (at the cost of having unbalanced folds).
 #' Secondly, decrease the number of final folds `k`, which may help to have larger clusters.
 #'
-#' The `modeldomain` is a sf polygon that defines the prediction area. The function takes a regular point sample
-#' (amount defined by `samplesize`) from the spatial extent. As an alternative use `ppoints` instead of
-#' `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
-#' When using either `modeldomain` or `ppoints`, we advise to plot the study area polygon and the
-#' training/prediction points as a previous step to ensure they are aligned.
+#' #' The `modeldomain` is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
+#' transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
+#' Then, the function takes a regular point sample (amount defined by `samplesize`) from the spatial extent.
+#' As an alternative use `ppoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
+#' When using either `modeldomain` or `ppoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
 #'
-#' @note Experimental cycle. Article describing and testing the algorithm in preparation.
 #' @references
 #' \itemize{
 #' \item Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM: k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2023-1308, 2023.
@@ -139,13 +138,9 @@
 #' pts <- st_as_sf(pts,coords=c("Easting","Northing"))
 #' st_crs(pts) <- 26911
 #' studyArea <- rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
-#' studyArea[!is.na(studyArea)] <- 1
-#' studyArea <- as.polygons(studyArea, values = FALSE, na.all = TRUE) |>
-#'     st_as_sf() |>
-#'     st_union()
 #' pts <- st_transform(pts, crs = st_crs(studyArea))
-#' plot(studyArea)
-#' plot(st_geometry(pts), add = TRUE, col = "red")
+#' terra::plot(studyArea[["DEM"]])
+#' terra::plot(vect(pts), add = T)
 #'
 #' knndm_folds <- knndm(pts, modeldomain=studyArea, k = 5)
 #' knndm_folds
@@ -173,12 +168,40 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
 
   # create sample points from modeldomain
   if(is.null(ppoints)&!is.null(modeldomain)){
+
+    # Check modeldomain is indeed a sf/SpatRaster
+    if(!any(c("sfc", "sf", "SpatRaster") %in% class(modeldomain))){
+      stop("modeldomain must be a sf/sfc object or a 'SpatRaster' object.")
+    }
+
+    # If modeldomain is a SpatRaster, transform into polygon
+    if(any(class(modeldomain) == "SpatRaster")){
+      modeldomain[!is.na(modeldomain)] <- 1
+      modeldomain <- terra::as.polygons(modeldomain, values = FALSE, na.all = TRUE) |>
+        sf::st_as_sf() |>
+        sf::st_union()
+      modeldomain <- sf::st_transform(modeldomain, crs = sf::st_crs(tpoints))
+    }
+
+    # Check modeldomain is indeed a polygon sf
+    if(!any(class(sf::st_geometry(modeldomain)) %in% c("sfc_POLYGON", "sfc_MULTIPOLYGON"))){
+      stop("modeldomain must be a sf/sfc polygon object.")
+    }
+
+    # Check whether modeldomain has the same crs as tpoints
     if(!identical(sf::st_crs(tpoints), sf::st_crs(modeldomain))){
       stop("tpoints and modeldomain must have the same CRS")
     }
+
+    # We sample
     message(paste0(samplesize, " prediction points are sampled from the modeldomain"))
     ppoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
     sf::st_crs(ppoints) <- sf::st_crs(modeldomain)
+
+  }else if(!is.null(ppoints)){
+    if(!identical(sf::st_crs(tpoints), sf::st_crs(ppoints))){
+      stop("tpoints and ppoints must have the same CRS")
+    }
   }
 
   # Conditional preprocessing actions
@@ -206,7 +229,6 @@ knndm <- function(tpoints, modeldomain = NULL, ppoints = NULL,
   # Output
   knndm_res
 }
-
 
 
 # kNNDM checks

@@ -186,3 +186,20 @@ test_that("kNNDM recognizes erroneous input", {
                      clustering="kmeans"))
 })
 
+test_that("kNNDM yields the expected results with SpatRast modeldomain", {
+
+  set.seed(1234)
+
+  # prepare sample data
+  dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
+  dat <- terra::aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+                          by=list(as.character(dat$SOURCEID)),mean)
+  pts <- dat[,-1]
+  pts <- sf::st_as_sf(pts,coords=c("Easting","Northing"))
+  sf::st_crs(pts) <- 26911
+  studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
+  pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
+
+  knndm_folds <- knndm(pts, modeldomain = studyArea)
+  expect_equal(as.numeric(knndm(pts, modeldomain = studyArea)$Gjstar[40]), 61.935505)
+})

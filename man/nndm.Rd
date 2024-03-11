@@ -17,10 +17,10 @@ nndm(
 \arguments{
 \item{tpoints}{sf or sfc point object. Contains the training points samples.}
 
-\item{modeldomain}{sf polygon object or SpatRaster defining the prediction area (see Details).}
+\item{modeldomain}{sf polygon object or SpatRaster defining the prediction area. Optional; alternative to ppoints (see Details).}
 
 \item{ppoints}{sf or sfc point object. Contains the target prediction points.
-Optional. Alternative to modeldomain (see Details).}
+Optional. Optional; alternative to modeldomain (see Details).}
 
 \item{samplesize}{numeric. How many points in the modeldomain should be sampled as prediction points?
 Only required if modeldomain is used instead of ppoints.}
