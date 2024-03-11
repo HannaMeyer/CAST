@@ -37,7 +37,7 @@ test_that("NNDM detects wrong data and geometry types", {
 
   # model domain
   expect_error(suppressWarnings(nndm(tpoints_sfc, modeldomain = 1)),
-               "modeldomain must be a sf/sfc object.")
+               "modeldomain must be a sf/sfc object or a 'SpatRaster' object.")
   expect_error(nndm(tpoints_sfc, modeldomain = ppoints_sfc),
                "modeldomain must be a sf/sfc polygon object.")
 })
@@ -106,5 +106,24 @@ test_that("NNDM yields the expected results for all CRS", {
   # Geographic
   tpoints_sf_4326 <- sf::st_set_crs(tpoints_sfc, 4326)
   ppoints_sf_4326 <- sf::st_set_crs(ppoints_sfc, 4326)
-  expect_equal(as.numeric(nndm(tpoints_sf_4326, ppoints = ppoints_sf_4326, phi = 1000000)$Gjstar[20], 4), 355614.94)
+  expect_equal(as.numeric(nndm(tpoints_sf_4326, ppoints = ppoints_sf_4326, phi = 1000000)$Gjstar[20]), 355614.94)
+})
+
+test_that("NNDM yields the expected results with SpatRast modeldomain", {
+
+  set.seed(1234)
+
+  # prepare sample data
+  dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
+  dat <- terra::aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+                          by=list(as.character(dat$SOURCEID)),mean)
+  pts <- dat[,-1]
+  pts <- sf::st_as_sf(pts,coords=c("Easting","Northing"))
+  sf::st_crs(pts) <- 26911
+  studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
+  pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
+
+  nndm_folds <- nndm(pts, modeldomain = studyArea, phi = 150)
+  expect_equal(as.numeric(nndm(pts, modeldomain = studyArea, phi = 150)$Gjstar[5]), 63.828663)
+
 })
