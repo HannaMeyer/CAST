@@ -37,11 +37,6 @@ show.trainDI = function(x, ...){
 print.aoa = function(x, ...){
   cat("DI:\n")
   print(x$DI)
-  
-  if ("LPD" %in% names(x)) {
-    cat("LPD:\n") 
-    print(x$LPD)
-  }
 
   if ("LPD" %in% names(x)) {
     cat("LPD:\n")
