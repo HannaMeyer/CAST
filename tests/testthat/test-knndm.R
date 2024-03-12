@@ -1,5 +1,6 @@
 test_that("kNNDM works with geographical coordinates and prediction points", {
 
+  sf::sf_use_s2(TRUE)
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:4326")
   tpoints <- sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))", crs="epsg:4326") |>
     sf::st_cast("POINT")
@@ -72,6 +73,7 @@ test_that("kNNDM works with modeldomain and projected coordinates", {
 
 test_that("kNNDM works with modeldomain and geographical coordinates", {
 
+  sf::sf_use_s2(TRUE)
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:4326")
   tpoints <- sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))", crs="epsg:4326") |>
     sf::st_cast("POINT")
@@ -108,6 +110,7 @@ test_that("kNNDM works with modeldomain and no crs", {
 
 test_that("kNNDM works when no clustering is present", {
 
+  sf::sf_use_s2(TRUE)
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:25832")
 
   set.seed(1)
@@ -166,6 +169,7 @@ test_that("kNNDM works with many points and different configurations", {
 
 test_that("kNNDM recognizes erroneous input", {
 
+  sf::sf_use_s2(TRUE)
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:25832")
   tpoints <- sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))", crs="epsg:25832") |>
     sf::st_cast("POINT")
