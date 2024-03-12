@@ -80,7 +80,7 @@ indices to perform a k-fold NNDM CV for map validation.</p>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>tpoints</dt>
-<dd><p>sf or sfc point object. Contains the training points samples.</p></dd>
+<dd><p>sf or sfc point object, or data.frame if space = "feature". Contains the training points samples.</p></dd>
 
 
 <dt>modeldomain</dt>
@@ -88,11 +88,11 @@ indices to perform a k-fold NNDM CV for map validation.</p>
 
 
 <dt>predpoints</dt>
-<dd><p>sf or sfc point object. Contains the target prediction points. Optional; alternative to modeldomain (see Details).</p></dd>
+<dd><p>sf or sfc point object, or data.frame if space = "feature". Contains the target prediction points. Optional; alternative to modeldomain (see Details).</p></dd>
 
 
 <dt>space</dt>
-<dd><p>character. Only "geographical" knndm, i.e. kNNDM in the geographical space, is currently implemented.</p></dd>
+<dd><p>character. Either "geographical" or "feature".</p></dd>
 
 
 <dt>k</dt>
@@ -151,18 +151,23 @@ calculating the full distance matrix of the training points even for a projected
 <p>In order to select between clustering algorithms and number of folds `k`, different `knndm` configurations can be run
 and compared, being the one with a lower W statistic the one that offers a better match. W statistics between `knndm`
 runs are comparable as long as `tpoints` and `predpoints` or `modeldomain` stay the same.</p>
-<p>Map validation using knndm should be used using `CAST::global_validation`, i.e. by stacking all out-of-sample
+<p>Map validation using `knndm` should be used using `CAST::global_validation`, i.e. by stacking all out-of-sample
 predictions and evaluating them all at once. The reasons behind this are 1) The resulting folds can be
 unbalanced and 2) nearest neighbour functions are constructed and matched using all CV folds simultaneously.</p>
-<p>If training data points are very clustered with respect to the prediction area and the presented knndm
+<p>If training data points are very clustered with respect to the prediction area and the presented `knndm`
 configuration still show signs of Gj* &gt; Gij, there are several things that can be tried. First, increase
 the `maxp` parameter; this may help to control for strong clustering (at the cost of having unbalanced folds).
 Secondly, decrease the number of final folds `k`, which may help to have larger clusters.</p>
-<p>#' The `modeldomain` is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
+<p>The `modeldomain` is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
 transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
 Then, the function takes a regular point sample (amount defined by `samplesize`) from the spatial extent.
 As an alternative use `predpoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
 When using either `modeldomain` or `predpoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.</p>
+<p>`knndm` can also be performed in the feature space by setting `space` to "feature".
+In this case, nearest neighbour distances are calculated in n-dimensional feature space rather than in geographical space.
+`tpoints` and `predpoints` can be data frames or sf objects containing the values of the features. Note that the names of `tpoints` and `predpoints` must be the same.
+`predpoints` can also be missing, if `modeldomain` is of class SpatRaster. In this case, the values of of the SpatRaster will be extracted to the `predpoints`.
+In the case of any categorical features, 0/1 encoding will be performed (pŕovisionally).</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -289,6 +294,33 @@ When using either `modeldomain` or `predpoints`, we advise to plot the study are
 <span class="r-in"><span>   method<span class="op">=</span><span class="st">"rf"</span>,</span></span>
 <span class="r-in"><span>   trControl <span class="op">=</span> <span class="va">ctrl</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">model_knndm</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="co">########################################################################</span></span></span>
+<span class="r-in"><span><span class="co"># Example 4: Real- world example; kNNDM in feature space</span></span></span>
+<span class="r-in"><span><span class="co">########################################################################</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">splotdata</span> <span class="op">&lt;-</span> <span class="va">splotdata</span><span class="op">[</span><span class="va">splotdata</span><span class="op">$</span><span class="va">Country</span> <span class="op">==</span> <span class="st">"Chile"</span>,<span class="op">]</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">predictors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bio_1"</span>, <span class="st">"bio_4"</span>, <span class="st">"bio_5"</span>, <span class="st">"bio_6"</span>,</span></span>
+<span class="r-in"><span>               <span class="st">"bio_8"</span>, <span class="st">"bio_9"</span>, <span class="st">"bio_12"</span>, <span class="st">"bio_13"</span>,</span></span>
+<span class="r-in"><span>               <span class="st">"bio_14"</span>, <span class="st">"bio_15"</span>, <span class="st">"elev"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_drop_geometry</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">predictors_sp</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"predictors_chile.tif"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">predictors_sp</span><span class="op">[[</span><span class="st">"bio_1"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">knndm_folds</span> <span class="op">&lt;-</span> <span class="fu">knndm</span><span class="op">(</span><span class="va">trainDat</span><span class="op">[</span>,<span class="va">predictors</span><span class="op">]</span>, modeldomain <span class="op">=</span> <span class="va">predictors_sp</span>, space <span class="op">=</span> <span class="st">"feature"</span>,</span></span>
+<span class="r-in"><span>                    clustering<span class="op">=</span><span class="st">"kmeans"</span>, k<span class="op">=</span><span class="fl">4</span>, maxp<span class="op">=</span><span class="fl">0.8</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">knndm_folds</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
