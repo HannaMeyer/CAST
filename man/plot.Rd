@@ -17,7 +17,7 @@
 
 \method{plot}{nndm}(x, type = "strict", ...)
 
-\method{plot}{knndm}(x, type = "strict", ...)
+\method{plot}{knndm}(x, type = "strict", stat = "ecdf", ...)
 
 \method{plot}{ffs}(
   x,
@@ -42,6 +42,8 @@
 
 \item{samplesize}{numeric. How many prediction samples should be plotted?}
 
+\item{stat}{"density" for density plot or "ecdf" for empirical cumulative distribution function plot.}
+
 \item{plotType}{character. Either "all" or "selected"}
 
 \item{palette}{A color palette}
@@ -57,8 +59,6 @@
 \item{pch}{Numeric. Type of point marking the best models}
 
 \item{unit}{character. Only if type=="geo" and only applied to the plot. Supported: "m" or "km".}
-
-\item{stat}{"density" for density plot or "ecdf" for empirical cumulative distribution function plot.}
 }
 \value{
 a ggplot

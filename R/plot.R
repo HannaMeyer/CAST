@@ -179,7 +179,7 @@ plot.nndm <- function(x, type="strict", ...){
 #' @author Carles Milà
 #'
 #' @export
-plot.knndm <- function(x, type="strict", ...){
+plot.knndm <- function(x, type="strict", stat = "ecdf", ...){
 
   # Prepare data for plotting: Gij function
   Gij_df <- data.frame(r=x$Gij[order(x$Gij)])
@@ -200,37 +200,57 @@ plot.knndm <- function(x, type="strict", ...){
   myColors <- RColorBrewer::brewer.pal(3, "Dark2")
 
   # Plot
-  if(type=="strict"){
-    ggplot2::ggplot(data=Gplot, ggplot2::aes_string(x="r", group="Function", col="Function")) +
+  if(stat=="ecdf"){
+    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes_string(x="r", group="Function", col="Function")) +
       ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
       ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
       ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
       ggplot2::stat_ecdf(geom = "step", lwd = 0.8) +
-      ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
+      ggplot2::theme_bw() +
+      ggplot2::ylab("ECDF") +
+      ggplot2::labs(group="Distance function", col="Distance function") +
+      ggplot2::theme(legend.position = "bottom",
+                     legend.text=ggplot2::element_text(size=10))
+
+    if(type=="strict"){
+      p <-  p +
+        ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
+                                     labels=c(expression(hat(G)[ij](r)),
+                                              expression(hat(G)[j]^"*"*"(r,L)"),
+                                              expression(hat(G)[j](r))))
+    }else if(type == "simple"){
+      p <-  p +
+        ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
+                                     labels=c("prediction-to-sample",
+                                              "CV-distances",
+                                              "sample-to-sample"))
+    }
+
+  }else if(stat=="density"){
+    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes_string(x="r", group="Function", fill="Function")) +
+      ggplot2::geom_density(adjust=1.5, alpha=.5, stat=stat, lwd = 0.3) +
+      ggplot2::theme_bw() +
+      ggplot2::ylab("Density") +
+      ggplot2::labs(group="Distance function", col="Distance function") +
+      ggplot2::theme(legend.position = "bottom",
+                     legend.text=ggplot2::element_text(size=10))
+
+    if(type=="strict"){
+      p <-  p +
+        ggplot2::scale_fill_manual(values=c(myColors[2], myColors[3], myColors[1]),
                                    labels=c(expression(hat(G)[ij](r)),
                                             expression(hat(G)[j]^"*"*"(r,L)"),
-                                            expression(hat(G)[j](r)))) +
-      ggplot2::theme_bw() +
-      ggplot2::ylab("ECDF") +
-      ggplot2::labs(group="Distance function", col="Distance function") +
-      ggplot2::theme(legend.position = "bottom",
-                     legend.text=ggplot2::element_text(size=10))
-  }else if(type=="simple"){
-    ggplot2::ggplot(data=Gplot, ggplot2::aes_string(x="r", group="Function", col="Function")) +
-      ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
-      ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
-      ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
-      ggplot2::stat_ecdf(geom = "step", lwd = 0.8) +
-      ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
+                                            expression(hat(G)[j](r))))
+    }else if(type == "simple"){
+      p <-  p +
+        ggplot2::scale_fill_manual(values=c(myColors[2], myColors[3], myColors[1]),
                                    labels=c("prediction-to-sample",
                                             "CV-distances",
-                                            "sample-to-sample")) +
-      ggplot2::theme_bw() +
-      ggplot2::ylab("ECDF") +
-      ggplot2::labs(group="Distance function", col="Distance function") +
-      ggplot2::theme(legend.position = "bottom",
-                     legend.text=ggplot2::element_text(size=10))
+                                            "sample-to-sample"))
+    }
   }
+
+  p
 }
 
 #' Plot results of a Forward feature selection or best subset selection
@@ -403,7 +423,7 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
   if (type=="feature"){unit ="unitless"}
   if(stat=="density"){
     p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, fill=what)) +
-      ggplot2::geom_density(adjust=1.5, alpha=.6, stat=stat, lwd = 0.3) +
+      ggplot2::geom_density(adjust=1.5, alpha=.5, stat=stat, lwd = 0.3) +
       ggplot2::scale_fill_manual(name = "distance function", values = myColors) +
       ggplot2::theme_bw() +
       ggplot2::xlab(xlabs) +
