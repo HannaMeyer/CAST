@@ -4,6 +4,7 @@
   * normalize_DI for a more intuitive interpretation
 * modifications:
   * function DItoErrormetric renamed to errorProfiles and allows for other dissimilarity measures
+  * Improvement and homogenization of plotting methods for nndm, knndm and geodist objects
   
 # `CAST` 0.9.1
 * new features:

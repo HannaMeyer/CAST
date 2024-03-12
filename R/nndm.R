@@ -69,6 +69,7 @@
 #' nndm_pred <- nndm(train_points, predpoints=pred_points)
 #' nndm_pred
 #' plot(nndm_pred)
+#' plot(nndm_pred, type = "simple") # For more accessible legend labels
 #'
 #' # ...or run NNDM with a known autocorrelation range of 10
 #' # to restrict the matching to distances lower than that.
@@ -96,6 +97,7 @@
 #' nndm_pred <- nndm(train_points, predpoints=pred_points)
 #' nndm_pred
 #' plot(nndm_pred)
+#' plot(nndm_pred, type = "simple") # For more accessible legend labels
 #'
 #' ########################################################################
 #' # Example 3: Real- world example; using a SpatRast modeldomain instead

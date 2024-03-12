@@ -110,6 +110,8 @@ plot(train_points, add = TRUE, col = "red")
 knndm_folds <- knndm(train_points, predpoints = pred_points, k = 5)
 knndm_folds
 plot(knndm_folds)
+plot(knndm_folds, type = "simple") # For more accessible legend labels
+plot(knndm_folds, type = "simple", stat = "density") # To visualize densities rather than ECDFs
 folds <- as.character(knndm_folds$clusters)
 ggplot() +
   geom_sf(data = simarea, alpha = 0) +
@@ -136,6 +138,8 @@ plot(train_points, add = TRUE, col = "red")
 knndm_folds <- knndm(train_points, predpoints = pred_points, k = 5)
 knndm_folds
 plot(knndm_folds)
+plot(knndm_folds, type = "simple") # For more accessible legend labels
+plot(knndm_folds, type = "simple", stat = "density") # To visualize densities rather than ECDFs
 folds <- as.character(knndm_folds$clusters)
 ggplot() +
   geom_sf(data = simarea, alpha = 0) +
