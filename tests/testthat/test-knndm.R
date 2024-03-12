@@ -207,3 +207,104 @@ test_that("kNNDM yields the expected results with SpatRast modeldomain", {
   knndm_folds <- knndm(pts, modeldomain = studyArea)
   expect_equal(as.numeric(knndm(pts, modeldomain = studyArea)$Gjstar[40]), 61.935505)
 })
+
+
+test_that("kNNDM works in feature space with kmeans clustering and raster as modeldomain", {
+
+  set.seed(1234)
+
+  # prepare sample data
+  dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
+  dat <- terra::aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+                          by=list(as.character(dat$SOURCEID)),mean)
+  pts <- dat[,-1]
+  pts <- sf::st_as_sf(pts,coords=c("Easting","Northing"))
+  sf::st_crs(pts) <- 26911
+  studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
+  pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
+
+  studyArea <- studyArea[[names(studyArea) %in% names(pts)]]
+  train_points <- pts[,names(pts) %in% names(studyArea)]
+
+  knndm_folds <- knndm(train_points, modeldomain = studyArea, space="feature", clustering = "kmeans")
+
+  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 0.2132)
+
+})
+
+
+test_that("kNNDM works in feature space with hierarchical clustering and raster as modeldomain", {
+
+  set.seed(1234)
+
+  # prepare sample data
+  dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
+  dat <- terra::aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+                          by=list(as.character(dat$SOURCEID)),mean)
+  pts <- dat[,-1]
+  pts <- sf::st_as_sf(pts,coords=c("Easting","Northing"))
+  sf::st_crs(pts) <- 26911
+  studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
+  pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
+
+  studyArea <- studyArea[[names(studyArea) %in% names(pts)]]
+  tpoints <- pts[,names(pts) %in% names(studyArea)]
+
+  knndm_folds <- knndm(tpoints, modeldomain = studyArea, space="feature", clustering = "hierarchical")
+
+  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 0.2132)
+
+})
+
+test_that("kNNDM works in feature space with clustered training points", {
+
+  set.seed(1234)
+
+  data(splotdata)
+  splotdata <- splotdata[splotdata$Country == "Chile",]
+
+  predictors <- c("bio_1", "bio_4", "bio_5", "bio_6",
+                  "bio_8", "bio_9", "bio_12", "bio_13",
+                  "bio_14", "bio_15", "elev")
+  trainDat <- sf::st_drop_geometry(splotdata)
+  predictors_sp <- terra::rast(system.file("extdata", "predictors_chile.tif",package="CAST"))
+
+
+
+  knndm_folds <- knndm(trainDat[,predictors], modeldomain = predictors_sp, space = "feature",
+                       clustering="kmeans", k=4, maxp=0.8)
+
+
+  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 0.8287)
+
+})
+
+
+test_that("kNNDM works in feature space with categorical variables and predpoints", {
+
+  set.seed(1234)
+
+  # prepare sample data
+  dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
+  dat <- terra::aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+                          by=list(as.character(dat$SOURCEID)),mean)
+  pts <- dat[,-1]
+  pts <- sf::st_as_sf(pts,coords=c("Easting","Northing"))
+  sf::st_crs(pts) <- 26911
+  studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
+  pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
+
+  studyArea <- studyArea[[names(studyArea) %in% names(pts)]]
+
+  prediction_points <- terra::spatSample(studyArea, 1000, "regular")
+  train_points <- pts[,names(pts) %in% names(studyArea)]
+
+  prediction_points$fct <- factor(sample(LETTERS[1:4], nrow(prediction_points), replace=TRUE))
+  train_points$fct <- factor(sample(LETTERS[1:4], nrow(pts), replace=TRUE))
+
+
+  knndm_folds <- knndm(tpoints=train_points, predpoints = prediction_points, space="feature", clustering = "kmeans")
+
+  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 1.1464)
+
+})
