@@ -39,7 +39,7 @@ library(viridis)
 library(gridExtra)
 ```
 
-```{r,message = FALSE,include=FALSE, warning=FALSE}
+```{r, message = FALSE,include=FALSE, warning=FALSE}
 RMSE = function(a, b){
     sqrt(mean((a - b)^2,na.rm=T))
 }
@@ -63,7 +63,7 @@ plot(predictors,col=viridis(100))
 
 To be able to test the reliability of the method, we're using a simulated prediction task. We therefore simulate a virtual response variable from the bioclimatic variables.
 
-```{r,message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE}
 
 generate_random_response <- function(raster, predictornames =
 names(raster), seed = sample(seq(1000), 1)){
@@ -97,7 +97,7 @@ length(predictornames)-1, replace = TRUE),
 ```
 
 
-```{r,message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE}
 response <- generate_random_response (predictors, seed = 10)
 plot(response,col=viridis(100),main="virtual response")
 ```
@@ -160,13 +160,13 @@ truediff <- abs(prediction-response)
 plot(rast(list(prediction,response)),main=c("prediction","reference"))
 ```
 
-## AOA Calculation
-The visualization above shows the predictions made by the model. In the next step, the DI and AOA will be calculated.
+## AOA and LPD calculation
+The visualization above shows the predictions made by the model. In the next step, the DI, LPD and AOA will be calculated. Note that it is possible to calculate the AOA without calculating the LPD, which can be very time consuming (arg: `LPD = FALSE`).
 
-The AOA calculation takes the model as input to extract the importance of the predictors, used as weights in multidimensional distance calculation. Note that the AOA can also be calculated without a trained model (i.e. using training data and new data only). In this case all predictor variables are treated equally important (unless weights are given in form of a table).
+The AOA calculation takes the model as input to extract the importance of the predictors, used as weights in multidimensional distance calculation. Note that the AOA can also be calculated without a trained model (i.e. using training data and new data only). In this case all predictor variables are treated equally important (unless weights are given in form of a table). 
 
 ```{r,message = FALSE, warning=FALSE}
-AOA <- aoa(predictors, model)
+AOA <- aoa(predictors, model, LPD = TRUE, verbose = FALSE)
 class(AOA)
 names(AOA)
 print(AOA)
@@ -177,19 +177,20 @@ Plotting the `aoa` object shows the distribution of DI values within the trainin
 ```{r,message = FALSE, warning=FALSE}
 plot(AOA)
 ```
-The most output of the `aoa` function are two raster data: The first is the DI that is the normalized and weighted minimum distance to a nearest training data point divided by the average distance within the training data. The AOA is derived from the DI by using a threshold. The threshold is the (outlier-removed) maximum DI observed in the training data where the DI of the training data is calculated by considering the cross-validation folds.
-The used threshold and all relevant information about the training data DI is returned in the `parameters` list entry.
+The most output of the `aoa` function are three raster data sets: The first is the DI that is the normalized and weighted minimum distance to a nearest training data point divided by the average distance within the training data. The second is the AOA which is derived from the DI by using a threshold. The threshold is the (outlier-removed) maximum DI observed in the training data where the DI of the training data is calculated by considering the cross-validation folds. The last is the LPD that is an absolute count of training data points, that satisfy the AOA condition for a new prediction location. An LPD of `0` therefore signifies a prediction location outside the AOA and `>1` inside the AOA. The specific LPD values give a good indication about the coverage by similar training data for a new prediction location.
+The used threshold and all relevant information about the DI and LPD of the training data is returned in the `parameters` list entry.
 
-We can plot the DI as well as predictions onyl in the AOA:
+We can plot the DI and LPD as well as predictions only in the AOA:
 
-```{r,message = FALSE, warning=FALSE,  fig.show="hold", out.width="30%"}
+```{r,message = FALSE, warning=FALSE,  fig.show="hold", out.width="50%"}
 plot(truediff,col=viridis(100),main="true prediction error")
 plot(AOA$DI,col=viridis(100),main="DI")
+plot(AOA$LPD,col=viridis(100),main="LPD")
 plot(prediction, col=viridis(100),main="prediction for AOA")
 plot(AOA$AOA,col=c("grey","transparent"),add=T,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 ```
 
-The patterns in the DI are in general agreement with the true prediction error.
+The patterns in the DI and LPD are in general agreement with the true prediction error.
 Very high values are present in the Alps, as they have not been covered by training data but feature very distinct environmental conditions. Since the DI values for these areas are above the threshold, we regard this area as outside the AOA.
 
 
@@ -255,14 +256,15 @@ prediction <- predict(predictors,model,na.rm=TRUE)
 The AOA is then calculated (for comparison) using the model validated by random cross-validation, and second by taking the spatial clusters into account and calculating the threshold based on minimum distances to a nearest training point not located in the same cluster. This is done in the aoa function, where the folds used for cross-validation are automatically extracted from the model.
 
 ```{r,message = FALSE, warning=FALSE}
-AOA_spatial <- aoa(predictors, model)
+AOA_spatial <- aoa(predictors, model, LPD = TRUE, verbose = FALSE)
 
-AOA_random <- aoa(predictors, model_random)
+AOA_random <- aoa(predictors, model_random, LPD = TRUE, verbose = FALSE)
 ```
 
 
 ```{r,message = FALSE, warning=FALSE,  fig.show="hold", out.width="50%"}
 plot(AOA_spatial$DI,col=viridis(100),main="DI")
+plot(AOA_spatial$LPD,col=viridis(100),main="LPD")
 plot(prediction, col=viridis(100),main="prediction for AOA \n(spatial CV error applies)")
 plot(AOA_spatial$AOA,col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 plot(prediction_random, col=viridis(100),main="prediction for AOA \n(random CV error applies)")
@@ -270,11 +272,11 @@ plot(AOA_random$AOA,col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",bo
 ```
 
 Note that the AOA is much larger for the spatial CV approach. However, the spatial cross-validation error is considerably larger, hence also the area for which this error applies is larger.
-The random cross-validation performance is very high, however, the area to which the performance applies is small. This fact is also apparent if you plot the `aoa` objects which will display the distributions of the DI of the training data as well as the DI of the new data. For random CV most of the predictionDI is larger than the AOA threshold determined by the trainDI. Using spatial CV, the predictionDI is well within the DI of the training samples.
+The random cross-validation performance is very high, however, the area to which the performance applies is small. This fact is also apparent if you plot the `aoa` objects which will display the distributions of the DI of the training data as well as the DI of the new data. For random CV most of the predictionDI is larger than the AOA threshold determined by the trainDI. Using spatial CV, the predictionDI is well within the DI of the training sample.
 
 ```{r, message = FALSE, warning=FALSE}
-grid.arrange(plot(AOA_spatial) + ggplot2::ggtitle("Spatial CV"),
-             plot(AOA_random) + ggplot2::ggtitle("Random CV"), ncol = 2)
+grid.arrange(plot(AOA_spatial, variable = "DI") + ggplot2::ggtitle("Spatial CV"),
+             plot(AOA_random, variable = "DI") + ggplot2::ggtitle("Random CV"), ncol = 2)
 ```
 
 
@@ -302,24 +304,36 @@ model_random$results
 
 The results indicate that there is a high agreement between the model CV error (RMSE) and the true prediction RMSE. This is the case for both, the random as well as the spatial model.
 
-## Relationship between the DI and the performance measure
+## Relationship between the DI/LPD and the performance measure
 
-The relationship between error and DI can be used to limit predictions to an area (within the AOA) where a required performance (e.g. RMSE, R2, Kappa, Accuracy) applies.
-This can be done using the result of errorProfiles which used the relationship analyzed in a window of DI values. The corresponding model (here: shape constrained additive models which is the default: Monotone increasing P-splines with the dimension of the basis used to represent the smooth term is 6 and a 2nd order penalty.) can be used to estimate the performance on a pixel level, which then allows limiting predictions using a threshold. Note that we used a multi-purpose CV to estimate the relationship between the DI and the RMSE here (see details in the paper).
+The relationship between error and DI or LPD can be used to limit predictions to an area (within the AOA) where a required performance (e.g. RMSE, R2, Kappa, Accuracy) applies.
+This can be done using the result of errorProfiles which used the relationship analyzed in a window of DI/LPD values. The corresponding model (here: shape constrained additive models which is the default: Monotone increasing P-splines with the dimension of the basis used to represent the smooth term is 6 and a 2nd order penalty.) can be used to estimate the performance on a pixel level, which then allows limiting predictions using a threshold. Note that we used a multi-purpose CV to estimate the relationship between the DI and the RMSE here (see details in the paper).
 
 ```{r,message = FALSE, warning=FALSE}
 DI_RMSE_relation <- errorProfiles(model, AOA_spatial$parameters, multiCV=TRUE,
-                                    window.size = 5, length.out = 5)
+                                    window.size = 5, length.out = 5, variable = "DI")
 plot(DI_RMSE_relation)
 
-expected_RMSE = terra::predict(AOA_spatial$DI, DI_RMSE_relation)
+LPD_RMSE_relation <- errorProfiles(model, AOA_spatial$parameters, multiCV=TRUE,
+                                    window.size = 5, length.out = 5, variable = "LPD")
+plot(LPD_RMSE_relation)
+
+DI_expected_RMSE = terra::predict(AOA_spatial$DI, DI_RMSE_relation)
+LPD_expected_RMSE = terra::predict(AOA_spatial$LPD, LPD_RMSE_relation)
 
 # account for multiCV changing the DI threshold
-updated_AOA = AOA_spatial$DI > attr(DI_RMSE_relation, "AOA_threshold")
+DI_updated_AOA = AOA_spatial$DI > attr(DI_RMSE_relation, "AOA_threshold")
+
+# account for multiCV changing the DI threshold
+LPD_updated_AOA = AOA_spatial$DI > attr(LPD_RMSE_relation, "AOA_threshold")
 
 
-plot(expected_RMSE,col=viridis(100),main="expected RMSE")
-plot(updated_AOA, col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
+
+plot(DI_expected_RMSE,col=viridis(100),main="DI expected RMSE")
+plot(DI_updated_AOA, col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
+
+plot(LPD_expected_RMSE,col=viridis(100),main="LPD expected RMSE")
+plot(LPD_updated_AOA, col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 ```
 
 # Example 2: A real-world example
@@ -375,11 +389,14 @@ prediction <- predict(studyArea,model,na.rm=TRUE)
 ## AOA estimation
 Next we're limiting the predictions to the AOA. Predictions outside the AOA should be excluded.
 
-```{r, message = FALSE, warning=FALSE,  fig.show="hold", out.width="50%"}
-AOA <- aoa(studyArea,model)
+```{r, message = FALSE, warning=FALSE,  fig.show="hold", out.width="30%"}
+AOA <- aoa(studyArea, model, LPD = TRUE, verbose = FALSE)
 
 #### Plot results:
 plot(AOA$DI,col=viridis(100),main="DI with sampling locations (red)")
+plot(pts,zcol="ID",col="red",add=TRUE)
+
+plot(AOA$LPD,col=viridis(100),main="LPD with sampling locations (red)")
 plot(pts,zcol="ID",col="red",add=TRUE)
 
 plot(prediction, col=viridis(100),main="prediction for AOA \n(LOOCV error applies)")
