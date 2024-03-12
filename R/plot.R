@@ -116,8 +116,16 @@ plot.nndm <- function(x, ...){
                                    val=sum(x$Gj<=x$phi)/length(x$Gj)))
   Gj_df$Function <- "3_Gj(r)"
 
-  # Merge data for plotting
-  Gplot <- rbind(Gij_df, Gjstar_df, Gj_df)
+  # Merge data for plotting, get maxdist relevant for plotting
+  if(any(Gj_df$val==1)&any(Gjstar_df$val==1)&any(Gij_df$val==1)){
+    Gplot <- rbind(Gij_df, Gjstar_df, Gj_df)
+    maxdist <- max(Gplot$r[Gplot$val!=1]) + 1e-9
+    Gplot <- Gplot[Gplot$r <= maxdist,]
+    Gplot <- rbind(Gplot, data.frame(r=maxdist, val=1,
+                                     Function = c("1_Gij(r)", "2_Gjstar(r)", "3_Gj(r)")))
+  }else{
+    Gplot <- rbind(Gij_df, Gjstar_df, Gj_df)
+  }
 
   # Plot
   ggplot2::ggplot(Gplot) +
