@@ -175,7 +175,7 @@ RMSE(values(prediction_random)[values(AOA_random$AOA)==0],
 model_random$results
 
 ## ----message = FALSE, warning=FALSE-------------------------------------------
-DI_RMSE_relation <- DItoErrormetric(model, AOA_spatial$parameters, multiCV=TRUE,
+DI_RMSE_relation <- errorProfiles(model, AOA_spatial$parameters, multiCV=TRUE,
                                     window.size = 5, length.out = 5)
 plot(DI_RMSE_relation)
 
