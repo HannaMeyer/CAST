@@ -2,13 +2,18 @@
 * new features:
   * option of spatial error profiles (errorProfiles with variable="geodist")
   * normalize_DI for a more intuitive interpretation
+  * geodist allows calculating temporal distances
 * modifications:
   * function DItoErrormetric renamed to errorProfiles and allows for other dissimilarity measures
   * Improvement and homogenization of plotting methods for nndm, knndm and geodist objects
+* deprecated:
+  *plot_geodist (replaced by plot.geodist)
+  *plot_ffs (replaced by plot.ffs)
   
 # `CAST` 0.9.1
 * new features:
   * calculate local point density within AOA
+  
 # `CAST` 0.9.0
 * new features:
   * CAST functions now return classes with generic plotting and printing
