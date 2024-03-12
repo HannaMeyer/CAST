@@ -79,10 +79,13 @@
 #' dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
 #' dat <- st_as_sf(dat,coords=c("Easting","Northing"))
 #' st_crs(dat) <- 26911
-#' trainDat <- dat[dat$altitude==-0.3&year(dat$Date)==2010,]
-#' predictionDat <- dat[dat$altitude==-0.3&year(dat$Date)==2011,]
-#' dist <- geodist(trainDat,preddata = predictionDat,type="time",time_unit="days")
-#' plot(dist)+ scale_x_log10(labels=round)
+#' trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
+#' predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
+#' cvfolds <- CreateSpacetimeFolds(trainDat,timevar = "week")
+#'
+#' dist <- geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,type="time",time_unit="days")
+#' plot(dist)+ xlim(0,10)
+#'
 #'
 #' ############ Example for a random global dataset
 #' ############ (refer to figure in Meyer and Pebesma 2022)
@@ -128,7 +131,7 @@ geodist <- function(x,
 
   # input formatting ------------
   if(is.null(modeldomain)&!is.null(preddata)){
-    modeldomain <- st_bbox(preddata)
+    modeldomain <- sf::st_bbox(preddata)
   }
   if (inherits(modeldomain, "Raster")) {
     modeldomain <- methods::as(modeldomain,"SpatRaster")
@@ -185,12 +188,12 @@ geodist <- function(x,
     }
   }
   if (type=="time" & is.null(timevar)){
-    timevar <- names(which(sapply(x, is.Date)))
+    timevar <- names(which(sapply(x, lubridate::is.Date)))
     message("time variable that has been selected: ",timevar)
   }
   if (type=="time"&time_unit=="auto"){
-    time_unit <- units(difftime(st_drop_geometry(x)[,timevar],
-                               st_drop_geometry(x)[,timevar]))
+    time_unit <- units(difftime(sf::st_drop_geometry(x)[,timevar],
+                                sf::st_drop_geometry(x)[,timevar]))
   }
 
 
@@ -205,7 +208,7 @@ geodist <- function(x,
   }
 
   # always do sample-to-sample and sample-to-prediction
-  s2s <- sample2sample(x, type,variables,time_unit=time_unit,timevar=timevar)
+  s2s <- sample2sample(x, type,variables,time_unit,timevar)
   s2p <- sample2prediction(x, modeldomain, type, samplesize,variables,time_unit,timevar)
 
   dists <- rbind(s2s, s2p)
@@ -255,8 +258,6 @@ geodist <- function(x,
 # Sample to Sample Distance
 
 sample2sample <- function(x, type,variables,time_unit,timevar){
-  print(time_unit)
-  print(timevar)
   if(type == "geo"){
     sf::sf_use_s2(TRUE)
     d <- sf::st_distance(x)
@@ -265,8 +266,6 @@ sample2sample <- function(x, type,variables,time_unit,timevar){
     sampletosample <- data.frame(dist = min_d,
                                  what = factor("sample-to-sample"),
                                  dist_type = "geo")
-
-
   }else if(type == "feature"){
     x <- x[,variables]
     x <- sf::st_drop_geometry(x)
@@ -289,8 +288,8 @@ sample2sample <- function(x, type,variables,time_unit,timevar){
   }else if(type == "time"){ # calculate temporal distance matrix
     d <- matrix(ncol=nrow(x),nrow=nrow(x))
     for (i in 1:nrow(x)){
-      d[i,] <- abs(difftime(st_drop_geometry(x)[,timevar],
-                           st_drop_geometry(x)[i,timevar],
+      d[i,] <- abs(difftime(sf::st_drop_geometry(x)[,timevar],
+                            sf::st_drop_geometry(x)[i,timevar],
                             units=time_unit))
     }
     diag(d) <- Inf
@@ -338,14 +337,10 @@ sample2prediction = function(x, modeldomain, type, samplesize,variables,time_uni
                                      dist_type = "feature")
   }else if(type == "time"){
 
-    #   if (is.null(timevar)){
-    #      timevar <- names(which(sapply(preddata, is.Date)))
-    #    }
-
     min_d0 <- c()
     for (i in 1:nrow(modeldomain)){
-      min_d0[i] <- min(abs(difftime(st_drop_geometry(modeldomain)[i,timevar],
-                                    st_drop_geometry(x)[,timevar],
+      min_d0[i] <- min(abs(difftime(sf::st_drop_geometry(modeldomain)[i,timevar],
+                                    sf::st_drop_geometry(x)[,timevar],
                                     units=time_unit)))
     }
 
@@ -396,14 +391,10 @@ sample2test <- function(x, testdata, type,variables,time_unit,timevar){
                              what = "test-to-sample",
                              dist_type = "feature")
   }else if (type=="time"){
-    if (is.null(timevar)){
-      timevar <- names(which(sapply(testdata, is.Date)))
-    }
-
     min_d0 <- c()
     for (i in 1:nrow(testdata)){
-      min_d0[i] <- min(abs(difftime(st_drop_geometry(testdata)[i,timevar],
-                                    st_drop_geometry(x)[,timevar],
+      min_d0[i] <- min(abs(difftime(sf::st_drop_geometry(testdata)[i,timevar],
+                                    sf::st_drop_geometry(x)[,timevar],
                                     units=time_unit)))
     }
 
@@ -494,14 +485,14 @@ cvdistance <- function(x, cvfolds, cvtrain, type, variables,time_unit,timevar){
     for (i in 1:length(cvfolds)){
       if(!is.null(cvtrain)){
         for (k in 1:length(cvfolds[[i]])){
-          d_cv_tmp[k] <- min(abs(difftime(st_drop_geometry(x)[cvfolds[[i]][k],timevar],
-                                          st_drop_geometry(x)[cvtrain[[i]],timevar],
+          d_cv_tmp[k] <- min(abs(difftime(sf::st_drop_geometry(x)[cvfolds[[i]][k],timevar],
+                                          sf::st_drop_geometry(x)[cvtrain[[i]],timevar],
                                           units=time_unit)))
         }
       }else{
         for (k in 1:length(cvfolds[[i]])){
-          d_cv_tmp[k] <- min(abs(difftime(st_drop_geometry(x)[cvfolds[[i]][k],timevar],
-                                          st_drop_geometry(x)[-cvfolds[[i]],timevar],
+          d_cv_tmp[k] <- min(abs(difftime(sf::st_drop_geometry(x)[cvfolds[[i]][k],timevar],
+                                          sf::st_drop_geometry(x)[-cvfolds[[i]],timevar],
                                           units=time_unit)))
         }
       }

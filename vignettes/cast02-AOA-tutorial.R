@@ -91,7 +91,7 @@ truediff <- abs(prediction-response)
 plot(rast(list(prediction,response)),main=c("prediction","reference"))
 
 ## ----message = FALSE, warning=FALSE-------------------------------------------
-AOA <- aoa(predictors, model)
+AOA <- aoa(predictors, model, LPD = TRUE, verbose = FALSE)
 class(AOA)
 names(AOA)
 print(AOA)
@@ -99,9 +99,10 @@ print(AOA)
 ## ----message = FALSE, warning=FALSE-------------------------------------------
 plot(AOA)
 
-## ----message = FALSE, warning=FALSE,  fig.show="hold", out.width="30%"--------
+## ----message = FALSE, warning=FALSE,  fig.show="hold", out.width="50%"--------
 plot(truediff,col=viridis(100),main="true prediction error")
 plot(AOA$DI,col=viridis(100),main="DI")
+plot(AOA$LPD,col=viridis(100),main="LPD")
 plot(prediction, col=viridis(100),main="prediction for AOA")
 plot(AOA$AOA,col=c("grey","transparent"),add=T,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 
@@ -144,20 +145,21 @@ model <- train(trainDat[,names(predictors)],
 prediction <- predict(predictors,model,na.rm=TRUE)
 
 ## ----message = FALSE, warning=FALSE-------------------------------------------
-AOA_spatial <- aoa(predictors, model)
+AOA_spatial <- aoa(predictors, model, LPD = TRUE, verbose = FALSE)
 
-AOA_random <- aoa(predictors, model_random)
+AOA_random <- aoa(predictors, model_random, LPD = TRUE, verbose = FALSE)
 
 ## ----message = FALSE, warning=FALSE,  fig.show="hold", out.width="50%"--------
 plot(AOA_spatial$DI,col=viridis(100),main="DI")
+plot(AOA_spatial$LPD,col=viridis(100),main="LPD")
 plot(prediction, col=viridis(100),main="prediction for AOA \n(spatial CV error applies)")
 plot(AOA_spatial$AOA,col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 plot(prediction_random, col=viridis(100),main="prediction for AOA \n(random CV error applies)")
 plot(AOA_random$AOA,col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 
 ## ----message = FALSE, warning=FALSE-------------------------------------------
-grid.arrange(plot(AOA_spatial) + ggplot2::ggtitle("Spatial CV"),
-             plot(AOA_random) + ggplot2::ggtitle("Random CV"), ncol = 2)
+grid.arrange(plot(AOA_spatial, variable = "DI") + ggplot2::ggtitle("Spatial CV"),
+             plot(AOA_random, variable = "DI") + ggplot2::ggtitle("Random CV"), ncol = 2)
 
 ## ----message = FALSE, warning=FALSE-------------------------------------------
 ###for the spatial CV:
@@ -175,18 +177,30 @@ RMSE(values(prediction_random)[values(AOA_random$AOA)==0],
 model_random$results
 
 ## ----message = FALSE, warning=FALSE-------------------------------------------
-DI_RMSE_relation <- DItoErrormetric(model, AOA_spatial$parameters, multiCV=TRUE,
-                                    window.size = 5, length.out = 5)
+DI_RMSE_relation <- errorProfiles(model, AOA_spatial$parameters, multiCV=TRUE,
+                                    window.size = 5, length.out = 5, variable = "DI")
 plot(DI_RMSE_relation)
 
-expected_RMSE = terra::predict(AOA_spatial$DI, DI_RMSE_relation)
+LPD_RMSE_relation <- errorProfiles(model, AOA_spatial$parameters, multiCV=TRUE,
+                                    window.size = 5, length.out = 5, variable = "LPD")
+plot(LPD_RMSE_relation)
+
+DI_expected_RMSE = terra::predict(AOA_spatial$DI, DI_RMSE_relation)
+LPD_expected_RMSE = terra::predict(AOA_spatial$LPD, LPD_RMSE_relation)
 
 # account for multiCV changing the DI threshold
-updated_AOA = AOA_spatial$DI > attr(DI_RMSE_relation, "AOA_threshold")
+DI_updated_AOA = AOA_spatial$DI > attr(DI_RMSE_relation, "AOA_threshold")
+
+# account for multiCV changing the DI threshold
+LPD_updated_AOA = AOA_spatial$DI > attr(LPD_RMSE_relation, "AOA_threshold")
 
 
-plot(expected_RMSE,col=viridis(100),main="expected RMSE")
-plot(updated_AOA, col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
+
+plot(DI_expected_RMSE,col=viridis(100),main="DI expected RMSE")
+plot(DI_updated_AOA, col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
+
+plot(LPD_expected_RMSE,col=viridis(100),main="LPD expected RMSE")
+plot(LPD_updated_AOA, col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",box.col="black",bty="o",title="AOA"))
 
 ## ----message = FALSE, warning=FALSE-------------------------------------------
 dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
@@ -220,11 +234,14 @@ plot(stretch(studyArea[[predictors]]))
 #prediction:
 prediction <- predict(studyArea,model,na.rm=TRUE)
 
-## ----message = FALSE, warning=FALSE,  fig.show="hold", out.width="50%"--------
-AOA <- aoa(studyArea,model)
+## ----message = FALSE, warning=FALSE,  fig.show="hold", out.width="30%"--------
+AOA <- aoa(studyArea, model, LPD = TRUE, verbose = FALSE)
 
 #### Plot results:
 plot(AOA$DI,col=viridis(100),main="DI with sampling locations (red)")
+plot(pts,zcol="ID",col="red",add=TRUE)
+
+plot(AOA$LPD,col=viridis(100),main="LPD with sampling locations (red)")
 plot(pts,zcol="ID",col="red",add=TRUE)
 
 plot(prediction, col=viridis(100),main="prediction for AOA \n(LOOCV error applies)")
