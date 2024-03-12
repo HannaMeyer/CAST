@@ -1,0 +1,65 @@
+---
+title: '5. Cross-validation methods in CAST'
+author: "Carles Milà"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{5. Cross-validation methods in CAST}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Introduction and motivational example
+
+Cross-Validation (CV) is important for many tasks within the predictive mapping workflow, including feature selection (check `CAST::ffs` and `CAST::bss`), hyperparameter tuning, area of applicability estimation (check `CAST::aoa`). Moreover, in the unfortunate case where no independent samples are available to estimate the performance of the final products, it can be used as a last resort to obtain an estimate of the map error.
+
+In CAST, we deal with data that are indexed in space, i.e. data that present dependencies that do not comply with the assumptions of independence of standard CV methods such as Leave-One-Out (LOO) CV or k-fold CV. Several CV approaches have been proposed to deal with these including blocking and buffering strategies that try to deal with the dependency between the train and hold out data. However, in CAST, we propose strategies that are prediction-oriented, i.e. CV methods that aim to approximate the predictive conditions found when using a model for a specific prediction task. And how we define these conditions? In the current state of CAST, we mainly focus on the geographical space by comparing the distances between prediction and training locations. However, future developments are planned so check the "current developments" section below if interested!
+
+For now, let's consider geographical space and show what we mean by this. Imagine that we have the following setting, we want to predict a variable in a 1000x1000 grid with either the red samples in the left plot and we use a 5-fold random CV as shown in the right plot:
+
+```{r}
+
+```
+
+One way to quantify the predictive conditions in the geographic space would be to compute the distribution of geographic nearest neighbour distances between the prediction points and training points and compare it to that found during the CV between the hold-out points and the training data. In CAST, this is easily done by the `CAST::geodist` function, which also computes the distribution of nearest neighbour distances of the training points by default:
+
+```{r}
+
+```
+
+We see that, for the red samples, distances when using a random k-fold CV are much shorter than those found when predicting for this area. This is something that has been reported several times when using clustered data and that could potentially lead to unwanted outputs such as overoptimistic performance estimates (see Linnenbrink et al 2024 and Milà et al 2022), or overfitting when used for feature selection (see Meyer et al 2019). Ideally, we would like our two distributions to be as similar as possible like in the case of the blue samples, and this is when the Nearest Neighbour Distance Matching (NNDM) methods implemented in `CAST` come in. 
+
+## NNDM methods implemented in CAST
+
+### NNDM LOO CV for small datasets
+
+### kNNDM CV for medium and large datasets
+
+## Current and future developments
+
+In the currently state of CRAN, we have an experimental version for cross-validation in the feature space using `knndm`. Briefly, we extend our ideas for geographical distances to feature distances while taking into account their specific characteristics, such as dealing with categorical features, and predictors, and potentially high dimensional. Stay tuned for developments in this area, as well as others we have plan to implement (we see you spatiotemporal modellers), coming soon! 
+
+## Take-away messages
+
+* CAST proposes two NNDM methods for cross-validation in the geographical space that aim at reproducing the conditions found when predicting in a defined area during CV.
+* Both LOO NNDM and kNNDM aim to match the CV ECDF to the prediction-to-error ECDF.
+* NNDM LOO CV generally offers better matches but can only be used for small sample sizes.
+* kNNDM CV offers k-fold alternative for medium and large datasets that are commonly found.
+* Future work will extend the ideas of the geographical space to the feature space and much more!
+
+## Further reading
+
+Methods implemented in CAST:
+* Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM: k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2023-1308
+* Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.  https://doi.org/10.1111/2041-210X.13851
+
+Other useful references:
+* Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance of spatial predictor variable selection in machine learning applications - Moving from data reproduction to spatial prediction. Ecological Modelling. 411, 108815. doi:10.1016/j.ecolmodel.2019.108815.
