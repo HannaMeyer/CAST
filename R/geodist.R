@@ -188,7 +188,7 @@ geodist <- function(x,
     }
   }
   if (type=="time" & is.null(timevar)){
-    timevar <- names(which(sapply(x, is.Date)))
+    timevar <- names(which(sapply(x, lubridate::is.Date)))
     message("time variable that has been selected: ",timevar)
   }
   if (type=="time"&time_unit=="auto"){
@@ -391,10 +391,6 @@ sample2test <- function(x, testdata, type,variables,time_unit,timevar){
                              what = "test-to-sample",
                              dist_type = "feature")
   }else if (type=="time"){
-    if (is.null(timevar)){
-      timevar <- names(which(sapply(testdata, is.Date)))
-    }
-
     min_d0 <- c()
     for (i in 1:nrow(testdata)){
       min_d0[i] <- min(abs(difftime(sf::st_drop_geometry(testdata)[i,timevar],

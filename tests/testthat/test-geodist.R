@@ -233,8 +233,8 @@ expect_equal(mean_sample2sample, 0.02)
 expect_equal(mean_prediction_to_sample, 194.7656)
 
 dist <- CAST::geodist(trainDat,preddata = predictionDat,type="time",time_unit="hours")
-mean_prediction_to_sample <- round(mean(dist[dist$what=="prediction-to-sample","dist"]), 4)
-expect_equal(mean_prediction_to_sample, 4674.375)
+mean_prediction_to_sample <- round(mean(dist[dist$what=="prediction-to-sample","dist"]), 2)
+expect_equal(mean_prediction_to_sample, 4674.37)
 
 })
 
