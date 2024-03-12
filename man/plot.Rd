@@ -13,7 +13,7 @@
 \usage{
 \method{plot}{trainDI}(x, ...)
 
-\method{plot}{aoa}(x, samplesize = 1000, ...)
+\method{plot}{aoa}(x, samplesize = 1000, variable = "DI", ...)
 
 \method{plot}{nndm}(x, type = "strict", ...)
 
@@ -41,6 +41,8 @@
 \item{...}{other params}
 
 \item{samplesize}{numeric. How many prediction samples should be plotted?}
+
+\item{variable}{character. Variable for which to generate the density plot. 'DI' or 'LPD'}
 
 \item{type}{String, defaults to "strict" to show the original nearest neighbour distance definitions in the legend.
 Alternatively, set to "simple" to have more intuitive labels.}

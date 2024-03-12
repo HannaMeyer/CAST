@@ -222,8 +222,8 @@ test_that("geodist works in temporal space", {
 dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
 dat <- sf::st_as_sf(dat,coords=c("Easting","Northing"))
 sf::st_crs(dat) <- 26911
-trainDat <- dat[dat$altitude==-0.3&year(dat$Date)==2010,]
-predictionDat <- dat[dat$altitude==-0.3&year(dat$Date)==2011,]
+trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
+predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
 dist <- CAST::geodist(trainDat,preddata = predictionDat,type="time",time_unit="days")
 
 mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
