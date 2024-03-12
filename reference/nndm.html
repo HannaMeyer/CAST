@@ -184,6 +184,8 @@ When using either <em>modeldomain</em> or <em>predpoints</em>, we advise to plot
 <span class="r-out co"><span class="r-pr">#&gt;</span> Minimum number of training points: 83</span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="nndm-2.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span>, type <span class="op">=</span> <span class="st">"simple"</span><span class="op">)</span> <span class="co"># For more accessible legend labels</span></span></span>
+<span class="r-plt img"><img src="nndm-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># ...or run NNDM with a known autocorrelation range of 10</span></span></span>
 <span class="r-in"><span><span class="co"># to restrict the matching to distances lower than that.</span></span></span>
@@ -194,7 +196,7 @@ When using either <em>modeldomain</em> or <em>predpoints</em>, we advise to plot
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mean number of training points: 98.72</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Minimum number of training points: 96</span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="nndm-3.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="nndm-4.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">########################################################################</span></span></span>
 <span class="r-in"><span><span class="co"># Example 2: Simulated data - Clustered training points</span></span></span>
@@ -211,7 +213,7 @@ When using either <em>modeldomain</em> or <em>predpoints</em>, we advise to plot
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">sample_poly</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">pred_points</span>, add <span class="op">=</span> <span class="cn">TRUE</span>, col <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">train_points</span>, add <span class="op">=</span> <span class="cn">TRUE</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="nndm-4.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="nndm-5.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Run NNDM for the whole domain</span></span></span>
 <span class="r-in"><span><span class="va">nndm_pred</span> <span class="op">&lt;-</span> <span class="fu">nndm</span><span class="op">(</span><span class="va">train_points</span>, predpoints<span class="op">=</span><span class="va">pred_points</span><span class="op">)</span></span></span>
@@ -221,7 +223,9 @@ When using either <em>modeldomain</em> or <em>predpoints</em>, we advise to plot
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mean number of training points: 86.84</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Minimum number of training points: 50</span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="nndm-5.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="nndm-6.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">nndm_pred</span>, type <span class="op">=</span> <span class="st">"simple"</span><span class="op">)</span> <span class="co"># For more accessible legend labels</span></span></span>
+<span class="r-plt img"><img src="nndm-7.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">########################################################################</span></span></span>
 <span class="r-in"><span><span class="co"># Example 3: Real- world example; using a SpatRast modeldomain instead</span></span></span>
