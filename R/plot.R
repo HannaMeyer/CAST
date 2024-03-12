@@ -83,6 +83,8 @@ plot.aoa = function(x, samplesize = 1000, ...){
 
 #' @name plot
 #' @param x An object of type \emph{nndm}.
+#' @param type String, defaults to "strict" to show the original nearest neighbour distance definitions in the legend.
+#' Alternatively, set to "simple" to have more intuitive labels.
 #' @param ... other arguments.
 #' @author Carles Milà
 #'
@@ -175,6 +177,9 @@ plot.nndm <- function(x, type="strict", ...){
 
 #' @name plot
 #' @param x An object of type \emph{knndm}.
+#' @param type String, defaults to "strict" to show the original nearest neighbour distance definitions in the legend.
+#' Alternatively, set to "simple" to have more intuitive labels.
+#' @param stat String, defaults to "ecdf" but can be set to "density" to estimate density functions.
 #' @param ... other arguments.
 #' @author Carles Milà
 #'

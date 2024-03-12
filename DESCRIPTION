@@ -39,6 +39,7 @@ Suggests:
     rnaturalearth,
     MASS,
     twosamples,
+    RColorBrewer,
     testthat (>= 3.0.0)
 RoxygenNote: 7.2.3
 VignetteBuilder: knitr

@@ -42,6 +42,9 @@
 
 \item{samplesize}{numeric. How many prediction samples should be plotted?}
 
+\item{type}{String, defaults to "strict" to show the original nearest neighbour distance definitions in the legend.
+Alternatively, set to "simple" to have more intuitive labels.}
+
 \item{stat}{"density" for density plot or "ecdf" for empirical cumulative distribution function plot.}
 
 \item{plotType}{character. Either "all" or "selected"}
