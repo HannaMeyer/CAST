@@ -81,6 +81,7 @@
 #' st_crs(dat) <- 26911
 #' trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
 #' predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
+#' trainDat$week <- lubridate::week(trainDat$Date)
 #' cvfolds <- CreateSpacetimeFolds(trainDat,timevar = "week")
 #'
 #' dist <- geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,type="time",time_unit="days")
