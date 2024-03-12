@@ -44,6 +44,7 @@ test_that("NNDM detects wrong data and geometry types", {
 
 test_that("NNDM detects different CRS in inputs", {
 
+  sf::sf_use_s2(TRUE)
   set.seed(1234)
   poly <- sf::st_polygon(list(matrix(c(0,0,0,50,50,50,50,0,0,0), ncol=2,
                                      byrow=TRUE)))
@@ -91,6 +92,7 @@ test_that("NNDM yields the expected results for all data types", {
 
 test_that("NNDM yields the expected results for all CRS", {
 
+  sf::sf_use_s2(TRUE)
   set.seed(1234)
   poly <- sf::st_polygon(list(matrix(c(0,0,0,50,50,50,50,0,0,0), ncol=2,
                                      byrow=TRUE)))
