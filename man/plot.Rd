@@ -15,9 +15,9 @@
 
 \method{plot}{aoa}(x, samplesize = 1000, ...)
 
-\method{plot}{nndm}(x, ...)
+\method{plot}{nndm}(x, type = "strict", ...)
 
-\method{plot}{knndm}(x, ...)
+\method{plot}{knndm}(x, type = "strict", ...)
 
 \method{plot}{ffs}(
   x,
@@ -76,7 +76,8 @@ could not improve the results.
 If type=="selected", the contribution of the selected variables to the model
 performance is shown.
 
-Density plot of nearest neighbor distances in geographic space or feature space between training data as well as between training data and prediction locations.
+Density plot of nearest neighbor distances in geographic space or feature space between training data as well as between training data and
+prediction locations.
 Optional, the nearest neighbor distances between training data and test data or between training data and CV iterations is shown.
 The plot can be used to check the suitability of a chosen CV method to be representative to estimate map accuracy.
 
