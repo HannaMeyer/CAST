@@ -426,6 +426,9 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
   if( type=="feature"){ xlabs <- "feature space distances"}
   what <- "" #just to avoid check note
   if (type=="feature"){unit ="unitless"}
+
+  if (type=="time"){unit = attr(x,"unit")}
+  if( type=="time"){ xlabs <- paste0("temporal distances (",unit,")")}
   if(stat=="density"){
     p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, fill=what)) +
       ggplot2::geom_density(adjust=1.5, alpha=.5, stat=stat, lwd = 0.3) +
