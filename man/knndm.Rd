@@ -18,13 +18,13 @@ knndm(
 )
 }
 \arguments{
-\item{tpoints}{sf or sfc point object. Contains the training points samples.}
+\item{tpoints}{sf or sfc point object, or data.frame if space = "feature". Contains the training points samples.}
 
 \item{modeldomain}{sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).}
 
-\item{predpoints}{sf or sfc point object. Contains the target prediction points. Optional; alternative to modeldomain (see Details).}
+\item{predpoints}{sf or sfc point object, or data.frame if space = "feature". Contains the target prediction points. Optional; alternative to modeldomain (see Details).}
 
-\item{space}{character. Only "geographical" knndm, i.e. kNNDM in the geographical space, is currently implemented.}
+\item{space}{character. Either "geographical" or "feature".}
 
 \item{k}{integer. Number of folds desired for CV. Defaults to 10.}
 
@@ -73,20 +73,26 @@ In order to select between clustering algorithms and number of folds `k`, differ
 and compared, being the one with a lower W statistic the one that offers a better match. W statistics between `knndm`
 runs are comparable as long as `tpoints` and `predpoints` or `modeldomain` stay the same.
 
-Map validation using knndm should be used using `CAST::global_validation`, i.e. by stacking all out-of-sample
+Map validation using `knndm` should be used using `CAST::global_validation`, i.e. by stacking all out-of-sample
 predictions and evaluating them all at once. The reasons behind this are 1) The resulting folds can be
 unbalanced and 2) nearest neighbour functions are constructed and matched using all CV folds simultaneously.
 
-If training data points are very clustered with respect to the prediction area and the presented knndm
+If training data points are very clustered with respect to the prediction area and the presented `knndm`
 configuration still show signs of Gj* > Gij, there are several things that can be tried. First, increase
 the `maxp` parameter; this may help to control for strong clustering (at the cost of having unbalanced folds).
 Secondly, decrease the number of final folds `k`, which may help to have larger clusters.
 
-#' The `modeldomain` is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
+The `modeldomain` is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
 transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
 Then, the function takes a regular point sample (amount defined by `samplesize`) from the spatial extent.
 As an alternative use `predpoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
 When using either `modeldomain` or `predpoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
+
+`knndm` can also be performed in the feature space by setting `space` to "feature".
+In this case, nearest neighbour distances are calculated in n-dimensional feature space rather than in geographical space.
+`tpoints` and `predpoints` can be data frames or sf objects containing the values of the features. Note that the names of `tpoints` and `predpoints` must be the same.
+`predpoints` can also be missing, if `modeldomain` is of class SpatRaster. In this case, the values of of the SpatRaster will be extracted to the `predpoints`.
+In the case of any categorical features, 0/1 encoding will be performed (pŕovisionally).
 }
 \examples{
 ########################################################################
@@ -183,6 +189,33 @@ model_knndm <- train(dat[,c("DEM","TWI", "NDRE.M")],
    method="rf",
    trControl = ctrl)
 global_validation(model_knndm)
+}
+########################################################################
+# Example 4: Real- world example; kNNDM in feature space
+########################################################################
+\dontrun{
+library(sf)
+library(terra)
+library(ggplot2)
+
+data(splotdata)
+splotdata <- splotdata[splotdata$Country == "Chile",]
+
+predictors <- c("bio_1", "bio_4", "bio_5", "bio_6",
+               "bio_8", "bio_9", "bio_12", "bio_13",
+               "bio_14", "bio_15", "elev")
+
+trainDat <- sf::st_drop_geometry(splotdata)
+predictors_sp <- terra::rast(system.file("extdata", "predictors_chile.tif",package="CAST"))
+
+
+terra::plot(predictors_sp[["bio_1"]])
+terra::plot(vect(splotdata), add = T)
+
+knndm_folds <- knndm(trainDat[,predictors], modeldomain = predictors_sp, space = "feature",
+                    clustering="kmeans", k=4, maxp=0.8)
+plot(knndm_folds)
+
 }
 }
 \references{

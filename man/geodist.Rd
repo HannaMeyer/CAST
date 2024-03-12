@@ -6,7 +6,7 @@
 \usage{
 geodist(
   x,
-  modeldomain,
+  modeldomain = NULL,
   type = "geo",
   cvfolds = NULL,
   cvtrain = NULL,
@@ -14,7 +14,9 @@ geodist(
   preddata = NULL,
   samplesize = 2000,
   sampling = "regular",
-  variables = NULL
+  variables = NULL,
+  timevar = NULL,
+  time_unit = "auto"
 )
 }
 \arguments{
@@ -39,6 +41,10 @@ locations within the modeldomain rather than the whole area.}
 \item{sampling}{character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.}
 
 \item{variables}{character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.}
+
+\item{timevar}{optional. character. Column that indicates the date. Only used if type="time".}
+
+\item{time_unit}{optional. Character. Unit for temporal distances See ?difftime.Only used if type="time".}
 }
 \value{
 A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
@@ -103,6 +109,17 @@ dist <- geodist(x = splotdata[splotdata$Country != "Chile",],
                 type = "feature",
                 variables=c("bio_1","bio_12", "elev"))
 plot(dist)
+
+############Distances in temporal space
+library(lubridate)
+library(ggplot2)
+dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
+dat <- st_as_sf(dat,coords=c("Easting","Northing"))
+st_crs(dat) <- 26911
+trainDat <- dat[dat$altitude==-0.3&year(dat$Date)==2010,]
+predictionDat <- dat[dat$altitude==-0.3&year(dat$Date)==2011,]
+dist <- geodist(trainDat,preddata = predictionDat,type="time",time_unit="days")
+plot(dist)+ scale_x_log10(labels=round)
 
 ############ Example for a random global dataset
 ############ (refer to figure in Meyer and Pebesma 2022)
