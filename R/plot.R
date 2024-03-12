@@ -127,25 +127,26 @@ plot.nndm <- function(x, ...){
     Gplot <- rbind(Gij_df, Gjstar_df, Gj_df)
   }
 
+  # Define colours matching those of geodist
+  myColors <- RColorBrewer::brewer.pal(3, "Dark2")
+
   # Plot
   ggplot2::ggplot(Gplot) +
-    ggplot2::geom_step(ggplot2::aes_string(x="r", y="val", colour="Function", size="Function"),
-                       alpha = 0.8) +
-    ggplot2::scale_size_manual(values=c(1.1, 1.1, 0.5),
-                               labels=c(expression(hat(G)[ij](r)),
-                                        expression(hat(G)[j]^"*"*"(r,"*bold(L)*")"),
-                                        expression(hat(G)[j](r)))) +
-    ggplot2::scale_colour_manual(values=c("#000000", "#E69F00", "#56B4E9"),
+    ggplot2::geom_step(ggplot2::aes_string(x="r", y="val", colour="Function"),
+                       alpha = 0.8, lwd = 0.8) +
+    ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
                                  labels=c(expression(hat(G)[ij](r)),
                                           expression(hat(G)[j]^"*"*"(r,"*bold(L)*")"),
                                           expression(hat(G)[j](r)))) +
-    ggplot2::ylab(expression(paste(hat(G)[ij](r), ", ",
-                                   hat(G)[j]^"*"*"(r,"*bold(L)*")", ", ",
-                                   hat(G)[j](r)))) +
-    ggplot2::labs(colour="", size="") +
+    ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
+    ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
+    ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
+    ggplot2::ylab("ECDF") +
+    ggplot2::labs(colour="Distance function", size="Distance function") +
     ggplot2::theme_bw() +
     ggplot2::theme(legend.text.align=0,
-                   legend.text=ggplot2::element_text(size=12))
+                   legend.text=ggplot2::element_text(size=11),
+                   legend.position = "bottom")
 }
 
 
@@ -172,19 +173,24 @@ plot.knndm <- function(x, ...){
   # Merge data for plotting
   Gplot <- rbind(Gij_df, Gjstar_df, Gj_df)
 
+  # Define colours matching those of geodist
+  myColors <- RColorBrewer::brewer.pal(3, "Dark2")
+
   # Plot
   ggplot2::ggplot(data=Gplot, ggplot2::aes_string(x="r", group="Function", col="Function")) +
     ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
     ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
     ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
-    ggplot2::stat_ecdf(geom = "step", lwd = 1) +
-    ggplot2::scale_colour_manual(values=c("#000000", "#E69F00", "#56B4E9"),
+    ggplot2::stat_ecdf(geom = "step", lwd = 0.8) +
+    ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
                                  labels=c(expression(hat(G)[ij](r)),
                                           expression(hat(G)[j]^"*"*"(r,L)"),
                                           expression(hat(G)[j](r)))) +
-    ggplot2::ylab(expression(paste(hat(G)[ij](r), ", ",
-                                   hat(G)[j]^"*"*"(r,L)", ", ",
-                                   hat(G)[j](r))))
+    ggplot2::theme_bw() +
+    ggplot2::ylab("ECDF") +
+    ggplot2::labs(group="Distance function", col="Distance function") +
+    ggplot2::theme(legend.position = "bottom",
+                   legend.text=ggplot2::element_text(size=11))
 }
 
 #' Plot results of a Forward feature selection or best subset selection
@@ -333,6 +339,14 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
 
 plot.geodist <- function(x, unit = "m", stat = "density", ...){
 
+  # Define colours
+  labs <- c("sample-to-sample",
+            "prediction-to-sample",
+            "CV-distances",
+            "test-to-sample")
+  myColors <- RColorBrewer::brewer.pal(4, "Dark2")
+  names(myColors) <- labs
+
 
   type <- attr(x, "type")
 
@@ -348,8 +362,9 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
   if (type=="feature"){unit ="unitless"}
   if(stat=="density"){
     p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, fill=what)) +
-      ggplot2::geom_density(adjust=1.5, alpha=.4, stat=stat) +
-      ggplot2::scale_fill_discrete(name = "distance function") +
+      ggplot2::geom_density(adjust=1.5, alpha=.6, stat=stat, lwd = 0.3) +
+      ggplot2::scale_fill_manual(name = "distance function", values = myColors) +
+      ggplot2::theme_bw() +
       ggplot2::xlab(xlabs) +
       ggplot2::theme(legend.position="bottom",
                      plot.margin = unit(c(0,0.5,0,0),"cm"))
@@ -359,7 +374,8 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
       ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
       ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
       ggplot2::stat_ecdf(geom = "step", lwd = 1) +
-      ggplot2::scale_color_discrete(name = "distance function") +
+      ggplot2::scale_color_manual(name = "distance function", values = myColors) +
+      ggplot2::theme_bw() +
       ggplot2::xlab(xlabs) +
       ggplot2::ylab("ECDF") +
       ggplot2::theme(legend.position="bottom",
