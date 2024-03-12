@@ -37,7 +37,10 @@
 #'
 #' ########### Distance between training data and new data:
 #' dist <- geodist(splotdata, studyArea)
+#' # With density functions
 #' plot(dist)
+#' # Or ECDFs (relevant for nndm and knnmd methods)
+#' plot(dist, stat="ecdf")
 #'
 #' ########### Distance between training data, new data and test data (here Chile):
 #' plot(splotdata[,"Country"])
@@ -48,7 +51,10 @@
 #' ########### Distance between training data, new data and CV folds:
 #' folds <- createFolds(1:nrow(splotdata), k=3, returnTrain=FALSE)
 #' dist <- geodist(x=splotdata, modeldomain=studyArea, cvfolds=folds)
+#' # Using density functions
 #' plot(dist)
+#' # Using ECDFs (relevant for nndm and knnmd methods)
+#' plot(dist, stat="ecdf")
 #'
 #' ########### Distances in the feature space:
 #' predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
