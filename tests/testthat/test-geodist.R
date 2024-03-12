@@ -215,3 +215,46 @@ test_that("geodist works with points and test data in feature space", {
 
 
 })
+
+
+test_that("geodist works in temporal space", {
+
+dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
+dat <- sf::st_as_sf(dat,coords=c("Easting","Northing"))
+sf::st_crs(dat) <- 26911
+trainDat <- dat[dat$altitude==-0.3&year(dat$Date)==2010,]
+predictionDat <- dat[dat$altitude==-0.3&year(dat$Date)==2011,]
+dist <- CAST::geodist(trainDat,preddata = predictionDat,type="time",time_unit="days")
+
+mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
+mean_prediction_to_sample <- round(mean(dist[dist$what=="prediction-to-sample","dist"]), 4)
+
+expect_equal(mean_sample2sample, 0.02)
+expect_equal(mean_prediction_to_sample, 194.7656)
+
+dist <- CAST::geodist(trainDat,preddata = predictionDat,type="time",time_unit="hours")
+mean_prediction_to_sample <- round(mean(dist[dist$what=="prediction-to-sample","dist"]), 4)
+expect_equal(mean_prediction_to_sample, 4674.375)
+
+})
+
+test_that("geodist works in temporal space and with CV", {
+  dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
+  dat <- sf::st_as_sf(dat,coords=c("Easting","Northing"))
+  sf::st_crs(dat) <- 26911
+  trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
+  predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
+  trainDat$week <- lubridate::week(trainDat$Date)
+  set.seed(100)
+  cvfolds <- CreateSpacetimeFolds(trainDat,timevar = "week")
+
+  dist <- CAST::geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,
+                        type="time",time_unit="days")
+
+  mean_cv <- round(mean(dist[dist$what=="CV-distances","dist"]), 4)
+
+    expect_equal(mean_cv,  2.4048)
+}
+)
+
+

@@ -81,8 +81,11 @@
 #' st_crs(dat) <- 26911
 #' trainDat <- dat[dat$altitude==-0.3&year(dat$Date)==2010,]
 #' predictionDat <- dat[dat$altitude==-0.3&year(dat$Date)==2011,]
-#' dist <- geodist(trainDat,preddata = predictionDat,type="time",time_unit="days")
-#' plot(dist)+ scale_x_log10(labels=round)
+#' cvfolds <- CreateSpacetimeFolds(trainDat,timevar = "week")
+#'
+#' dist <- geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,type="time",time_unit="days")
+#' plot(dist)+ xlim(0,10)
+#'
 #'
 #' ############ Example for a random global dataset
 #' ############ (refer to figure in Meyer and Pebesma 2022)
