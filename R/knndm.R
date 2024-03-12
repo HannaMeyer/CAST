@@ -4,10 +4,10 @@
 #' indices to perform a k-fold NNDM CV for map validation.
 #'
 #' @author Carles Milà and Jan Linnenbrink
-#' @param tpoints sf or sfc point object. Contains the training points samples.
+#' @param tpoints sf or sfc point object, or data.frame if space = "feature". Contains the training points samples.
 #' @param modeldomain sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).
-#' @param predpoints sf or sfc point object. Contains the target prediction points. Optional; alternative to modeldomain (see Details).
-#' @param space character. Only "geographical" knndm, i.e. kNNDM in the geographical space, is currently implemented.
+#' @param predpoints sf or sfc point object, or data.frame if space = "feature". Contains the target prediction points. Optional; alternative to modeldomain (see Details).
+#' @param space character. Either "geographical" or "feature".
 #' @param k integer. Number of folds desired for CV. Defaults to 10.
 #' @param maxp numeric. Maximum fold size allowed, defaults to 0.5, i.e. a single fold can hold a maximum of half of the training points.
 #' @param clustering character. Possible values include "hierarchical" and "kmeans". See details.
@@ -45,20 +45,26 @@
 #' and compared, being the one with a lower W statistic the one that offers a better match. W statistics between `knndm`
 #' runs are comparable as long as `tpoints` and `predpoints` or `modeldomain` stay the same.
 #'
-#' Map validation using knndm should be used using `CAST::global_validation`, i.e. by stacking all out-of-sample
+#' Map validation using `knndm` should be used using `CAST::global_validation`, i.e. by stacking all out-of-sample
 #' predictions and evaluating them all at once. The reasons behind this are 1) The resulting folds can be
 #' unbalanced and 2) nearest neighbour functions are constructed and matched using all CV folds simultaneously.
 #'
-#' If training data points are very clustered with respect to the prediction area and the presented knndm
+#' If training data points are very clustered with respect to the prediction area and the presented `knndm`
 #' configuration still show signs of Gj* > Gij, there are several things that can be tried. First, increase
 #' the `maxp` parameter; this may help to control for strong clustering (at the cost of having unbalanced folds).
 #' Secondly, decrease the number of final folds `k`, which may help to have larger clusters.
 #'
-#' #' The `modeldomain` is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
+#' The `modeldomain` is either a sf polygon that defines the prediction area, or alternatively a SpatRaster out of which a polygon,
 #' transformed into the CRS of the training points, is defined as the outline of all non-NA cells.
 #' Then, the function takes a regular point sample (amount defined by `samplesize`) from the spatial extent.
 #' As an alternative use `predpoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
 #' When using either `modeldomain` or `predpoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
+#'
+#' `knndm` can also be performed in the feature space by setting `space` to "feature".
+#' In this case, nearest neighbour distances are calculated in n-dimensional feature space rather than in geographical space.
+#' `tpoints` and `predpoints` can be data frames or sf objects containing the values of the features. Note that the names of `tpoints` and `predpoints` must be the same.
+#' `predpoints` can also be missing, if `modeldomain` is of class SpatRaster. In this case, the values of of the SpatRaster will be extracted to the `predpoints`.
+#' In the case of any categorical features, 0/1 encoding will be performed (pŕovisionally).
 #'
 #' @references
 #' \itemize{
@@ -160,6 +166,33 @@
 #'    trControl = ctrl)
 #' global_validation(model_knndm)
 #'}
+#' ########################################################################
+#' # Example 4: Real- world example; kNNDM in feature space
+#' ########################################################################
+#' \dontrun{
+#' library(sf)
+#' library(terra)
+#' library(ggplot2)
+#'
+#'data(splotdata)
+#'splotdata <- splotdata[splotdata$Country == "Chile",]
+#'
+#'predictors <- c("bio_1", "bio_4", "bio_5", "bio_6",
+#'                "bio_8", "bio_9", "bio_12", "bio_13",
+#'                "bio_14", "bio_15", "elev")
+#'
+#'trainDat <- sf::st_drop_geometry(splotdata)
+#'predictors_sp <- terra::rast(system.file("extdata", "predictors_chile.tif",package="CAST"))
+#'
+#'
+#' terra::plot(predictors_sp[["bio_1"]])
+#' terra::plot(vect(splotdata), add = T)
+#'
+#'knndm_folds <- knndm(trainDat[,predictors], modeldomain = predictors_sp, space = "feature",
+#'                     clustering="kmeans", k=4, maxp=0.8)
+#'plot(knndm_folds)
+#'
+#'}
 knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
                   space = "geographical",
                   k = 10, maxp = 0.5,
@@ -176,12 +209,22 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
 
     # If modeldomain is a SpatRaster, transform into polygon
     if(any(class(modeldomain) == "SpatRaster")){
+
+      # save predictor stack for extraction if space = "feature"
+      if(space == "feature") {
+        predictor_stack <- modeldomain
+      }
       modeldomain[!is.na(modeldomain)] <- 1
       modeldomain <- terra::as.polygons(modeldomain, values = FALSE, na.all = TRUE) |>
         sf::st_as_sf() |>
         sf::st_union()
-      modeldomain <- sf::st_transform(modeldomain, crs = sf::st_crs(tpoints))
+      if(any(c("sfc", "sf") %in% class(tpoints))) {
+        modeldomain <- sf::st_transform(modeldomain, crs = sf::st_crs(tpoints))
+      }
     }
+
+
+
 
     # Check modeldomain is indeed a polygon sf
     if(!any(class(sf::st_geometry(modeldomain)) %in% c("sfc_POLYGON", "sfc_MULTIPOLYGON"))){
@@ -189,7 +232,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     }
 
     # Check whether modeldomain has the same crs as tpoints
-    if(!identical(sf::st_crs(tpoints), sf::st_crs(modeldomain))){
+    if(!identical(sf::st_crs(tpoints), sf::st_crs(modeldomain)) & space == "geographical"){
       stop("tpoints and modeldomain must have the same CRS")
     }
 
@@ -198,32 +241,77 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     predpoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
     sf::st_crs(predpoints) <- sf::st_crs(modeldomain)
 
-  }else if(!is.null(predpoints)){
+    if(space == "feature") {
+      message("predictor values are extracted for prediction points")
+      predpoints <- terra::extract(predictor_stack, terra::vect(predpoints), ID=FALSE)
+    }
+
+  }else if(!is.null(predpoints) & space == "geographical"){
     if(!identical(sf::st_crs(tpoints), sf::st_crs(predpoints))){
       stop("tpoints and predpoints must have the same CRS")
     }
   }
 
+
   # Conditional preprocessing actions
-  if (any(class(tpoints) %in% "sfc")) {
-    tpoints <- sf::st_sf(geom = tpoints)
-  }
-  if (any(class(predpoints) %in% "sfc")) {
-    predpoints <- sf::st_sf(geom = predpoints)
-  }
-  if(is.na(sf::st_crs(tpoints))){
-    warning("Missing CRS in training or prediction points. Assuming projected CRS.")
-    islonglat <- FALSE
-  }else{
-    islonglat <- sf::st_is_longlat(tpoints)
+  if(space == "geographical") {
+    if (any(class(tpoints) %in% "sfc")) {
+      tpoints <- sf::st_sf(geom = tpoints)
+    }
+    if (any(class(predpoints) %in% "sfc")) {
+      predpoints <- sf::st_sf(geom = predpoints)
+    }
+    if(is.na(sf::st_crs(tpoints))){
+      warning("Missing CRS in training or prediction points. Assuming projected CRS.")
+      islonglat <- FALSE
+    }else{
+      islonglat <- sf::st_is_longlat(tpoints)
+    }
+  } else if (space == "feature") {
+    # drop geometry if tpoints / predpoints are of class sf
+    if(any(class(tpoints) %in% c("sf","sfc"))) {
+      tpoints <- sf::st_set_geometry(tpoints, NULL)
+    }
+    if(any(class(predpoints) %in% c("sf","sfc"))) {
+      predpoints <- sf::st_set_geometry(predpoints, NULL)
+    }
+    # get names of categorical variables
+    catVars <- names(tpoints)[which(sapply(tpoints, class)%in%c("factor","character"))]
+    if(length(catVars)==0) {
+      catVars <- NULL
+    }
+    if(!is.null(catVars)) {
+      message(paste0("variable(s) '", catVars, "' is (are) treated as categorical variables"))
+    }
+    # omit NAs
+    if(any(is.na(predpoints))) {
+      message("some prediction points contain NAs, which will be removed")
+      predpoints <- stats::na.omit(predpoints)
+    }
+    if(any(is.na(tpoints))) {
+      message("some training points contain NAs, which will be removed")
+      tpoints <- stats::na.omit(tpoints)
+    }
   }
 
-  # Prior checks
-  check_knndm(tpoints, predpoints, space, k, maxp, clustering, islonglat)
 
-  # kNNDM in the geographical space (currently only option)
+
+
+
+  # kNNDM in the geographical / feature space
   if(isTRUE(space == "geographical")){
+
+    # Prior checks
+    check_knndm_geo(tpoints, predpoints, space, k, maxp, clustering, islonglat)
+
     knndm_res <- knndm_geo(tpoints, predpoints, k, maxp, clustering, linkf, islonglat)
+
+  } else if (isTRUE(space == "feature")) {
+
+    check_knndm_feature(tpoints, predpoints, space, k, maxp, clustering, islonglat, catVars)
+
+    knndm_res <- knndm_feature(tpoints, predpoints, k, maxp, clustering, catVars)
+
   }
 
   # Output
@@ -232,7 +320,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
 
 
 # kNNDM checks
-check_knndm <- function(tpoints, predpoints, space, k, maxp, clustering, islonglat){
+check_knndm_geo <- function(tpoints, predpoints, space, k, maxp, clustering, islonglat){
 
   if(!identical(sf::st_crs(tpoints), sf::st_crs(predpoints))){
     stop("tpoints and predpoints must have the same CRS")
@@ -251,6 +339,30 @@ check_knndm <- function(tpoints, predpoints, space, k, maxp, clustering, islongl
          projected coordinates. Please use hierarchical clustering or project your data.")
   }
 }
+
+check_knndm_feature <- function(tpoints, predpoints, space, k, maxp, clustering, islonglat, catVars){
+
+  if (!(maxp < 1 & maxp > 1/k)) {
+    stop("maxp must be strictly between 1/k and 1")
+  }
+
+  if(is.null(predpoints)) {
+    stop("predpoints with predictor data missing")
+  }
+
+  if(length(setdiff(names(tpoints), names(predpoints)))>0) {
+    stop("tpoints and predpoints need to contain the predictor data and have the same colnames.")
+  }
+
+  for (catvar in catVars) {
+    if (any(!unique(tpoints[,catvar]) %in% unique(predpoints[,catvar]))) {
+      stop(paste0("Some values of factor", catvar, "are only present in training / prediction points.
+                  All factor values in the prediction points must be present in the training points."))
+    }
+  }
+
+}
+
 
 # kNNDM in the geographical space
 knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat){
@@ -380,6 +492,186 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat
   class(res) <- c("knndm", "list")
   res
 }
+
+
+# kNNDM in the feature space
+knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, catVars) {
+
+  # rescale data
+  if(is.null(catVars)) {
+
+    scale_attr <- attributes(scale(tpoints))
+    tpoints <- scale(tpoints) |> as.data.frame()
+    predpoints <- scale(predpoints,center=scale_attr$`scaled:center`,
+                     scale=scale_attr$`scaled:scale`) |>
+      as.data.frame()
+
+  } else {
+    tpoints_cat <- tpoints[,catVars,drop=FALSE]
+    predpoints_cat <- predpoints[,catVars,drop=FALSE]
+
+    tpoints_num <- tpoints[,-which(names(tpoints)%in%catVars),drop=FALSE]
+    predpoints_num <- predpoints[,-which(names(predpoints)%in%catVars),drop=FALSE]
+
+    scale_attr <- attributes(scale(tpoints_num))
+    tpoints <- scale(tpoints_num) |> as.data.frame()
+    predpoints <- scale(predpoints_num,center=scale_attr$`scaled:center`,
+                     scale=scale_attr$`scaled:scale`) |>
+      as.data.frame()
+    tpoints <- as.data.frame(cbind(tpoints, lapply(tpoints_cat, as.factor)))
+    predpoints <- as.data.frame(cbind(predpoints, lapply(predpoints_cat, as.factor)))
+
+
+    # 0/1 encode categorical variables (as in R/trainDI.R)
+    for (catvar in catVars){
+      # mask all unknown levels in newdata as NA
+      tpoints[,catvar]<-droplevels(tpoints[,catvar])
+      predpoints[,catvar]<-droplevels(predpoints[,catvar])
+
+      # then create dummy variables for the remaining levels in train:
+      dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = tpoints),
+                           tpoints)
+      dvi_predpoints <- predict(caret::dummyVars(paste0("~",catvar), data = predpoints),
+                             predpoints)
+      tpoints <- data.frame(tpoints,dvi_train)
+      predpoints <- data.frame(predpoints,dvi_predpoints)
+
+    }
+    tpoints <- tpoints[,-which(names(tpoints)%in%catVars)]
+    predpoints <- predpoints[,-which(names(predpoints)%in%catVars)]
+
+  }
+
+
+  # Gj and Gij calculation
+  if (clustering=="kmeans") {
+    # calculate euclidean NNDs
+    Gj <- c(FNN::knn.dist(tpoints, k = 1))
+    Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1))
+  } else {
+    # calculate euclidean distance matrix
+    distmat <- stats::dist(tpoints, upper=TRUE, diag=TRUE) |> as.matrix()
+    diag(distmat) <- NA
+    Gj <- apply(distmat, 1, function(x) min(x, na.rm=TRUE))
+    Gij <- outer(
+      1:nrow(predpoints),
+      1:nrow(tpoints),
+      FUN = Vectorize(function(x,y) dist(rbind(predpoints[x,],tpoints[y,])))
+    )
+    Gij <- apply(Gij, 1, min)
+  }
+
+
+  # Check if Gj > Gij (warning suppressed regarding ties)
+  testks <- suppressWarnings(stats::ks.test(Gj, Gij, alternative = "great"))
+  if(testks$p.value >= 0.05){
+
+    clust <- sample(rep(1:k, ceiling(nrow(tpoints)/k)), size = nrow(tpoints), replace=F)
+
+
+    if(clustering == "kmeans") {
+      Gjstar <- distclust_proj(tpoints, clust)
+    } else {
+      Gjstar <- distclust_geo(distmat, clust)
+    }
+
+    k_final <- "random CV"
+    W_final <- twosamples::wass_stat(Gjstar, Gij)
+    message("Gij <= Gj; a random CV assignment is returned")
+
+  }else{
+
+    # Build grid of number of clusters to try - we sample low numbers more intensively
+    clustgrid <- data.frame(nk = as.integer(round(exp(seq(log(k), log(nrow(tpoints)-2),
+                                                          length.out = 100)))))
+    clustgrid$W <- NA
+    clustgrid <- clustgrid[!duplicated(clustgrid$nk),]
+    clustgroups <- list()
+
+    # Compute 1st PC for ordering clusters
+    pcacoords <- stats::prcomp(tpoints, center = TRUE, scale. = FALSE, rank = 1)
+
+    # We test each number of clusters
+    for(nk in clustgrid$nk){
+
+      # Create nk clusters
+      clust_nk <- tryCatch(stats::kmeans(tpoints, nk)$cluster,
+                           error=function(e) e)
+
+
+      if (!inherits(clust_nk,"error")){
+        tabclust <- as.data.frame(table(clust_nk))
+        tabclust$clust_k <- NA
+
+        # compute cluster centroids and apply PC loadings to shuffle along the 1st dimension
+        centr_tpoints <- sapply(tabclust$clust_nk, function(x){
+          centrpca <- matrix(apply(tpoints[clust_nk %in% x, , drop=FALSE], 2, mean), nrow = 1)
+          colnames(centrpca) <- colnames(tpoints)
+          return(predict(pcacoords, centrpca))
+        })
+
+        tabclust$centrpca <- centr_tpoints
+        tabclust <- tabclust[order(tabclust$centrpca),]
+
+        # We don't merge big clusters
+        clust_i <- 1
+        for(i in 1:nrow(tabclust)){
+          if(tabclust$Freq[i] >= nrow(tpoints)/k){
+            tabclust$clust_k[i] <- clust_i
+            clust_i <- clust_i + 1
+          }
+        }
+        rm("clust_i")
+
+        # And we merge the remaining into k groups
+        clust_i <- setdiff(1:k, unique(tabclust$clust_k))
+        tabclust$clust_k[is.na(tabclust$clust_k)] <- rep(clust_i, ceiling(nk/length(clust_i)))[1:sum(is.na(tabclust$clust_k))]
+        tabclust2 <- data.frame(ID = 1:length(clust_nk), clust_nk = clust_nk)
+        tabclust2 <- merge(tabclust2, tabclust, by = "clust_nk")
+        tabclust2 <- tabclust2[order(tabclust2$ID),]
+        clust_k <- tabclust2$clust_k
+
+        # Compute W statistic if not exceeding maxp
+        if(!any(table(clust_k)/length(clust_k)>maxp)){
+
+          if(clustering == "kmeans") {
+            Gjstar_i <- distclust_proj(tpoints, clust_k)
+          } else {
+            Gjstar_i <- distclust_geo(distmat, clust_k)
+          }
+
+          clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
+          clustgroups[[paste0("nk", nk)]] <- clust_k
+        }
+      } else {
+        message(paste("skipped nk", nk))
+      }
+
+      # Final configuration
+      k_final <- clustgrid$nk[which.min(clustgrid$W)]
+      W_final <- min(clustgrid$W, na.rm=T)
+      clust <- clustgroups[[paste0("nk", k_final)]]
+
+      if(clustering == "kmeans") {
+        Gjstar <- distclust_proj(tpoints, clust)
+      } else {
+        Gjstar <- distclust_geo(distmat, clust)
+      }
+
+    }
+
+  }
+
+  # Output
+  cfolds <- CAST::CreateSpacetimeFolds(data.frame(clust=clust), spacevar = "clust", k = k)
+  res <- list(clusters = clust,
+              indx_train = cfolds$index, indx_test = cfolds$indexOut,
+              Gij = Gij, Gj = Gj, Gjstar = Gjstar,
+              W = W_final, method = clustering, q = k_final, space = "feature")
+  class(res) <- c("knndm", "list")
+  res
+}
+
 
 # Helper function: Compute out-of-fold NN distance (geographical)
 distclust_geo <- function(distm, folds){
