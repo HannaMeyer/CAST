@@ -8,6 +8,7 @@
   * function DItoErrormetric renamed to errorProfiles and allows for other dissimilarity measures
   * Improvement and homogenization of plotting methods for nndm, knndm and geodist objects
   * aoa and trainDI `weight` now allows list input
+  * vignette on Introduction to CAST updated
 * deprecated:
   *plot_geodist (replaced by plot.geodist)
   *plot_ffs (replaced by plot.ffs)
