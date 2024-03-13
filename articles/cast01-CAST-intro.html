@@ -190,14 +190,14 @@ well as the sampled species richness. Since we aim at making predictions
 for entire South America, we further need the WorldClimdata for this
 area.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/geodata/man/worldclim.html" class="external-link">worldclim_global</a></span><span class="op">(</span>var<span class="op">=</span><span class="st">"bio"</span>,res <span class="op">=</span> <span class="fl">10</span>,path<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">elev</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/geodata/man/elevation.html" class="external-link">elevation_global</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fl">10</span>, path<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">predictors_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wc</span>,<span class="va">elev</span><span class="op">)</span>,<span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">predictors_sp</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"bio_"</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">19</span><span class="op">)</span>,<span class="st">"elev"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co">#wc &lt;- worldclim_global(var="bio",res = 10,path=tempdir())</span></span>
+<span><span class="co">#elev &lt;- elevation_global(res = 10, path=tempdir())</span></span>
+<span><span class="co">#predictors_sp &lt;- crop(c(wc,elev),st_bbox(splotdata))</span></span>
+<span><span class="co">#names(predictors_sp) &lt;- c(paste0("bio_",1:19),"elev")</span></span>
 <span></span>
 <span><span class="co">#note: if you prefer to work on a smaller dataset and not download any data, </span></span>
 <span><span class="co">#here is a subset of Chile:</span></span>
-<span><span class="co">#predictors_sp &lt;- rast(system.file("extdata", "predictors_chile.tif",package="CAST"))</span></span></code></pre></div>
+<span><span class="va">predictors_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"predictors_chile.tif"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>To get an impression on the spatial properties of the dataset, let’s
 have a look on the spatial distribution of the vegetation plots in South
 America, plotted on top of a elevation model:</p>
@@ -391,17 +391,17 @@ the entire area.</p>
 <span><span class="co">## </span></span>
 <span><span class="co">## No pre-processing</span></span>
 <span><span class="co">## Resampling: Cross-Validated (10 fold) </span></span>
-<span><span class="co">## Summary of sample sizes: 520, 442, 444 </span></span>
+<span><span class="co">## Summary of sample sizes: 529, 499, 378 </span></span>
 <span><span class="co">## Resampling results:</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##   RMSE      Rsquared   MAE     </span></span>
-<span><span class="co">##   34.13482  0.4754385  20.79699</span></span>
+<span><span class="co">##   35.37794  0.4744932  21.07389</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Tuning parameter 'mtry' was held constant at a value of 2</span></span></code></pre>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       RMSE   Rsquared        MAE </span></span>
-<span><span class="co">## 34.5314356  0.4269648 20.9480996</span></span></code></pre>
+<span><span class="co">## 36.4862413  0.3951656 21.7633237</span></span></code></pre>
 <p>By inspecting the output of the model, we see that in view to new
 locations, the R² is much lower and the RMSE much higher compared to
 what was expected from the random CV.</p>
@@ -453,29 +453,29 @@ minutes…</p>
 <span>                                           savePredictions <span class="op">=</span> <span class="st">"final"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">ffsmodel</span></span></code></pre></div>
 <pre><code><span><span class="co">## Selected Variables: </span></span>
-<span><span class="co">## bio_1 bio_14 bio_12 elev bio_9</span></span>
+<span><span class="co">## bio_1 bio_5 bio_14</span></span>
 <span><span class="co">## ---</span></span>
 <span><span class="co">## Random Forest </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## 703 samples</span></span>
-<span><span class="co">##   5 predictor</span></span>
+<span><span class="co">##   3 predictor</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## No pre-processing</span></span>
 <span><span class="co">## Resampling: Cross-Validated (10 fold) </span></span>
-<span><span class="co">## Summary of sample sizes: 520, 442, 444 </span></span>
+<span><span class="co">## Summary of sample sizes: 529, 499, 378 </span></span>
 <span><span class="co">## Resampling results:</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">##   RMSE     Rsquared   MAE     </span></span>
-<span><span class="co">##   31.5781  0.5284935  20.35757</span></span>
+<span><span class="co">##   RMSE      Rsquared   MAE     </span></span>
+<span><span class="co">##   34.70998  0.4812505  22.08713</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Tuning parameter 'mtry' was held constant at a value of 2</span></span></code></pre>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">ffsmodel</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       RMSE   Rsquared        MAE </span></span>
-<span><span class="co">## 32.0322288  0.4940635 20.5872940</span></span></code></pre>
+<span><span class="co">## 35.5101969  0.4253719 22.8368156</span></span></code></pre>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ffsmodel</span><span class="op">$</span><span class="va">selectedvars</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] "bio_1"  "bio_14" "bio_12" "elev"   "bio_9"</span></span></code></pre>
+<pre><code><span><span class="co">## [1] "bio_1"  "bio_5"  "bio_14"</span></span></code></pre>
 <p>Using the ffs with LLO CV, the RMSE could be decreased. Only few
 variables have been selected for the final model. All others are removed
 because they have (at least in this small example) no spatial meaning or
