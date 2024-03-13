@@ -72,14 +72,14 @@ The data include the extracted WorldClim and elevation information as well as th
 
 ```{r, message = FALSE, warning=FALSE}
 
-wc <- worldclim_global(var="bio",res = 10,path=tempdir())
-elev <- elevation_global(res = 10, path=tempdir())
-predictors_sp <- crop(c(wc,elev),st_bbox(splotdata))
-names(predictors_sp) <- c(paste0("bio_",1:19),"elev")
+#wc <- worldclim_global(var="bio",res = 10,path=tempdir())
+#elev <- elevation_global(res = 10, path=tempdir())
+#predictors_sp <- crop(c(wc,elev),st_bbox(splotdata))
+#names(predictors_sp) <- c(paste0("bio_",1:19),"elev")
 
 #note: if you prefer to work on a smaller dataset and not download any data, 
 #here is a subset of Chile:
-#predictors_sp <- rast(system.file("extdata", "predictors_chile.tif",package="CAST"))
+predictors_sp <- rast(system.file("extdata", "predictors_chile.tif",package="CAST"))
 ```
 
 
