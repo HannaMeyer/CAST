@@ -254,6 +254,7 @@ test_that("kNNDM works in feature space with hierarchical clustering and raster 
 
   expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 0.2132)
 
+
 })
 
 test_that("kNNDM works in feature space with clustered training points", {
@@ -351,8 +352,36 @@ test_that("kNNDM works in feature space with Mahalanobis distance", {
 
   set.seed(1234)
   knndm_folds <- knndm(trainDat[,predictors], modeldomain = predictors_sp, space = "feature",
-                       clustering="kmeans", k=4, maxp=0.8, useMD=F)
+                       clustering="kmeans", k=4, maxp=0.8, useMD=TRUE)
 
   expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 16.9789)
+
+})
+
+
+test_that("kNNDM works in feature space with Mahalanobis distance without clustering", {
+
+
+  set.seed(1234)
+
+  # prepare sample data
+  dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
+  dat <- terra::aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+                          by=list(as.character(dat$SOURCEID)),mean)
+  pts <- dat[,-1]
+  pts <- sf::st_as_sf(pts,coords=c("Easting","Northing"))
+  sf::st_crs(pts) <- 26911
+  studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
+  pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
+
+  studyArea <- studyArea[[names(studyArea) %in% names(pts)]]
+  train_points <- pts[,names(pts) %in% names(studyArea)]
+
+  expect_message(knndm(train_points, modeldomain = studyArea, space="feature", clustering = "kmeans", useMD = TRUE),
+                 "Gij <= Gj; a random CV assignment is returned")
+
+  expect_message(knndm(train_points, modeldomain = studyArea, space="feature", clustering = "hierarchical", useMD = TRUE),
+                 "Gij <= Gj; a random CV assignment is returned")
+
 
 })

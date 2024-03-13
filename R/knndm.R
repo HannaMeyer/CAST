@@ -597,9 +597,9 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
 
     if(is.null(catVars)) {
       if(isTRUE(useMD)) {
-        Gjstar <- distclust_euclidean(tpoints, clust)
-      } else {
         Gjstar <- distclust_MD(tpoints, clust)
+      } else {
+        Gjstar <- distclust_euclidean(tpoints, clust)
       }
 
     } else {
