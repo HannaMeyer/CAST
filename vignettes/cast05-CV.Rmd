@@ -1,6 +1,6 @@
 ---
 title: '5. Cross-validation methods in CAST'
-author: "Carles Milà"
+author: "Carles Milà and Jan Linnenbrink"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
@@ -14,57 +14,137 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE,
+                      fig.align = 'center')
 ```
 
-## Introduction and motivational example
-
-Cross-Validation (CV) is important for many tasks in a predictive mapping workflow, including feature selection (check `CAST::ffs` and `CAST::bss`), hyperparameter tuning, area of applicability estimation (check `CAST::aoa`). Moreover, in the unfortunate case where no independent samples are available to estimate the performance of the final products, it can be used as a last resort to obtain an estimate of the map error.
-
-In CAST, we deal with data that are indexed in space, i.e. data that present dependencies that do not comply with the assumptions of independence of standard CV methods such as Leave-One-Out (LOO) CV or k-fold CV. Several CV approaches have been proposed to deal with these including blocking and buffering strategies that try to deal with the dependency between the train and hold out data. However, in CAST, we propose strategies that are prediction-oriented, i.e. CV methods that aim to approximate the predictive conditions found when using a model for a specific prediction task. And how we define these conditions? In the current state of CAST, we mainly focus on the geographical space by comparing the distances between prediction and training locations. However, future developments are planned so check the "current developments" section below if interested!
-
-For now, let's consider geographical space and show what we mean by this. First, we load two datasets that will nicely illustrate how our proposed methods work. We will work with a dataset of annual average air temperature and air pollution (PM2.5) in Spain,,for which several predictors including a elevation  land cover, impervious surfaces, and population and road density, remote sensing measurements of NDVI, nighttime lights, and land surface temperature among others. For more details, check our [preprint](https://egusphere.copernicus.org/preprints/2024/egusphere-2024-138/) where the dataset is described in more detail.
-
-```{r read data}
+```{r load packages}
 library("sf")
+library("CAST")
+library("caret")
+library("gridExtra")
+library("ggplot2")
+```
 
+## Introduction
+
+Cross-Validation (CV) is important for many tasks in a predictive mapping workflow, including feature selection (check `CAST::ffs` and `CAST::bss`), hyperparameter tuning, area of applicability estimation (check `CAST::aoa`). Moreover, in the unfortunate case where no independent samples are available to estimate the performance of the final products, it can be used as a last resort to obtain an estimate of the error.
+
+The objective of this vignette is to show the CV options that CAST offers. To do so, we will work with two datasets of annual average air temperature and air pollution (PM$_{2.5}$) in Spain, for which several predictors including a elevation  land cover, impervious surfaces, and population and road density, remote sensing measurements of NDVI, nighttime lights, and land surface temperature among others. For more details, check our [preprint](https://egusphere.copernicus.org/preprints/2024/egusphere-2024-138/) where the dataset is described in more detail. 
+
+```{r read data, fig.width=7}
 # Read data
-temperature <- st_read("https://github.com/carlesmila/RF-spatial-proxies/raw/main/data/temp/tempdata.gpkg")
-# pm25 <- st_read()
-temperature
+temperature <- read_sf("https://github.com/carlesmila/RF-spatial-proxies/raw/main/data/temp/temp_train.gpkg")
+pm25 <- read_sf("https://github.com/carlesmila/RF-spatial-proxies/raw/main/data/AP/PM25_train.gpkg")
+spain <- read_sf("https://github.com/carlesmila/RF-spatial-proxies/raw/main/data/boundaries/spain.gpkg")
+
+# Plot them
+p1 <- ggplot() +
+  geom_sf(data = spain, fill = "grey", alpha = 0.1) +
+  geom_sf(data = temperature, aes(col = temp)) +
+  scale_colour_distiller(palette = "RdYlBu") +
+  theme_bw() +
+  labs(col = "") +
+  ggtitle("Average 2019 temperature (ºC)")
+p2 <- ggplot() +
+  geom_sf(data = spain, fill = "grey", alpha = 0.1) +
+  geom_sf(data = pm25, aes(col = PM25)) +
+  scale_colour_viridis_c(option = "cividis") +
+  theme_bw() +
+  labs(col = "") +
+  ggtitle("Average 2019 PM2.5 (ug/m3)")
+grid.arrange(p1, p2, nrow=1)
 ```
 
-One way to quantify the predictive conditions in the geographic space would be to compute the distribution of geographic nearest neighbour distances between the prediction points and training points and compare it to that found during the CV between the hold-out points and the training data. In CAST, this is easily done by the `CAST::geodist` function, which also computes the distribution of nearest neighbour distances of the training points by default:
+Looking at the two maps we can see that while air temperature stations are nicely distributed around the area of interest; however, air pollution stations are concentrated in specific regions.
 
-```{r}
+## Cross-validation in geographical space
+
+### Evaluation of spatial predictive conditions
+
+In CAST, we deal with data that are indexed in space, i.e. data that present dependencies that do not comply with the assumptions of independence of standard CV methods such as Leave-One-Out (LOO) CV or k-fold CV. Several CV approaches have been proposed to deal with these including blocking and buffering strategies that try to deal with the dependency between the train and hold out data. However, in CAST, we propose strategies that are prediction-oriented, i.e. CV methods that aim to approximate the predictive conditions found when using a model for a specific prediction task. And how we define these conditions? There are several approaches: we could consider the geographical space by focusing on the spatial locations of the samples and prediction points. Another possibility is to consider the feature space, i.e. the covariate values both in the train and prediction set. And there are yet other possibilities, such as considering space-time.
+
+For this section, let's consider geographical space and show what we mean by "predictive conditions" and also see what would happen if we simply used 1) a LOO CV and 2) a random 5-fold CV in each of the two cases. In CAST, this can be easily done by the `CAST::geodist` function, which computes the distribution of nearest neighbour distances between 1) prediction and training points (prediction-to-sample), 2) holdout points and training points during a LOO CV (sample-to-sample), 3) hold out points and training points during a given CV, in our case the 5-fold random CV (CV-distances).
+
+```{r geodist density, fig.width=6, fig.height=7}
+set.seed(1234)
+
+# Random 5-fold CV
+fold5_temp <- createFolds(1:nrow(temperature), k=5, returnTrain=FALSE)
+fold5_pm25 <- createFolds(1:nrow(pm25), k=5, returnTrain=FALSE)
+
+# Explore geographic predictive conditions
+predcond_temp <- geodist(temperature, modeldomain = spain, cvfolds = fold5_temp)
+predcond_pm25 <- geodist(pm25, modeldomain = spain, cvfolds = fold5_pm25)
+
+# Plot density functions
+p1 <- plot(predcond_temp) + ggtitle("Temperature")
+p2 <- plot(predcond_pm25) + ggtitle(expression(PM[2.5]))
+grid.arrange(p1, p2, nrow=2)
+```
+
+We see that, for temperature, although the distribution of geographical distances during CV vs. during prediction do not exactly match, the overlap between the two is substantial. In the PM$_{2.5}$ case, however, the clustering of the stations make prediction-to-sample distances to be much longer that those found during CV.
+
+Before we jump into the CV methods included in `CAST`, it is worth to consider an alternative visualization of the distance distribution using their Empirical Cumulative Density Functions (ECDF) rather than their density functions, which express, for a given distance, the proportion of observations that have a value equal or lower to than distance. Working with ECDFs has the advantage of not having to choose any additional parameter to estimate the density function, and they are one of the building blocks of our proposed methods.
+
+```{r geodist ecdf, fig.width=6, fig.height=7}
+# Plot ECDF functions
+p1 <- plot(predcond_temp, stat = "ecdf") + ggtitle("Temperature")
+p2 <- plot(predcond_pm25, stat = "ecdf") + ggtitle(expression(PM[2.5]))
+grid.arrange(p1, p2, nrow=2)
+```
+
+### Spatial NNDM LOO CV for small datasets
+
+The cross-validation methods included in `CAST` are named Nearest Neighbour Distance Matching (NNDM) and their goal is precisely to match the distance distributions during CV and prediction we just saw in the last plots. To do so, these methods propose a CV configuration such that the nearest neighbour distance distribution between hold out and training points found during the CV matches as close as possible the distribution of nearest neighbour distances during the prediction.
+
+The first of the two NNDM methods is LOO NNDM. NNDM is a greedy, iterative algorithm that starts with a standard LOO CV and compares the ECDF during CV to that found during prediction. Briefly, when it finds that the ECDF during the CV is greater than the ECDF during the prediction, it removes points in the neighbourhood of the points being validated until a match is achieved. In practice, NNDM is effective for matching the ECDF when training data are clustered, while it generalizes to a standard LOO CV when data are random or regular. All details on the algorithm and a simulation study evaluating its performance can be found in the article [here](https://doi.org/10.5194/egusphere-2023-1308) and listed at the end of the vignette.
+
+Now, let's run the NNDM LOO CV algorithm for both datasets and check their output, first for temperature. Here, we use the polygon of Spain as `modeldomain` from which 1,000 are regularly sampled as prediction points. However, it would also, but it would also be possible to pass to the function a set of prediction points previously defined (check argument `predpoints`).
+
+```{r NNDM LOO temp}
+temp_nndm <- nndm(temperature, modeldomain = spain, samplesize = 1000, phi = "max", min_train = 0.5)
+print(temp_nndm)
+plot(temp_nndm, type = "simple")
+```
+
+Now, we do the same for air pollution
+
+```{r NNDM LOO pm25}
+pm25_nndm <- nndm(pm25, modeldomain = spain, phi = "max", min_train = 0.5)
+print(pm25_nndm)
+plot(pm25_nndm, type = "simple")
+```
+
+```{r NNDM LOO viz}
 
 ```
 
-We see that, for the red samples, distances when using a random k-fold CV are much shorter than those found when predicting for this area. This is something that has been reported several times when using clustered data and that could potentially lead to unwanted outputs such as overoptimistic performance estimates (see Linnenbrink et al 2024 and Milà et al 2022), or overfitting when used for feature selection (see Meyer et al 2019). Ideally, we would like our two distributions to be as similar as possible like in the case of the blue samples, and this is when the Nearest Neighbour Distance Matching (NNDM) methods implemented in `CAST` come in. 
+Now it's time to fit the models and estimate their performance using 1) a standard LOO CV, and 2) NNDM LOO CV.
 
-## NNDM methods implemented in CAST
+```{r model fitting LOO}
 
-### NNDM LOO CV for small datasets
+```
 
-### kNNDM CV for medium and large datasets
+### Spatial kNNDM CV for medium and large datasets
 
-## Current and future developments
+```{r kNNDM}
 
-In the currently state of CRAN, we have an experimental version for cross-validation in the feature space using `knndm`. Briefly, we extend our ideas for geographical distances to feature distances while taking into account their specific characteristics, such as dealing with categorical features, and predictors, and potentially high dimensional. Stay tuned for developments in this area, as well as others we have plan to implement (we see you spatiotemporal modellers), coming soon! 
+```
 
-## Take-away messages
+```{r kNNDM viz}
 
-* CAST proposes two NNDM methods for cross-validation in the geographical space that aim at reproducing the conditions found when predicting in a defined area during CV.
-* Both LOO NNDM and kNNDM aim to match the CV ECDF to the prediction-to-error ECDF.
-* NNDM LOO CV generally offers better matches but can only be used for small sample sizes.
-* kNNDM CV offers k-fold alternative for medium and large datasets that are commonly found.
-* Future work will extend the ideas of the geographical space to the feature space and much more!
+```
+
+```{r model fitting kfold}
+
+```
+
+## Cross-validation in feature space
+
+Coming soon!
 
 ## Further reading
 
-Methods implemented in CAST:
 * Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM: k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2023-1308
 * Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.  https://doi.org/10.1111/2041-210X.13851
-
-Other useful references:
-* Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance of spatial predictor variable selection in machine learning applications - Moving from data reproduction to spatial prediction. Ecological Modelling. 411, 108815. doi:10.1016/j.ecolmodel.2019.108815.
