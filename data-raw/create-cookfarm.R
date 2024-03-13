@@ -3,4 +3,4 @@
 
 
 cookfarm = readRDS("inst/extdata/Cookfarm.RDS")
-save(cookfarm, file = "data/cookfarm.rda")
+save(cookfarm, file = "data/cookfarm.rda", compress = "xz")
