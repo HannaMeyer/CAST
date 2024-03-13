@@ -555,11 +555,16 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
       }
       S_inv <- MASS::ginv(S)
 
-      Gj <- sapply(1:dim(tpoints_mat)[1], function(y) {
-        min(sapply(setdiff(1:dim(tpoints_mat)[1], y), function(x) {
-          sqrt(t(tpoints_mat[y,] - tpoints_mat[x,]) %*% S_inv %*% (tpoints_mat[y,] - tpoints_mat[x,]))
-        }))
+      # calculate distance matrix
+      distmat <- matrix(nrow=nrow(tpoints), ncol=nrow(tpoints))
+      distmat <- sapply(1:nrow(distmat), function(i) {
+        sapply(1:nrow(distmat), function(j) {
+          sqrt(t(tpoints_mat[i,] - tpoints_mat[j,]) %*% S_inv %*% (tpoints_mat[i,] - tpoints_mat[j,]))
+        })
       })
+      diag(distmat) <- NA
+
+      Gj <- apply(distmat, 1, min, na.rm=TRUE)
 
       Gij <- sapply(1:dim(predpoints_mat)[1], function(y) {
         min(sapply(1:dim(tpoints_mat)[1], function(x) {
@@ -591,7 +596,12 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
     clust <- sample(rep(1:k, ceiling(nrow(tpoints)/k)), size = nrow(tpoints), replace=F)
 
     if(is.null(catVars)) {
-      Gjstar <- distclust_euclidean(tpoints, clust)
+      if(isTRUE(useMD)) {
+        Gjstar <- distclust_euclidean(tpoints, clust)
+      } else {
+        Gjstar <- distclust_MD(tpoints, clust)
+      }
+
     } else {
       Gjstar <- distclust_gower(tpoints, clust)
     }
@@ -607,9 +617,12 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
       # calculate distance matrix which is needed for hierarchical clustering
       if(is.null(catVars)) {
 
-        # calculate distance matrix with Euclidean distances if no categorical variables are present
-        distmat <- stats::dist(tpoints, upper=TRUE, diag=TRUE) |> as.matrix()
-        diag(distmat) <- NA
+        if(isFALSE(useMD)) {
+          # calculate distance matrix with Euclidean distances if no categorical variables are present
+          # for MD: distance matrix was already calculated
+          distmat <- stats::dist(tpoints, upper=TRUE, diag=TRUE) |> as.matrix()
+          diag(distmat) <- NA
+        }
 
       } else {
 
