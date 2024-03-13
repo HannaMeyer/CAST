@@ -14,7 +14,8 @@ knndm(
   clustering = "hierarchical",
   linkf = "ward.D2",
   samplesize = 1000,
-  sampling = "regular"
+  sampling = "regular",
+  useMD = FALSE
 )
 }
 \arguments{
@@ -40,6 +41,9 @@ Only required if modeldomain is used instead of predpoints.}
 
 \item{sampling}{character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
 Only required if modeldomain is used instead of predpoints.}
+
+\item{useMD}{boolean. Only for `space`=feature: shall the Mahalanobis distance be calculated instead of Euclidean?
+Only works with numerical variables.}
 }
 \value{
 An object of class \emph{knndm} consisting of a list of eight elements:
@@ -89,10 +93,11 @@ As an alternative use `predpoints` instead of `modeldomain`, if you have already
 When using either `modeldomain` or `predpoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
 
 `knndm` can also be performed in the feature space by setting `space` to "feature".
+Euclidean distances or Mahalanobis distances can be used for distance calculation, but only Euclidean are tested.
 In this case, nearest neighbour distances are calculated in n-dimensional feature space rather than in geographical space.
 `tpoints` and `predpoints` can be data frames or sf objects containing the values of the features. Note that the names of `tpoints` and `predpoints` must be the same.
 `predpoints` can also be missing, if `modeldomain` is of class SpatRaster. In this case, the values of of the SpatRaster will be extracted to the `predpoints`.
-In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances. If categorical
+In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances [Experimental]. If categorical
 features are present, and `clustering` = "kmeans", K-Prototype clustering will be performed instead.
 }
 \examples{
