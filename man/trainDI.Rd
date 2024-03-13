@@ -74,36 +74,22 @@ or to facilitate a parallelization of \code{\link{aoa}} by avoiding a repeated c
 library(sf)
 library(terra)
 library(caret)
-library(viridis)
-library(ggplot2)
+library(CAST)
 
 # prepare sample data:
-dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
-dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
-pts <- st_as_sf(dat,coords=c("Easting","Northing"))
-pts$ID <- 1:nrow(pts)
-set.seed(100)
-pts <- pts[1:30,]
-studyArea <- rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))[[1:8]]
-trainDat <- extract(studyArea,pts,na.rm=FALSE)
-trainDat <- merge(trainDat,pts,by.x="ID",by.y="ID")
-
-# visualize data spatially:
-plot(studyArea)
-plot(studyArea$DEM)
-plot(pts[,1],add=TRUE,col="black")
+data("splotdata")
+splotdata = st_drop_geometry(splotdata)
 
 # train a model:
 set.seed(100)
-variables <- c("DEM","NDRE.Sd","TWI")
-model <- train(trainDat[,which(names(trainDat)\%in\%variables)],
-trainDat$VW, method="rf", importance=TRUE, tuneLength=1,
-trControl=trainControl(method="cv",number=5,savePredictions=T))
-print(model) #note that this is a quite poor prediction model
-prediction <- predict(studyArea,model,na.rm=TRUE)
+model <- caret::train(splotdata[,6:16],
+                      splotdata$Species_richness,
+                      importance=TRUE, tuneLength=1, ntree = 15, method = "rf",
+                      trControl = trainControl(method="cv", number=5, savePredictions=T))
+# variable importance is used for scaling predictors
 plot(varImp(model,scale=FALSE))
 
-#...then calculate the DI of the trained model:
+# calculate the DI of the trained model:
 DI = trainDI(model=model)
 plot(DI)
 
@@ -111,9 +97,12 @@ plot(DI)
 # DI = trainDI(model=model, LPD = TRUE)
 
 # the DI can now be used to compute the AOA (here with LPD):
+studyArea = rast(system.file("extdata/predictors_chile.tif", package = "CAST"))
 AOA = aoa(studyArea, model = model, trainDI = DI, LPD = TRUE, maxLPD = 1)
 print(AOA)
 plot(AOA)
+plot(AOA$AOA)
+plot(AOA$LPD)
 }
 
 }
