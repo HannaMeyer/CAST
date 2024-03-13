@@ -15,12 +15,6 @@ A sf data.frame with 128545 rows and 17 columns:
   \item{DEM, TWI, NDRE.M, NDRE.Sd, Precip_wrcc, MaxT_wrcc, MinT_wrcc, Precip_cum}
 }
 }
-\source{
-\itemize{
-\item{Plot with Species_richness from \href{https://onlinelibrary.wiley.com/doi/full/10.1111/geb.13346}{sPlotOpen}}
-\item{predictors acquired via R package \href{https://github.com/rspatial/geodata}{geodata}}
-}
-}
 \usage{
 data(cookfarm)
 }
