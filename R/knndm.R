@@ -64,7 +64,8 @@
 #' In this case, nearest neighbour distances are calculated in n-dimensional feature space rather than in geographical space.
 #' `tpoints` and `predpoints` can be data frames or sf objects containing the values of the features. Note that the names of `tpoints` and `predpoints` must be the same.
 #' `predpoints` can also be missing, if `modeldomain` is of class SpatRaster. In this case, the values of of the SpatRaster will be extracted to the `predpoints`.
-#' In the case of any categorical features, 0/1 encoding will be performed (pŕovisionally).
+#' In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances. If categorical
+#' features are present, and `clustering` = "kmeans", K-Prototype clustering will be performed instead.
 #'
 #' @references
 #' \itemize{
@@ -305,16 +306,17 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
   # kNNDM in the geographical / feature space
   if(isTRUE(space == "geographical")){
 
-    # Prior checks
+    # prior checks
     check_knndm_geo(tpoints, predpoints, space, k, maxp, clustering, islonglat)
-
+    # kNNDM in geographical space
     knndm_res <- knndm_geo(tpoints, predpoints, k, maxp, clustering, linkf, islonglat)
 
   } else if (isTRUE(space == "feature")) {
 
+    # prior checks
     check_knndm_feature(tpoints, predpoints, space, k, maxp, clustering, islonglat, catVars)
-
-    knndm_res <- knndm_feature(tpoints, predpoints, k, maxp, clustering, catVars)
+    # kNNDM in feature space
+    knndm_res <- knndm_feature(tpoints, predpoints, k, maxp, clustering, linkf, catVars)
 
   }
 
@@ -394,9 +396,9 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat
     clust <- sample(rep(1:k, ceiling(nrow(tpoints)/k)), size = nrow(tpoints), replace=F)
 
     if(isTRUE(islonglat)){
-      Gjstar <- distclust_geo(distmat, clust)
+      Gjstar <- distclust_distmat(distmat, clust)
     }else{
-      Gjstar <- distclust_proj(tcoords, clust)
+      Gjstar <- distclust_euclidean(tcoords, clust)
     }
     k_final <- "random CV"
     W_final <- twosamples::wass_stat(Gjstar, Gij)
@@ -467,9 +469,9 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat
       if(!any(table(clust_k)/length(clust_k)>maxp)){
 
         if(isTRUE(islonglat)){
-          Gjstar_i <- distclust_geo(distmat, clust_k)
+          Gjstar_i <- distclust_distmat(distmat, clust_k)
         }else{
-          Gjstar_i <- distclust_proj(tcoords, clust_k)
+          Gjstar_i <- distclust_euclidean(tcoords, clust_k)
         }
         clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
         clustgroups[[paste0("nk", nk)]] <- clust_k
@@ -481,9 +483,9 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat
     W_final <- min(clustgrid$W, na.rm=T)
     clust <- clustgroups[[paste0("nk", k_final)]]
     if(isTRUE(islonglat)){
-      Gjstar <- distclust_geo(distmat, clust)
+      Gjstar <- distclust_distmat(distmat, clust)
     }else{
-      Gjstar <- distclust_proj(tcoords, clust)
+      Gjstar <- distclust_euclidean(tcoords, clust)
     }
   }
 
@@ -499,7 +501,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat
 
 
 # kNNDM in the feature space
-knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, catVars) {
+knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVars) {
 
   # rescale data
   if(is.null(catVars)) {
@@ -507,7 +509,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, catVars) {
     scale_attr <- attributes(scale(tpoints))
     tpoints <- scale(tpoints) |> as.data.frame()
     predpoints <- scale(predpoints,center=scale_attr$`scaled:center`,
-                     scale=scale_attr$`scaled:scale`) |>
+                        scale=scale_attr$`scaled:scale`) |>
       as.data.frame()
 
   } else {
@@ -520,49 +522,27 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, catVars) {
     scale_attr <- attributes(scale(tpoints_num))
     tpoints <- scale(tpoints_num) |> as.data.frame()
     predpoints <- scale(predpoints_num,center=scale_attr$`scaled:center`,
-                     scale=scale_attr$`scaled:scale`) |>
+                        scale=scale_attr$`scaled:scale`) |>
       as.data.frame()
     tpoints <- as.data.frame(cbind(tpoints, lapply(tpoints_cat, as.factor)))
     predpoints <- as.data.frame(cbind(predpoints, lapply(predpoints_cat, as.factor)))
-
-
-    # 0/1 encode categorical variables (as in R/trainDI.R)
-    for (catvar in catVars){
-      # mask all unknown levels in newdata as NA
-      tpoints[,catvar]<-droplevels(tpoints[,catvar])
-      predpoints[,catvar]<-droplevels(predpoints[,catvar])
-
-      # then create dummy variables for the remaining levels in train:
-      dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = tpoints),
-                           tpoints)
-      dvi_predpoints <- predict(caret::dummyVars(paste0("~",catvar), data = predpoints),
-                             predpoints)
-      tpoints <- data.frame(tpoints,dvi_train)
-      predpoints <- data.frame(predpoints,dvi_predpoints)
-
-    }
-    tpoints <- tpoints[,-which(names(tpoints)%in%catVars)]
-    predpoints <- predpoints[,-which(names(predpoints)%in%catVars)]
 
   }
 
 
   # Gj and Gij calculation
-  if (clustering=="kmeans") {
-    # calculate euclidean NNDs
+  if(is.null(catVars)) {
+
+    # use FNN with Euclidean distances if no categorical variables are present
     Gj <- c(FNN::knn.dist(tpoints, k = 1))
     Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1))
+
   } else {
-    # calculate euclidean distance matrix
-    distmat <- stats::dist(tpoints, upper=TRUE, diag=TRUE) |> as.matrix()
-    diag(distmat) <- NA
-    Gj <- apply(distmat, 1, function(x) min(x, na.rm=TRUE))
-    Gij <- outer(
-      1:nrow(predpoints),
-      1:nrow(tpoints),
-      FUN = Vectorize(function(x,y) dist(rbind(predpoints[x,],tpoints[y,])))
-    )
-    Gij <- apply(Gij, 1, min)
+
+    # use Gower distances if categorical variables are present
+    Gj <- sapply(1:nrow(tpoints), function(i) gower::gower_topn(tpoints[i,], tpoints[-i,], n=1)$distance[[1]])
+    Gij <- c(gower::gower_topn(predpoints, tpoints, n = 1)$distance)
+
   }
 
 
@@ -572,11 +552,10 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, catVars) {
 
     clust <- sample(rep(1:k, ceiling(nrow(tpoints)/k)), size = nrow(tpoints), replace=F)
 
-
-    if(clustering == "kmeans") {
-      Gjstar <- distclust_proj(tpoints, clust)
+    if(is.null(catVars)) {
+      Gjstar <- distclust_euclidean(tpoints, clust)
     } else {
-      Gjstar <- distclust_geo(distmat, clust)
+      Gjstar <- distclust_gower(tpoints, clust)
     }
 
     k_final <- "random CV"
@@ -584,6 +563,30 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, catVars) {
     message("Gij <= Gj; a random CV assignment is returned")
 
   }else{
+
+    if(clustering == "hierarchical"){
+
+      # calculate distance matrix which is needed for hierarchical clustering
+      if(is.null(catVars)) {
+
+        # calculate distance matrix with Euclidean distances if no categorical variables are present
+        distmat <- stats::dist(tpoints, upper=TRUE, diag=TRUE) |> as.matrix()
+        diag(distmat) <- NA
+
+      } else {
+
+        # calculate distance matrix with Gower distances if categorical variables are present
+        distmat <- matrix(nrow=nrow(tpoints), ncol=nrow(tpoints))
+        for (i in 1:nrow(tpoints)){
+
+          trainDist <-  gower::gower_dist(tpoints[i,], tpoints)
+
+          trainDist[i] <- NA
+          distmat[i,] <- trainDist
+        }
+      }
+      hc <- stats::hclust(d = stats::as.dist(distmat), method = linkf)
+    }
 
     # Build grid of number of clusters to try - we sample low numbers more intensively
     clustgrid <- data.frame(nk = as.integer(round(exp(seq(log(k), log(nrow(tpoints)-2),
@@ -593,26 +596,55 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, catVars) {
     clustgroups <- list()
 
     # Compute 1st PC for ordering clusters
-    pcacoords <- stats::prcomp(tpoints, center = TRUE, scale. = FALSE, rank = 1)
+    if(is.null(catVars)) {
+      pcacoords <- stats::prcomp(tpoints, center = TRUE, scale. = FALSE, rank = 1)
+    } else {
+      pcacoords <- PCAmixdata::PCAmix(X.quanti = tpoints[,!(names(tpoints) %in% catVars), drop=FALSE],
+                                      X.quali = tpoints[,names(tpoints) %in% catVars, drop=FALSE],
+                                      graph = FALSE)
+    }
 
     # We test each number of clusters
-    for(nk in clustgrid$nk){
+    for(nk in clustgrid$nk) {
 
       # Create nk clusters
-      clust_nk <- tryCatch(stats::kmeans(tpoints, nk)$cluster,
-                           error=function(e) e)
+      if(clustering == "hierarchical"){
+        clust_nk <- stats::cutree(hc, k=nk)
+      } else if(clustering == "kmeans"){
+        if(is.null(catVars)) {
+          clust_nk <- tryCatch(stats::kmeans(tpoints, nk)$cluster,
+                               error=function(e) e)
 
+        } else {
+          # prototype clustering for mixed data sets
+          clust_nk <- tryCatch(clustMixType::kproto(tpoints, nk,verbose=FALSE)$cluster,
+                               error=function(e) e)
+        }
+      }
 
       if (!inherits(clust_nk,"error")){
         tabclust <- as.data.frame(table(clust_nk))
         tabclust$clust_k <- NA
 
         # compute cluster centroids and apply PC loadings to shuffle along the 1st dimension
-        centr_tpoints <- sapply(tabclust$clust_nk, function(x){
-          centrpca <- matrix(apply(tpoints[clust_nk %in% x, , drop=FALSE], 2, mean), nrow = 1)
-          colnames(centrpca) <- colnames(tpoints)
-          return(predict(pcacoords, centrpca))
-        })
+        if(is.null(catVars)) {
+          centr_tpoints <- sapply(tabclust$clust_nk, function(x){
+            centrpca <- matrix(apply(tpoints[clust_nk %in% x, , drop=FALSE], 2, mean), nrow = 1)
+            colnames(centrpca) <- colnames(tpoints)
+            return(predict(pcacoords, centrpca))
+          })
+        } else {
+          centr_tpoints <- sapply(tabclust$clust_nk, function(x){
+            centrpca_num <- matrix(apply(tpoints[clust_nk %in% x, !(names(tpoints) %in% catVars), drop=FALSE], 2, mean), nrow = 1)
+            centrpca_cat <- matrix(apply(tpoints[clust_nk %in% x, names(tpoints) %in% catVars, drop=FALSE], 2,
+                                         function(y) names(which.max(table(y)))), nrow = 1)
+            colnames(centrpca_num) <- colnames(tpoints[,!(names(tpoints) %in% catVars), drop=FALSE])
+            colnames(centrpca_cat) <- colnames(tpoints[,names(tpoints) %in% catVars, drop=FALSE])
+
+            return(predict(pcacoords, centrpca_num, centrpca_cat)[,1])
+
+          })
+        }
 
         tabclust$centrpca <- centr_tpoints
         tabclust <- tabclust[order(tabclust$centrpca),]
@@ -636,12 +668,17 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, catVars) {
         clust_k <- tabclust2$clust_k
 
         # Compute W statistic if not exceeding maxp
-        if(!any(table(clust_k)/length(clust_k)>maxp)){
+        if(!(any(table(clust_k)/length(clust_k)>maxp))){
 
           if(clustering == "kmeans") {
-            Gjstar_i <- distclust_proj(tpoints, clust_k)
+            if(is.null(catVars)) {
+              Gjstar_i <- distclust_euclidean(tpoints, clust_k)
+            } else {
+              Gjstar_i <- distclust_gower(tpoints, clust_k)
+            }
+
           } else {
-            Gjstar_i <- distclust_geo(distmat, clust_k)
+            Gjstar_i <- distclust_distmat(distmat, clust_k)
           }
 
           clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
@@ -650,21 +687,27 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, catVars) {
       } else {
         message(paste("skipped nk", nk))
       }
+    }
 
-      # Final configuration
-      k_final <- clustgrid$nk[which.min(clustgrid$W)]
-      W_final <- min(clustgrid$W, na.rm=T)
-      clust <- clustgroups[[paste0("nk", k_final)]]
+    # Final configuration
+    k_final <- clustgrid$nk[which.min(clustgrid$W)]
+    W_final <- min(clustgrid$W, na.rm=T)
+    clust <- clustgroups[[paste0("nk", k_final)]]
 
-      if(clustering == "kmeans") {
-        Gjstar <- distclust_proj(tpoints, clust)
+    if(clustering == "kmeans") {
+      if(is.null(catVars)) {
+        Gjstar <- distclust_euclidean(tpoints, clust)
       } else {
-        Gjstar <- distclust_geo(distmat, clust)
+        Gjstar <- distclust_gower(tpoints, clust)
       }
-
+    } else {
+      Gjstar <- distclust_distmat(distmat, clust)
     }
 
   }
+
+
+
 
   # Output
   cfolds <- CAST::CreateSpacetimeFolds(data.frame(clust=clust), spacevar = "clust", k = k)
@@ -677,8 +720,8 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, catVars) {
 }
 
 
-# Helper function: Compute out-of-fold NN distance (geographical)
-distclust_geo <- function(distm, folds){
+# Helper function: Compute out-of-fold NN distance (geographical coordinates / numerical variables)
+distclust_distmat <- function(distm, folds){
   alldist <- rep(NA, length(folds))
   for(f in unique(folds)){
     alldist[f == folds] <- apply(distm[f == folds, f != folds, drop=FALSE], 1, min)
@@ -686,12 +729,23 @@ distclust_geo <- function(distm, folds){
   alldist
 }
 
-# Helper function: Compute out-of-fold NN distance (projected)
-distclust_proj <- function(tr_coords, folds){
+# Helper function: Compute out-of-fold NN distance (projected coordinates / numerical variables)
+distclust_euclidean <- function(tr_coords, folds){
   alldist <- rep(NA, length(folds))
   for(f in unique(folds)){
     alldist[f == folds] <- c(FNN::knnx.dist(query = tr_coords[f == folds,,drop=FALSE],
                                             data = tr_coords[f != folds,,drop=FALSE], k = 1))
   }
   alldist
+}
+
+# Helper function: Compute out-of-fold NN distance (categorical variables)
+distclust_gower <- function(tr_coords, folds){
+
+  alldist <- rep(NA, length(folds))
+  for(f in unique(folds)){
+    alldist[f == folds] <- c(gower::gower_topn(tr_coords[f == folds,,drop=FALSE],
+                                               tr_coords[f != folds,,drop=FALSE], n=1))$distance[[1]]
+  }
+  unlist(alldist)
 }
