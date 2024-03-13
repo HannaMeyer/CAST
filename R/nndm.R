@@ -1,19 +1,18 @@
 #' Nearest Neighbour Distance Matching (NNDM) algorithm
 #' @description
-#' This function implements the NNDM algorithm and returns the necessary
-#' indices to perform a NNDM LOO CV for map validation.
+#' This function implements the NNDM algorithm and returns the necessary indices to perform a NNDM LOO CV for map validation.
 #' @author Carles Milà
-#' @param tpoints sf or sfc point object. Contains the training points samples.
+#' @param tpoints sf or sfc point object, or data.frame if space = "feature". Contains the training points samples.
 #' @param modeldomain sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).
-#' @param predpoints sf or sfc point object. Contains the target prediction points.
-#' Optional. Optional; alternative to modeldomain (see Details).
+#' @param predpoints sf or sfc point object, or data.frame if space = "feature". Contains the target prediction points. Optional; alternative to modeldomain (see Details).
+#' @param space character. Either "geographical" or "feature". Feature space is still experimental, so use with caution.
 #' @param samplesize numeric. How many points in the modeldomain should be sampled as prediction points?
 #' Only required if modeldomain is used instead of predpoints.
 #' @param sampling character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
 #' Only required if modeldomain is used instead of predpoints.
 #' @param phi Numeric. Estimate of the landscape autocorrelation range in the
 #' same units as the tpoints and predpoints for projected CRS, in meters for geographic CRS.
-#' Per default (phi="max"), the size of the prediction area is used. See Details.
+#' Per default (phi="max"), the maximum distance found in the training and prediction points is used. See Details.
 #' @param min_train Numeric between 0 and 1. Minimum proportion of training
 #' data that must be used in each CV fold. Defaults to 0.5 (i.e. half of the training points).
 #'
@@ -135,12 +134,54 @@
 #' global_validation(model_nndm)
 #'}
 #'
-
-
-nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL, samplesize = 1000, sampling = "regular",
+#' ########################################################################
+#' # Example 4: Real- world example; nndm in feature space
+#' ########################################################################
+#' \dontrun{
+#' library(sf)
+#' library(terra)
+#' library(ggplot2)
+#'
+#' # Prepare the splot dataset for Chile
+#' data(splotdata)
+#' splotdata <- splotdata[splotdata$Country == "Chile",]
+#'
+#' # Select a series of bioclimatic predictors
+#' predictors <- c("bio_1", "bio_4", "bio_5", "bio_6",
+#'                "bio_8", "bio_9", "bio_12", "bio_13",
+#'                "bio_14", "bio_15", "elev")
+#'
+#' predictors_sp <- terra::rast(system.file("extdata", "predictors_chile.tif", package="CAST"))
+#'
+#' # Data visualization
+#' terra::plot(predictors_sp[["bio_1"]])
+#' terra::plot(vect(splotdata), add = T)
+#'
+#' # Run and visualise the nndm results
+#' nndm_folds <- nndm(splotdata[,predictors], modeldomain = predictors_sp, space = "feature")
+#' plot(nndm_folds)
+#'
+#'
+#' #use for cross-validation:
+#' library(caret)
+#' ctrl <- trainControl(method="cv",
+#'    index=nndm_folds$indx_train,
+#'    indexOut=nndm_folds$indx_test,
+#'    savePredictions='final')
+#' model_nndm <- train(st_drop_geometry(splotdata[,predictors]),
+#'    splotdata$Species_richness,
+#'    method="rf",
+#'    trControl = ctrl)
+#' global_validation(model_nndm)
+#'
+#' }
+nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
+                 space="geographical",
+                 samplesize = 1000, sampling = "regular",
                  phi = "max", min_train = 0.5){
 
-  # create sample points from modeldomain
+
+  # 1. Preprocessing actions ----
   if(is.null(predpoints)&!is.null(modeldomain)){
 
     # Check modeldomain is indeed a sf/SpatRaster
@@ -150,11 +191,18 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL, samplesize = 10
 
     # If modeldomain is a SpatRaster, transform into polygon
     if(any(class(modeldomain) == "SpatRaster")){
+
+      # save predictor stack for extraction if space = "feature"
+      if(space == "feature") {
+        predictor_stack <- modeldomain
+      }
       modeldomain[!is.na(modeldomain)] <- 1
       modeldomain <- terra::as.polygons(modeldomain, values = FALSE, na.all = TRUE) |>
         sf::st_as_sf() |>
         sf::st_union()
-      modeldomain <- sf::st_transform(modeldomain, crs = sf::st_crs(tpoints))
+      if(any(c("sfc", "sf") %in% class(tpoints))) {
+        modeldomain <- sf::st_transform(modeldomain, crs = sf::st_crs(tpoints))
+      }
     }
 
     # Check modeldomain is indeed a polygon sf
@@ -163,7 +211,7 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL, samplesize = 10
     }
 
     # Check whether modeldomain has the same crs as tpoints
-    if(!identical(sf::st_crs(tpoints), sf::st_crs(modeldomain))){
+    if(!identical(sf::st_crs(tpoints), sf::st_crs(modeldomain)) & space == "geographical"){
       stop("tpoints and modeldomain must have the same CRS")
     }
 
@@ -172,47 +220,161 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL, samplesize = 10
     predpoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
     sf::st_crs(predpoints) <- sf::st_crs(modeldomain)
 
-  }else if(!is.null(predpoints)){
+    if(space == "feature") {
+      message("predictor values are extracted for prediction points")
+      predpoints <- terra::extract(predictor_stack, terra::vect(predpoints), ID=FALSE)
+    }
+
+  }else if(!is.null(predpoints) & space == "geographical"){
     if(!identical(sf::st_crs(tpoints), sf::st_crs(predpoints))){
       stop("tpoints and predpoints must have the same CRS")
     }
   }
 
-  # If tpoints is sfc, coerce to sf.
-  if(any(class(tpoints) %in% "sfc")){
-    tpoints <- sf::st_sf(geom=tpoints)
+
+  # 2. Data formats, data checks, scaling and categorical variables ----
+  if(isTRUE(space == "geographical")) {
+
+    # If tpoints is sfc, coerce to sf.
+    if(any(class(tpoints) %in% "sfc")){
+      tpoints <- sf::st_sf(geom=tpoints)
+    }
+    # If predpoints is sfc, coerce to sf.
+    if(any(class(predpoints) %in% "sfc")){
+      predpoints <- sf::st_sf(geom=predpoints)
+    }
+
+    # Input data checks
+    nndm_checks_geo(tpoints, predpoints, phi, min_train)
+
+  }else if(isTRUE(space == "feature")){
+
+    # drop geometry if tpoints / predpoints are of class sf
+    if(any(class(tpoints) %in% c("sf","sfc"))) {
+      tpoints <- sf::st_set_geometry(tpoints, NULL)
+    }
+    if(any(class(predpoints) %in% c("sf","sfc"))) {
+      predpoints <- sf::st_set_geometry(predpoints, NULL)
+    }
+
+    # get names of categorical variables
+    catVars <- names(tpoints)[which(sapply(tpoints, class)%in%c("factor","character"))]
+    if(length(catVars)==0) {
+      catVars <- NULL
+    }
+    if(!is.null(catVars)) {
+      message(paste0("variable(s) '", catVars, "' is (are) treated as categorical variables"))
+    }
+
+    # omit NAs
+    if(any(is.na(predpoints))) {
+      message("some prediction points contain NAs, which will be removed")
+      predpoints <- stats::na.omit(predpoints)
+    }
+    if(any(is.na(tpoints))) {
+      message("some training points contain NAs, which will be removed")
+      tpoints <- stats::na.omit(tpoints)
+    }
+
+    # Input data checks
+    nndm_checks_feature(tpoints, predpoints, phi, min_train, catVars)
+
+    # Scaling and dealing with categorical factors
+    if(is.null(catVars)) {
+
+      scale_attr <- attributes(scale(tpoints))
+      tpoints <- scale(tpoints) |> as.data.frame()
+      predpoints <- scale(predpoints,center=scale_attr$`scaled:center`,
+                          scale=scale_attr$`scaled:scale`) |>
+        as.data.frame()
+
+    } else {
+      tpoints_cat <- tpoints[,catVars,drop=FALSE]
+      predpoints_cat <- predpoints[,catVars,drop=FALSE]
+
+      tpoints_num <- tpoints[,-which(names(tpoints)%in%catVars),drop=FALSE]
+      predpoints_num <- predpoints[,-which(names(predpoints)%in%catVars),drop=FALSE]
+
+      scale_attr <- attributes(scale(tpoints_num))
+      tpoints <- scale(tpoints_num) |> as.data.frame()
+      predpoints <- scale(predpoints_num,center=scale_attr$`scaled:center`,
+                          scale=scale_attr$`scaled:scale`) |>
+        as.data.frame()
+      tpoints <- as.data.frame(cbind(tpoints, lapply(tpoints_cat, as.factor)))
+      predpoints <- as.data.frame(cbind(predpoints, lapply(predpoints_cat, as.factor)))
+
+      # 0/1 encode categorical variables (as in R/trainDI.R)
+      for (catvar in catVars){
+        # mask all unknown levels in newdata as NA
+        tpoints[,catvar]<-droplevels(tpoints[,catvar])
+        predpoints[,catvar]<-droplevels(predpoints[,catvar])
+
+        # then create dummy variables for the remaining levels in train:
+        dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = tpoints),
+                             tpoints)
+        dvi_predpoints <- predict(caret::dummyVars(paste0("~",catvar), data = predpoints),
+                                  predpoints)
+        tpoints <- data.frame(tpoints,dvi_train)
+        predpoints <- data.frame(predpoints,dvi_predpoints)
+
+      }
+      tpoints <- tpoints[,-which(names(tpoints)%in%catVars)]
+      predpoints <- predpoints[,-which(names(predpoints)%in%catVars)]
+
+    }
   }
 
-  # If predpoints is sfc, coerce to sf.
-  if(any(class(predpoints) %in% "sfc")){
-    predpoints <- sf::st_sf(geom=predpoints)
+  # 3. Distance and phi computation ----
+  if(isTRUE(space=="geographical")){
+
+    # Compute nearest neighbour distances between training and prediction points
+    Gij <- sf::st_distance(predpoints, tpoints)
+    units(Gij) <- NULL
+    Gij <- apply(Gij, 1, min)
+
+    # Compute distance matrix of training points
+    tdist <- sf::st_distance(tpoints)
+    units(tdist) <- NULL
+    diag(tdist) <- NA
+    Gj <- apply(tdist, 1, function(x) min(x, na.rm=TRUE))
+    Gjstar <- Gj
+
+    # if phi==max calculate the maximum relevant distance
+    if(phi=="max"){
+      phi <- max(c(Gij, c(tdist)), na.rm=TRUE) + 1e-9
+    }
+
+
+  }else if(isTRUE(space=="feature")){
+
+    if(is.null(catVars)) {
+
+      # Euclidean distances if no categorical variables are present
+      Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1))
+      tdist <- as.matrix(stats::dist(tpoints, upper = TRUE))
+      diag(tdist) <- NA
+      Gj <- apply(tdist, 1, function(x) min(x, na.rm=TRUE))
+      Gjstar <- Gj
+
+    } else {
+
+      # Gower distances if categorical variables are present
+      Gj <- sapply(1:nrow(tpoints), function(i) gower::gower_topn(tpoints[i,], tpoints[-i,], n=1)$distance[[1]])
+      tdist <- matrix(NA, nrow=nrow(tpoints), ncol=nrow(tpoints))
+      for(r in 1:nrow(tdist)){
+        tdist[r,] <- gower::gower_dist(tpoints[r,], tpoints)
+      }
+      diag(tdist) <- NA
+      Gj <- apply(tdist, 1, function(x) min(x, na.rm=TRUE))
+      Gjstar <- Gj
+
+    }
+
+    # if phi==max calculate the maximum relevant distance
+    if(phi=="max"){
+      phi <- max(c(Gij, c(tdist)), na.rm=TRUE) + 1e-9
+    }
   }
-
-  # Input data checks
-  nndm_checks(tpoints, predpoints, phi, min_train)
-
-  # if phi==max calculate the range of the size area
-  if(phi=="max"){
-    xmin <- min(sf::st_coordinates(predpoints)[,1])
-    xmax <- max(sf::st_coordinates(predpoints)[,1])
-    ymin <- min(sf::st_coordinates(predpoints)[,2])
-    ymax <-  max(sf::st_coordinates(predpoints)[,2])
-    p <- sf::st_sfc(sf::st_point(c(xmin,ymin)), sf::st_point(c(xmax,ymax)))
-    sf::st_crs(p) <- sf::st_crs(predpoints)
-    phi <- as.numeric(max(sf::st_distance(p)))
-  }
-
-  # Compute nearest neighbour distances between training and prediction points
-  Gij <- sf::st_distance(predpoints, tpoints)
-  units(Gij) <- NULL
-  Gij <- apply(Gij, 1, min)
-
-  # Compute distance matrix of training points
-  tdist <- sf::st_distance(tpoints)
-  units(tdist) <- NULL
-  diag(tdist) <- NA
-  Gj <- apply(tdist, 1, function(x) min(x, na.rm=TRUE))
-  Gjstar <- Gj
 
   # Start algorithm
   rmin <- min(Gjstar)
@@ -254,11 +416,12 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL, samplesize = 10
               indx_exclude=indx_exclude, Gij=Gij, Gj=Gj, Gjstar=Gjstar, phi=phi)
   class(res) <- c("nndm", "list")
   res
+
 }
 
 
 # Input data checks for NNDM
-nndm_checks <- function(tpoints, predpoints, phi, min_train){
+nndm_checks_geo <- function(tpoints, predpoints, phi, min_train){
 
   # Check for valid range of phi
   if(phi < 0 | (!is.numeric(phi) & phi!= "max")){
@@ -284,4 +447,28 @@ nndm_checks <- function(tpoints, predpoints, phi, min_train){
     stop("predpoints must be a sf/sfc point object.")
   }
 
+}
+
+nndm_checks_feature <- function(tpoints, predpoints, phi, min_train, catVars){
+
+  # Check for valid range of phi
+  if(phi < 0 | (!is.numeric(phi) & phi!= "max")){
+    stop("phi must be positive or set to 'max'.")
+  }
+
+  # min_train must be a single positive numeric
+  if(length(min_train)!=1 | min_train<0 | min_train>1 | !is.numeric(min_train)){
+    stop("min_train must be a numeric between 0 and 1.")
+  }
+
+  if(length(setdiff(names(tpoints), names(predpoints)))>0) {
+    stop("tpoints and predpoints need to contain the predictor data and have the same colnames.")
+  }
+
+  for (catvar in catVars) {
+    if (any(!unique(tpoints[,catvar]) %in% unique(predpoints[,catvar]))) {
+      stop(paste0("Some values of factor", catvar, "are only present in training / prediction points.
+                  All factor values in the prediction points must be present in the training points."))
+    }
+  }
 }

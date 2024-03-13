@@ -8,6 +8,7 @@ nndm(
   tpoints,
   modeldomain = NULL,
   predpoints = NULL,
+  space = "geographical",
   samplesize = 1000,
   sampling = "regular",
   phi = "max",
@@ -15,12 +16,13 @@ nndm(
 )
 }
 \arguments{
-\item{tpoints}{sf or sfc point object. Contains the training points samples.}
+\item{tpoints}{sf or sfc point object, or data.frame if space = "feature". Contains the training points samples.}
 
 \item{modeldomain}{sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).}
 
-\item{predpoints}{sf or sfc point object. Contains the target prediction points.
-Optional. Optional; alternative to modeldomain (see Details).}
+\item{predpoints}{sf or sfc point object, or data.frame if space = "feature". Contains the target prediction points. Optional; alternative to modeldomain (see Details).}
+
+\item{space}{character. Either "geographical" or "feature". Feature space is still experimental, so use with caution.}
 
 \item{samplesize}{numeric. How many points in the modeldomain should be sampled as prediction points?
 Only required if modeldomain is used instead of predpoints.}
@@ -30,7 +32,7 @@ Only required if modeldomain is used instead of predpoints.}
 
 \item{phi}{Numeric. Estimate of the landscape autocorrelation range in the
 same units as the tpoints and predpoints for projected CRS, in meters for geographic CRS.
-Per default (phi="max"), the size of the prediction area is used. See Details.}
+Per default (phi="max"), the maximum distance found in the training and prediction points is used. See Details.}
 
 \item{min_train}{Numeric between 0 and 1. Minimum proportion of training
 data that must be used in each CV fold. Defaults to 0.5 (i.e. half of the training points).}
@@ -46,8 +48,7 @@ indx_train and indx_test can directly be used as "index" and "indexOut" in
 caret's \code{\link{trainControl}} function or used to initiate a custom validation strategy in mlr3.
 }
 \description{
-This function implements the NNDM algorithm and returns the necessary
-indices to perform a NNDM LOO CV for map validation.
+This function implements the NNDM algorithm and returns the necessary indices to perform a NNDM LOO CV for map validation.
 }
 \details{
 NNDM proposes a LOO CV scheme such that the nearest neighbour distance distribution function between the test and training data during the CV process is matched to the nearest neighbour
@@ -154,6 +155,47 @@ model_nndm <- train(dat[,c("DEM","TWI", "NDRE.M")],
 global_validation(model_nndm)
 }
 
+########################################################################
+# Example 4: Real- world example; nndm in feature space
+########################################################################
+\dontrun{
+library(sf)
+library(terra)
+library(ggplot2)
+
+# Prepare the splot dataset for Chile
+data(splotdata)
+splotdata <- splotdata[splotdata$Country == "Chile",]
+
+# Select a series of bioclimatic predictors
+predictors <- c("bio_1", "bio_4", "bio_5", "bio_6",
+               "bio_8", "bio_9", "bio_12", "bio_13",
+               "bio_14", "bio_15", "elev")
+
+predictors_sp <- terra::rast(system.file("extdata", "predictors_chile.tif", package="CAST"))
+
+# Data visualization
+terra::plot(predictors_sp[["bio_1"]])
+terra::plot(vect(splotdata), add = T)
+
+# Run and visualise the nndm results
+nndm_folds <- nndm(splotdata[,predictors], modeldomain = predictors_sp, space = "feature")
+plot(nndm_folds)
+
+
+#use for cross-validation:
+library(caret)
+ctrl <- trainControl(method="cv",
+   index=nndm_folds$indx_train,
+   indexOut=nndm_folds$indx_test,
+   savePredictions='final')
+model_nndm <- train(st_drop_geometry(splotdata[,predictors]),
+   splotdata$Species_richness,
+   method="rf",
+   trControl = ctrl)
+global_validation(model_nndm)
+
+}
 }
 \references{
 \itemize{
