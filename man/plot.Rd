@@ -15,7 +15,7 @@
 
 \method{plot}{aoa}(x, samplesize = 1000, variable = "DI", ...)
 
-\method{plot}{nndm}(x, type = "strict", ...)
+\method{plot}{nndm}(x, type = "strict", stat = "ecdf", ...)
 
 \method{plot}{knndm}(x, type = "strict", stat = "ecdf", ...)
 
