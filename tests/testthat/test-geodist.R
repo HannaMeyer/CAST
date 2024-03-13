@@ -13,7 +13,6 @@ test_that("geodist works with points and polygon in geographic space", {
 
   mean_sample2sample <- round(mean(dist_geo[dist_geo$what=="sample-to-sample","dist"]))
   mean_CV_distances <- round(mean(dist_geo[dist_geo$what=="CV-distances","dist"]))
-  # can't be tested for prediction-to-sample, which are sampled slightly different in each run
   nrow_dist <- nrow(dist_geo)
 
   expect_equal(mean_sample2sample, 20321)
@@ -40,7 +39,6 @@ test_that("geodist works with points and polygon in feature space", {
 
   mean_sample2sample <- round(mean(dist_fspace[dist_fspace$what=="sample-to-sample","dist"]), 4)
   mean_CV_distances <- round(mean(dist_fspace[dist_fspace$what=="CV-distances","dist"]), 4)
-  # can't be tested for prediction-to-sample, which are sampled slightly different in each run
 
   expect_equal(mean_sample2sample, 0.0843)
   expect_equal(mean_CV_distances, 0.1036)
@@ -214,6 +212,51 @@ test_that("geodist works with points and test data in feature space", {
   expect_equal(mean_test_to_sample, 0.8783)
 
 
+})
+
+
+test_that("geodist works with categorical variables in feature space", {
+
+  set.seed(1234)
+  predictor_stack <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
+  predictors <- c("DEM","TWI", "NDRE.M", "Easting", "Northing", "fct")
+  predictor_stack$fct <- factor(c(rep(LETTERS[1], terra::ncell(predictor_stack)/2),
+                                  rep(LETTERS[2], terra::ncell(predictor_stack)/2)))
+
+  predictor_stack <- predictor_stack[[predictors]]
+  studyArea <- predictor_stack
+  studyArea[!is.na(studyArea)] <- 1
+  studyArea <- terra::as.polygons(studyArea, values = FALSE, na.all = TRUE) |>
+    sf::st_as_sf() |>
+    sf::st_union()
+
+  pts <- clustered_sample(studyArea, 30, 5, 60)
+  pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
+  pts <- terra::extract(predictor_stack, terra::vect(pts), ID=FALSE, bind=TRUE) |>
+    sf::st_as_sf()
+
+  test_pts <- clustered_sample(studyArea, 50, 5, 20)
+
+  folds <- data.frame("folds"=sample(1:3, nrow(pts), replace=TRUE))
+  folds <- CreateSpacetimeFolds(folds, spacevar="folds", k=3)
+
+  sf::st_as_sf(terra::extract(predictor_stack,terra::vect(pts$geometry),bind=TRUE))
+
+  dist <- geodist(x=pts,
+                  modeldomain=predictor_stack,
+                  type = "feature",
+                  testdata = test_pts,
+                  cvfolds = folds$indexOut)
+
+  mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
+  mean_prediction2sample <- round(mean(dist[dist$what=="prediction-to-sample","dist"]), 4)
+  mean_test2sample <- round(mean(dist[dist$what=="test-to-sample","dist"]), 4)
+  mean_CV_distance <- round(mean(dist[dist$what=="CV-distances","dist"]), 4)
+
+  expect_equal(mean_sample2sample, 0.0459)
+  expect_equal(mean_prediction2sample, 0.1625)
+  expect_equal(mean_test2sample, 0.2358)
+  expect_equal(mean_CV_distance, 0.0663)
 })
 
 

@@ -269,8 +269,6 @@ test_that("kNNDM works in feature space with clustered training points", {
   trainDat <- sf::st_drop_geometry(splotdata)
   predictors_sp <- terra::rast(system.file("extdata", "predictors_chile.tif",package="CAST"))
 
-
-
   knndm_folds <- knndm(trainDat[,predictors], modeldomain = predictors_sp, space = "feature",
                        clustering="kmeans", k=4, maxp=0.8)
 
@@ -318,7 +316,6 @@ test_that("kNNDM works in feature space with clustered training points, categori
   predictors <- c("DEM","TWI", "NDRE.M", "Easting", "Northing", "fct")
   predictor_stack$fct <- factor(c(rep(LETTERS[1], terra::ncell(predictor_stack)/2),
                                   rep(LETTERS[2], terra::ncell(predictor_stack)/2)))
-
 
   predictor_stack <- predictor_stack[[predictors]]
   studyArea <- predictor_stack
