@@ -19,14 +19,19 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 ## Introduction and motivational example
 
-Cross-Validation (CV) is important for many tasks within the predictive mapping workflow, including feature selection (check `CAST::ffs` and `CAST::bss`), hyperparameter tuning, area of applicability estimation (check `CAST::aoa`). Moreover, in the unfortunate case where no independent samples are available to estimate the performance of the final products, it can be used as a last resort to obtain an estimate of the map error.
+Cross-Validation (CV) is important for many tasks in a predictive mapping workflow, including feature selection (check `CAST::ffs` and `CAST::bss`), hyperparameter tuning, area of applicability estimation (check `CAST::aoa`). Moreover, in the unfortunate case where no independent samples are available to estimate the performance of the final products, it can be used as a last resort to obtain an estimate of the map error.
 
 In CAST, we deal with data that are indexed in space, i.e. data that present dependencies that do not comply with the assumptions of independence of standard CV methods such as Leave-One-Out (LOO) CV or k-fold CV. Several CV approaches have been proposed to deal with these including blocking and buffering strategies that try to deal with the dependency between the train and hold out data. However, in CAST, we propose strategies that are prediction-oriented, i.e. CV methods that aim to approximate the predictive conditions found when using a model for a specific prediction task. And how we define these conditions? In the current state of CAST, we mainly focus on the geographical space by comparing the distances between prediction and training locations. However, future developments are planned so check the "current developments" section below if interested!
 
-For now, let's consider geographical space and show what we mean by this. Imagine that we have the following setting, we want to predict a variable in a 1000x1000 grid with either the red samples in the left plot and we use a 5-fold random CV as shown in the right plot:
+For now, let's consider geographical space and show what we mean by this. First, we load two datasets that will nicely illustrate how our proposed methods work. We will work with a dataset of annual average air temperature and air pollution (PM2.5) in Spain,,for which several predictors including a elevation  land cover, impervious surfaces, and population and road density, remote sensing measurements of NDVI, nighttime lights, and land surface temperature among others. For more details, check our [preprint](https://egusphere.copernicus.org/preprints/2024/egusphere-2024-138/) where the dataset is described in more detail.
 
-```{r}
+```{r read data}
+library("sf")
 
+# Read data
+temperature <- st_read("https://github.com/carlesmila/RF-spatial-proxies/raw/main/data/temp/tempdata.gpkg")
+# pm25 <- st_read()
+temperature
 ```
 
 One way to quantify the predictive conditions in the geographic space would be to compute the distribution of geographic nearest neighbour distances between the prediction points and training points and compare it to that found during the CV between the hold-out points and the training data. In CAST, this is easily done by the `CAST::geodist` function, which also computes the distribution of nearest neighbour distances of the training points by default:
