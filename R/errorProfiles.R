@@ -179,16 +179,12 @@ errorModel <- function(preds_all, model, window.size, calib, k, m, variable){
   performance$ul <- data.table::shift(performance[,variable],-round(window.size/2),0)
   performance <- performance[!is.na(performance$metric),]
 
+  performance <-  performance[,c(variable,"metric")]
   ### Estimate Error:
   if(calib=="lm"){
-    if (variable == "DI") {
-      errormodel <- lm(metric ~ DI, data = performance)
-    } else if (variable == "LPD") {
-      errormodel <- lm(metric ~ LPD, data = performance)
-    } else if (variable=="geodist"){
-      errormodel <- lm(metric ~ geodist, data = performance)
-    }
+    errormodel <- lm(metric ~ ., data = performance)
   }
+
   if(calib=="scam"){
     if (!requireNamespace("scam", quietly = TRUE)) {
       stop("Package \"scam\" needed for this function to work. Please install it.",
