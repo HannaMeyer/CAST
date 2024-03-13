@@ -81,7 +81,7 @@ splotdata$lon = NULL
 
 # save splotdata
 splotdata$Biome = droplevels(splotdata$Biome)
-save(splotdata, file = "data/splotdata.rda")
+save(splotdata, file = "data/splotdata.rda", compress = "xz")
 
 ## save predictors for chile
 chile = rnaturalearth::ne_countries(country = "Chile", returnclass = "sf")
