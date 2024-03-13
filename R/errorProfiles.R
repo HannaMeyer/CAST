@@ -287,7 +287,7 @@ multiCV <- function(model, locations, length.out, method, useWeight, variable,..
       # NO AOA used here
     }
   }
-  if(variable%in%c("DI","LPD")){
+  if(variable=="DI"|variable=="LPD"){
     attr(preds_all, "AOA_threshold") <- trainDI_new$threshold
     message(paste0("Note: multiCV=TRUE calculated new AOA threshold of ", round(trainDI_new$threshold, 5),
                    "\nThreshold is stored in the attributes, access with attr(error_model, 'AOA_threshold').",
