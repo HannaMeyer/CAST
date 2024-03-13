@@ -336,3 +336,23 @@ test_that("kNNDM works in feature space with clustered training points, categori
 
 })
 
+
+test_that("kNNDM works in feature space with Mahalanobis distance", {
+
+
+  data(splotdata)
+  splotdata <- splotdata[splotdata$Country == "Chile",]
+
+  predictors <- c("bio_1", "bio_4", "bio_5", "bio_6",
+                  "bio_8", "bio_9", "bio_12", "bio_13",
+                  "bio_14", "bio_15", "elev")
+  trainDat <- sf::st_drop_geometry(splotdata)
+  predictors_sp <- terra::rast(system.file("extdata", "predictors_chile.tif",package="CAST"))
+
+  set.seed(1234)
+  knndm_folds <- knndm(trainDat[,predictors], modeldomain = predictors_sp, space = "feature",
+                       clustering="kmeans", k=4, maxp=0.8, useMD=TRUE)
+
+  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 16.9789)
+
+})

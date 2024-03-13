@@ -17,6 +17,8 @@
 #' Only required if modeldomain is used instead of predpoints.
 #' @param sampling character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
 #' Only required if modeldomain is used instead of predpoints.
+#' @param useMD boolean. Only for `space`=feature: shall the Mahalanobis distance be calculated instead of Euclidean?
+#' Only works with numerical variables.
 #'
 #' @return An object of class \emph{knndm} consisting of a list of eight elements:
 #' indx_train, indx_test (indices of the observations to use as
@@ -202,7 +204,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
                   space = "geographical",
                   k = 10, maxp = 0.5,
                   clustering = "hierarchical", linkf = "ward.D2",
-                  samplesize = 1000, sampling = "regular"){
+                  samplesize = 1000, sampling = "regular", useMD=FALSE){
 
   # create sample points from modeldomain
   if(is.null(predpoints)&!is.null(modeldomain)){
@@ -314,9 +316,9 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
   } else if (isTRUE(space == "feature")) {
 
     # prior checks
-    check_knndm_feature(tpoints, predpoints, space, k, maxp, clustering, islonglat, catVars)
+    check_knndm_feature(tpoints, predpoints, space, k, maxp, clustering, islonglat, catVars,useMD)
     # kNNDM in feature space
-    knndm_res <- knndm_feature(tpoints, predpoints, k, maxp, clustering, linkf, catVars)
+    knndm_res <- knndm_feature(tpoints, predpoints, k, maxp, clustering, linkf, catVars, useMD)
 
   }
 
@@ -346,7 +348,12 @@ check_knndm_geo <- function(tpoints, predpoints, space, k, maxp, clustering, isl
   }
 }
 
-check_knndm_feature <- function(tpoints, predpoints, space, k, maxp, clustering, islonglat, catVars){
+check_knndm_feature <- function(tpoints, predpoints, space, k, maxp, clustering, islonglat, catVars, useMD){
+
+  if(!is.null(catVars) & isTRUE(useMD)) {
+    warning("Mahalanobis distances not supported for categorical features, Gower distances will be used")
+    useMD <- FALSE
+  }
 
   if (!(maxp < 1 & maxp > 1/k)) {
     stop("maxp must be strictly between 1/k and 1")
@@ -501,7 +508,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat
 
 
 # kNNDM in the feature space
-knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVars) {
+knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVars, useMD) {
 
   # rescale data
   if(is.null(catVars)) {
@@ -533,9 +540,40 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
   # Gj and Gij calculation
   if(is.null(catVars)) {
 
-    # use FNN with Euclidean distances if no categorical variables are present
-    Gj <- c(FNN::knn.dist(tpoints, k = 1))
-    Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1))
+
+    if(isTRUE(useMD)) {
+
+      tpoints_mat <- as.matrix(tpoints)
+      predpoints_mat <- as.matrix(predpoints)
+
+      # use Mahalanobis distances
+      if (dim(tpoints_mat)[2] == 1) {
+        S <- matrix(stats::var(tpoints_mat), 1, 1)
+        tpoints_mat <- as.matrix(tpoints_mat, ncol = 1)
+      } else {
+        S <- stats::cov(tpoints_mat)
+      }
+      S_inv <- MASS::ginv(S)
+
+      Gj <- sapply(1:dim(tpoints_mat)[1], function(y) {
+        min(sapply(setdiff(1:dim(tpoints_mat)[1], y), function(x) {
+          sqrt(t(tpoints_mat[y,] - tpoints_mat[x,]) %*% S_inv %*% (tpoints_mat[y,] - tpoints_mat[x,]))
+        }))
+      })
+
+      Gij <- sapply(1:dim(predpoints_mat)[1], function(y) {
+        min(sapply(1:dim(tpoints_mat)[1], function(x) {
+          sqrt(t(predpoints_mat[y,] - tpoints_mat[x,]) %*% S_inv %*% (predpoints_mat[y,] - tpoints_mat[x,]))
+        }))
+      })
+
+
+    } else {
+      # use FNN with Euclidean distances if no categorical variables are present
+      Gj <- c(FNN::knn.dist(tpoints, k = 1))
+      Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1))
+    }
+
 
   } else {
 
@@ -672,7 +710,11 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
 
           if(clustering == "kmeans") {
             if(is.null(catVars)) {
-              Gjstar_i <- distclust_euclidean(tpoints, clust_k)
+              if(isTRUE(useMD)){
+                Gjstar_i <- distclust_MD(tpoints, clust_k)
+              } else {
+                Gjstar_i <- distclust_euclidean(tpoints, clust_k)
+              }
             } else {
               Gjstar_i <- distclust_gower(tpoints, clust_k)
             }
@@ -696,7 +738,12 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
 
     if(clustering == "kmeans") {
       if(is.null(catVars)) {
-        Gjstar <- distclust_euclidean(tpoints, clust)
+        if(isTRUE(useMD)) {
+          Gjstar <- distclust_MD(tpoints, clust)
+        } else {
+          Gjstar <- distclust_euclidean(tpoints, clust)
+        }
+
       } else {
         Gjstar <- distclust_gower(tpoints, clust)
       }
@@ -705,8 +752,6 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
     }
 
   }
-
-
 
 
   # Output
@@ -746,6 +791,26 @@ distclust_gower <- function(tr_coords, folds){
   for(f in unique(folds)){
     alldist[f == folds] <- c(gower::gower_topn(tr_coords[f == folds,,drop=FALSE],
                                                tr_coords[f != folds,,drop=FALSE], n=1))$distance[[1]]
+  }
+  unlist(alldist)
+}
+
+# Helper function: Compute out-of-fold NN distance (Mahalanobian distance)
+distclust_MD <- function(tr_coords, folds){
+
+  tr_mat <- as.matrix(tr_coords)
+
+  alldist <- rep(NA, length(folds))
+  for(f in unique(folds)) {
+
+    S <- stats::cov(tr_mat[f==folds,,drop=FALSE])
+    S_inv <- MASS::ginv(S)
+
+    alldist[f == folds] <- apply(tr_mat[f==folds,,drop=FALSE], 1, function(y) {
+      min(apply(tr_mat[f!=folds,,drop=FALSE], 1, function(x) {
+        sqrt(t(y - x) %*% S_inv %*% (y - x))
+      }))
+    })
   }
   unlist(alldist)
 }
