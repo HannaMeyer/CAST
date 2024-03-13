@@ -26,7 +26,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/cast01-CAST-intro.html">1. Introduction to CAST 1.0.0</a>
     <a class="dropdown-item" href="../articles/cast02-AOA-tutorial.html">2. Area of applicability of spatial prediction models</a>
-    <a class="dropdown-item" href="../articles/cast03-AOA-parallel.html">3. AOA in Parallel</a>
+    <a class="dropdown-item" href="../articles/cast03-parallel.html">3. Improve computation time of CAST methods</a>
     <a class="dropdown-item" href="../articles/cast04-plotgeodist.html">4. Visualization of nearest neighbor distance distributions</a>
     <a class="dropdown-item" href="../articles/cast05-CV.html">5. Cross-validation methods in CAST</a>
   </div>
@@ -163,7 +163,10 @@ On the basis of this best model the predictor variables are iteratively
 increased and each of the remaining variables is tested for its improvement
 of the currently best model. The process stops if none of the remaining
 variables increases the model performance when added to the current best model.</p>
-<p>The internal cross validation can be run in parallel. See information
+<p>The forward feature selection can be run in parallel with forking on Linux systems (mclapply).
+Each fork computes a model, which drastically speeds up the runtime -
+especially of the initial predictor search.
+The internal cross validation can be run in parallel on all systems. See information
 on parallel processing of carets train functions for details.</p>
 <p>Using withinSE will favour models with less variables and
 probably shorten the calculation time</p>
@@ -205,8 +208,8 @@ See Meyer et al. (2018) and Meyer et al. (2019) for further details.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">iris</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">ffsmodel</span> <span class="op">&lt;-</span> <span class="fu">ffs</span><span class="op">(</span><span class="va">iris</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>,<span class="va">iris</span><span class="op">$</span><span class="va">Species</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ffsmodel</span> <span class="op">&lt;-</span> <span class="fu">ffs</span><span class="op">(</span><span class="va">splotdata</span><span class="op">[</span>,<span class="fl">6</span><span class="op">:</span><span class="fl">12</span><span class="op">]</span>, <span class="va">splotdata</span><span class="op">$</span><span class="va">Species_richness</span>, ntree <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ffsmodel</span><span class="op">$</span><span class="va">selectedvars</span></span></span>
 <span class="r-in"><span><span class="va">ffsmodel</span><span class="op">$</span><span class="va">selectedvars_perf</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
@@ -217,15 +220,15 @@ See Meyer et al. (2018) and Meyer et al. (2019) for further details.</p>
 <span class="r-in"><span><span class="co">#is shown here.</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="co">#run the model on three cores:</span></span></span>
+<span class="r-in"><span><span class="co"># run the model on three cores (see vignette for details):</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RevolutionAnalytics/doparallel" class="external-link">doParallel</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org" class="external-link">lubridate</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/pkg/doParallel/man/registerDoParallel.html" class="external-link">registerDoParallel</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#load and prepare dataset:</span></span></span>
-<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/serialize.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"Cookfarm.RDS"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">[</span><span class="va">dat</span><span class="op">$</span><span class="va">altitude</span><span class="op">==</span><span class="op">-</span><span class="fl">0.3</span><span class="op">&amp;</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html" class="external-link">year</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">Date</span><span class="op">)</span><span class="op">==</span><span class="fl">2012</span><span class="op">&amp;</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/week.html" class="external-link">week</a></span><span class="op">(</span><span class="va">dat</span><span class="op">$</span><span class="va">Date</span><span class="op">)</span><span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">13</span><span class="op">:</span><span class="fl">14</span><span class="op">)</span>,<span class="op">]</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">cookfarm</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="va">cookfarm</span><span class="op">[</span><span class="va">cookfarm</span><span class="op">$</span><span class="va">altitude</span><span class="op">==</span><span class="op">-</span><span class="fl">0.3</span><span class="op">&amp;</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html" class="external-link">year</a></span><span class="op">(</span><span class="va">cookfarm</span><span class="op">$</span><span class="va">Date</span><span class="op">)</span><span class="op">==</span><span class="fl">2012</span><span class="op">&amp;</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/week.html" class="external-link">week</a></span><span class="op">(</span><span class="va">cookfarm</span><span class="op">$</span><span class="va">Date</span><span class="op">)</span><span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">13</span><span class="op">:</span><span class="fl">14</span><span class="op">)</span>,<span class="op">]</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#visualize dataset:</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">trainDat</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">Date</span>, y<span class="op">=</span><span class="va">VW</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>colour<span class="op">=</span><span class="va">SOURCEID</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -254,6 +257,24 @@ See Meyer et al. (2018) and Meyer et al. (2019) for further details.</p>
 <span class="r-in"><span><span class="va">model</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co">## on linux machines, you can also run the ffs in parallel with forks:</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"splotdata"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">spatial_cv</span> <span class="op">=</span> <span class="fu"><a href="CreateSpacetimeFolds.html">CreateSpacetimeFolds</a></span><span class="op">(</span><span class="va">splotdata</span>, spacevar <span class="op">=</span> <span class="st">"Biome"</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>,index <span class="op">=</span> <span class="va">spatial_cv</span><span class="op">$</span><span class="va">index</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">ffsmodel</span> <span class="op">&lt;-</span> <span class="fu">ffs</span><span class="op">(</span>predictors <span class="op">=</span> <span class="va">splotdata</span><span class="op">[</span>,<span class="fl">6</span><span class="op">:</span><span class="fl">16</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>               response <span class="op">=</span> <span class="va">splotdata</span><span class="op">$</span><span class="va">Species_richness</span>,</span></span>
+<span class="r-in"><span>               tuneLength <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>               method <span class="op">=</span> <span class="st">"rf"</span>,</span></span>
+<span class="r-in"><span>               trControl <span class="op">=</span> <span class="va">ctrl</span>,</span></span>
+<span class="r-in"><span>               ntree <span class="op">=</span> <span class="fl">20</span>,</span></span>
+<span class="r-in"><span>               seed <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>               cores <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
