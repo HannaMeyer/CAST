@@ -84,7 +84,8 @@
 #'
 #' #load and prepare dataset:
 #' data(cookfarm)
-#' trainDat <- cookfarm[cookfarm$altitude==-0.3&year(cookfarm$Date)==2012&week(cookfarm$Date)%in%c(13:14),]
+#' trainDat <- cookfarm[cookfarm$altitude==-0.3&
+#'   year(cookfarm$Date)==2012&week(cookfarm$Date)%in%c(13:14),]
 #'
 #' #visualize dataset:
 #' ggplot(data = trainDat, aes(x=Date, y=VW)) + geom_line(aes(colour=SOURCEID))
