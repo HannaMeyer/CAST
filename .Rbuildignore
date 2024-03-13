@@ -8,3 +8,4 @@ vignettes/CAST-intro_files
 ^docs$
 ^pkgdown$
 ^\.github$
+data-raw/
