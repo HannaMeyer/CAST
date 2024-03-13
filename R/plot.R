@@ -127,7 +127,7 @@ plot.aoa = function(x, samplesize = 1000, variable = "DI", ...){
 #' @author Carles Milà
 #'
 #' @export
-plot.nndm <- function(x, type="strict", ...){
+plot.nndm <- function(x, type="strict", stat = "ecdf", ...){
 
   # Prepare data for plotting: Gij function
   Gij_df <- data.frame(r=x$Gij[order(x$Gij)])
@@ -171,44 +171,57 @@ plot.nndm <- function(x, type="strict", ...){
   myColors <- RColorBrewer::brewer.pal(3, "Dark2")
 
   # Plot
-  if(type=="strict"){
-    ggplot2::ggplot(Gplot) +
-      ggplot2::geom_step(ggplot2::aes_string(x="r", y="val", colour="Function"),
-                         alpha = 0.8, lwd = 0.8) +
-      ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
-                                   labels=c(expression(hat(G)[ij](r)),
-                                            expression(hat(G)[j]^"*"*"(r,"*bold(L)*")"),
-                                            expression(hat(G)[j](r)))) +
+  if(stat=="ecdf"){
+    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes_string(x="r", group="Function", col="Function")) +
       ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
       ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
       ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
-      ggplot2::ylab("ECDF") +
-      ggplot2::labs(colour="Distance function", size="Distance function") +
+      ggplot2::stat_ecdf(geom = "step", lwd = 0.8) +
       ggplot2::theme_bw() +
-      ggplot2::theme(legend.text.align=0,
-                     legend.text=ggplot2::element_text(size=10),
-                     legend.position = "bottom")
+      ggplot2::ylab("ECDF") +
+      ggplot2::labs(group="Distance function", col="Distance function") +
+      ggplot2::theme(legend.position = "bottom",
+                     legend.text=ggplot2::element_text(size=10))
 
-  }else if(type=="simple"){
+    if(type=="strict"){
+      p <-  p +
+        ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
+                                     labels=c(expression(hat(G)[ij](r)),
+                                              expression(hat(G)[j]^"*"*"(r,L)"),
+                                              expression(hat(G)[j](r))))
+    }else if(type == "simple"){
+      p <-  p +
+        ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
+                                     labels=c("prediction-to-sample",
+                                              "CV-distances",
+                                              "sample-to-sample"))
+    }
 
-    ggplot2::ggplot(Gplot) +
-      ggplot2::geom_step(ggplot2::aes_string(x="r", y="val", colour="Function"),
-                         alpha = 0.8, lwd = 0.8) +
-      ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
+  }else if(stat=="density"){
+    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes_string(x="r", group="Function", fill="Function")) +
+      ggplot2::geom_density(adjust=1.5, alpha=.5, stat=stat, lwd = 0.3) +
+      ggplot2::theme_bw() +
+      ggplot2::ylab("Density") +
+      ggplot2::labs(group="Distance function", col="Distance function") +
+      ggplot2::theme(legend.position = "bottom",
+                     legend.text=ggplot2::element_text(size=10))
+
+    if(type=="strict"){
+      p <-  p +
+        ggplot2::scale_fill_manual(values=c(myColors[2], myColors[3], myColors[1]),
+                                   labels=c(expression(hat(G)[ij](r)),
+                                            expression(hat(G)[j]^"*"*"(r,L)"),
+                                            expression(hat(G)[j](r))))
+    }else if(type == "simple"){
+      p <-  p +
+        ggplot2::scale_fill_manual(values=c(myColors[2], myColors[3], myColors[1]),
                                    labels=c("prediction-to-sample",
                                             "CV-distances",
-                                            "sample-to-sample")) +
-      ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
-      ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
-      ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
-      ggplot2::ylab("ECDF") +
-      ggplot2::labs(colour="Distance function", size="Distance function") +
-      ggplot2::theme_bw() +
-      ggplot2::theme(legend.text.align=0,
-                     legend.text=ggplot2::element_text(size=10),
-                     legend.position = "bottom")
-
+                                            "sample-to-sample"))
+    }
   }
+
+  p
 
 }
 
