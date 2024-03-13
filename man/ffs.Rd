@@ -74,7 +74,10 @@ increased and each of the remaining variables is tested for its improvement
 of the currently best model. The process stops if none of the remaining
 variables increases the model performance when added to the current best model.
 
-The internal cross validation can be run in parallel. See information
+The forward feature selection can be run in parallel with forking on Linux systems (mclapply).
+Each fork computes a model, which drastically speeds up the runtime -
+especially of the initial predictor search.
+The internal cross validation can be run in parallel on all systems. See information
 on parallel processing of carets train functions for details.
 
 Using withinSE will favour models with less variables and
@@ -96,8 +99,8 @@ See Meyer et al. (2018) and Meyer et al. (2019) for further details.
 }
 \examples{
 \dontrun{
-data(iris)
-ffsmodel <- ffs(iris[,1:4],iris$Species)
+data(splotdata)
+ffsmodel <- ffs(splotdata[,6:12], splotdata$Species_richness, ntree = 20)
 ffsmodel$selectedvars
 ffsmodel$selectedvars_perf
 }
@@ -108,15 +111,15 @@ ffsmodel$selectedvars_perf
 #is shown here.
 
 \dontrun{
-#run the model on three cores:
+# run the model on three cores (see vignette for details):
 library(doParallel)
 library(lubridate)
 cl <- makeCluster(3)
 registerDoParallel(cl)
 
 #load and prepare dataset:
-dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
-trainDat <- dat[dat$altitude==-0.3&year(dat$Date)==2012&week(dat$Date)\%in\%c(13:14),]
+data(cookfarm)
+trainDat <- cookfarm[cookfarm$altitude==-0.3&year(cookfarm$Date)==2012&week(cookfarm$Date)\%in\%c(13:14),]
 
 #visualize dataset:
 ggplot(data = trainDat, aes(x=Date, y=VW)) + geom_line(aes(colour=SOURCEID))
@@ -145,6 +148,24 @@ tuneLength=1, trControl=ctrl)
 model
 stopCluster(cl)
 }
+
+\dontrun{
+## on linux machines, you can also run the ffs in parallel with forks:
+data("splotdata")
+spatial_cv = CreateSpacetimeFolds(splotdata, spacevar = "Biome", k = 5)
+ctrl <- trainControl(method="cv",index = spatial_cv$index)
+
+ffsmodel <- ffs(predictors = splotdata[,6:16],
+               response = splotdata$Species_richness,
+               tuneLength = 1,
+               method = "rf",
+               trControl = ctrl,
+               ntree = 20,
+               seed = 1,
+               cores = 4)
+}
+
+
 }
 \references{
 \itemize{
