@@ -19,12 +19,12 @@
 #' @return A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
 #'     If type = "feature", the argument modeldomain (and if provided then also the testdata and/or preddata) has to include predictors. Predictor values for x, testdata and preddata are optional if modeldomain is a raster.
-#'     If not provided they are extracted from the modeldomain rasterStack.
+#'     If not provided they are extracted from the modeldomain rasterStack. If some predictors are categorical (i.e., of class factor or character), gower distances will be used.
 #'     W statistic describes the match between the distributions. See Linnenbrink et al (2023) for further details.
 #' @note See Meyer and Pebesma (2022) for an application of this plotting function
 #' @seealso \code{\link{nndm}} \code{\link{knndm}}
 #' @import ggplot2
-#' @author Hanna Meyer, Edzer Pebesma, Marvin Ludwig
+#' @author Hanna Meyer, Edzer Pebesma, Marvin Ludwig, Jan Linnenbrink
 #' @examples
 #' \dontrun{
 #' library(CAST)
@@ -81,6 +81,7 @@
 #' st_crs(dat) <- 26911
 #' trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
 #' predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
+#' trainDat$week <- lubridate::week(trainDat$Date)
 #' cvfolds <- CreateSpacetimeFolds(trainDat,timevar = "week")
 #'
 #' dist <- geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,type="time",time_unit="days")
@@ -186,6 +187,17 @@ geodist <- function(x,
         preddata <- sf::st_transform(preddata,4326)
       }
     }
+    # get names of categorical variables
+    catVars <- names(x[,variables])[which(sapply(x[,variables], class)%in%c("factor","character"))]
+    if(length(catVars)==0) {
+      catVars <- NULL
+    }
+    if(!is.null(catVars)) {
+      message(paste0("variable(s) '", catVars, "' is (are) treated as categorical variables"))
+    }
+  }
+  if(type != "feature") {
+    catVars <- NULL
   }
   if (type=="time" & is.null(timevar)){
     timevar <- names(which(sapply(x, lubridate::is.Date)))
@@ -202,28 +214,28 @@ geodist <- function(x,
 
   ## Sample prediction location from the study area if preddata not available:
   if(is.null(preddata)){
-    modeldomain <- sampleFromArea(modeldomain, samplesize, type,variables,sampling)
+    modeldomain <- sampleFromArea(modeldomain, samplesize, type,variables,sampling, catVars)
     } else{
     modeldomain <- preddata
   }
 
   # always do sample-to-sample and sample-to-prediction
-  s2s <- sample2sample(x, type,variables,time_unit,timevar)
-  s2p <- sample2prediction(x, modeldomain, type, samplesize,variables,time_unit,timevar)
+  s2s <- sample2sample(x, type,variables,time_unit,timevar, catVars)
+  s2p <- sample2prediction(x, modeldomain, type, samplesize,variables,time_unit,timevar, catVars)
 
   dists <- rbind(s2s, s2p)
 
   # optional steps ----
   ##### Distance to test data:
   if(!is.null(testdata)){
-    s2t <- sample2test(x, testdata, type,variables,time_unit,timevar)
+    s2t <- sample2test(x, testdata, type,variables,time_unit,timevar, catVars)
     dists <- rbind(dists, s2t)
   }
 
   ##### Distance to CV data:
   if(!is.null(cvfolds)){
 
-    cvd <- cvdistance(x, cvfolds, cvtrain, type, variables,time_unit,timevar)
+    cvd <- cvdistance(x, cvfolds, cvtrain, type, variables,time_unit,timevar, catVars)
     dists <- rbind(dists, cvd)
   }
   class(dists) <- c("geodist", class(dists))
@@ -257,7 +269,7 @@ geodist <- function(x,
 
 # Sample to Sample Distance
 
-sample2sample <- function(x, type,variables,time_unit,timevar){
+sample2sample <- function(x, type,variables,time_unit,timevar, catVars){
   if(type == "geo"){
     sf::sf_use_s2(TRUE)
     d <- sf::st_distance(x)
@@ -269,14 +281,29 @@ sample2sample <- function(x, type,variables,time_unit,timevar){
   }else if(type == "feature"){
     x <- x[,variables]
     x <- sf::st_drop_geometry(x)
-    scaleparam <- attributes(scale(x))
-    x <- data.frame(scale(x))
-    x_clean <- data.frame(x[complete.cases(x),])
+
+    if(!is.null(catVars)) {
+      x_cat <- x[,catVars,drop=FALSE]
+      x_num <- x[,-which(names(x)%in%catVars),drop=FALSE]
+      scaleparam <- attributes(scale(x_num))
+      x_num <- data.frame(scale(x_num))
+      x <- as.data.frame(cbind(x_num, lapply(x_cat, as.factor)))
+      x_clean <- x[complete.cases(x),]
+    } else {
+      scaleparam <- attributes(scale(x))
+      x <- data.frame(scale(x))
+      x_clean <- data.frame(x[complete.cases(x),])
+    }
+
     # sample to sample feature distance
     d <- c()
     for (i in 1:nrow(x_clean)){
 
-      trainDist <-  FNN::knnx.dist(x_clean[i,],x_clean,k=1)
+      if(is.null(catVars)) {
+        trainDist <-  FNN::knnx.dist(x_clean[i,],x_clean,k=1)
+      } else {
+        trainDist <- gower::gower_dist(x_clean[i,],x_clean)
+      }
 
       trainDist[i] <- NA
       d <- c(d,min(trainDist,na.rm=T))
@@ -303,7 +330,7 @@ sample2sample <- function(x, type,variables,time_unit,timevar){
 
 
 # Sample to Prediction
-sample2prediction = function(x, modeldomain, type, samplesize,variables,time_unit,timevar){
+sample2prediction = function(x, modeldomain, type, samplesize,variables,time_unit,timevar, catVars){
 
   if(type == "geo"){
     modeldomain <- sf::st_transform(modeldomain, sf::st_crs(x))
@@ -317,19 +344,44 @@ sample2prediction = function(x, modeldomain, type, samplesize,variables,time_uni
   }else if(type == "feature"){
     x <- x[,variables]
     x <- sf::st_drop_geometry(x)
-    scaleparam <- attributes(scale(x))
-    x <- data.frame(scale(x))
-    x_clean <- x[complete.cases(x),]
-
     modeldomain <- modeldomain[,variables]
     modeldomain <- sf::st_drop_geometry(modeldomain)
-    modeldomain <- data.frame(scale(modeldomain,center=scaleparam$`scaled:center`,
-                                    scale=scaleparam$`scaled:scale`))
+
+    if(!is.null(catVars)) {
+
+      x_cat <- x[,catVars,drop=FALSE]
+      x_num <- x[,-which(names(x)%in%catVars),drop=FALSE]
+      scaleparam <- attributes(scale(x_num))
+      x_num <- data.frame(scale(x_num))
+
+      modeldomain_num <- modeldomain[,-which(names(modeldomain)%in%catVars),drop=FALSE]
+      modeldomain_cat <- modeldomain[,catVars,drop=FALSE]
+      modeldomain_num <- data.frame(scale(modeldomain_num,center=scaleparam$`scaled:center`,
+                                      scale=scaleparam$`scaled:scale`))
+
+      x <- as.data.frame(cbind(x_num, lapply(x_cat, as.factor)))
+      x_clean <- x[complete.cases(x),]
+      modeldomain <- as.data.frame(cbind(modeldomain_num, lapply(modeldomain_cat, as.factor)))
+
+    } else {
+      scaleparam <- attributes(scale(x))
+      x <- data.frame(scale(x))
+      x_clean <- x[complete.cases(x),]
+
+      modeldomain <- data.frame(scale(modeldomain,center=scaleparam$`scaled:center`,
+                                      scale=scaleparam$`scaled:scale`))
+    }
+
 
     target_dist_feature <- c()
     for (i in 1:nrow(modeldomain)){
 
-      trainDist <-  FNN::knnx.dist(modeldomain[i,],x_clean,k=1)
+      if(is.null(catVars)) {
+        trainDist <-  FNN::knnx.dist(modeldomain[i,],x_clean,k=1)
+      } else {
+        trainDist <- gower::gower_dist(modeldomain[i,], x_clean)
+      }
+
       target_dist_feature <- c(target_dist_feature,min(trainDist,na.rm=T))
     }
     sampletoprediction <- data.frame(dist = target_dist_feature,
@@ -357,7 +409,7 @@ sample2prediction = function(x, modeldomain, type, samplesize,variables,time_uni
 # sample to test
 
 
-sample2test <- function(x, testdata, type,variables,time_unit,timevar){
+sample2test <- function(x, testdata, type,variables,time_unit,timevar, catVars){
 
   if(type == "geo"){
     testdata <- sf::st_transform(testdata,4326)
@@ -370,21 +422,47 @@ sample2test <- function(x, testdata, type,variables,time_unit,timevar){
 
 
   }else if(type == "feature"){
+
+
     x <- x[,variables]
     x <- sf::st_drop_geometry(x)
-    scaleparam <- attributes(scale(x))
-    x <- data.frame(scale(x))
-    x_clean <- x[complete.cases(x),]
     testdata <- testdata[,variables]
     testdata <- sf::st_drop_geometry(testdata)
-    testdata <- data.frame(scale(testdata,center=scaleparam$`scaled:center`,
-                                 scale=scaleparam$`scaled:scale`))
+
+    if(!is.null(catVars)) {
+
+      x_cat <- x[,catVars,drop=FALSE]
+      x_num <- x[,-which(names(x)%in%catVars),drop=FALSE]
+      scaleparam <- attributes(scale(x_num))
+      x_num <- data.frame(scale(x_num))
+
+      testdata_num <- testdata[,-which(names(testdata)%in%catVars),drop=FALSE]
+      testdata_cat <- testdata[,catVars,drop=FALSE]
+      testdata_num <- data.frame(scale(testdata_num,center=scaleparam$`scaled:center`,
+                                          scale=scaleparam$`scaled:scale`))
+
+      x <- as.data.frame(cbind(x_num, lapply(x_cat, as.factor)))
+      x_clean <- x[complete.cases(x),]
+      testdata <- as.data.frame(cbind(testdata_num, lapply(testdata_cat, as.factor)))
+
+    } else {
+      scaleparam <- attributes(scale(x))
+      x <- data.frame(scale(x))
+      x_clean <- x[complete.cases(x),]
+
+      testdata <- data.frame(scale(testdata,center=scaleparam$`scaled:center`,
+                                      scale=scaleparam$`scaled:scale`))
+    }
 
 
     test_dist_feature <- c()
     for (i in 1:nrow(testdata)){
 
-      testDist <- FNN::knnx.dist(testdata[i,],x_clean,k=1)
+      if(is.null(catVars)) {
+        testDist <- FNN::knnx.dist(testdata[i,],x_clean,k=1)
+      } else {
+        testDist <- gower::gower_dist(testdata[i,], x_clean)
+      }
       test_dist_feature <- c(test_dist_feature,min(testDist,na.rm=T))
     }
     dists_test <- data.frame(dist = test_dist_feature,
@@ -412,7 +490,7 @@ sample2test <- function(x, testdata, type,variables,time_unit,timevar){
 
 # between folds
 
-cvdistance <- function(x, cvfolds, cvtrain, type, variables,time_unit,timevar){
+cvdistance <- function(x, cvfolds, cvtrain, type, variables,time_unit,timevar, catVars){
 
   if(!is.null(cvfolds)&!is.list(cvfolds)){ # restructure input if CVtest only contains the fold ID
     tmp <- list()
@@ -443,8 +521,16 @@ cvdistance <- function(x, cvfolds, cvtrain, type, variables,time_unit,timevar){
   }else if(type == "feature"){
     x <- x[,variables]
     x <- sf::st_drop_geometry(x)
-    x <- data.frame(scale(x))
 
+    if(is.null(catVars)) {
+      x <- data.frame(scale(x))
+    } else {
+      x_cat <- x[,catVars,drop=FALSE]
+      x_num <- x[,-which(names(x)%in%catVars),drop=FALSE]
+      scaleparam <- attributes(scale(x_num))
+      x_num <- data.frame(scale(x_num))
+      x <- as.data.frame(cbind(x_num, lapply(x_cat, as.factor)))
+    }
 
     d_cv <- c()
     for(i in 1:length(cvfolds)){
@@ -462,13 +548,24 @@ cvdistance <- function(x, cvfolds, cvtrain, type, variables,time_unit,timevar){
 
       for (k in 1:nrow(testdata_i)){
 
-        trainDist <-  tryCatch(FNN::knnx.dist(testdata_i[k,],traindata_i,k=1),
-                               error = function(e)e)
-        if(inherits(trainDist, "error")){
-          trainDist <- NA
-          message("warning: no distance could be calculated for a fold.
+        if(is.null(catVars)) {
+          trainDist <-  tryCatch(FNN::knnx.dist(testdata_i[k,],traindata_i,k=1),
+                                 error = function(e)e)
+          if(inherits(trainDist, "error")){
+            trainDist <- NA
+            message("warning: no distance could be calculated for a fold.
                   Possibly because predictor values are NA")
+          }
+        } else {
+          trainDist <-  tryCatch(gower::gower_dist(testdata_i[i,], traindata_i),
+                                 error = function(e)e)
+          if(inherits(trainDist, "error")){
+            trainDist <- NA
+            message("warning: no distance could be calculated for a fold.
+                  Possibly because predictor values are NA")
+          }
         }
+
 
         trainDist[k] <- NA
         d_cv <- c(d_cv,min(trainDist,na.rm=T))
@@ -513,7 +610,7 @@ cvdistance <- function(x, cvfolds, cvtrain, type, variables,time_unit,timevar){
 
 
 
-sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
+sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling, catVars){
 
   ##### Distance to prediction locations:
   # regularly spread points (prediction locations):
@@ -551,7 +648,13 @@ sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling){
 
 
   if(type == "feature"){
-    modeldomain <- terra::project(modeldomain, "epsg:4326")
+
+    if(is.null(catVars)) {
+      modeldomain <- terra::project(modeldomain, "epsg:4326")
+    } else {
+      modeldomain <- terra::project(modeldomain, "epsg:4326", method="near")
+    }
+
     predictionloc <- sf::st_as_sf(terra::extract(modeldomain,terra::vect(predictionloc),bind=TRUE))
     predictionloc <- na.omit(predictionloc)
   }

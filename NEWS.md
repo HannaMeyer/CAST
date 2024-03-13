@@ -3,9 +3,12 @@
   * option of spatial error profiles (errorProfiles with variable="geodist")
   * normalize_DI for a more intuitive interpretation
   * geodist allows calculating temporal distances
+  * ffs now can be run in parallel (Linux only)
 * modifications:
   * function DItoErrormetric renamed to errorProfiles and allows for other dissimilarity measures
   * Improvement and homogenization of plotting methods for nndm, knndm and geodist objects
+  * aoa and trainDI `weight` now allows list input
+  * vignette on Introduction to CAST updated
 * deprecated:
   *plot_geodist (replaced by plot.geodist)
   *plot_ffs (replaced by plot.ffs)

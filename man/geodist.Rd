@@ -56,7 +56,7 @@ Optional, the nearest neighbor distances between training data and test data or 
 \details{
 The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
     If type = "feature", the argument modeldomain (and if provided then also the testdata and/or preddata) has to include predictors. Predictor values for x, testdata and preddata are optional if modeldomain is a raster.
-    If not provided they are extracted from the modeldomain rasterStack.
+    If not provided they are extracted from the modeldomain rasterStack. If some predictors are categorical (i.e., of class factor or character), gower distances will be used.
     W statistic describes the match between the distributions. See Linnenbrink et al (2023) for further details.
 }
 \note{
@@ -118,6 +118,7 @@ dat <- st_as_sf(dat,coords=c("Easting","Northing"))
 st_crs(dat) <- 26911
 trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
 predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
+trainDat$week <- lubridate::week(trainDat$Date)
 cvfolds <- CreateSpacetimeFolds(trainDat,timevar = "week")
 
 dist <- geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,type="time",time_unit="days")
@@ -156,5 +157,5 @@ plot(dist) + scale_x_log10(labels=round)
 \code{\link{nndm}} \code{\link{knndm}}
 }
 \author{
-Hanna Meyer, Edzer Pebesma, Marvin Ludwig
+Hanna Meyer, Edzer Pebesma, Marvin Ludwig, Jan Linnenbrink
 }
