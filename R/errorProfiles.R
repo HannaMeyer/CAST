@@ -23,7 +23,7 @@
 #' Estimating the area of applicability of spatial prediction models.
 #' \doi{10.1111/2041-210X.13650}
 #' @seealso \code{\link{aoa}}
-#' @example
+#' @examples
 #' \dontrun{
 #' library(CAST)
 #' library(sf)
