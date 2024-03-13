@@ -31,7 +31,7 @@ loaddata <- function() {
 test_that("trainDI works in default for a trained model", {
 dat <- loaddata()
 #...then calculate the DI of the trained model:
-DI <- trainDI(model=dat$model)
+DI <- trainDI(model=dat$model, verbose = F)
 
 #test threshold:
 expect_equal(as.numeric(round(DI$threshold,5)), 0.38986)
@@ -50,7 +50,7 @@ expect_equal(as.numeric(colMeans(DI$train)),
 test_that("trainDI (with LPD = TRUE) works in default for a trained model", {
   dat <- loaddata()
   #...then calculate the DI of the trained model:
-  DI <- trainDI(model=dat$model, LPD = TRUE)
+  DI <- trainDI(model=dat$model, LPD = TRUE, verbose = F)
 
   #test threshold:
   expect_equal(as.numeric(round(DI$threshold,5)), 0.38986)

@@ -9,7 +9,7 @@
 #' by analysing the similarity between new data and training data.
 #' Methods are described in Meyer et al. (2018); Meyer et al. (2019); Meyer and Pebesma (2021); Milà et al. (2022); Meyer and Pebesma (2022).
 #' @name CAST
-#' @docType package
+#' @docType _PACKAGE
 #' @title 'caret' Applications for Spatial-Temporal Models
 #' @author Hanna Meyer, Carles Milà, Marvin Ludwig, Lan Linnenbrink, Fabian Schumacher
 #' @references
