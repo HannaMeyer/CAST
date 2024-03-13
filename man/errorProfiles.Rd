@@ -59,62 +59,59 @@ the AOA threshold changes accordingly. See Meyer and Pebesma (2021) for the full
 }
 \examples{
 \dontrun{
+library(CAST)
+library(sf)
+library(terra)
+library(caret)
 
-  library(CAST)
-  library(sf)
-  library(terra)
-  library(caret)
+data(splotdata)
+predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
 
+model <- caret::train(st_drop_geometry(splotdata)[,6:16], splotdata$Species_richness,
+   ntree = 10, trControl = trainControl(method = "cv", savePredictions = TRUE))
 
-  data(splotdata)
-  predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
+AOA <- aoa(predictors, model, LPD = TRUE, maxLPD = 1)
 
-  model <- caret::train(st_drop_geometry(splotdata)[,6:16], splotdata$Species_richness, ntree = 10,
-                        trControl = trainControl(method = "cv", savePredictions = TRUE))
+### DI ~ error
+errormodel_DI <- errorProfiles(model, AOA, variable = "DI")
+plot(errormodel_DI)
+summary(errormodel_DI)
 
-  AOA <- aoa(predictors, model, LPD = TRUE, maxLPD = 1)
+expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
+plot(expected_error_DI)
 
-  ### DI ~ error
-  errormodel_DI <- errorProfiles(model, AOA, variable = "DI")
-  plot(errormodel_DI)
+### LPD ~ error
+errormodel_LPD <- errorProfiles(model, AOA, variable = "LPD")
+plot(errormodel_LPD)
+summary(errormodel_DI)
 
-  expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
-  plot(expected_error_DI)
+expected_error_LPD = terra::predict(AOA$LPD, errormodel_LPD)
+plot(expected_error_LPD)
 
-  ### LPD ~ error
-  errormodel_LPD <- errorProfiles(model, AOA, variable = "LPD")
-  plot(errormodel_LPD)
+### geodist ~ error
+errormodel_geodist = errorProfiles(model, locations=splotdata, variable = "geodist")
+plot(errormodel_geodist)
+summary(errormodel_DI)
 
-  expected_error_LPD = terra::predict(AOA$LPD, errormodel_LPD)
-  plot(expected_error_LPD)
-
-
-
-  ### geodist ~ error
-  errormodel_geodist = errorProfiles(model, locations=splotdata,
-                                     variable = "geodist")
-  plot(errormodel_geodist)
-
-  dist <- terra::distance(predictors[[1]],vect(splotdata))
-  names(dist) <- "geodist"
-  expected_error_DI <- terra::predict(dist, errormodel_geodist)
-  plot(expected_error_DI)
+dist <- terra::distance(predictors[[1]],vect(splotdata))
+names(dist) <- "geodist"
+expected_error_DI <- terra::predict(dist, errormodel_geodist)
+plot(expected_error_DI)
 
 
-  ### with multiCV = TRUE (for DI ~ error)
-  errormodel_DI = errorProfiles(model, AOA, multiCV = TRUE, length.out = 3, variable = "DI")
-  plot(errormodel_DI)
+### with multiCV = TRUE (for DI ~ error)
+errormodel_DI = errorProfiles(model, AOA, multiCV = TRUE, length.out = 3, variable = "DI")
+plot(errormodel_DI)
 
-  expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
-  plot(expected_error_DI)
+expected_error_DI = terra::predict(AOA$DI, errormodel_DI)
+plot(expected_error_DI)
 
-  # mask AOA based on new threshold from multiCV
-  mask_aoa = terra::mask(expected_error_DI, AOA$DI > attr(errormodel_DI, 'AOA_threshold'),
-                          maskvalues = 1)
-  plot(mask_aoa)
-
-
+# mask AOA based on new threshold from multiCV
+mask_aoa = terra::mask(expected_error_DI, AOA$DI > attr(errormodel_DI, 'AOA_threshold'),
+  maskvalues = 1)
+plot(mask_aoa)
 }
+
 
 }
 \references{

@@ -28,6 +28,7 @@
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
 #' @param maxLPD numeric or integer. Only if \code{LPD = TRUE}. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso \code{\link{DItoErrormetric}})
+#' @param indices logical. Calculate indices of the training data points that are responsible for the LPD of a new prediction location? Output is a matrix with the dimensions num(raster_cells) x maxLPD. Each row holds the indices of the training data points that are relevant for the specific LPD value at that location. Can be used in combination with exploreAOA(aoa) function from the CASTvis package (\link{https://github.com/fab-scm/CASTvis}) for a better visual interpretation of the results. Note that the matrix can be quite big for examples with a high resolution and a larger number of training samples, which can cause memory issues.
 #' @param verbose Logical. Print progress or not?
 #' @details The Dissimilarity Index (DI), the Local Data Point Density (LPD) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
@@ -135,7 +136,6 @@
 #' @aliases aoa
 
 
-
 aoa <- function(newdata,
                 model=NA,
                 trainDI = NA,
@@ -148,6 +148,7 @@ aoa <- function(newdata,
                 useWeight=TRUE,
                 LPD = FALSE,
                 maxLPD = 1,
+                indices = FALSE,
                 verbose = TRUE) {
 
   # handling of different raster formats
@@ -298,7 +299,9 @@ aoa <- function(newdata,
   }
 
   if (calc_LPD == FALSE) {
-    message("Computing DI of new data...")
+    if (verbose) {
+      message("Computing DI of new data...")
+    }
     mindist <- rep(NA, nrow(newdata))
     mindist[okrows] <-
       .mindistfun(newdataCC, train_scaled, method, S_inv)
@@ -318,6 +321,9 @@ aoa <- function(newdata,
 
     DI_out <- rep(NA, nrow(newdata))
     LPD_out <- rep(NA, nrow(newdata))
+    if (indices) {
+      Indices_out <- matrix(NA, nrow = nrow(newdata), ncol = maxLPD)
+    }
     for (i in seq(nrow(newdataCC))) {
       knnDist  <- .knndistfun(t(matrix(newdataCC[i,])), train_scaled, method, S_inv, maxLPD = maxLPD)
       knnDI <- knnDist / trainDI$trainDist_avrgmean
@@ -325,6 +331,14 @@ aoa <- function(newdata,
 
       DI_out[okrows[i]] <- knnDI[1]
       LPD_out[okrows[i]] <- sum(knnDI < trainDI$threshold)
+      knnIndex  <- .knnindexfun(t(matrix(newdataCC[i,])), train_scaled, method, S_inv, maxLPD = LPD_out[okrows[i]])
+
+      if (indices) {
+        if (LPD_out[okrows[i]] > 0) {
+          Indices_out[okrows[i],1:LPD_out[okrows[i]]] <- knnIndex
+        }
+      }
+
       if (verbose) {
         setTxtProgressBar(pb, i)
       }
@@ -344,6 +358,10 @@ aoa <- function(newdata,
         message(paste("maxLPD is set to", realMaxLPD))
       }
       trainDI$maxLPD <- realMaxLPD
+    }
+
+    if (indices) {
+      Indices_out <- Indices_out[,1:trainDI$maxLPD]
     }
   }
 
@@ -402,6 +420,9 @@ aoa <- function(newdata,
 
   if (calc_LPD == TRUE) {
     result$LPD <- LPD
+    if (indices) {
+      result$indices <- Indices_out
+    }
   }
 
   if (verbose) {
@@ -428,6 +449,20 @@ aoa <- function(newdata,
                         sort(sapply(1:dim(reference)[1],
                                     function(x)
                                       sqrt(t(point[y, ] - reference[x, ]) %*% S_inv %*% (point[y, ] - reference[x,]) )))[1:maxLPD])))
+    }
+  }
+
+.knnindexfun <-
+  function (point,
+            reference,
+            method,
+            S_inv = NULL,
+            maxLPD = maxLPD) {
+    if (method == "L2") {
+      # Euclidean Distance
+      return(FNN::knnx.index(reference, point, k = maxLPD))
+    } else if (method == "MD") {
+      # hier muss noch was hin
     }
   }
 
