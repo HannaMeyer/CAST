@@ -74,7 +74,8 @@ indices to perform a k-fold NNDM CV for map validation.</p>
 <span>  clustering <span class="op">=</span> <span class="st">"hierarchical"</span>,</span>
 <span>  linkf <span class="op">=</span> <span class="st">"ward.D2"</span>,</span>
 <span>  samplesize <span class="op">=</span> <span class="fl">1000</span>,</span>
-<span>  sampling <span class="op">=</span> <span class="st">"regular"</span></span>
+<span>  sampling <span class="op">=</span> <span class="st">"regular"</span>,</span>
+<span>  useMD <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -122,6 +123,11 @@ Only required if modeldomain is used instead of predpoints.</p></dd>
 <dd><p>character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
 Only required if modeldomain is used instead of predpoints.</p></dd>
 
+
+<dt>useMD</dt>
+<dd><p>boolean. Only for `space`=feature: shall the Mahalanobis distance be calculated instead of Euclidean?
+Only works with numerical variables.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -165,10 +171,11 @@ Then, the function takes a regular point sample (amount defined by `samplesize`)
 As an alternative use `predpoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
 When using either `modeldomain` or `predpoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.</p>
 <p>`knndm` can also be performed in the feature space by setting `space` to "feature".
+Euclidean distances or Mahalanobis distances can be used for distance calculation, but only Euclidean are tested.
 In this case, nearest neighbour distances are calculated in n-dimensional feature space rather than in geographical space.
 `tpoints` and `predpoints` can be data frames or sf objects containing the values of the features. Note that the names of `tpoints` and `predpoints` must be the same.
 `predpoints` can also be missing, if `modeldomain` is of class SpatRaster. In this case, the values of of the SpatRaster will be extracted to the `predpoints`.
-In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances. If categorical
+In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances [Experimental]. If categorical
 features are present, and `clustering` = "kmeans", K-Prototype clustering will be performed instead.</p>
     </div>
     <div class="section level2">
