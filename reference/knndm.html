@@ -167,7 +167,8 @@ When using either `modeldomain` or `predpoints`, we advise to plot the study are
 In this case, nearest neighbour distances are calculated in n-dimensional feature space rather than in geographical space.
 `tpoints` and `predpoints` can be data frames or sf objects containing the values of the features. Note that the names of `tpoints` and `predpoints` must be the same.
 `predpoints` can also be missing, if `modeldomain` is of class SpatRaster. In this case, the values of of the SpatRaster will be extracted to the `predpoints`.
-In the case of any categorical features, 0/1 encoding will be performed (pŕovisionally).</p>
+In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances. If categorical
+features are present, and `clustering` = "kmeans", K-Prototype clustering will be performed instead.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
