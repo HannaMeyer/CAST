@@ -84,7 +84,8 @@
 #' trainDat$week <- lubridate::week(trainDat$Date)
 #' cvfolds <- CreateSpacetimeFolds(trainDat,timevar = "week")
 #'
-#' dist <- geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,type="time",time_unit="days")
+#' dist <- geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,
+#'    type="time",time_unit="days")
 #' plot(dist)+ xlim(0,10)
 #'
 #'
