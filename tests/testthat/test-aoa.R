@@ -32,7 +32,7 @@ loaddata <- function() {
 test_that("AOA works in default: used with raster data and a trained model", {
   dat <- loaddata()
   # calculate the AOA of the trained model for the study area:
-  AOA <- aoa(dat$studyArea, dat$model)
+  AOA <- aoa(dat$studyArea, dat$model, verbose = F)
 
   #test threshold:
   expect_equal(as.numeric(round(AOA$parameters$threshold,5)), 0.38986)
@@ -55,7 +55,7 @@ test_that("AOA works in default: used with raster data and a trained model", {
 
 test_that("AOA works without a trained model", {
   dat <- loaddata()
-  AOA <- aoa(dat$studyArea,train=dat$trainDat,variables=dat$variables)
+  AOA <- aoa(dat$studyArea,train=dat$trainDat,variables=dat$variables, verbose = F)
 
   #test threshold:
   expect_equal(as.numeric(round(AOA$parameters$threshold,5)), 0.52872)
@@ -71,7 +71,7 @@ test_that("AOA works without a trained model", {
 test_that("AOA (including LPD) works with raster data and a trained model", {
   dat <- loaddata()
   # calculate the AOA of the trained model for the study area:
-  AOA <- aoa(dat$studyArea, dat$model, LPD = TRUE, maxLPD = 1)
+  AOA <- aoa(dat$studyArea, dat$model, LPD = TRUE, maxLPD = 1, verbose = F)
 
   #test threshold:
   expect_equal(as.numeric(round(AOA$parameters$threshold,5)), 0.38986)
@@ -94,7 +94,7 @@ test_that("AOA (including LPD) works with raster data and a trained model", {
 
 test_that("AOA (inluding LPD) works without a trained model", {
   dat <- loaddata()
-  AOA <- aoa(dat$studyArea,train=dat$trainDat,variables=dat$variables, LPD = TRUE, maxLPD = 1)
+  AOA <- aoa(dat$studyArea,train=dat$trainDat,variables=dat$variables, LPD = TRUE, maxLPD = 1, verbose = F)
 
   #test threshold:
   expect_equal(as.numeric(round(AOA$parameters$threshold,5)), 0.52872)
