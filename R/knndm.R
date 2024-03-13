@@ -63,10 +63,11 @@
 #' When using either `modeldomain` or `predpoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.
 #'
 #' `knndm` can also be performed in the feature space by setting `space` to "feature".
+#' Euclidean distances or Mahalanobis distances can be used for distance calculation, but only Euclidean are tested.
 #' In this case, nearest neighbour distances are calculated in n-dimensional feature space rather than in geographical space.
 #' `tpoints` and `predpoints` can be data frames or sf objects containing the values of the features. Note that the names of `tpoints` and `predpoints` must be the same.
 #' `predpoints` can also be missing, if `modeldomain` is of class SpatRaster. In this case, the values of of the SpatRaster will be extracted to the `predpoints`.
-#' In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances. If categorical
+#' In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances [Experimental]. If categorical
 #' features are present, and `clustering` = "kmeans", K-Prototype clustering will be performed instead.
 #'
 #' @references
@@ -813,11 +814,11 @@ distclust_MD <- function(tr_coords, folds){
 
   tr_mat <- as.matrix(tr_coords)
 
+  S <- stats::cov(tr_mat)
+  S_inv <- MASS::ginv(S)
+
   alldist <- rep(NA, length(folds))
   for(f in unique(folds)) {
-
-    S <- stats::cov(tr_mat[f==folds,,drop=FALSE])
-    S_inv <- MASS::ginv(S)
 
     alldist[f == folds] <- apply(tr_mat[f==folds,,drop=FALSE], 1, function(y) {
       min(apply(tr_mat[f!=folds,,drop=FALSE], 1, function(x) {

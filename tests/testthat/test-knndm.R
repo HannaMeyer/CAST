@@ -354,7 +354,7 @@ test_that("kNNDM works in feature space with Mahalanobis distance", {
   knndm_folds <- knndm(trainDat[,predictors], modeldomain = predictors_sp, space = "feature",
                        clustering="kmeans", k=4, maxp=0.8, useMD=TRUE)
 
-  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 16.9789)
+  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 1.1258)
 
 })
 
@@ -382,6 +382,5 @@ test_that("kNNDM works in feature space with Mahalanobis distance without cluste
 
   expect_message(knndm(train_points, modeldomain = studyArea, space="feature", clustering = "hierarchical", useMD = TRUE),
                  "Gij <= Gj; a random CV assignment is returned")
-
 
 })
