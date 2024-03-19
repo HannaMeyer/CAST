@@ -17,6 +17,8 @@ https://hannameyer.github.io/CAST/
 
 * [Visualization of nearest neighbor distance distributions](https://hannameyer.github.io/CAST/articles/cast04-plotgeodist.html)
 
+* [Cross-validation methods in CAST](https://hannameyer.github.io/CAST/articles/cast05-CV.html)
+
 * The talk from the OpenGeoHub summer school 2019 on spatial validation and variable selection:
 https://www.youtube.com/watch?v=mkHlmYEzsVQ.
 

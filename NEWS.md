@@ -4,6 +4,7 @@
   * normalize_DI for a more intuitive interpretation
   * geodist allows calculating temporal distances
   * ffs now can be run in parallel (Linux only)
+  * vignette "Cross-validation methods in CAST"
 * modifications:
   * function DItoErrormetric renamed to errorProfiles and allows for other dissimilarity measures
   * Improvement and homogenization of plotting methods for nndm, knndm and geodist objects
