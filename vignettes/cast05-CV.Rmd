@@ -67,9 +67,9 @@ Looking at the two maps we can see that while air temperature stations are nicel
 
 ## Cross-validation in geographical space
 
-In `CAST`, we deal with data that are indexed in space, i.e. data that are likely to present dependencies that do not comply with the assumptions of independence of standard CV methods such as Leave-One-Out (LOO) CV or k-fold CV. Several CV approaches have been proposed to try to deal with the dependency between the train and test data during CVs, being spatial blocking and buffering two of the most used strategies. However, the CV methods included in `CAST` propose strategies that are not focused on ensuring independence, but that are rather prediction-oriented: we assess the predictive conditions found when using a model for a specific prediction task, and implement CV methods that aim to approximate them. 
+In `CAST`, we deal with data that are indexed in space, i.e. data that are likely to present dependencies that do not comply with the assumptions of independence of standard CV methods such as Leave-One-Out (LOO) CV or k-fold CV. Several CV approaches have been proposed to try to deal with the dependency between the train and test data during CV, being spatial blocking and buffering two of the most used strategies. However, the CV methods included in `CAST` propose strategies that are not focused on ensuring independence, but that are rather prediction-oriented: we assess the predictive conditions found when using a model for a specific prediction task, and implement CV methods that aim to match them. 
 
-And how can we define these conditions? We have different options: we could consider the geographical space by focusing on the spatial locations of the training and prediction points. Another possibility is to consider the feature space, i.e. the covariate values both in the train and prediction set. There are yet other possibilities to be considered, such as space-time or a mixture of geographical and feature space. For now, though, let's focus on the geographical space first.
+And how can we define these conditions? We have different options: we could consider the geographical space by focusing on the spatial locations of the training and prediction points. Another possibility is to consider the feature space, i.e. the covariate values both in the train and prediction set. There are yet other possibilities, such as space-time or a mixture of geographical and feature space. For now, though, let's focus on the geographical space first.
 
 ### Evaluation of spatial predictive conditions
 
@@ -105,9 +105,9 @@ grid.arrange(p1, p2, nrow=2)
 
 ### NNDM LOO CV for small datasets
 
-The CV methods included in `CAST` are named Nearest Neighbour Distance Matching (NNDM) and their goal is to match the ECDF of nearest neighbour distances found during CV to the ECDF found during prediction we just saw in the last plots. For the geographical space, we will match geographical or Euclidean distances distributions depending on the CRS of the input data (in our examples we have a projected CRS so Euclidean distances are used).
+The CV methods included in `CAST` are named Nearest Neighbour Distance Matching (NNDM), and their goal is to match the ECDF of nearest neighbour distances found during CV to the ECDF found during prediction we just saw in the last plots. For the geographical space, we will match geographical or Euclidean distances distributions depending on the CRS of the input data (in our examples we have a projected CRS so Euclidean distances are used).
 
-The first of the two NNDM methods is NNDM LOO CV. It is a greedy, iterative algorithm that starts with a standard LOO CV and repetitively compares the prediction and CV ECDFs. When it finds that, for a given distance, the value of the ECDF during the CV is greater than the ECDF during the prediction, it excludes points in the neighbourhood of the sample being validated until a match is achieved. In practice, NNDM is effective for matching ECDFs when training data are clustered, while it generalizes to a standard LOO CV when data are random or regularly-distributed. All details regarding the algorithm and a simulation study evaluating its performance can be found in the article [here](https://doi.org/10.5194/egusphere-2023-1308) (also listed at the end of the vignette).
+The first of the two NNDM methods is NNDM LOO CV. It is a greedy, iterative algorithm that starts with a standard LOO CV and repetitively compares the prediction and CV ECDFs. When it finds that, for a given distance, the value of the ECDF during the CV is greater than the ECDF during the prediction, it excludes points in the neighbourhood of the sample being validated until a match is achieved. In practice, NNDM will exclude points whenever training data are clustered, while it will generalize to a standard LOO CV when data are random or regularly-distributed. All details regarding the algorithm and a simulation study evaluating its performance can be found in the article [here](https://doi.org/10.5194/egusphere-2023-1308) (also listed at the end of the vignette).
 
 Now, let's run the NNDM LOO CV algorithm for our two datasets and check their output. Here, we use the polygon of Spain as `modeldomain` from which 1,000 are regularly sampled as prediction points. However, it is also be possible to pass to the function a set of prediction points previously defined, for example a set of raster cell centroids (check argument `predpoints`). We run it first for temperature:
 
@@ -120,7 +120,7 @@ plot(temp_nndm, type = "simple")
 For temperature, we see that the ECDF of the NNDM LOO CV (CV-distances) is very similar to that of the LOO CV (sample-to-sample), as virtually no point is excluded from the training data during the CV. This is because the data are fairly regularly-distributed, and hence the ECDF during LOO is already lower than the prediction-to-sample ECDF. Now, we do the same for air pollution:
 
 ```{r NNDM LOO pm25-1, fig.width=6, fig.height=4}
-pm25_nndm <- nndm(pm25, modeldomain = spain, phi = "max", min_train = 0.5)
+pm25_nndm <- nndm(pm25, modeldomain = spain, samplesize = 1000)
 print(pm25_nndm)
 plot(pm25_nndm, type = "simple")
 ```
@@ -215,9 +215,11 @@ We can observe that the statistics for temperature models are almost the same fo
 
 ### kNNDM CV for medium and large datasets
 
-One straightforward limitation of NNDM is sample size. Not only is it computationally expensive to run the NNDM algorithm for large sample sizes, but also the model fitting runtime become very long since in a LOO CV a model for each observation needs to be fit. To address this limitation, we developed a k-fold version of NNDM named kNNDM.
+One straightforward limitation of NNDM is sample size. Not only is it computationally expensive to run the NNDM algorithm for large sample sizes, but also the model fitting runtime becomes very long since, in a LOO CV, a model for each observation needs to be fit. To address this limitation, we developed a k-fold version of NNDM named kNNDM.
 
-The goal of kNNDM is exactly the same as NNDM LOO CV: to match the ECDF of nearest neighbour distances during CV to the ECDF found during predictions. Nonetheless, the means to achieve it are different. In kNNDM, what we do is to use a clustering algorithm (k-means and agglomerative clustering are currently implemented) to propose a set of candidate fold splits with different degree of clustering. Among those, we choose the fold configuration that offers the best match between the two ECDFs. We choose it based on the Wassterstein's W statistic, which is the integral of the absolute value differences between the two ECDFs. The lower the W, the better the match. 
+The goal of kNNDM is exactly the same as NNDM LOO CV: to match the ECDF of nearest neighbour distances during CV to the ECDF found during prediction. Nonetheless, the means to achieve it are different. In kNNDM, what we do is to use a clustering algorithm (k-means and agglomerative clustering are currently implemented) to cluster our samples data into $q$ groups based on the coordinates, which are then merged into the final $k$ folds. The smaller the $q$, the stronger the spatial structure of the CV will be. 
+
+Among all candidate $q$, we choose the fold configuration that offers the best match between the two ECDFs. We choose it based on the Wassterstein's W statistic, which is the integral of the absolute value differences between the two ECDFs. The lower the W, the better the match. kNNDM will yield configurations with a spatial structure for clustered training samples while it will generalize to a standard random k-fold CV whenever the training data are random or regularly-distributed.
 
 If you want to learn all the finer details of kNNDM and check our simulation study evaluating its performance, [here](https://doi.org/10.5194/egusphere-2023-1308) is the link to the document (also listed at the end of the vignette). Now let's apply kNNDM to our data! First, for temperature with the default clustering algorithm:
 
@@ -237,30 +239,30 @@ print(pm25_knndm)
 plot(pm25_knndm, type = "simple")
 ```
 
-In this case, we *do* find spatial clustering and kNNDM returns a clustered configuration as indicated by the number of intermediate clusters (q). This parameter shows the number of clusters used when grouping coordinates: the smallest the $q$, the stronger the spatial configuration will be. With this kNNDM configuration, the match between the CV and the prediction distance distribution now seems to be quite good!
+In this case, we *do* find clustered samples and kNNDM spatially clusters observations into folds as indicated by the number of intermediate clusters $q$. With this kNNDM configuration, the match between the CV and the prediction distance distribution now seems to be quite good!
 
-Another thing we can do is to check whether other clustering algorithms, or a different number of folds might yield better matches. For example, let's repeat kNNDM with 10 folds using k-means clustering for the PM$_{2.5}$ dataset:
+Another thing we can do is to check whether other clustering algorithms, or a different number of folds, might yield a better match. For example, let's try using k-means clustering for the PM$_{2.5}$ dataset:
 
 ```{r kNNDM pm25 v2, fig.width=6, fig.height=4}
-pm25_knndm_v2 <- knndm(pm25, k = 10, modeldomain = spain, samplesize = 1000, 
+pm25_knndm_v2 <- knndm(pm25, k = 5, modeldomain = spain, samplesize = 1000, 
                        clustering = "kmeans")
 print(pm25_knndm_v2)
 ```
 
-We see that the W statistic indicating the quality of the match in this alternative kNNDM configuration is bigger, so we will stick with the first one. We can easily visualize the 5-fold kNNDM fitted configurations for both temperature and PM$_{2.5}$:
+We see that the W statistic is larger than before, hence indicating the quality of the match in this alternative kNNDM configuration is actually poorer, so we will stick to the first one. We can easily visualize the resulting 5-fold kNNDM configurations for both temperature and PM$_{2.5}$:
 
 ```{r kNNDM viz, fig.width=7, fig.height=3, echo=FALSE}
 p1 <- ggplot() +
   geom_sf(data = spain, fill = "grey", alpha = 0.1) +
   geom_sf(data = temperature, aes(col = as.factor(temp_knndm$clusters))) +
   scale_color_brewer(palette = "Dark2") +
-  ggtitle("Temperature 5-fold kNNDM") +
+  ggtitle("Temperature kNNDM") +
   theme_bw() + theme(legend.position = "none")
 p2 <- ggplot() +
   geom_sf(data = spain, fill = "grey", alpha = 0.1) +
   geom_sf(data = pm25, aes(col = as.factor(pm25_knndm$clusters))) +
   scale_color_brewer(palette = "Dark2") +
-  ggtitle("Temperature 5-fold kNNDM") +
+  ggtitle(expression(PM[2.5]~kNNDM)) +
   theme_bw() + theme(legend.position = "none")
 grid.arrange(p1, p2, nrow = 1)
 ```
@@ -327,8 +329,7 @@ rbind(
   kable(digits=2, row.names = FALSE)
 ```
 
-When we examine the results, we see the same pattern as in the LOO CV results. Since temperature data aren't clustered, kNNDM CV has generalized to a random k-fold CV and thus results of both methods are very similar. This is not true for PM$_{2.5}$, where kNNDM CV shows that the model does not generalizes worse to the entire prediction area compared to a random k-fold configuration.
-
+Here, we see the same pattern as in the LOO CV results. Since temperature data aren't clustered, kNNDM CV has generalized to a random k-fold CV and thus results of both methods are very similar. This is not true for PM$_{2.5}$, where kNNDM CV shows that once predictive conditions are taken into account, the estimated performance is lower.
 
 ## Cross-validation in feature space
 
