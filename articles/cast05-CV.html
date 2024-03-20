@@ -76,10 +76,10 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>5. Cross-validation methods in CAST</h1>
-                        <h4 data-toc-skip class="author">Carles Milà and
-Jan Linnenbrink</h4>
+                        <h4 data-toc-skip class="author">Carles
+Milà</h4>
             
-            <h4 data-toc-skip class="date">2024-03-13</h4>
+            <h4 data-toc-skip class="date">2024-03-20</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast05-CV.Rmd" class="external-link"><code>vignettes/cast05-CV.Rmd</code></a></small>
       <div class="d-none name"><code>cast05-CV.Rmd</code></div>
@@ -92,30 +92,37 @@ Jan Linnenbrink</h4>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/HannaMeyer/CAST" class="external-link">"CAST"</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/topepo/caret/" class="external-link">"caret"</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st">"gridExtra"</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://ggplot2.tidyverse.org" class="external-link">"ggplot2"</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://ggplot2.tidyverse.org" class="external-link">"ggplot2"</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://yihui.org/knitr/" class="external-link">"knitr"</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Cross-Validation (CV) is important for many tasks in a predictive
-mapping workflow, including feature selection (check
+<p>Cross-Validation (CV) is important for many tasks in the predictive
+mapping workflow, including feature selection (see
 <code><a href="../reference/ffs.html">CAST::ffs</a></code> and <code><a href="../reference/bss.html">CAST::bss</a></code>), hyperparameter
-tuning, area of applicability estimation (check <code><a href="../reference/aoa.html">CAST::aoa</a></code>).
-Moreover, in the unfortunate case where no independent samples are
-available to estimate the performance of the final products, it can be
-used as a last resort to obtain an estimate of the error.</p>
-<p>The objective of this vignette is to show the CV options that CAST
-offers. To do so, we will work with two datasets of annual average air
-temperature and air pollution (PM<span class="math inline">\(_{2.5}\)</span>) in Spain, for which several
-predictors including a elevation land cover, impervious surfaces, and
-population and road density, remote sensing measurements of NDVI,
-nighttime lights, and land surface temperature among others. For more
-details, check our <a href="https://egusphere.copernicus.org/preprints/2024/egusphere-2024-138/" class="external-link">preprint</a>
-where the dataset is described in more detail.</p>
+tuning, area of applicability estimation (see <code><a href="../reference/aoa.html">CAST::aoa</a></code>),
+and error profiling (see <code><a href="../reference/errorProfiles.html">CAST::errorProfiles</a></code>). Moreover, in
+the unfortunate case where no independent samples are available to
+estimate the performance of the final predicted surfaces, it can be used
+as a last resort to obtain an estimate of the map error.</p>
+<p>The objective of this vignette is to showcase the CV methods
+implemented in <code>CAST</code>. To do so, we will work with two
+datasets of annual average air temperature and fine Particulate Matter
+(PM<span class="math inline">\(_{2.5}\)</span>) air pollution in
+continental Spain for 2019, for which several predictors have been
+collected. For more details, check our <a href="https://egusphere.copernicus.org/preprints/2024/egusphere-2024-138/" class="external-link">preprint</a>
+where the dataset is described in detail.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Read data</span></span>
 <span><span class="va">temperature</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="st">"https://github.com/carlesmila/RF-spatial-proxies/raw/main/data/temp/temp_train.gpkg"</span><span class="op">)</span></span>
 <span><span class="va">pm25</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="st">"https://github.com/carlesmila/RF-spatial-proxies/raw/main/data/AP/PM25_train.gpkg"</span><span class="op">)</span></span>
 <span><span class="va">spain</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html" class="external-link">read_sf</a></span><span class="op">(</span><span class="st">"https://github.com/carlesmila/RF-spatial-proxies/raw/main/data/boundaries/spain.gpkg"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># df versions</span></span>
+<span><span class="va">temperature_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_drop_geometry</a></span><span class="op">(</span><span class="va">temperature</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">pm25_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_drop_geometry</a></span><span class="op">(</span><span class="va">pm25</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot them</span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
@@ -131,46 +138,56 @@ where the dataset is described in more detail.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_colour_viridis_c</a></span><span class="op">(</span>option <span class="op">=</span> <span class="st">"cividis"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">""</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Average 2019 PM2.5 (ug/m3)"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, nrow<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast05-CV_files/figure-html/read%20data-1.png" width="672" style="display: block; margin: auto;"></p>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">Average</span><span class="op">~</span><span class="fl">2019</span><span class="op">~</span><span class="va">PM</span><span class="op">[</span><span class="fl">2.5</span><span class="op">]</span><span class="op">~</span><span class="op">(</span><span class="va">mu</span><span class="op">*</span><span class="va">g</span><span class="op">/</span><span class="va">m</span><span class="op">^</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, nrow<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<p><img src="cast05-CV_files/figure-html/read%20data-1.png" width="480" style="display: block; margin: auto;"></p>
 <p>Looking at the two maps we can see that while air temperature
-stations are nicely distributed around the area of interest; however,
-air pollution stations are concentrated in specific regions.</p>
+stations are nicely distributed around the area of interest, air
+pollution stations are concentrated in specific regions.</p>
 </div>
 <div class="section level2">
 <h2 id="cross-validation-in-geographical-space">Cross-validation in geographical space<a class="anchor" aria-label="anchor" href="#cross-validation-in-geographical-space"></a>
 </h2>
+<p>In <code>CAST</code>, we deal with data that are indexed in space,
+i.e. data that are likely to present dependencies that do not comply
+with the assumptions of independence of standard CV methods such as
+Leave-One-Out (LOO) CV or k-fold CV. Several CV approaches have been
+proposed to try to deal with the dependency between the train and test
+data during CV, being spatial blocking and buffering two of the most
+used strategies. However, the CV methods included in <code>CAST</code>
+propose strategies that are not focused on ensuring independence, but
+that are rather prediction-oriented: we assess the predictive conditions
+found when using a model for a specific prediction task, and implement
+CV methods that aim to match them.</p>
+<p>And how can we define these conditions? We have different options: we
+could consider the geographical space by focusing on the spatial
+locations of the training and prediction points. Another possibility is
+to consider the feature space, i.e. the covariate values both in the
+train and prediction set. There are yet other possibilities, such as
+space-time or a mixture of geographical and feature space. For now,
+though, let’s focus on the geographical space first.</p>
 <div class="section level3">
 <h3 id="evaluation-of-spatial-predictive-conditions">Evaluation of spatial predictive conditions<a class="anchor" aria-label="anchor" href="#evaluation-of-spatial-predictive-conditions"></a>
 </h3>
-<p>In CAST, we deal with data that are indexed in space, i.e. data that
-present dependencies that do not comply with the assumptions of
-independence of standard CV methods such as Leave-One-Out (LOO) CV or
-k-fold CV. Several CV approaches have been proposed to deal with these
-including blocking and buffering strategies that try to deal with the
-dependency between the train and hold out data. However, in CAST, we
-propose strategies that are prediction-oriented, i.e. CV methods that
-aim to approximate the predictive conditions found when using a model
-for a specific prediction task. And how we define these conditions?
-There are several approaches: we could consider the geographical space
-by focusing on the spatial locations of the samples and prediction
-points. Another possibility is to consider the feature space, i.e. the
-covariate values both in the train and prediction set. And there are yet
-other possibilities, such as considering space-time.</p>
-<p>For this section, let’s consider geographical space and show what we
-mean by “predictive conditions” and also see what would happen if we
-simply used 1) a LOO CV and 2) a random 5-fold CV in each of the two
-cases. In CAST, this can be easily done by the
-<code><a href="../reference/geodist.html">CAST::geodist</a></code> function, which computes the distribution of
-nearest neighbour distances between 1) prediction and training points
-(prediction-to-sample), 2) holdout points and training points during a
-LOO CV (sample-to-sample), 3) hold out points and training points during
-a given CV, in our case the 5-fold random CV (CV-distances).</p>
+<p>First of all, let’s see what we mean by “predictive conditions” in
+practice. In the geographical space, we consider predictive conditions
+in terms of geographical nearest neighbour distances between prediction
+and training locations. In <code>CAST</code>, the distribution of such
+distances can be easily explored using the <code><a href="../reference/geodist.html">CAST::geodist</a></code>
+function. <code><a href="../reference/geodist.html">CAST::geodist</a></code> not only computes the distribution
+of nearest neighbour distances between 1) prediction and training points
+(prediction-to-sample), but also between 2) test points and training
+points during a LOO CV (sample-to-sample), 3) test points and training
+points during a given CV configuration (CV-distances).</p>
+<p>Ideally, we would like the distribution of distances during CV to
+resemble as much as possible the distribution found during the
+prediction, since only then will predictive conditions be well-reflected
+during our CV. Let’s see this in practice for our environmental datasets
+and a random 5-fold CV, where we set the <code>modeldomain</code> to be
+the polygon of the study area from which prediction points are regularly
+sampled:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Random 5-fold CV</span></span>
+<code class="sourceCode R"><span><span class="co"># Random 5-fold CV</span></span>
 <span><span class="va">fold5_temp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/createDataPartition.html" class="external-link">createFolds</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">temperature</span><span class="op">)</span>, k<span class="op">=</span><span class="fl">5</span>, returnTrain<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">fold5_pm25</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/createDataPartition.html" class="external-link">createFolds</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pm25</span><span class="op">)</span>, k<span class="op">=</span><span class="fl">5</span>, returnTrain<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
@@ -187,16 +204,18 @@ a given CV, in our case the 5-fold random CV (CV-distances).</p>
 geographical distances during CV vs. during prediction do not exactly
 match, the overlap between the two is substantial. In the PM<span class="math inline">\(_{2.5}\)</span> case, however, the clustering of
 the stations make prediction-to-sample distances to be much longer that
-those found during CV.</p>
+those found during CV. In other words, there are parts of the prediction
+area that do not have a PM<span class="math inline">\(_{2.5}\)</span>
+station nearby, while this does not happen nearly as often during a
+random 5-fold CV.</p>
 <p>Before we jump into the CV methods included in <code>CAST</code>, it
-is worth to consider an alternative visualization of the distance
-distribution using their Empirical Cumulative Density Functions (ECDF)
-rather than their density functions, which express, for a given
-distance, the proportion of observations that have a value equal or
-lower to than distance. Working with ECDFs has the advantage of not
-having to choose any additional parameter to estimate the density
-function, and they are one of the building blocks of our proposed
-methods.</p>
+is worth considering an alternative visualization of the distance
+distributions using Empirical Cumulative Density Functions (ECDF) rather
+than their density functions. ECDFs express, for a given distance, the
+proportion of distances in the distribution that have a value equal or
+lower to that value. Working with ECDFs has the advantage of not having
+to choose any additional parameters to estimate the density function,
+and are one of the building blocks of our proposed methods.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot ECDF functions</span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">predcond_temp</span>, stat <span class="op">=</span> <span class="st">"ecdf"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Temperature"</span><span class="op">)</span></span>
@@ -205,34 +224,36 @@ methods.</p>
 <p><img src="cast05-CV_files/figure-html/geodist%20ecdf-1.png" width="576" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
-<h3 id="spatial-nndm-loo-cv-for-small-datasets">Spatial NNDM LOO CV for small datasets<a class="anchor" aria-label="anchor" href="#spatial-nndm-loo-cv-for-small-datasets"></a>
+<h3 id="nndm-loo-cv-for-small-datasets">NNDM LOO CV for small datasets<a class="anchor" aria-label="anchor" href="#nndm-loo-cv-for-small-datasets"></a>
 </h3>
-<p>The cross-validation methods included in <code>CAST</code> are named
-Nearest Neighbour Distance Matching (NNDM) and their goal is precisely
-to match the distance distributions during CV and prediction we just saw
-in the last plots. To do so, these methods propose a CV configuration
-such that the nearest neighbour distance distribution between hold out
-and training points found during the CV matches as close as possible the
-distribution of nearest neighbour distances during the prediction.</p>
-<p>The first of the two NNDM methods is LOO NNDM. NNDM is a greedy,
-iterative algorithm that starts with a standard LOO CV and compares the
-ECDF during CV to that found during prediction. Briefly, when it finds
-that the ECDF during the CV is greater than the ECDF during the
-prediction, it removes points in the neighbourhood of the points being
-validated until a match is achieved. In practice, NNDM is effective for
-matching the ECDF when training data are clustered, while it generalizes
-to a standard LOO CV when data are random or regular. All details on the
-algorithm and a simulation study evaluating its performance can be found
-in the article <a href="https://doi.org/10.5194/egusphere-2023-1308" class="external-link">here</a> and listed
-at the end of the vignette.</p>
-<p>Now, let’s run the NNDM LOO CV algorithm for both datasets and check
-their output, first for temperature. Here, we use the polygon of Spain
-as <code>modeldomain</code> from which 1,000 are regularly sampled as
-prediction points. However, it would also, but it would also be possible
-to pass to the function a set of prediction points previously defined
-(check argument <code>predpoints</code>).</p>
+<p>The CV methods included in <code>CAST</code> are named Nearest
+Neighbour Distance Matching (NNDM), and their goal is to match the ECDF
+of nearest neighbour distances found during CV to the ECDF found during
+prediction we just saw in the last plots. For the geographical space, we
+will match geographical or Euclidean distances distributions depending
+on the CRS of the input data (in our examples we have a projected CRS so
+Euclidean distances are used).</p>
+<p>The first of the two NNDM methods is NNDM LOO CV. It is a greedy,
+iterative algorithm that starts with a standard LOO CV and repetitively
+compares the prediction and CV ECDFs. When it finds that, for a given
+distance, the value of the ECDF during the CV is greater than the ECDF
+during the prediction, it excludes points in the neighbourhood of the
+sample being validated until a match is achieved. In practice, NNDM will
+exclude points whenever training data are clustered, while it will
+generalize to a standard LOO CV when data are random or
+regularly-distributed. All details regarding the algorithm and a
+simulation study evaluating its performance can be found in the article
+<a href="https://doi.org/10.5194/egusphere-2023-1308" class="external-link">here</a> (also
+listed at the end of the vignette).</p>
+<p>Now, let’s run the NNDM LOO CV algorithm for our two datasets and
+check their output. Here, we use the polygon of Spain as
+<code>modeldomain</code> from which 1,000 are regularly sampled as
+prediction points. However, it is also be possible to pass to the
+function a set of prediction points previously defined, for example a
+set of raster cell centroids (check argument <code>predpoints</code>).
+We run it first for temperature:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">temp_nndm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">temperature</span>, modeldomain <span class="op">=</span> <span class="va">spain</span>, samplesize <span class="op">=</span> <span class="fl">1000</span>, phi <span class="op">=</span> <span class="st">"max"</span>, min_train <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">temp_nndm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">temperature</span>, modeldomain <span class="op">=</span> <span class="va">spain</span>, samplesize <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">temp_nndm</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## nndm object</span></span>
 <span><span class="co">## Total number of points: 195</span></span>
@@ -240,10 +261,15 @@ to pass to the function a set of prediction points previously defined
 <span><span class="co">## Minimum number of training points: 191</span></span></code></pre>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">temp_nndm</span>, type <span class="op">=</span> <span class="st">"simple"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast05-CV_files/figure-html/NNDM%20LOO%20temp-1.png" width="700" style="display: block; margin: auto;"></p>
-<p>Now, we do the same for air pollution</p>
+<p><img src="cast05-CV_files/figure-html/NNDM%20LOO%20temp-1.png" width="576" style="display: block; margin: auto;"></p>
+<p>For temperature, we see that the ECDF of the NNDM LOO CV
+(CV-distances) is very similar to that of the LOO CV (sample-to-sample),
+as virtually no point is excluded from the training data during the CV.
+This is because the data are fairly regularly-distributed, and hence the
+ECDF during LOO is already lower than the prediction-to-sample ECDF.
+Now, we do the same for air pollution:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pm25_nndm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">pm25</span>, modeldomain <span class="op">=</span> <span class="va">spain</span>, phi <span class="op">=</span> <span class="st">"max"</span>, min_train <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">pm25_nndm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/nndm.html">nndm</a></span><span class="op">(</span><span class="va">pm25</span>, modeldomain <span class="op">=</span> <span class="va">spain</span>, samplesize <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">pm25_nndm</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## nndm object</span></span>
 <span><span class="co">## Total number of points: 124</span></span>
@@ -251,31 +277,316 @@ to pass to the function a set of prediction points previously defined
 <span><span class="co">## Minimum number of training points: 105</span></span></code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">pm25_nndm</span>, type <span class="op">=</span> <span class="st">"simple"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast05-CV_files/figure-html/NNDM%20LOO%20pm25-1.png" width="700" style="display: block; margin: auto;"></p>
-<p>Now it’s time to fit the models and estimate their performance using
-1) a standard LOO CV, and 2) NNDM LOO CV.</p>
+<p><img src="cast05-CV_files/figure-html/NNDM%20LOO%20pm25-1-1.png" width="576" style="display: block; margin: auto;"></p>
+<p>Here, things are quite different and many more points are excluded in
+order to match the prediction-to-sample ECDF successfully. As pointed
+out before, this is caused by the clustered pattern of the training
+samples. We can see how an iteration of NNDM LOO CV looks like by
+plotting it:</p>
+<p><img src="cast05-CV_files/figure-html/NNDM%20LOO%20pm25-2-1.png" width="576" style="display: block; margin: auto;"></p>
+<p>In this CV iteration, many samples around the point being validated
+are excluded. Now it’s time to fit the models and estimate their
+performance using 1) a standard LOO CV, and 2) NNDM LOO CV. Note that
+for all LOO methods, we need to use
+<code><a href="../reference/global_validation.html">CAST::global_validation</a></code>, which stacks all of the observed
+and the out-of-sample predicted values to get the relevant metrics in a
+single iteration.</p>
+<p>First, we fit temperature models using a Digital Elevation Model
+(DEM), NDVI and Land Surface Temperature (LST) as predictors:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># LOO CV</span></span>
+<span><span class="va">temp_loo_ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"LOOCV"</span>, savePredictions<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">temp_loo_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">temperature_df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dem"</span>, <span class="st">"ndvi"</span>, <span class="st">"lst_day"</span>,  <span class="st">"lst_night"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                      <span class="va">temperature_df</span><span class="op">[</span>,<span class="st">"temp"</span><span class="op">]</span>,</span>
+<span>                      method<span class="op">=</span><span class="st">"rf"</span>, importance<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>                      trControl<span class="op">=</span><span class="va">temp_loo_ctrl</span>, ntree<span class="op">=</span><span class="fl">100</span>, tuneLength<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">temp_loo_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">temp_loo_mod</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># NNDM LOO CV</span></span>
+<span><span class="va">temp_nndm_ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>, </span>
+<span>                               index<span class="op">=</span><span class="va">temp_nndm</span><span class="op">$</span><span class="va">indx_train</span>, <span class="co"># Obs to fit the model to</span></span>
+<span>                               indexOut<span class="op">=</span><span class="va">temp_nndm</span><span class="op">$</span><span class="va">indx_test</span>, <span class="co"># Obs to validate</span></span>
+<span>                               savePredictions<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">temp_nndm_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">temperature_df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dem"</span>, <span class="st">"ndvi"</span>, <span class="st">"lst_day"</span>,  <span class="st">"lst_night"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                       <span class="va">temperature_df</span><span class="op">[</span>,<span class="st">"temp"</span><span class="op">]</span>,</span>
+<span>                       method<span class="op">=</span><span class="st">"rf"</span>, importance<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>                       trControl<span class="op">=</span><span class="va">temp_nndm_ctrl</span>, ntree<span class="op">=</span><span class="fl">100</span>, tuneLength<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">temp_nndm_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">temp_nndm_mod</span><span class="op">)</span></span></code></pre></div>
+<p>Next, we run PM<span class="math inline">\(_{2.5}\)</span> models
+using population and road density, nighttime lights (NTL), and
+impervious surface (IMD) as predictors:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># LOO CV</span></span>
+<span><span class="va">pm25_loo_ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"LOOCV"</span>, savePredictions<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">pm25_loo_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">pm25_df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"popdens"</span>, <span class="st">"primaryroads"</span>, <span class="st">"ntl"</span>, <span class="st">"imd"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                      <span class="va">pm25_df</span><span class="op">[</span>,<span class="st">"PM25"</span><span class="op">]</span>,</span>
+<span>                      method<span class="op">=</span><span class="st">"rf"</span>, importance<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>                      trControl<span class="op">=</span><span class="va">pm25_loo_ctrl</span>, ntree<span class="op">=</span><span class="fl">100</span>, tuneLength<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">pm25_loo_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">pm25_loo_mod</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># NNDM LOO CV</span></span>
+<span><span class="va">pm25_nndm_ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>, </span>
+<span>                               index<span class="op">=</span><span class="va">pm25_nndm</span><span class="op">$</span><span class="va">indx_train</span>, <span class="co"># Obs to fit the model to</span></span>
+<span>                               indexOut<span class="op">=</span><span class="va">pm25_nndm</span><span class="op">$</span><span class="va">indx_test</span>, <span class="co"># Obs to validate</span></span>
+<span>                               savePredictions<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">pm25_nndm_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">pm25_df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"popdens"</span>, <span class="st">"primaryroads"</span>, <span class="st">"ntl"</span>, <span class="st">"imd"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                       <span class="va">pm25_df</span><span class="op">[</span>,<span class="st">"PM25"</span><span class="op">]</span>,</span>
+<span>                       method<span class="op">=</span><span class="st">"rf"</span>, importance<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>                       trControl<span class="op">=</span><span class="va">pm25_nndm_ctrl</span>, ntree<span class="op">=</span><span class="fl">100</span>, tuneLength<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">pm25_nndm_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">pm25_nndm_mod</span><span class="op">)</span></span></code></pre></div>
+<p>And we summarise the CV results in a table:</p>
+<table class="table">
+<thead><tr class="header">
+<th align="left">outcome</th>
+<th align="left">validation</th>
+<th align="right">RMSE</th>
+<th align="right">Rsquared</th>
+<th align="right">MAE</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Temperature</td>
+<td align="left">LOO CV</td>
+<td align="right">0.86</td>
+<td align="right">0.91</td>
+<td align="right">0.65</td>
+</tr>
+<tr class="even">
+<td align="left">Temperature</td>
+<td align="left">NNDM LOO CV</td>
+<td align="right">0.88</td>
+<td align="right">0.91</td>
+<td align="right">0.65</td>
+</tr>
+<tr class="odd">
+<td align="left">PM2.5</td>
+<td align="left">LOO CV</td>
+<td align="right">2.89</td>
+<td align="right">0.35</td>
+<td align="right">2.30</td>
+</tr>
+<tr class="even">
+<td align="left">PM2.5</td>
+<td align="left">NNDM LOO CV</td>
+<td align="right">3.25</td>
+<td align="right">0.19</td>
+<td align="right">2.48</td>
+</tr>
+</tbody>
+</table>
+<p>We can observe that the statistics for temperature models are almost
+the same for both CV methods since the NNDM algorithm did not detect any
+spatial clustering and thus returned a configuration almost identical to
+a standard LOO CV. However, for PM<span class="math inline">\(_{2.5}\)</span>, there are important differences
+between the performance estimated by the two CV methods, with NNDM LOO
+CV suggesting a much lower performance when the actual predictive
+conditions are taken into account.</p>
 </div>
 <div class="section level3">
-<h3 id="spatial-knndm-cv-for-medium-and-large-datasets">Spatial kNNDM CV for medium and large datasets<a class="anchor" aria-label="anchor" href="#spatial-knndm-cv-for-medium-and-large-datasets"></a>
+<h3 id="knndm-cv-for-medium-and-large-datasets">kNNDM CV for medium and large datasets<a class="anchor" aria-label="anchor" href="#knndm-cv-for-medium-and-large-datasets"></a>
 </h3>
+<p>One straightforward limitation of NNDM is sample size. Not only is it
+computationally expensive to run the NNDM algorithm for large sample
+sizes, but also the model fitting runtime becomes very long since, in a
+LOO CV, a model for each observation needs to be fit. To address this
+limitation, we developed a k-fold version of NNDM named kNNDM.</p>
+<p>The goal of kNNDM is exactly the same as NNDM LOO CV: to match the
+ECDF of nearest neighbour distances during CV to the ECDF found during
+prediction. Nonetheless, the means to achieve it are different. In
+kNNDM, what we do is to use a clustering algorithm (k-means and
+agglomerative clustering are currently implemented) to cluster our
+samples data into <span class="math inline">\(q\)</span> groups based on
+the coordinates, which are then merged into the final <span class="math inline">\(k\)</span> folds. The smaller the <span class="math inline">\(q\)</span>, the stronger the spatial structure of
+the CV will be.</p>
+<p>Among all candidate <span class="math inline">\(q\)</span>, we choose
+the fold configuration that offers the best match between the two ECDFs.
+We choose it based on the Wassterstein’s W statistic, which is the
+integral of the absolute value differences between the two ECDFs. The
+lower the W, the better the match. kNNDM will yield configurations with
+a spatial structure for clustered training samples while it will
+generalize to a standard random k-fold CV whenever the training data are
+random or regularly-distributed.</p>
+<p>If you want to learn all the finer details of kNNDM and check our
+simulation study evaluating its performance, <a href="https://doi.org/10.5194/egusphere-2023-1308" class="external-link">here</a> is the link
+to the document (also listed at the end of the vignette). Now let’s
+apply kNNDM to our data! First, for temperature with the default
+clustering algorithm:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">temp_knndm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/knndm.html">knndm</a></span><span class="op">(</span><span class="va">temperature</span>, k <span class="op">=</span> <span class="fl">5</span>, modeldomain <span class="op">=</span> <span class="va">spain</span>, samplesize <span class="op">=</span> <span class="fl">1000</span>, </span>
+<span>                   clustering <span class="op">=</span> <span class="st">"hierarchical"</span>, linkf <span class="op">=</span> <span class="st">"ward.D2"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">temp_knndm</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## knndm object</span></span>
+<span><span class="co">## Space: geographical</span></span>
+<span><span class="co">## Clustering algorithm: hierarchical</span></span>
+<span><span class="co">## Intermediate clusters (q): random CV</span></span>
+<span><span class="co">## W statistic: 9384.0966</span></span>
+<span><span class="co">## Number of folds: 5</span></span>
+<span><span class="co">## Observations in each fold:  39 39 39 39 39</span></span></code></pre>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">temp_nndm</span>, type <span class="op">=</span> <span class="st">"simple"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="cast05-CV_files/figure-html/kNNDM%20temp-1.png" width="576" style="display: block; margin: auto;"></p>
+<p>Similarly to NNDM LOO CV, kNNDM does not find any clustering and
+generalizes to a random k-fold CV. Now let’s see what happens in the
+PM<span class="math inline">\(_{2.5}\)</span> dataset:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pm25_knndm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/knndm.html">knndm</a></span><span class="op">(</span><span class="va">pm25</span>, k <span class="op">=</span> <span class="fl">5</span>, modeldomain <span class="op">=</span> <span class="va">spain</span>, samplesize <span class="op">=</span> <span class="fl">1000</span>, </span>
+<span>                    clustering <span class="op">=</span> <span class="st">"hierarchical"</span>, linkf <span class="op">=</span> <span class="st">"ward.D2"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">pm25_knndm</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## knndm object</span></span>
+<span><span class="co">## Space: geographical</span></span>
+<span><span class="co">## Clustering algorithm: hierarchical</span></span>
+<span><span class="co">## Intermediate clusters (q): 46</span></span>
+<span><span class="co">## W statistic: 4919.5574</span></span>
+<span><span class="co">## Number of folds: 5</span></span>
+<span><span class="co">## Observations in each fold:  29 22 18 32 23</span></span></code></pre>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">pm25_knndm</span>, type <span class="op">=</span> <span class="st">"simple"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="cast05-CV_files/figure-html/kNNDM%20pm25-1.png" width="576" style="display: block; margin: auto;"></p>
+<p>In this case, we <em>do</em> find clustered samples and kNNDM
+spatially clusters observations into folds as indicated by the number of
+intermediate clusters <span class="math inline">\(q\)</span>. With this
+kNNDM configuration, the match between the CV and the prediction
+distance distribution now seems to be quite good!</p>
+<p>Another thing we can do is to check whether other clustering
+algorithms, or a different number of folds, might yield a better match.
+For example, let’s try using k-means clustering for the PM<span class="math inline">\(_{2.5}\)</span> dataset:</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pm25_knndm_v2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/knndm.html">knndm</a></span><span class="op">(</span><span class="va">pm25</span>, k <span class="op">=</span> <span class="fl">5</span>, modeldomain <span class="op">=</span> <span class="va">spain</span>, samplesize <span class="op">=</span> <span class="fl">1000</span>, </span>
+<span>                       clustering <span class="op">=</span> <span class="st">"kmeans"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/print.html">print</a></span><span class="op">(</span><span class="va">pm25_knndm_v2</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## knndm object</span></span>
+<span><span class="co">## Space: geographical</span></span>
+<span><span class="co">## Clustering algorithm: kmeans</span></span>
+<span><span class="co">## Intermediate clusters (q): 35</span></span>
+<span><span class="co">## W statistic: 5022.7072</span></span>
+<span><span class="co">## Number of folds: 5</span></span>
+<span><span class="co">## Observations in each fold:  21 23 17 40 23</span></span></code></pre>
+<p>We see that the W statistic is larger than before, hence indicating
+the quality of the match in this alternative kNNDM configuration is
+actually poorer, so we will stick to the first one. We can easily
+visualize the resulting 5-fold kNNDM configurations for both temperature
+and PM<span class="math inline">\(_{2.5}\)</span>:</p>
+<p><img src="cast05-CV_files/figure-html/kNNDM%20viz-1.png" width="672" style="display: block; margin: auto;"></p>
+<p>As we already knew, the 5-fold kNNDM configuration for temperature is
+random whereas the one for PM<span class="math inline">\(_{2.5}\)</span>
+has a clear spatial pattern where observations close in space tend to be
+in the same fold.</p>
+<p>Now, we can finally run our models (same predictors as before) and
+compare the results of a 5-fold random vs. kNNDM CV. To do so, we will
+still use the function <code><a href="../reference/global_validation.html">CAST::global_validation</a></code> to compute
+the statistics since 1) folds can be unbalanced and thus averaging might
+not weight all observations equally, and 2) we match the ECDF based on
+the whole distribution and not by fold. First, we run the temperature
+models:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Random 5-fold CV</span></span>
+<span><span class="va">temp_rndmk_ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>, number<span class="op">=</span><span class="fl">5</span>, savePredictions<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">temp_rndmk_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">temperature_df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dem"</span>, <span class="st">"ndvi"</span>, <span class="st">"lst_day"</span>,  <span class="st">"lst_night"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                      <span class="va">temperature_df</span><span class="op">[</span>,<span class="st">"temp"</span><span class="op">]</span>,</span>
+<span>                      method<span class="op">=</span><span class="st">"rf"</span>, importance<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>                      trControl<span class="op">=</span><span class="va">temp_rndmk_ctrl</span>, ntree<span class="op">=</span><span class="fl">100</span>, tuneLength<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">temp_rndmk_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">temp_rndmk_mod</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># kNNDM 5-fold CV</span></span>
+<span><span class="va">temp_knndm_ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>, </span>
+<span>                                index<span class="op">=</span><span class="va">temp_knndm</span><span class="op">$</span><span class="va">indx_train</span>,</span>
+<span>                                savePredictions<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">temp_knndm_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">temperature_df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dem"</span>, <span class="st">"ndvi"</span>, <span class="st">"lst_day"</span>,  <span class="st">"lst_night"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                        <span class="va">temperature_df</span><span class="op">[</span>,<span class="st">"temp"</span><span class="op">]</span>,</span>
+<span>                        method<span class="op">=</span><span class="st">"rf"</span>, importance<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>                        trControl<span class="op">=</span><span class="va">temp_knndm_ctrl</span>, ntree<span class="op">=</span><span class="fl">100</span>, tuneLength<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">temp_knndm_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">temp_knndm_mod</span><span class="op">)</span></span></code></pre></div>
+<p>And the PM<span class="math inline">\(_{2.5}\)</span> models:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Random 5-fold CV</span></span>
+<span><span class="va">pm25_rndmk_ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>, number<span class="op">=</span><span class="fl">5</span>, savePredictions<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">pm25_rndmk_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">pm25_df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"popdens"</span>, <span class="st">"primaryroads"</span>, <span class="st">"ntl"</span>, <span class="st">"imd"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                        <span class="va">pm25_df</span><span class="op">[</span>,<span class="st">"PM25"</span><span class="op">]</span>,</span>
+<span>                        method<span class="op">=</span><span class="st">"rf"</span>, importance<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>                        trControl<span class="op">=</span><span class="va">pm25_rndmk_ctrl</span>, ntree<span class="op">=</span><span class="fl">100</span>, tuneLength<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">pm25_rndmk_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">pm25_rndmk_mod</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># kNNDM 5-fold CV</span></span>
+<span><span class="va">pm25_knndm_ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>, </span>
+<span>                                index<span class="op">=</span><span class="va">pm25_knndm</span><span class="op">$</span><span class="va">indx_train</span>,</span>
+<span>                                savePredictions<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">pm25_knndm_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">pm25_df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"popdens"</span>, <span class="st">"primaryroads"</span>, <span class="st">"ntl"</span>, <span class="st">"imd"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                        <span class="va">pm25_df</span><span class="op">[</span>,<span class="st">"PM25"</span><span class="op">]</span>,</span>
+<span>                        method<span class="op">=</span><span class="st">"rf"</span>, importance<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>                        trControl<span class="op">=</span><span class="va">pm25_knndm_ctrl</span>, ntree<span class="op">=</span><span class="fl">100</span>, tuneLength<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">pm25_knndm_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">pm25_knndm_mod</span><span class="op">)</span></span></code></pre></div>
+<p>And summarize the results in a table:</p>
+<table class="table">
+<thead><tr class="header">
+<th align="left">outcome</th>
+<th align="left">validation</th>
+<th align="right">RMSE</th>
+<th align="right">Rsquared</th>
+<th align="right">MAE</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Temperature</td>
+<td align="left">Random 5-fold</td>
+<td align="right">0.92</td>
+<td align="right">0.90</td>
+<td align="right">0.68</td>
+</tr>
+<tr class="even">
+<td align="left">Temperature</td>
+<td align="left">kNNDM 5-fold</td>
+<td align="right">0.89</td>
+<td align="right">0.91</td>
+<td align="right">0.65</td>
+</tr>
+<tr class="odd">
+<td align="left">PM2.5</td>
+<td align="left">Random 5-fold</td>
+<td align="right">2.92</td>
+<td align="right">0.34</td>
+<td align="right">2.32</td>
+</tr>
+<tr class="even">
+<td align="left">PM2.5</td>
+<td align="left">kNNDM 5-fold</td>
+<td align="right">3.24</td>
+<td align="right">0.20</td>
+<td align="right">2.46</td>
+</tr>
+</tbody>
+</table>
+<p>Here, we see the same pattern as in the LOO CV results. Since
+temperature data aren’t clustered, kNNDM CV has generalized to a random
+k-fold CV and thus results of both methods are very similar. This is not
+true for PM<span class="math inline">\(_{2.5}\)</span>, where kNNDM CV
+shows that once predictive conditions are taken into account, the
+estimated performance is lower.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="cross-validation-in-feature-space">Cross-validation in feature space<a class="anchor" aria-label="anchor" href="#cross-validation-in-feature-space"></a>
 </h2>
-<p>Coming soon!</p>
+<p>The ideas underlying NNDM methods in the geographical space can be
+transferred into the feature space with just a few tweaks. In the
+current version of <code>CAST</code>, we have implemented feature space
+experimental versions of <code><a href="../reference/nndm.html">CAST::nndm</a></code> and
+<code><a href="../reference/knndm.html">CAST::knndm</a></code> (see argument <code>space= 'feature'</code>)
+and we are running validation analyses to verify their performance in a
+variety of settings. Stay tuned for a future version of the vignette for
+an overview of feature space NNDM CV methods and how to apply them to
+your datasets!</p>
 </div>
 <div class="section level2">
 <h2 id="further-reading">Further reading<a class="anchor" aria-label="anchor" href="#further-reading"></a>
 </h2>
 <ul>
-<li>Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM: k-fold
-Nearest Neighbour Distance Matching Cross-Validation for map accuracy
-estimation, EGUsphere [preprint], <a href="https://doi.org/10.5194/egusphere-2023-1308" class="external-link uri">https://doi.org/10.5194/egusphere-2023-1308</a>
-</li>
 <li>Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest
 Neighbour Distance Matching Leave-One-Out Cross-Validation for map
 validation. Methods in Ecology and Evolution 00, 1– 13. <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link uri">https://doi.org/10.1111/2041-210X.13851</a>
+</li>
+<li>Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM: k-fold
+Nearest Neighbour Distance Matching Cross-Validation for map accuracy
+estimation, EGUsphere [preprint], <a href="https://doi.org/10.5194/egusphere-2023-1308" class="external-link uri">https://doi.org/10.5194/egusphere-2023-1308</a>
 </li>
 </ul>
 </div>
