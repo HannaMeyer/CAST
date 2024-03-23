@@ -7,7 +7,7 @@
 \format{
 A sf data.frame with 128545 rows and 17 columns:
 \describe{
-  \item{SOURCEID}{sPlotOpen Metadata}
+  \item{SOURCEID}{ID of the logger}
   \item{VW}{Response Variable - Soil Moisture}
   \item{altitude}{Measurement depth of VW}
   \item{Date, cdata}{Measurement Date, Cumulative Date}
@@ -19,7 +19,7 @@ A sf data.frame with 128545 rows and 17 columns:
 data(cookfarm)
 }
 \description{
-spatio-temporal data of soil properties and associated predictors for the Cookfarm in South Africa
+spatio-temporal data of soil properties and associated predictors for the Cookfarm in Washington, USA
 }
 \references{
 \itemize{

@@ -26,7 +26,8 @@ library(caret)
 # prepare sample data:
 dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
 data(cookfarm)
-dat <- aggregate(cookfarm[,c("VW","Easting","Northing")],by=list(as.character(cookfarm$SOURCEID)),mean)
+dat <- aggregate(cookfarm[,c("VW","Easting","Northing")],
+   by=list(as.character(cookfarm$SOURCEID)),mean)
 pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 pts$ID <- 1:nrow(pts)
 set.seed(100)

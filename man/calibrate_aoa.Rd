@@ -67,7 +67,8 @@ library(latticeExtra)
 
 #' # prepare sample data:
 data(cookfarm)
-dat <- aggregate(cookfarm[,c("VW","Easting","Northing")],by=list(as.character(cookfarm$SOURCEID)),mean)
+dat <- aggregate(cookfarm[,c("VW","Easting","Northing")],
+    by=list(as.character(cookfarm$SOURCEID)),mean)
 pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 pts$ID <- 1:nrow(pts)
 studyArea <- rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))[[1:8]]
