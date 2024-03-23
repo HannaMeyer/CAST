@@ -1,5 +1,5 @@
 ---
-title: '5. Cross-validation methods in CAST'
+title: '2. Cross-validation methods in CAST'
 author: "Carles Milà"
 date: "`r Sys.Date()`"
 output:

@@ -1,6 +1,6 @@
 ---
 title: "1. Introduction to CAST 1.0.0"
-author: "Hanna Meyer, Marvin Ludwig, Carles Milà, Jan Linnenbrink, Fabian Schumacher"
+author: "Hanna Meyer, Marvin Ludwig"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:

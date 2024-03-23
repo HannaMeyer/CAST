@@ -1,5 +1,5 @@
 ---
-title: "2. Area of applicability of spatial prediction models"
+title: "4. Area of applicability of spatial prediction models"
 author: "Hanna Meyer"
 date: "`r Sys.Date()`"
 output:
@@ -345,9 +345,9 @@ To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al
 We will use soil moisture (VW) as response variable here. Hence, we're aiming at making a spatial continuous prediction based on limited measurements from data loggers.
 
 ```{r, message = FALSE, warning=FALSE}
-dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
+data(cookfarm)
 # calculate average of VW for each sampling site:
-dat <- aggregate(dat[,c("VW","Easting","Northing")],by=list(as.character(dat$SOURCEID)),mean)
+dat <- aggregate(cookfarm[,c("VW","Easting","Northing")],by=list(as.character(cookfarm$SOURCEID)),mean)
 # create sf object from the data:
 pts <- st_as_sf(dat,coords=c("Easting","Northing"))
 
