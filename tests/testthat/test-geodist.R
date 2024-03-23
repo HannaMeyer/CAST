@@ -262,8 +262,8 @@ test_that("geodist works with categorical variables in feature space", {
 
 test_that("geodist works in temporal space", {
 
-dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
-dat <- sf::st_as_sf(dat,coords=c("Easting","Northing"))
+data(cookfarm)
+dat <- sf::st_as_sf(cookfarm,coords=c("Easting","Northing"))
 sf::st_crs(dat) <- 26911
 trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
 predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
@@ -282,8 +282,8 @@ expect_equal(mean_prediction_to_sample, 4674.37)
 })
 
 test_that("geodist works in temporal space and with CV", {
-  dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
-  dat <- sf::st_as_sf(dat,coords=c("Easting","Northing"))
+  data(cookfarm)
+  dat <- sf::st_as_sf(cookfarm,coords=c("Easting","Northing"))
   sf::st_crs(dat) <- 26911
   trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
   predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]

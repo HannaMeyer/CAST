@@ -76,8 +76,8 @@
 #'############Distances in temporal space
 #' library(lubridate)
 #' library(ggplot2)
-#' dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
-#' dat <- st_as_sf(dat,coords=c("Easting","Northing"))
+#' data(cookfarm)
+#' dat <- st_as_sf(cookfarm,coords=c("Easting","Northing"))
 #' st_crs(dat) <- 26911
 #' trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
 #' predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]

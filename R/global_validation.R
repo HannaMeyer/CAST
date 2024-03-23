@@ -9,8 +9,8 @@
 #' @author Hanna Meyer
 #' @seealso \code{\link{CreateSpacetimeFolds}}
 #' @examples
-#' dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
-#' dat <- dat[sample(1:nrow(dat),500),]
+#' data(cookfarm)
+#' dat <- cookfarm[sample(1:nrow(cookfarm),500),]
 #' indices <- CreateSpacetimeFolds(dat,"SOURCEID","Date")
 #' ctrl <- caret::trainControl(method="cv",index = indices$index,savePredictions="final")
 #' model <- caret::train(dat[,c("DEM","TWI","BLD")],dat$VW, method="rf", trControl=ctrl, ntree=10)

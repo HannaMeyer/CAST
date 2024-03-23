@@ -107,9 +107,9 @@
 #' library(terra)
 #'
 #' ### prepare sample data:
-#' dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
-#' dat <- aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
-#'    by=list(as.character(dat$SOURCEID)),mean)
+#' data(cookfarm)
+#' dat <- aggregate(cookfarm[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+#'    by=list(as.character(cookfarm$SOURCEID)),mean)
 #' pts <- dat[,-1]
 #' pts <- st_as_sf(pts,coords=c("Easting","Northing"))
 #' st_crs(pts) <- 26911

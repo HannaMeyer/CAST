@@ -116,9 +116,9 @@ test_that("NNDM yields the expected results with SpatRast modeldomain", {
   set.seed(1234)
 
   # prepare sample data
-  dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
-  dat <- terra::aggregate(dat[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
-                          by=list(as.character(dat$SOURCEID)),mean)
+  data(cookfarm)
+  dat <- terra::aggregate(cookfarm[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+                          by=list(as.character(cookfarm$SOURCEID)),mean)
   pts <- dat[,-1]
   pts <- sf::st_as_sf(pts,coords=c("Easting","Northing"))
   sf::st_crs(pts) <- 26911
