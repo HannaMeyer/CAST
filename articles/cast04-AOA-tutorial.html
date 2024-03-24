@@ -42,7 +42,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/cast01-CAST-intro.html">1. Introduction to CAST 1.0.0</a>
-    <a class="dropdown-item" href="../articles/cast02-CV.html">2. Cross-validation methods in CAST</a>
+    <a class="dropdown-item" href="../articles/cast02-CV.html">2. Nearest neighbor distance matching Cross-validation in CAST</a>
     <a class="dropdown-item" href="../articles/cast03-plotgeodist.html">3. Visualization of nearest neighbor distance distributions</a>
     <a class="dropdown-item" href="../articles/cast04-AOA-tutorial.html">4. Area of applicability of spatial prediction models</a>
     <a class="dropdown-item" href="../articles/cast05-parallel.html">5. Improve computation time of CAST methods</a>
@@ -79,7 +79,7 @@
                         <h4 data-toc-skip class="author">Hanna
 Meyer</h4>
             
-            <h4 data-toc-skip class="date">2024-03-23</h4>
+            <h4 data-toc-skip class="date">2024-03-24</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast04-AOA-tutorial.Rmd" class="external-link"><code>vignettes/cast04-AOA-tutorial.Rmd</code></a></small>
       <div class="d-none name"><code>cast04-AOA-tutorial.Rmd</code></div>
@@ -350,23 +350,22 @@ values within the training data and the DI of the new data.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-13-1.png" width="847.68">
-The most output of the <code>aoa</code> function are three raster data
-sets: The first is the DI that is the normalized and weighted minimum
-distance to a nearest training data point divided by the average
-distance within the training data. The second is the AOA which is
-derived from the DI by using a threshold. The threshold is the
+The most important output of the <code>aoa</code> function are three
+raster data sets: The first is the DI that is the normalized and
+weighted minimum distance to a nearest training data point divided by
+the average distance within the training data. The second is the AOA
+which is derived from the DI by using a threshold. The threshold is the
 (outlier-removed) maximum DI observed in the training data where the DI
 of the training data is calculated by considering the cross-validation
 folds. The last is the LPD that is an absolute count of training data
-points, that satisfy the AOA condition for a new prediction location. An
-LPD of <code>0</code> therefore signifies a prediction location outside
-the AOA and <code>&gt;1</code> inside the AOA. The specific LPD values
-give a good indication about the coverage by similar training data for a
-new prediction location. The used threshold and all relevant information
-about the DI and LPD of the training data is returned in the
+points, that are within the AOA threshold for a new prediction location.
+An LPD of <code>0</code> therefore signifies a prediction location
+outside the AOA and <code>&gt;1</code> inside the AOA. The specific LPD
+values give a good indication about the coverage by similar training
+data for a new prediction location. The used threshold and all relevant
+information about the DI and LPD of the training data is returned in the
 <code>parameters</code> list entry.</p>
-<p>We can plot the DI and LPD as well as predictions only in the
-AOA:</p>
+<p>We can plot the DI and LPD as well as predictions within the AOA:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">truediff</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"true prediction error"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"DI"</span><span class="op">)</span></span>
@@ -375,8 +374,8 @@ AOA:</p>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">T</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>,title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-14-1.png" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-14-2.png" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-14-3.png" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-14-4.png" width="50%"></p>
 <p>The patterns in the DI and LPD are in general agreement with the true
-prediction error. Very high values are present in the Alps, as they have
-not been covered by training data but feature very distinct
+prediction error. Very high DI values are present in the Alps, as they
+have not been covered by training data but feature very distinct
 environmental conditions. Since the DI values for these areas are above
 the threshold, we regard this area as outside the AOA.</p>
 </div>
@@ -392,12 +391,16 @@ et al. 2019</a>, <a href="https://doi.org/10.1111/ecog.02881" class="external-l
 al. 2018</a>, <a href="https://doi.org/10.1080/13658816.2017.1346255" class="external-link">Pohjankukka et
 al. 2017</a>, <a href="https://CRAN.R-project.org/package=sperrorest" class="external-link">Brenning
 2012</a>)</p>
-<p>Also the threshold for the AOA is not reliable, because it is based
-in distance to a nearest data point within the training data (which is
-usually very small when data are clustered). Instead, cross-validation
-should be based on a leave-cluster-out approach, and the AOA estimation
-based on distances to a nearest data point not located in the same
-spatial cluster.</p>
+<p>A random cross-validation in this case would lead to a apparently
+high prediction performance, but this would only apply to a very small
+AOA, because the threshold on the DI is based in distance to a nearest
+data point within the training data (which is usually very small when
+data are clustered). To assess the model performance for larger areas,
+cross-validation should be based on a spatial CV, e.g. a
+leave-cluster-out approach (see vignette on spatial CV in this package
+for a more detailed discussion on cross validation strategies), where
+also the AOA estimation is based on distances to a nearest data point
+not located in the same spatial cluster.</p>
 <p>To show how this looks like, we use 15 spatial locations and simulate
 5 data points around each location.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
@@ -486,9 +489,9 @@ automatically extracted from the model.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">DI</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"DI"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">LPD</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"LPD"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">prediction</span>, col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA \n(spatial CV error applies)"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">TRUE</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>,title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">TRUE</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>,bg <span class="op">=</span> <span class="st">'white'</span>,title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">prediction_random</span>, col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA \n(random CV error applies)"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">TRUE</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>,title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">TRUE</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>,bg <span class="op">=</span> <span class="st">'white'</span>,title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-20-1.png" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-20-2.png" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-20-3.png" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-20-4.png" width="50%"></p>
 <p>Note that the AOA is much larger for the spatial CV approach.
 However, the spatial cross-validation error is considerably larger,
@@ -584,11 +587,11 @@ DI and the RMSE here (see details in the paper).</p>
 <span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">DI_expected_RMSE</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"DI expected RMSE"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">DI_updated_AOA</span>, col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">TRUE</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>,title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">DI_updated_AOA</span>, col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">TRUE</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>,bg <span class="op">=</span> <span class="st">'white'</span>,title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-3.png" width="847.68"></p>
 <div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">LPD_expected_RMSE</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"LPD expected RMSE"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">LPD_updated_AOA</span>, col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">TRUE</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>,title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">LPD_updated_AOA</span>, col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">TRUE</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>,bg <span class="op">=</span> <span class="st">'white'</span>,title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-4.png" width="847.68"></p>
 </div>
 </div>
@@ -710,7 +713,7 @@ the AOA should be excluded.</p>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">pts</span>,zcol<span class="op">=</span><span class="st">"ID"</span>,col<span class="op">=</span><span class="st">"red"</span>,add<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">prediction</span>, col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA \n(LOOCV error applies)"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">TRUE</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>,title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>,<span class="st">"transparent"</span><span class="op">)</span>,add<span class="op">=</span><span class="cn">TRUE</span>,plg<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"topleft"</span>,box.col<span class="op">=</span><span class="st">"black"</span>,bty<span class="op">=</span><span class="st">"o"</span>, bg <span class="op">=</span> <span class="st">'white'</span>, title<span class="op">=</span><span class="st">"AOA"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-27-1.png" width="30%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-27-2.png" width="30%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-27-3.png" width="30%"></p>
 </div>
 </div>
@@ -735,13 +738,13 @@ performances.</li>
 <ul>
 <li><p>Meyer, H., &amp; Pebesma, E. (2022): Machine learning-based
 global maps of ecological variables and the challenge of assessing them.
-Nature Communications. Accepted.</p></li>
+Nature Communications. [<a href="https://doi.org/10.1038/s41467-022-29838-9" class="external-link uri">https://doi.org/10.1038/s41467-022-29838-9</a>]</p></li>
 <li><p>Meyer, H., &amp; Pebesma, E. (2021). Predicting into unknown
 space? Estimating the area of applicability of spatial prediction
 models. Methods in Ecology and Evolution, 12, 1620– 1633. [<a href="https://doi.org/10.1111/2041-210X.13650" class="external-link uri">https://doi.org/10.1111/2041-210X.13650</a>]</p></li>
 <li><p>Tutorial (<a href="https://youtu.be/EyP04zLe9qo" class="external-link uri">https://youtu.be/EyP04zLe9qo</a>) and Lecture (<a href="https://youtu.be/OoNH6Nl-X2s" class="external-link uri">https://youtu.be/OoNH6Nl-X2s</a>) recording from OpenGeoHub
 summer school 2020 on the area of applicability. As well as talk at the
-OpenGeoHub summer school 2021: <a href="https://av.tib.eu/media/54879" class="external-link uri">https://av.tib.eu/media/54879</a></p></li>
+OpenGeoHub summer school 2022: <a href="https://doi.org/10.5446/59412" class="external-link uri">https://doi.org/10.5446/59412</a></p></li>
 </ul>
 </div>
 </div>

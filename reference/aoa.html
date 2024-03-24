@@ -41,7 +41,7 @@ Optionally, the local point density is calculated which indicates the number of 
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/cast01-CAST-intro.html">1. Introduction to CAST 1.0.0</a>
-    <a class="dropdown-item" href="../articles/cast02-CV.html">2. Cross-validation methods in CAST</a>
+    <a class="dropdown-item" href="../articles/cast02-CV.html">2. Nearest neighbor distance matching Cross-validation in CAST</a>
     <a class="dropdown-item" href="../articles/cast03-plotgeodist.html">3. Visualization of nearest neighbor distance distributions</a>
     <a class="dropdown-item" href="../articles/cast04-AOA-tutorial.html">4. Area of applicability of spatial prediction models</a>
     <a class="dropdown-item" href="../articles/cast05-parallel.html">5. Improve computation time of CAST methods</a>
@@ -193,7 +193,7 @@ If variables are factors, dummy variables are created prior to weighting and dis
 <p>Interpretation of results: If a location is very similar to the properties
 of the training data it will have a low distance in the predictor variable space
 (DI towards 0) while locations that are very different in their properties
-will have a high DI.
+will have a high DI. For easier interpretation see <code><a href="normalize_DI.html">normalize_DI</a></code>
 See Meyer and Pebesma (2021) for the full documentation of the methodology.</p>
     </div>
     <div class="section level2">
@@ -210,7 +210,7 @@ Methods in Ecology and Evolution 12: 1620-1633. <a href="https://doi.org/10.1111
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="calibrate_aoa.html">calibrate_aoa</a></code>, <code><a href="trainDI.html">trainDI</a></code></p></div>
+    <div class="dont-index"><p><code><a href="trainDI.html">trainDI</a></code>, <code><a href="normalize_DI.html">normalize_DI</a></code>, <code><a href="errorProfiles.html">errorProfiles</a></code></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
