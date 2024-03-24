@@ -1,12 +1,12 @@
 ---
-title: '2. Cross-validation methods in CAST'
+title: '2. Nearest neighbor distance matching Cross-validation in CAST'
 author: "Carles Milà"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{5. Cross-validation methods in CAST}
+  %\VignetteIndexEntry{2. Nearest neighbor distance matching Cross-validation in CAST}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 

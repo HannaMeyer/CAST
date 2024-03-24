@@ -14,7 +14,7 @@ of spatial prediction models and allows for spatial variable selection to select
 in view to their contribution to the spatial model performance.
 CAST further includes functionality to estimate the (spatial) area of applicability of prediction models
 by analysing the similarity between new data and training data.
-Methods are described in Meyer et al. (2018); Meyer et al. (2019); Meyer and Pebesma (2021); Milà et al. (2022); Meyer and Pebesma (2022).
+Methods are described in Meyer et al. (2018); Meyer et al. (2019); Meyer and Pebesma (2021); Milà et al. (2022); Meyer and Pebesma (2022); Linnenbrink et al. (2023).
 }
 \details{
 'caret' Applications for Spatio-Temporal models
@@ -38,6 +38,6 @@ Useful links:
 
 }
 \author{
-Hanna Meyer, Carles Milà, Marvin Ludwig, Lan Linnenbrink, Fabian Schumacher
+Hanna Meyer, Carles Milà, Marvin Ludwig, Jan Linnenbrink, Fabian Schumacher
 }
 \keyword{package}

@@ -1,6 +1,6 @@
 #' Normalize DI values
 #' @description
-#' The DI is normalized by the DI threshold to allow for a more straightforwrd interpretation.
+#' The DI is normalized by the DI threshold to allow for a more straightforward interpretation.
 #' A value in the resulting DI larger 1 means that the data are more dissimilar than what has been observed during cross-validation.
 #' The returned threshold is adjusted accordingly and is, as a consequence, 1.
 #' @param AOA An AOA object

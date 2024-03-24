@@ -36,7 +36,7 @@
 #' Interpretation of results: If a location is very similar to the properties
 #' of the training data it will have a low distance in the predictor variable space
 #' (DI towards 0) while locations that are very different in their properties
-#' will have a high DI.
+#' will have a high DI. For easier interpretation see \code{\link{normalize_DI}}
 #' See Meyer and Pebesma (2021) for the full documentation of the methodology.
 #' @note If classification models are used, currently the variable importance can only
 #' be automatically retrieved if models were trained via train(predictors,response) and not via the formula-interface.
@@ -52,7 +52,7 @@
 #' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
 #' Methods in Ecology and Evolution 12: 1620-1633. \doi{10.1111/2041-210X.13650}
-#' @seealso \code{\link{calibrate_aoa}}, \code{\link{trainDI}}
+#' @seealso \code{\link{trainDI}}, \code{\link{normalize_DI}}, \code{\link{errorProfiles}}
 #' @examples
 #' \dontrun{
 #' library(sf)

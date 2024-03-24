@@ -11,13 +11,14 @@ https://hannameyer.github.io/CAST/
 
 * [Introduction to CAST](https://hannameyer.github.io/CAST/articles/cast01-CAST-intro.html)
 
-* [Area of applicability of spatial prediction models](https://hannameyer.github.io/CAST/articles/cast02-AOA-tutorial.html)
+* [Nearest neighbor distance matching Cross-validation in CAST](https://hannameyer.github.io/CAST/articles/cast02-CV.html)
 
-* [Area of applicability in parallel](https://hannameyer.github.io/CAST/articles/cast03-AOA-parallel.html)
+* [Visualization of nearest neighbor distance distributions](https://hannameyer.github.io/CAST/articles/cast03-plotgeodist.html)
 
-* [Visualization of nearest neighbor distance distributions](https://hannameyer.github.io/CAST/articles/cast04-plotgeodist.html)
+* [Area of applicability of spatial prediction models](https://hannameyer.github.io/CAST/articles/cast04-AOA-tutorial.html)
 
-* [Cross-validation methods in CAST](https://hannameyer.github.io/CAST/articles/cast05-CV.html)
+* [Improve computation time of CAST methods](https://hannameyer.github.io/CAST/articles/cast05-AOA-parallel.html)
+
 
 * The talk from the OpenGeoHub summer school 2019 on spatial validation and variable selection:
 https://www.youtube.com/watch?v=mkHlmYEzsVQ.

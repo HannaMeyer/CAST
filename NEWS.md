@@ -15,6 +15,7 @@
 * deprecated:
   *plot_geodist (replaced by plot.geodist)
   *plot_ffs (replaced by plot.ffs)
+  *calibrate_aoa (replaced by errorProfiles)
   
 # `CAST` 0.9.1
 * new features:

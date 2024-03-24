@@ -82,7 +82,7 @@ If variables are factors, dummy variables are created prior to weighting and dis
 Interpretation of results: If a location is very similar to the properties
 of the training data it will have a low distance in the predictor variable space
 (DI towards 0) while locations that are very different in their properties
-will have a high DI.
+will have a high DI. For easier interpretation see \code{\link{normalize_DI}}
 See Meyer and Pebesma (2021) for the full documentation of the methodology.
 }
 \note{
@@ -177,7 +177,7 @@ Estimating the area of applicability of spatial prediction models.
 Methods in Ecology and Evolution 12: 1620-1633. \doi{10.1111/2041-210X.13650}
 }
 \seealso{
-\code{\link{calibrate_aoa}}, \code{\link{trainDI}}
+\code{\link{trainDI}}, \code{\link{normalize_DI}}, \code{\link{errorProfiles}}
 }
 \author{
 Hanna Meyer, Fabian Schumacher

@@ -6,7 +6,7 @@ output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{AOA in parallel}
+  %\VignetteIndexEntry{Improve computation time of CAST methods}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -21,7 +21,7 @@ Working with machine learning methods and spatial data can be computationally ex
 
 # Forward feature selection
 
-As the forward feature selection basically is a brute force grid search of the best predictor variable combination, during `ffs` countless machine learning models are trained to compare their perfomance. These model trainings can be run in parallel. On Unix machines, this is implemented using `mclapply` from the `parallel-package`. Simply set the `cores` argument to a value `> 1` to use multiple cores for the model training. On windows machines, you will get the warning `Parallel computations of ffs only implemented on unix systems. cores is set to 1`. 
+As the forward feature selection basically is a brute force grid search of the best predictor variable combination, during `ffs` a large number of machine learning models are trained to compare their performance. These model trainings can be run in parallel. On Unix machines, this is implemented using `mclapply` from the `parallel-package`. Simply set the `cores` argument to a value `> 1` to use multiple cores for the model training. On windows machines, you will get the warning `Parallel computations of ffs only implemented on unix systems. cores is set to 1`. 
 
 
 
@@ -79,7 +79,7 @@ ffsmodel <- ffs(predictors = splotdata[,6:16],
 Estimating the Area of Applicability (AOA) can be computationally expansive as the method is based on finding minimum distances and nearest neighbors. We can divide the computation into three major chunks:
 
 1. The feature space distance between all training data.
-2. The nearest feature space distance between training data in different cv folds.
+2. The nearest feature space distance between training data in different CV folds.
 3. The distance between new locations (pixel) and the nearest training data in feature space.
 
 (1.) and (2.) are needed to derive the AOA threshold and solely based on the training data and cross validation configuration. They are computed together in the `trainDI` function. (3.) is needed to calculate the dissimilarity index of the predictor stack in the `aoa` function. Under the hood, the `aoa` function calls `trainDI` as it's first step and then calculates the DI of the predictor stack.
