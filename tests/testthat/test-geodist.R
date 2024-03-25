@@ -94,8 +94,8 @@ test_that("geodist works with points and preddata in feature space", {
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
   mean_prediction_to_sample <- round(mean(dist[dist$what=="prediction-to-sample","dist"]), 4)
 
-  expect_equal(mean_sample2sample, 0.4316)
-  expect_equal(mean_prediction_to_sample, 0.8328)
+  expect_equal(mean_sample2sample, 0.3814)
+  expect_equal(mean_prediction_to_sample, 1.4656)
 
 
 })
@@ -133,7 +133,7 @@ test_that("geodist works with points and raster in feature space", {
                   type = "feature")
 
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
-  expect_equal(mean_sample2sample, 0.4316)
+  expect_equal(mean_sample2sample, 0.3814)
 
 
 })
@@ -153,7 +153,7 @@ test_that("geodist works with points and stars raster in geographic space", {
                   type = "feature")
 
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
-  expect_equal(mean_sample2sample, 0.4316)
+  expect_equal(mean_sample2sample, 0.3814)
 
 
 })
@@ -208,8 +208,8 @@ test_that("geodist works with points and test data in feature space", {
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
   mean_test_to_sample <- round(mean(dist[dist$what=="test-to-sample","dist"]), 4)
 
-  expect_equal(mean_sample2sample, 0.4316)
-  expect_equal(mean_test_to_sample, 0.8783)
+  expect_equal(mean_sample2sample, 0.3814)
+  expect_equal(mean_test_to_sample, 1.4524)
 
 
 })

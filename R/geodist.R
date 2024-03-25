@@ -147,7 +147,6 @@ geodist <- function(x,
 
 
 
-  x <- sf::st_transform(x,4326)
   if(type == "feature"){
     if(is.null(variables)){
       variables <- names(modeldomain)
@@ -159,7 +158,7 @@ geodist <- function(x,
       if(class(x)[1]=="sfc_POINT"){
         x <- sf::st_as_sf(x)
       }
-      x <- sf::st_as_sf(terra::extract(modeldomain, x, na.rm=FALSE,bind=TRUE))
+      x <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(x), na.rm=FALSE,bind=TRUE))
       x <- sf::st_transform(x,4326)
     }
     if(!is.null(testdata)){
@@ -198,6 +197,7 @@ geodist <- function(x,
     }
   }
   if(type != "feature") {
+    x <- sf::st_transform(x,4326)
     catVars <- NULL
   }
   if (type=="time" & is.null(timevar)){
