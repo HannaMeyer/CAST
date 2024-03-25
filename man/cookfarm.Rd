@@ -19,7 +19,8 @@ A sf data.frame with 128545 rows and 17 columns:
 data(cookfarm)
 }
 \description{
-spatio-temporal data of soil properties and associated predictors for the Cookfarm in Washington, USA
+spatio-temporal data of soil properties and associated predictors for the Cookfarm in Washington, USA.
+The data are a subset of the cookfarm dataset provided with the \href{https://CRAN.R-project.org/package=GSIF}{GSIF package}.
 }
 \references{
 \itemize{
