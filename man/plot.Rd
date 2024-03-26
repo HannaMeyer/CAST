@@ -98,13 +98,8 @@ plot(ffsmodel)
 plot(ffsmodel,plotType="selected")
 }
 }
-\seealso{
-\code{\link{ffs}}, \code{\link{bss}}
-}
 \author{
 Marvin Ludwig, Hanna Meyer
 
 Carles Milà
-
-Marvin Ludwig and Hanna Meyer
 }
