@@ -64,7 +64,7 @@
 #' data(cookfarm)
 #' dat <- aggregate(cookfarm[,c("VW","Easting","Northing")],
 #'    by=list(as.character(cookfarm$SOURCEID)),mean)
-#' pts <- st_as_sf(dat,coords=c("Easting","Northing"))
+#' pts <- st_as_sf(dat,coords=c("Easting","Northing"),crs=26911)
 #' pts$ID <- 1:nrow(pts)
 #' set.seed(100)
 #' pts <- pts[1:30,]

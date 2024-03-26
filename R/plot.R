@@ -326,8 +326,7 @@ plot.knndm <- function(x, type="strict", stat = "ecdf", ...){
 #' @param lwd Numeric. Width of the error bars
 #' @param pch Numeric. Type of point marking the best models
 #' @param ... Further arguments for base plot if type="selected"
-#' @author Marvin Ludwig and Hanna Meyer
-#' @seealso \code{\link{ffs}}, \code{\link{bss}}
+#' @author Marvin Ludwig, Hanna Meyer
 #' @examples
 #' \dontrun{
 #' data(splotdata)
