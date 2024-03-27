@@ -1,5 +1,5 @@
 ---
-title: "3. Visualization of nearest neighbor distance distributions"
+title: "2. Visualization of nearest neighbor distance distributions"
 author: "Hanna Meyer"
 date: "`r Sys.Date()`"
 output:
