@@ -13,7 +13,6 @@
 #' library(caret)
 #'
 #' # prepare sample data:
-#' dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
 #' data(cookfarm)
 #' dat <- aggregate(cookfarm[,c("VW","Easting","Northing")],
 #'    by=list(as.character(cookfarm$SOURCEID)),mean)

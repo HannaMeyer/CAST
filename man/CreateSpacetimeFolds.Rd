@@ -52,9 +52,9 @@ Standard k-fold cross-validation can lead to considerable misinterpretation in s
 }
 \examples{
 \dontrun{
-dat <- readRDS(system.file("extdata","Cookfarm.RDS",package="CAST"))
+data(cookfarm)
 ### Prepare for 10-fold Leave-Location-and-Time-Out cross validation
-indices <- CreateSpacetimeFolds(dat,"SOURCEID","Date")
+indices <- CreateSpacetimeFolds(cookfarm,"SOURCEID","Date")
 str(indices)
 ### Prepare for 10-fold Leave-Location-Out cross validation
 indices <- CreateSpacetimeFolds(dat,spacevar="SOURCEID")
