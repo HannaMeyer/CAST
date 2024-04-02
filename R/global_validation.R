@@ -9,6 +9,7 @@
 #' @author Hanna Meyer
 #' @seealso \code{\link{CreateSpacetimeFolds}}
 #' @examples
+#' library(caret)
 #' data(cookfarm)
 #' dat <- cookfarm[sample(1:nrow(cookfarm),500),]
 #' indices <- CreateSpacetimeFolds(dat,"SOURCEID","Date")

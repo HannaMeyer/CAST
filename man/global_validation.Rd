@@ -22,6 +22,7 @@ the model to explain the entire gradient of the response.
 Comparable to LOOCV, predictions from all held back folds are used here together to calculate validation statistics.
 }
 \examples{
+library(caret)
 data(cookfarm)
 dat <- cookfarm[sample(1:nrow(cookfarm),500),]
 indices <- CreateSpacetimeFolds(dat,"SOURCEID","Date")
