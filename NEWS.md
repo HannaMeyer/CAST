@@ -1,5 +1,6 @@
-# `CAST` 0.9.2
+# `CAST` 1.0.0
 * new features:
+  * calculate local point density within AOA
   * option of spatial error profiles (errorProfiles with variable="geodist")
   * normalize_DI for a more intuitive interpretation
   * geodist allows calculating temporal distances
@@ -16,10 +17,6 @@
   *plot_geodist (replaced by plot.geodist)
   *plot_ffs (replaced by plot.ffs)
   *calibrate_aoa (replaced by errorProfiles)
-  
-# `CAST` 0.9.1
-* new features:
-  * calculate local point density within AOA
   
 # `CAST` 0.9.0
 * new features:

@@ -101,8 +101,12 @@ See Meyer et al. (2018) and Meyer et al. (2019) for further details.
 \dontrun{
 data(splotdata)
 ffsmodel <- ffs(splotdata[,6:12], splotdata$Species_richness, ntree = 20)
+
 ffsmodel$selectedvars
 ffsmodel$selectedvars_perf
+plot(ffsmodel)
+#or only selected variables:
+plot(ffsmodel,plotType="selected")
 }
 
 # or perform model with target-oriented validation (LLO CV)

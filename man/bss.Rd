@@ -69,8 +69,7 @@ This variable selection is particularly suitable for spatial
 cross validations where variable selection
 MUST be based on the performance of the model for predicting new spatial units.
 Note that bss is very slow since all combinations of variables are tested.
-A more time efficient alternative is the forward feature selection (\code{\link{ffs}})
- (\code{\link{ffs}}).
+A more time efficient alternative is the forward feature selection (\code{\link{ffs}}).
 }
 \examples{
 \dontrun{
