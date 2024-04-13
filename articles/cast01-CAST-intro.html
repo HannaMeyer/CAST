@@ -22,11 +22,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light" data-bs-theme="light"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,7 +79,7 @@
                         <h4 data-toc-skip class="author">Hanna Meyer,
 Marvin Ludwig</h4>
             
-            <h4 data-toc-skip class="date">2024-04-09</h4>
+            <h4 data-toc-skip class="date">2024-04-13</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast01-CAST-intro.Rmd" class="external-link"><code>vignettes/cast01-CAST-intro.Rmd</code></a></small>
       <div class="d-none name"><code>cast01-CAST-intro.Rmd</code></div>
@@ -447,35 +447,35 @@ minutes…</p>
 <span>                    method<span class="op">=</span><span class="st">"rf"</span>, </span>
 <span>                    tuneGrid<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">"mtry"</span><span class="op">=</span><span class="fl">2</span><span class="op">)</span>,</span>
 <span>                    verbose<span class="op">=</span><span class="cn">FALSE</span>,</span>
-<span>                    ntree<span class="op">=</span><span class="fl">50</span>,</span>
+<span>                    ntree<span class="op">=</span><span class="fl">25</span>, <span class="co">#make it faster for this tutorial</span></span>
 <span>                    trControl<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>,</span>
 <span>                                           index <span class="op">=</span> <span class="va">indices_knndm</span><span class="op">$</span><span class="va">indx_train</span>,</span>
 <span>                                           savePredictions <span class="op">=</span> <span class="st">"final"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">ffsmodel</span></span></code></pre></div>
 <pre><code><span><span class="co">## Selected Variables: </span></span>
-<span><span class="co">## bio_1 bio_14 bio_12 elev bio_9</span></span>
+<span><span class="co">## bio_1 bio_14 bio_12 elev</span></span>
 <span><span class="co">## ---</span></span>
 <span><span class="co">## Random Forest </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## 703 samples</span></span>
-<span><span class="co">##   5 predictor</span></span>
+<span><span class="co">##   4 predictor</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## No pre-processing</span></span>
 <span><span class="co">## Resampling: Cross-Validated (10 fold) </span></span>
 <span><span class="co">## Summary of sample sizes: 520, 442, 444 </span></span>
 <span><span class="co">## Resampling results:</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">##   RMSE     Rsquared   MAE     </span></span>
-<span><span class="co">##   31.5781  0.5284935  20.35757</span></span>
+<span><span class="co">##   RMSE      Rsquared   MAE    </span></span>
+<span><span class="co">##   32.74653  0.5299616  20.5449</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Tuning parameter 'mtry' was held constant at a value of 2</span></span></code></pre>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">ffsmodel</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       RMSE   Rsquared        MAE </span></span>
-<span><span class="co">## 32.0322288  0.4940635 20.5872940</span></span></code></pre>
+<span><span class="co">## 33.2113246  0.4628401 20.8088080</span></span></code></pre>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ffsmodel</span><span class="op">$</span><span class="va">selectedvars</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] "bio_1"  "bio_14" "bio_12" "elev"   "bio_9"</span></span></code></pre>
+<pre><code><span><span class="co">## [1] "bio_1"  "bio_14" "bio_12" "elev"</span></span></code></pre>
 <p>Using the ffs with LLO CV, the RMSE could be decreased. Only few
 variables have been selected for the final model. All others are removed
 because they have (at least in this small example) no spatial meaning or
@@ -486,11 +486,12 @@ of the model changed depending on the variables being used:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">ffsmodel</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-16-1.png" width="847.68"></p>
 <p>See that the best model using all combinations of two variables.
-Based on the best performing twi variables, using any third variable
-could slightly increase the R². Any further variable could not improve
-the LLO performance. Note that the R² features a high standard deviation
-regardless of the variables being used. This is due to the small dataset
-that was used which cannot lead to robust results here.</p>
+Based on the best performing two variables, using a third variable could
+slightly increase the R², same applies to a fourth variable. Any further
+variables could not improve the LLO performance. Note that the R²
+features a high standard deviation regardless of the variables being
+used. This is due to the small dataset that was used which cannot lead
+to robust results here.</p>
 <p>What effect does the new model has on the spatial representation of
 species richness?</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
@@ -670,7 +671,7 @@ spatial prediction models. Global Ecology and Biogeography. <a href="https://doi
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.8.</p>
 </div>
 
     </footer>
