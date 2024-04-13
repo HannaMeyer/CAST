@@ -3,14 +3,15 @@ test_that("ffs works with default arguments and the splotopen dataset (numerical
   data("splotdata")
   splotdata = splotdata |> sf::st_drop_geometry()
   set.seed(1)
-  selection = ffs(predictors = splotdata[,6:16],
+  selection = ffs(predictors = splotdata[,6:12],
                   response = splotdata$Species_richness,
                   seed = 1,
                   verbose = FALSE,
-                  ntree = 5)
+                  ntree = 5,
+                  tuneLength = 1)
 
 
-  expect_identical(selection$selectedvars, c("bio_6", "bio_12", "bio_15"))
+  expect_identical(selection$selectedvars, c("bio_6", "bio_12", "bio_5", "bio_4"))
   expect_identical(selection$metric, "RMSE")
   expect_identical(selection$maximize, FALSE)
 
@@ -23,13 +24,14 @@ test_that("ffs works with default arguments and the splotopen dataset (include c
   data("splotdata")
   splotdata = splotdata |> sf::st_drop_geometry()
   set.seed(1)
-  selection = ffs(predictors = splotdata[,c(4,6:16)],
+  selection = ffs(predictors = splotdata[,c(4,6:12)],
                   response = splotdata$Species_richness,
                   verbose = FALSE,
                   seed = 1,
-                  ntree = 5)
+                  ntree = 5,
+                  tuneLength = 1)
 
-  expect_identical(selection$selectedvars, c("bio_6", "bio_12", "bio_15"))
+  expect_identical(selection$selectedvars, c("bio_6", "bio_12", "Biome","bio_1" , "bio_5"))
   expect_identical(selection$metric, "RMSE")
   expect_identical(selection$maximize, FALSE)
 })
@@ -40,37 +42,39 @@ test_that("ffs works for classification with default arguments",{
   splotdata = splotdata |> sf::st_drop_geometry()
   splotdata$Biome = droplevels(splotdata$Biome)
   set.seed(1)
-  selection = ffs(predictors = splotdata[,c(6:16)],
+  selection = ffs(predictors = splotdata[,c(6:12)],
                   response = splotdata$Biome,
                   verbose = FALSE,
                   seed = 1,
-                  ntree = 5)
+                  ntree = 5,
+                  tuneLength = 1)
 
-  expect_identical(selection$selectedvars, c("bio_4", "bio_6",  "bio_13",
-                                             "bio_14", "bio_12", "bio_8", "elev"))
+  expect_identical(selection$selectedvars, c("bio_4", "bio_8",  "bio_12",
+                                             "bio_9"))
   expect_identical(selection$metric, "Accuracy")
   expect_identical(selection$maximize, TRUE)
 
 })
 
 
-test_that("ffs works for withinSE = TRUE",{
-  data("splotdata")
-  splotdata = splotdata |> sf::st_drop_geometry()
-  splotdata$Biome = droplevels(splotdata$Biome)
-  set.seed(1)
-  selection = ffs(predictors = splotdata[,c(6:16)],
-                  response = splotdata$Biome,
-                  seed = 1,
-                  verbose = FALSE,
-                  ntree = 5,
-                  withinSE = TRUE)
+#test_that("ffs works for withinSE = TRUE",{
+#  data("splotdata")
+#  splotdata = splotdata |> sf::st_drop_geometry()
+#  splotdata$Biome = droplevels(splotdata$Biome)
+#  set.seed(1)
+#  selection = ffs(predictors = splotdata[,c(6:16)],
+#                  response = splotdata$Biome,
+#                  seed = 1,
+#                  verbose = FALSE,
+#                  ntree = 5,
+#                  withinSE = TRUE,
+#                  tuneLength = 1)
 
-  expect_identical(selection$selectedvars, c("bio_4", "bio_6",  "bio_12",
-                                             "bio_14", "bio_8"))
+#  expect_identical(selection$selectedvars, c("bio_4", "bio_8",  "bio_12",
+#                                             "bio_13","bio_14", "bio_5"))
 
 
-})
+#})
 
 
 

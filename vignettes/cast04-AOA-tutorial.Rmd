@@ -258,7 +258,7 @@ The AOA is then calculated (for comparison) using the model validated by random 
 ```{r,message = FALSE, warning=FALSE}
 AOA_spatial <- aoa(predictors, model, LPD = TRUE, verbose = FALSE)
 
-AOA_random <- aoa(predictors, model_random, LPD = TRUE, verbose = FALSE)
+AOA_random <- aoa(predictors, model_random, LPD = FALSE, verbose = FALSE)
 ```
 
 

@@ -221,7 +221,7 @@ ffsmodel <- ffs(st_drop_geometry(splotdata)[,predictors],
                     method="rf", 
                     tuneGrid=data.frame("mtry"=2),
                     verbose=FALSE,
-                    ntree=50,
+                    ntree=25, #make it faster for this tutorial
                     trControl=trainControl(method="cv",
                                            index = indices_knndm$indx_train,
                                            savePredictions = "final"))
@@ -240,7 +240,7 @@ By plotting the results of ffs, we can visualize how the performance of the mode
 plot(ffsmodel)
 ```
 
-See that the best model using all combinations of two variables. Based on the best performing twi variables, using any third variable could slightly increase the R². Any further variable could not improve the LLO performance.
+See that the best model using all combinations of two variables. Based on the best performing two variables, using a third variable could slightly increase the R², same applies to a fourth variable. Any further variables could not improve the LLO performance.
 Note that the R² features a high standard deviation regardless of the variables being used. This is due to the small dataset that was used which cannot lead to robust results here.
 
 What effect does the new model has on the spatial representation of species richness?

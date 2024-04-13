@@ -9,6 +9,8 @@ https://hannameyer.github.io/CAST/
 
 ## Tutorials
 
+* [The CAST package for training and assessment of spatial prediction models in R](https://arxiv.org/abs/2404.06978)
+
 * [Introduction to CAST](https://hannameyer.github.io/CAST/articles/cast01-CAST-intro.html)
 
 * [Visualization of nearest neighbor distance distributions](https://hannameyer.github.io/CAST/articles/cast02-plotgeodist.html)
@@ -28,6 +30,8 @@ https://www.youtube.com/watch?v=mkHlmYEzsVQ.
 * Talk and tutorial from the OpenGeoHub 2022 summer school on Machine learning-based maps of the environment - challenges of extrapolation and overfitting, including discussions on the area of applicability and the nearest neighbor distance matching cross-validation (https://doi.org/10.5446/59412).
 
 ## Scientific documentation of the methods
+
+* Meyer, H., Ludwig, L., Milà, C., Linnenbrink, J., Schumacher, F. (2024): The CAST package for training and assessment of spatial prediction models in R. arXiv, https://doi.org/10.48550/arXiv.2404.06978.
 
 ### Spatial cross-validation
 * Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.
