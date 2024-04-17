@@ -8,7 +8,7 @@ test_that("errorProfiles works in default settings", {
   model <- caret::train(splotdata[,6:16], splotdata$Species_richness, ntree = 10,
                         trControl = caret::trainControl(method = "cv", savePredictions = TRUE))
 
-  AOA <- CAST::aoa(predictors, model)
+  AOA <- CAST::aoa(predictors, model,verbose=F)
 
   # DI ~ error
   errormodel_DI <- CAST::errorProfiles(model, AOA, variable = "DI")
@@ -37,7 +37,7 @@ test_that("errorProfiles works in with LPD", {
   model <- caret::train(splotdata[,6:16], splotdata$Species_richness, ntree = 10,
                         trControl = caret::trainControl(method = "cv", savePredictions = TRUE))
 
-  AOA <- CAST::aoa(predictors, model, LPD = TRUE, maxLPD = 1)
+  AOA <- CAST::aoa(predictors, model, LPD = TRUE, maxLPD = 1,verbose=F)
   errormodel_LPD <- CAST::errorProfiles(model, AOA, variable = "LPD")
   expected_error_LPD = terra::predict(AOA$LPD, errormodel_LPD)
 
@@ -64,7 +64,7 @@ test_that("errorProfiles works for multiCV", {
   model <- caret::train(splotdata[,6:16], splotdata$Species_richness, ntree = 10,
                         trControl = caret::trainControl(method = "cv", savePredictions = TRUE))
 
-  AOA <- CAST::aoa(predictors, model)
+  AOA <- CAST::aoa(predictors, model,verbose=F)
   # with multiCV = TRUE (for DI ~ error)
   set.seed(100)
   errormodel_DI = suppressWarnings(errorProfiles(model, AOA, multiCV = TRUE, length.out = 3))

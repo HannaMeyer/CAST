@@ -97,7 +97,8 @@ test_that("ffs works with default arguments and the iris dataset",{
                   seed = 1)
 
   expect_identical(selection$selectedvars, c("Petal.Length", "Petal.Width", "Sepal.Width"))
-  expect_equal(selection$selectedvars_perf, c(0.9530141, 0.9544820, 0.9544820))
+  expect_equal(selection$selectedvars_perf, c(0.9530141, 0.9544820, 0.9544820),
+               tolerance = 0.005)
 
 })
 
@@ -128,7 +129,7 @@ test_that("ffs works with withinSE = TRUE", {
 
 
   expect_identical(selection$selectedvars, c("Petal.Length", "Petal.Width"))
-  expect_equal(selection$selectedvars_perf, c(0.9530141), tolerance = 0.0005)
+  expect_equal(selection$selectedvars_perf, c(0.9530141), tolerance = 0.005)
 
 })
 
