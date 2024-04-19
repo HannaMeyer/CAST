@@ -1,5 +1,4 @@
 test_that("global_validation correctly handles missing predictions", {
-
   data("iris")
   set.seed(123)
   ctrl <- caret::trainControl(method="cv")
@@ -38,7 +37,6 @@ test_that("global_validation works with caret classification", {
 })
 
 test_that("global_validation works with CreateSpacetimeFolds", {
-
   data("iris")
   set.seed(123)
   iris$folds <- sample(rep(1:10, ceiling(nrow(iris)/10)), nrow(iris))
