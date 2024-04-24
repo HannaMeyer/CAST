@@ -1,5 +1,6 @@
 
 test_that("ffs works with default arguments and the splotopen dataset (numerical only)",{
+  skip_on_cran()
   skip_on_os("mac", arch = "aarch64")
   data("splotdata")
   splotdata = splotdata |> sf::st_drop_geometry()
