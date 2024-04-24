@@ -1,5 +1,6 @@
 
 test_that("ffs works with default arguments and the splotopen dataset (numerical only)",{
+  skip_on_os("mac", arch = "aarch64")
   data("splotdata")
   splotdata = splotdata |> sf::st_drop_geometry()
   set.seed(1)
@@ -22,6 +23,7 @@ test_that("ffs works with default arguments and the splotopen dataset (numerical
 
 test_that("ffs works with default arguments and the splotopen dataset (include categorial)",{
   skip_on_cran()
+  skip_on_os("mac", arch = "aarch64")
   data("splotdata")
   splotdata = splotdata |> sf::st_drop_geometry()
   set.seed(1)
@@ -40,6 +42,7 @@ test_that("ffs works with default arguments and the splotopen dataset (include c
 
 test_that("ffs works for classification with default arguments",{
   skip_on_cran()
+  skip_on_os("mac", arch = "aarch64")
   data("splotdata")
   splotdata = splotdata |> sf::st_drop_geometry()
   splotdata$Biome = droplevels(splotdata$Biome)
@@ -61,6 +64,7 @@ test_that("ffs works for classification with default arguments",{
 
 test_that("ffs works for withinSE = TRUE",{
   skip_on_cran()
+  skip_on_os("mac", arch = "aarch64")
   data("splotdata")
   splotdata = splotdata |> sf::st_drop_geometry()
   splotdata$Biome = droplevels(splotdata$Biome)

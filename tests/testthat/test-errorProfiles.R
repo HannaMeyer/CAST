@@ -1,6 +1,7 @@
 
 test_that("errorProfiles works in default settings", {
   skip_on_cran()
+  skip_on_os("mac", arch = "aarch64")
   data(splotdata)
   splotdata <- sf::st_drop_geometry(splotdata)
   predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
@@ -31,6 +32,7 @@ test_that("errorProfiles works in default settings", {
 
 test_that("errorProfiles works in with LPD", {
   skip_on_cran()
+  skip_on_os("mac", arch = "aarch64")
   data(splotdata)
   splotdata <- sf::st_drop_geometry(splotdata)
   predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
@@ -59,6 +61,7 @@ test_that("errorProfiles works in with LPD", {
 
 test_that("errorProfiles works for multiCV", {
   skip_on_cran()
+  skip_on_os("mac", arch = "aarch64")
   data(splotdata)
   splotdata <- sf::st_drop_geometry(splotdata)
   predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
