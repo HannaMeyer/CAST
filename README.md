@@ -1,11 +1,24 @@
 # CAST: Caret Applications for Spatio-Temporal models
 
+<!-- Start Badges -->
+
+[![R-CMD-check](https://github.com/HannaMeyer/CAST/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/HannaMeyer/CAST/actions/workflows/R-CMD-check.yaml)
+[![CRAN status](https://www.r-pkg.org/badges/version/CAST)](https://cran.r-project.org/package=CAST)
+[![CRAN RStudio mirror downloads total](http://cranlogs.r-pkg.org/badges/grand-total/CAST)](https://cran.r-project.org/package=CAST)
+[![CRAN RStudio mirror downloads](http://cranlogs.r-pkg.org/badges/CAST)](https://cran.r-project.org/package=CAST)
+
+<!-- End Badges -->
+
 Supporting functionality to run 'caret' with spatial or spatial-temporal data. 'caret' is a frequently used package for model training and prediction using machine learning. CAST includes functions to improve spatial or spatial-temporal modelling tasks using 'caret'. To decrease spatial overfitting and to improve model performances, the package implements a forward feature selection that selects suitable predictor variables in view to their contribution to spatial or spatio-temporal model performance. CAST further includes functionality to estimate the (spatial) area of applicability of prediction models.
 
-Note: The developer version of CAST can be found on https://github.com/HannaMeyer/CAST. The CRAN Version can be found on	https://CRAN.R-project.org/package=CAST
+Note: The developer version of CAST can be found on https://github.com/HannaMeyer/CAST. 
+The CRAN Version can be found on	https://CRAN.R-project.org/package=CAST
+
 
 ## Package Website
 https://hannameyer.github.io/CAST/
+
+
 
 ## Tutorials
 
@@ -54,3 +67,5 @@ https://doi.org/10.5194/egusphere-2023-1308
 * Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications, 13. https://www.nature.com/articles/s41467-022-29838-9
 
 * Ludwig, M., Moreno-Martinez, A., Hoelzel, N., Pebesma, E., Meyer, H. (2023): Assessing and improving the transferability of current global spatial prediction models. Global Ecology and Biogeography.  https://doi.org/10.1111/geb.13635.
+
+* Milà, C., Ludwig, M., Pebesma, E., Tonne, C., and Meyer, H.: Random forests with spatial proxies for environmental modelling: opportunities and pitfalls, EGUsphere [preprint]. https://doi.org/10.5194/egusphere-2024-138, 2024. 
