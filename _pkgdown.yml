@@ -1,4 +1,4 @@
 url: https://hannameyer.github.io/CAST/
 template:
   bootstrap: 5
-
+  bootswatch: flatly
