@@ -241,7 +241,7 @@ aoa <- function(newdata,
     }
     newdata <- terra::as.data.frame(newdata,na.rm=FALSE)
   }
-  newdata <- newdata[,na.omit(match(trainDI$variables, names(newdata)))]
+  newdata <- newdata[,na.omit(match(trainDI$variables, names(newdata))),drop = FALSE]
 
 
   ## Handling of categorical predictors:
@@ -270,9 +270,11 @@ aoa <- function(newdata,
                    scale=trainDI$scaleparam$`scaled:scale`)
 
   if(!inherits(trainDI$weight, "error")){
+    tmpnames <- names(newdata)#!!!!!
     newdata <- sapply(1:ncol(newdata),function(x){
       newdata[,x]*unlist(trainDI$weight[x])
     })
+    names(newdata)<-tmpnames#!!!!
   }
 
 
@@ -287,7 +289,7 @@ aoa <- function(newdata,
   # Distance Calculation ---------
   okrows <- which(apply(newdata, 1, function(x)
     all(!is.na(x))))
-  newdataCC <- newdata[okrows, ]
+  newdataCC <- newdata[okrows, ,drop=F]
 
   if (method == "MD") {
     if (dim(train_scaled)[2] == 1) {
@@ -463,7 +465,7 @@ aoa <- function(newdata,
       # Euclidean Distance
       return(FNN::knnx.index(reference, point, k = maxLPD))
     } else if (method == "MD") {
-      # hier muss noch was hin
+      stop("MD currently not implemented for LPD")
     }
   }
 
