@@ -14,6 +14,10 @@ Supporting functionality to run 'caret' with spatial or spatial-temporal data. '
 Note: The developer version of CAST can be found on https://github.com/HannaMeyer/CAST. 
 The CRAN Version can be found on	https://CRAN.R-project.org/package=CAST
 
+<a ><img src="man/figures/CAST_workflow.png" align="right" height="138" /></a>
+*The figure shows a very simple workflow for a spatial prediction mapping workflow, indicating which function in CAST can be used in the different steps to support the spatial prediction.*
+
+
 
 ## Package Website
 https://hannameyer.github.io/CAST/
