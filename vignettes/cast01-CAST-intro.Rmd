@@ -49,7 +49,7 @@ help(CAST)
 
 For this tutorial, we need a few additional packages:
 ```{r, message = FALSE, warning=FALSE}
-library(geodata)
+#library(geodata)
 library(terra)
 library(sf)
 library(caret)
@@ -68,18 +68,17 @@ data(splotdata)
 head(splotdata)
 ```
 
-The data include the extracted WorldClim and elevation information as well as the sampled species richness. Since we aim at making predictions for entire South America, we further need the WorldClimdata for this area.
+The data include the extracted WorldClim and elevation information as well as the sampled species richness. Since we aim at making predictions for entire South America, we further need the WorldClim data for this area.
 
 ```{r, message = FALSE, warning=FALSE}
 
-wc <- worldclim_global(var="bio",res = 10,path=tempdir())
-elev <- elevation_global(res = 10, path=tempdir())
+#wc <- worldclim_global(var="bio",res = 10,path=tempdir())
+wc <- rast("https://github.com/HannaMeyer/CAST_data/raw/main/bioclim_10min.tif")
+#elev <- elevation_global(res = 10, path=tempdir())
+elev <- rast("https://github.com/HannaMeyer/CAST_data/raw/main/elevation.tif")
 predictors_sp <- crop(c(wc,elev),st_bbox(splotdata))
 names(predictors_sp) <- c(paste0("bio_",1:19),"elev")
 
-#note: if you prefer to work on a smaller dataset and not download any data, 
-#here is a subset of Chile:
-#predictors_sp <- rast(system.file("extdata", "predictors_chile.tif",package="CAST"))
 ```
 
 

@@ -40,7 +40,6 @@ Suggests:
     MASS,
     twosamples,
     RColorBrewer,
-    geodata,
     tmap,
     PCAmixdata, 
     gower, 
