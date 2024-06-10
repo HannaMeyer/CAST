@@ -2,6 +2,8 @@
 test_that("errorProfiles works in default settings", {
   skip_on_cran()
   skip_on_os("mac", arch = "aarch64")
+  skip_if_not_installed("randomForest")
+  skip_if_not_installed("scam")
   data(splotdata)
   splotdata <- sf::st_drop_geometry(splotdata)
   predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
@@ -23,7 +25,7 @@ test_that("errorProfiles works in default settings", {
   expect_equal(round(as.numeric(summary(errormodel_DI$fitted.values)),2),
                c(14.25, 14.34, 15.21, 17.23, 18.70, 27.46))
   # test model predictions
-  expect_equal(as.vector( summary(terra::values(expected_error_DI))),
+  expect_equal(as.vector(summary(terra::values(expected_error_DI))),
                c("Min.   :14.26  ", "1st Qu.:27.46  ", "Median :27.46  ",
                  "Mean   :26.81  ", "3rd Qu.:27.46  ","Max.   :27.47  ",
                  "NA's   :17678  "))
@@ -33,6 +35,8 @@ test_that("errorProfiles works in default settings", {
 test_that("errorProfiles works in with LPD", {
   skip_on_cran()
   skip_on_os("mac", arch = "aarch64")
+  skip_if_not_installed("randomForest")
+  skip_if_not_installed("scam")
   data(splotdata)
   splotdata <- sf::st_drop_geometry(splotdata)
   predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
@@ -62,6 +66,8 @@ test_that("errorProfiles works in with LPD", {
 test_that("errorProfiles works for multiCV", {
   skip_on_cran()
   skip_on_os("mac", arch = "aarch64")
+  skip_if_not_installed("randomForest")
+  skip_if_not_installed("scam")
   data(splotdata)
   splotdata <- sf::st_drop_geometry(splotdata)
   predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))

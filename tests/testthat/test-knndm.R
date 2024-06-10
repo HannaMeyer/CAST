@@ -1,5 +1,4 @@
 test_that("kNNDM works with geographical coordinates and prediction points", {
-
   sf::sf_use_s2(TRUE)
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:4326")
   tpoints <- sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))", crs="epsg:4326") |>
@@ -17,7 +16,6 @@ test_that("kNNDM works with geographical coordinates and prediction points", {
 })
 
 test_that("kNNDM works with projected coordinates and prediction points", {
-
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:25832")
   tpoints <- sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))", crs="epsg:25832") |>
     sf::st_cast("POINT")
@@ -35,7 +33,6 @@ test_that("kNNDM works with projected coordinates and prediction points", {
 })
 
 test_that("kNNDM works without crs and prediction points", {
-
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))")
   tpoints <- sf::st_cast(sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))"), "POINT")
   set.seed(1)
@@ -54,7 +51,6 @@ test_that("kNNDM works without crs and prediction points", {
 
 
 test_that("kNNDM works with modeldomain and projected coordinates", {
-
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:25832")
   tpoints <- sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))", crs="epsg:25832") |>
     sf::st_cast("POINT")
@@ -72,7 +68,6 @@ test_that("kNNDM works with modeldomain and projected coordinates", {
 })
 
 test_that("kNNDM works with modeldomain and geographical coordinates", {
-
   sf::sf_use_s2(TRUE)
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:4326")
   tpoints <- sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))", crs="epsg:4326") |>
@@ -91,7 +86,6 @@ test_that("kNNDM works with modeldomain and geographical coordinates", {
 })
 
 test_that("kNNDM works with modeldomain and no crs", {
-
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))")
   tpoints <- sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))") |>
     sf::st_cast("POINT")
@@ -109,7 +103,6 @@ test_that("kNNDM works with modeldomain and no crs", {
 })
 
 test_that("kNNDM works when no clustering is present", {
-
   sf::sf_use_s2(TRUE)
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:25832")
 
@@ -133,7 +126,6 @@ test_that("kNNDM works when no clustering is present", {
 
 
 test_that("kNNDM works with many points and different configurations", {
-
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:25832")
   sample_area <- sf::st_as_sfc("POLYGON ((0 0, 4 0, 4 4, 0 4, 0 0))", crs="epsg:25832")
 
@@ -168,7 +160,6 @@ test_that("kNNDM works with many points and different configurations", {
 
 
 test_that("kNNDM recognizes erroneous input", {
-
   sf::sf_use_s2(TRUE)
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:25832")
   tpoints <- sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))", crs="epsg:25832") |>
@@ -191,7 +182,6 @@ test_that("kNNDM recognizes erroneous input", {
 })
 
 test_that("kNNDM yields the expected results with SpatRast modeldomain", {
-
   set.seed(1234)
 
   # prepare sample data
@@ -210,7 +200,6 @@ test_that("kNNDM yields the expected results with SpatRast modeldomain", {
 
 
 test_that("kNNDM works in feature space with kmeans clustering and raster as modeldomain", {
-
   set.seed(1234)
 
   # prepare sample data
@@ -234,7 +223,6 @@ test_that("kNNDM works in feature space with kmeans clustering and raster as mod
 
 
 test_that("kNNDM works in feature space with hierarchical clustering and raster as modeldomain", {
-
   set.seed(1234)
 
   # prepare sample data
@@ -258,7 +246,6 @@ test_that("kNNDM works in feature space with hierarchical clustering and raster 
 })
 
 test_that("kNNDM works in feature space with clustered training points", {
-
   set.seed(1234)
 
   data(splotdata)
@@ -280,7 +267,6 @@ test_that("kNNDM works in feature space with clustered training points", {
 
 
 test_that("kNNDM works in feature space with categorical variables and predpoints", {
-
   set.seed(1234)
 
   # prepare sample data
@@ -311,7 +297,6 @@ test_that("kNNDM works in feature space with categorical variables and predpoint
 
 
 test_that("kNNDM works in feature space with clustered training points, categorical features ", {
-
   set.seed(1234)
   predictor_stack <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
   predictors <- c("DEM","TWI", "NDRE.M", "Easting", "Northing", "fct")
@@ -339,8 +324,6 @@ test_that("kNNDM works in feature space with clustered training points, categori
 
 
 test_that("kNNDM works in feature space with Mahalanobis distance", {
-
-
   data(splotdata)
   splotdata <- splotdata[splotdata$Country == "Chile",]
 
@@ -360,8 +343,6 @@ test_that("kNNDM works in feature space with Mahalanobis distance", {
 
 
 test_that("kNNDM works in feature space with Mahalanobis distance without clustering", {
-
-
   set.seed(1234)
 
   # prepare sample data

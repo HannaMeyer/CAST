@@ -2,6 +2,7 @@
 test_that("ffs works with default arguments and the splotopen dataset (numerical only)",{
   skip_on_cran()
   skip_on_os("mac", arch = "aarch64")
+  skip_if_not_installed("randomForest")
   data("splotdata")
   splotdata = splotdata |> sf::st_drop_geometry()
   set.seed(1)
@@ -25,6 +26,7 @@ test_that("ffs works with default arguments and the splotopen dataset (numerical
 test_that("ffs works with default arguments and the splotopen dataset (include categorial)",{
   skip_on_cran()
   skip_on_os("mac", arch = "aarch64")
+  skip_if_not_installed("randomForest")
   data("splotdata")
   splotdata = splotdata |> sf::st_drop_geometry()
   set.seed(1)
@@ -44,6 +46,7 @@ test_that("ffs works with default arguments and the splotopen dataset (include c
 test_that("ffs works for classification with default arguments",{
   skip_on_cran()
   skip_on_os("mac", arch = "aarch64")
+  skip_if_not_installed("randomForest")
   data("splotdata")
   splotdata = splotdata |> sf::st_drop_geometry()
   splotdata$Biome = droplevels(splotdata$Biome)
@@ -66,6 +69,7 @@ test_that("ffs works for classification with default arguments",{
 test_that("ffs works for withinSE = TRUE",{
   skip_on_cran()
   skip_on_os("mac", arch = "aarch64")
+  skip_if_not_installed("randomForest")
   data("splotdata")
   splotdata = splotdata |> sf::st_drop_geometry()
   splotdata$Biome = droplevels(splotdata$Biome)
@@ -97,6 +101,7 @@ test_that("ffs works for withinSE = TRUE",{
 
 
   test_that("ffs works with default arguments and the iris dataset",{
+    skip_if_not_installed("randomForest")
     data(iris)
     set.seed(1)
     selection = ffs(predictors = iris[,1:4],
@@ -113,6 +118,7 @@ test_that("ffs works for withinSE = TRUE",{
 
   test_that("ffs works with globalVal = TRUE", {
     skip_on_cran()
+    skip_if_not_installed("randomForest")
     data(iris)
     set.seed(1)
     selection = ffs(predictors = iris[,1:4],
@@ -127,6 +133,7 @@ test_that("ffs works for withinSE = TRUE",{
 
   test_that("ffs works with withinSE = TRUE", {
     skip_on_cran()
+    skip_if_not_installed("randomForest")
     data(iris)
     set.seed(1)
     selection = ffs(predictors = iris[,1:4],
@@ -143,6 +150,7 @@ test_that("ffs works for withinSE = TRUE",{
 
   test_that("ffs fails with minvar set to maximum", {
     skip_on_cran()
+    skip_if_not_installed("randomForest")
     data(iris)
     set.seed(1)
     expect_error(ffs(predictors = iris[,1:4],

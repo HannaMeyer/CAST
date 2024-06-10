@@ -216,7 +216,7 @@ geodist <- function(x,
   ## Sample prediction location from the study area if preddata not available:
   if(is.null(preddata)){
     modeldomain <- sampleFromArea(modeldomain, samplesize, type,variables,sampling, catVars)
-    } else{
+  } else{
     modeldomain <- preddata
   }
 
@@ -358,7 +358,7 @@ sample2prediction = function(x, modeldomain, type, samplesize,variables,time_uni
       modeldomain_num <- modeldomain[,-which(names(modeldomain)%in%catVars),drop=FALSE]
       modeldomain_cat <- modeldomain[,catVars,drop=FALSE]
       modeldomain_num <- data.frame(scale(modeldomain_num,center=scaleparam$`scaled:center`,
-                                      scale=scaleparam$`scaled:scale`))
+                                          scale=scaleparam$`scaled:scale`))
 
       x <- as.data.frame(cbind(x_num, lapply(x_cat, as.factor)))
       x_clean <- x[complete.cases(x),]
@@ -440,7 +440,7 @@ sample2test <- function(x, testdata, type,variables,time_unit,timevar, catVars){
       testdata_num <- testdata[,-which(names(testdata)%in%catVars),drop=FALSE]
       testdata_cat <- testdata[,catVars,drop=FALSE]
       testdata_num <- data.frame(scale(testdata_num,center=scaleparam$`scaled:center`,
-                                          scale=scaleparam$`scaled:scale`))
+                                       scale=scaleparam$`scaled:scale`))
 
       x <- as.data.frame(cbind(x_num, lapply(x_cat, as.factor)))
       x_clean <- x[complete.cases(x),]
@@ -452,7 +452,7 @@ sample2test <- function(x, testdata, type,variables,time_unit,timevar, catVars){
       x_clean <- x[complete.cases(x),]
 
       testdata <- data.frame(scale(testdata,center=scaleparam$`scaled:center`,
-                                      scale=scaleparam$`scaled:scale`))
+                                   scale=scaleparam$`scaled:scale`))
     }
 
 
@@ -640,12 +640,17 @@ sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling, cat
   sf::st_as_sf(modeldomainextent) |>
     sf::st_transform(4326) -> bb
 
-  methods::as(bb, "Spatial") |>
-    sp::spsample(n = samplesize, type = sampling)  |>
-    sf::st_as_sfc() |>
-    sf::st_set_crs(4326) -> predictionloc
+  #methods::as(bb, "Spatial") |>
+  # sp::spsample(n = samplesize, type = sampling)  |>
+  # sf::st_as_sfc() |>
+  # sf::st_set_crs(4326) -> predictionloc
+  # predictionloc <- sf::st_as_sf(predictionloc)
 
+  predictionloc <- sf::st_sample(sf::st_make_valid(bb),size=samplesize,type=sampling)
+  sf::st_crs(predictionloc) <- 4326
   predictionloc <- sf::st_as_sf(predictionloc)
+
+
 
 
   if(type == "feature"){

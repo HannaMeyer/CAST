@@ -13,9 +13,10 @@ loaddata <- function() {
   # train a model:
   set.seed(100)
   variables <- c("DEM","NDRE.Sd","TWI")
-  model <- train(trainDat[,which(names(trainDat)%in%variables)],
+  ctrl <- caret::trainControl(method="cv",number=5,savePredictions=T)
+  model <- caret::train(trainDat[,which(names(trainDat)%in%variables)],
                  trainDat$VW, method="rf", importance=TRUE, tuneLength=1,
-                 trControl=trainControl(method="cv",number=5,savePredictions=T))
+                 trControl=ctrl)
 
 
   data <- list(
@@ -30,6 +31,7 @@ loaddata <- function() {
 
 
 test_that("AOA works in default: used with raster data and a trained model", {
+  skip_if_not_installed("randomForest")
   dat <- loaddata()
   # calculate the AOA of the trained model for the study area:
   AOA <- aoa(dat$studyArea, dat$model, verbose = F)
@@ -54,6 +56,7 @@ test_that("AOA works in default: used with raster data and a trained model", {
 
 
 test_that("AOA works without a trained model", {
+  skip_if_not_installed("randomForest")
   dat <- loaddata()
   AOA <- aoa(dat$studyArea,train=dat$trainDat,variables=dat$variables, verbose = F)
 
@@ -93,6 +96,7 @@ test_that("AOA (including LPD) works with raster data and a trained model", {
 
 
 test_that("AOA (inluding LPD) works without a trained model", {
+  skip_if_not_installed("randomForest")
   dat <- loaddata()
   AOA <- aoa(dat$studyArea,train=dat$trainDat,variables=dat$variables, LPD = TRUE, maxLPD = 1, verbose = F)
 

@@ -22,6 +22,7 @@ the model to explain the entire gradient of the response.
 Comparable to LOOCV, predictions from all held back folds are used here together to calculate validation statistics.
 }
 \examples{
+\dontrun{
 library(caret)
 data(cookfarm)
 dat <- cookfarm[sample(1:nrow(cookfarm),500),]
@@ -29,6 +30,7 @@ indices <- CreateSpacetimeFolds(dat,"SOURCEID","Date")
 ctrl <- caret::trainControl(method="cv",index = indices$index,savePredictions="final")
 model <- caret::train(dat[,c("DEM","TWI","BLD")],dat$VW, method="rf", trControl=ctrl, ntree=10)
 global_validation(model)
+}
 }
 \seealso{
 \code{\link{CreateSpacetimeFolds}}

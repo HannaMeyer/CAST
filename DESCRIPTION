@@ -1,7 +1,7 @@
 Package: CAST
 Type: Package
 Title: 'caret' Applications for Spatial-Temporal Models
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: c(person("Hanna", "Meyer", email = "hanna.meyer@uni-muenster.de", role = c("cre", "aut")),
              person("Carles", "Milà", role = c("aut")),
              person("Marvin", "Ludwig", role = c("aut")),
@@ -20,13 +20,13 @@ URL: https://github.com/HannaMeyer/CAST,
 Encoding: UTF-8
 LazyData: false
 Depends: R (>= 4.1.0)
-Imports: caret, stats, utils, ggplot2, graphics, FNN, plyr, zoo, methods, grDevices, data.table, sf, forcats
+Imports: caret, stats, utils, ggplot2, graphics, FNN, plyr, zoo, methods, grDevices, data.table, sf, forcats, twosamples, terra
 Suggests: 
     doParallel,
-    randomForest,
     lubridate,
-    sp,
+    randomForest,
     knitr,
+    geodata,
     mapview,
     rmarkdown,
     scales,
@@ -35,10 +35,8 @@ Suggests:
     viridis,
     stars,
     scam,
-    terra,
     rnaturalearth,
     MASS,
-    twosamples,
     RColorBrewer,
     tmap,
     PCAmixdata, 

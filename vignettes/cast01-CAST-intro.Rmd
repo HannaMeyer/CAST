@@ -49,12 +49,11 @@ help(CAST)
 
 For this tutorial, we need a few additional packages:
 ```{r, message = FALSE, warning=FALSE}
-#library(geodata)
+library(geodata)
 library(terra)
 library(sf)
 library(caret)
 library(tmap)
-library(viridis)
 ```
 
 ## Example of a typical spatio-temporal prediction task
@@ -71,11 +70,8 @@ head(splotdata)
 The data include the extracted WorldClim and elevation information as well as the sampled species richness. Since we aim at making predictions for entire South America, we further need the WorldClim data for this area.
 
 ```{r, message = FALSE, warning=FALSE}
-
-#wc <- worldclim_global(var="bio",res = 10,path=tempdir())
-wc <- rast("https://github.com/HannaMeyer/CAST_data/raw/main/bioclim_10min.tif")
-#elev <- elevation_global(res = 10, path=tempdir())
-elev <- rast("https://github.com/HannaMeyer/CAST_data/raw/main/elevation.tif")
+wc <- worldclim_global(var="bio",res = 10,path=tempdir())
+elev <- elevation_global(res = 10, path=tempdir())
 predictors_sp <- crop(c(wc,elev),st_bbox(splotdata))
 names(predictors_sp) <- c(paste0("bio_",1:19),"elev")
 
@@ -259,7 +255,7 @@ Still it is required to analyse if the model can be applied to the entire study 
 AOA <- aoa(predictors_sp,ffsmodel,LPD = TRUE,verbose=FALSE)
 
 tm_shape(prediction)+
-  tm_raster(title="Species \nrichness",palette=viridis(50),style="cont")+
+  tm_raster(title="Species \nrichness",style="cont")+
   tm_shape(AOA$AOA)+
   tm_raster(palette=c("1"=NA,"0"="grey"),style="cat",legend.show = FALSE)+
   tm_layout(frame=FALSE,legend.outside = TRUE)+
@@ -289,7 +285,7 @@ plot(errormodel_LPD)
 
 Since the relationship between LPD and the RMSE seems to be comparably high, we're going to use this to model the error for the entire prediction area.
 
-```{r, message = FALSE, warning=FALSE}
+```{r,  message = FALSE, warning=FALSE}
 expected_error_LPD = terra::predict(AOA$LPD, errormodel_LPD)
 plot(expected_error_LPD)
 ```

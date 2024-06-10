@@ -309,7 +309,7 @@ The results indicate that there is a high agreement between the model CV error (
 The relationship between error and DI or LPD can be used to limit predictions to an area (within the AOA) where a required performance (e.g. RMSE, R2, Kappa, Accuracy) applies.
 This can be done using the result of errorProfiles which used the relationship analyzed in a window of DI/LPD values. The corresponding model (here: shape constrained additive models which is the default: Monotone increasing P-splines with the dimension of the basis used to represent the smooth term is 6 and a 2nd order penalty.) can be used to estimate the performance on a pixel level, which then allows limiting predictions using a threshold. Note that we used a multi-purpose CV to estimate the relationship between the DI and the RMSE here (see details in the paper).
 
-```{r,message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE}
 DI_RMSE_relation <- errorProfiles(model, AOA_spatial$parameters, multiCV=TRUE,
                                     window.size = 5, length.out = 5, variable = "DI")
 plot(DI_RMSE_relation)
