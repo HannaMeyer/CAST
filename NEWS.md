@@ -1,6 +1,5 @@
 # `CAST` 1.0.2
 * bug fix: tests run conditionally
-* modifications: dependence on sp replaced by sf
 
 # `CAST` 1.0.1
 * bug fix: fix failed tests in global_validation

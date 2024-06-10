@@ -17,7 +17,7 @@ test_that("geodist works with points and polygon in geographic space", {
 
   expect_equal(mean_sample2sample, 20321)
   expect_equal(mean_CV_distances, 25616)
-  expect_equal(nrow_dist, 3405) #3410
+  expect_equal(nrow_dist, 3410)
 
 
 })
@@ -247,7 +247,7 @@ test_that("geodist works with categorical variables in feature space", {
   mean_CV_distance <- round(mean(dist[dist$what=="CV-distances","dist"]), 4)
 
   expect_equal(mean_sample2sample, 0.0459)
-  expect_equal(mean_prediction2sample, 0.161) #0.1625
+  expect_equal(mean_prediction2sample, 0.1625) #0.1625
   expect_equal(mean_test2sample, 0.2358)
   expect_equal(mean_CV_distance, 0.0663)
 })

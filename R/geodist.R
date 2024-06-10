@@ -640,15 +640,16 @@ sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling, cat
   sf::st_as_sf(modeldomainextent) |>
     sf::st_transform(4326) -> bb
 
-  #methods::as(bb, "Spatial") |>
-  # sp::spsample(n = samplesize, type = sampling)  |>
-  # sf::st_as_sfc() |>
-  # sf::st_set_crs(4326) -> predictionloc
-  # predictionloc <- sf::st_as_sf(predictionloc)
-
-  predictionloc <- sf::st_sample(sf::st_make_valid(bb),size=samplesize,type=sampling)
-  sf::st_crs(predictionloc) <- 4326
+  methods::as(bb, "Spatial") |>
+    sp::spsample(n = samplesize, type = sampling)  |>
+    sf::st_as_sfc() |>
+    sf::st_set_crs(4326) -> predictionloc
   predictionloc <- sf::st_as_sf(predictionloc)
+
+  # sf version:
+  #  predictionloc <- sf::st_sample(sf::st_make_valid(bb),size=samplesize,type=sampling)
+  #  sf::st_crs(predictionloc) <- 4326
+  #  predictionloc <- sf::st_as_sf(predictionloc)
 
 
 
