@@ -36,6 +36,7 @@ Useful links:
 \itemize{
   \item \url{https://github.com/HannaMeyer/CAST}
   \item \url{https://hannameyer.github.io/CAST/}
+  \item Report bugs at \url{https://github.com/HannaMeyer/CAST/issues/}
 }
 
 }
