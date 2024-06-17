@@ -246,6 +246,7 @@ test_that("kNNDM works in feature space with hierarchical clustering and raster 
 })
 
 test_that("kNNDM works in feature space with clustered training points", {
+  skip_if_not_installed("PCAmixdata")
   set.seed(1234)
 
   data(splotdata)
@@ -297,6 +298,7 @@ test_that("kNNDM works in feature space with categorical variables and predpoint
 
 
 test_that("kNNDM works in feature space with clustered training points, categorical features ", {
+  skip_if_not_installed("PCAmixdata")
   set.seed(1234)
   predictor_stack <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
   predictors <- c("DEM","TWI", "NDRE.M", "Easting", "Northing", "fct")

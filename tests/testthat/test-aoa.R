@@ -72,6 +72,7 @@ test_that("AOA works without a trained model", {
 })
 
 test_that("AOA (including LPD) works with raster data and a trained model", {
+  skip_if_not_installed("randomForest")
   dat <- loaddata()
   # calculate the AOA of the trained model for the study area:
   AOA <- aoa(dat$studyArea, dat$model, LPD = TRUE, maxLPD = 1, verbose = F)
