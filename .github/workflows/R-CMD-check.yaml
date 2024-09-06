@@ -26,4 +26,9 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Install dependencies
+        run: |
+          remotes::install_github("r-tmap/tmap")
+        shell: Rscript {0}
+        
       - uses: r-lib/actions/check-r-package@v2
