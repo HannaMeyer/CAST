@@ -28,7 +28,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          remotes::install_github("r-tmap/tmap")
+          install.packages("tmap", repos = c("https://r-tmap.r-universe.dev", "https://cloud.r-project.org"))
         shell: Rscript {0}
         
       - uses: r-lib/actions/check-r-package@v2
