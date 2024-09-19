@@ -394,6 +394,9 @@ aoa_get_weights = function(model, variables){
       message("negative weights were set to 0")
     }
   }
+  if(sum(weight)==0){
+    stop("all weights are <=0, hence no variable is used. Check variable importance of the model, define weights manually or set useWeight=FALSE")
+  }
   return(weight)
 
 }
