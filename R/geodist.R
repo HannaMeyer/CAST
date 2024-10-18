@@ -628,7 +628,8 @@ sampleFromArea <- function(modeldomain, samplesize, type,variables,sampling, cat
     }
     #create mask to sample from:
     template <- modeldomain[[1]]
-    terra::values(template)[!is.na(terra::values(template))] <-1
+    #terra::values(template)[!is.na(terra::values(template))] <-1
+    template <- terra::classify(template, cbind(-Inf, Inf, 1), right=FALSE)
     modeldomainextent <- terra::as.polygons(template) |>
       sf::st_as_sf() |>
       sf::st_geometry()
