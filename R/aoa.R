@@ -26,6 +26,7 @@
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
 #' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
+#' @param useCV Logical. Only if a model is given. Use the CV folds to calculate the DI threshold?
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
 #' @param maxLPD numeric or integer. Only if \code{LPD = TRUE}. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso \code{\link{DItoErrormetric}})
 #' @param indices logical. Calculate indices of the training data points that are responsible for the LPD of a new prediction location? Output is a matrix with the dimensions num(raster_cells) x maxLPD. Each row holds the indices of the training data points that are relevant for the specific LPD value at that location. Can be used in combination with exploreAOA(aoa) function from the \href{https://github.com/fab-scm/CASTvis}{CASTvis package} for a better visual interpretation of the results. Note that the matrix can be quite big for examples with a high resolution and a larger number of training samples, which can cause memory issues.
@@ -147,6 +148,7 @@ aoa <- function(newdata,
                 CVtrain=NULL,
                 method="L2",
                 useWeight=TRUE,
+                useCV=TRUE,
                 LPD = FALSE,
                 maxLPD = 1,
                 indices = FALSE,
@@ -207,7 +209,7 @@ aoa <- function(newdata,
     if (verbose) {
       message("No trainDI provided.")
     }
-    trainDI <- trainDI(model, train, variables, weight, CVtest, CVtrain, method, useWeight, LPD, verbose)
+    trainDI <- trainDI(model, train, variables, weight, CVtest, CVtrain, method, useWeight, useCV, LPD, verbose)
   }
 
   if (calc_LPD == TRUE) {

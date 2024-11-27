@@ -23,6 +23,7 @@
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
 #' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
+#' @param useCV Logical. Only if a model is given. Use the CV folds to calculate the DI threshold?
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
 #' @param verbose Logical. Print progress or not?
 #'
@@ -101,6 +102,7 @@ trainDI <- function(model = NA,
                     CVtrain = NULL,
                     method="L2",
                     useWeight = TRUE,
+                    useCV =TRUE,
                     LPD = FALSE,
                     verbose = TRUE){
 
@@ -127,7 +129,7 @@ trainDI <- function(model = NA,
   }
 
   # get CV folds from model or from parameters
-  folds <-  aoa_get_folds(model,CVtrain,CVtest)
+  folds <-  aoa_get_folds(model,CVtrain,CVtest,useCV)
   CVtest <- folds[[2]]
   CVtrain <- folds[[1]]
 
@@ -449,9 +451,9 @@ aoa_get_train <- function(model){
 # Get folds from train object
 
 
-aoa_get_folds <- function(model, CVtrain, CVtest){
+aoa_get_folds <- function(model, CVtrain, CVtest, useCV){
   ### if folds are to be extracted from the model:
-  if (!is.na(model)[1]){
+  if (useCV&!is.na(model)[1]){
     if(tolower(model$control$method)!="cv"){
       message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
     }else{
@@ -481,6 +483,12 @@ aoa_get_folds <- function(model, CVtrain, CVtest){
         }
       }
     }
+
+  }
+  if(!is.na(model)[1]&useCV==FALSE){
+    message("note: useCV is set to FALSE. The DI threshold is therefore based on all training data")
+    CVtrain <- NULL
+    CVtest <- NULL
   }
   return(list(CVtrain,CVtest))
 }

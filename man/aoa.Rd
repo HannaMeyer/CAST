@@ -15,6 +15,7 @@ aoa(
   CVtrain = NULL,
   method = "L2",
   useWeight = TRUE,
+  useCV = TRUE,
   LPD = FALSE,
   maxLPD = 1,
   indices = FALSE,
@@ -48,6 +49,8 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 \item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.}
 
 \item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
+
+\item{useCV}{Logical. Only if a model is given. Use the CV folds to calculate the DI threshold?}
 
 \item{LPD}{Logical. Indicates whether the local point density should be calculated or not.}
 
