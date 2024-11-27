@@ -1,4 +1,4 @@
-# CAST: Caret Applications for Spatio-Temporal models
+# CAST: Caret Applications for Spatio-Temporal models  <img src="man/figures/logo.png" align="right" alt="" width="150" />
 
 <!-- Start Badges -->
 
