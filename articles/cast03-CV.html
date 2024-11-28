@@ -5,68 +5,52 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="CAST">
 <title>3. Nearest neighbor distance matching Cross-validation in CAST • CAST</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js" integrity="sha512-7O5pXpc0oCRrxk8RUfDYFgn0nO1t+jLuIOQdOMRp4APB7uZ4vSjspzp5y6YDtDs4VzUSTbWzBFZ/LKJhnyFOKw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="3. Nearest neighbor distance matching Cross-validation in CAST">
-<meta property="og:description" content="CAST">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="3. Nearest neighbor distance matching Cross-validation in CAST">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
-    
 
-    <nav class="navbar fixed-top navbar-dark navbar-expand-lg bg-primary" data-bs-theme="dark"><div class="container">
-    
+
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
+
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
-    
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/cast01-CAST-intro.html">1. Introduction to CAST 1.0.0</a>
-    <a class="dropdown-item" href="../articles/cast02-plotgeodist.html">2. Visualization of nearest neighbor distance distributions</a>
-    <a class="dropdown-item" href="../articles/cast03-CV.html">3. Nearest neighbor distance matching Cross-validation in CAST</a>
-    <a class="dropdown-item" href="../articles/cast04-AOA-tutorial.html">4. Area of applicability of spatial prediction models</a>
-    <a class="dropdown-item" href="../articles/cast05-parallel.html">5. Improve computation time of CAST methods</a>
-  </div>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="../articles/cast01-CAST-intro.html">1. Introduction to CAST 1.0.0</a></li>
+    <li><a class="dropdown-item" href="../articles/cast02-plotgeodist.html">2. Visualization of nearest neighbor distance distributions</a></li>
+    <li><a class="dropdown-item" href="../articles/cast03-CV.html">3. Nearest neighbor distance matching Cross-validation in CAST</a></li>
+    <li><a class="dropdown-item" href="../articles/cast04-AOA-tutorial.html">4. Area of applicability of spatial prediction models</a></li>
+    <li><a class="dropdown-item" href="../articles/cast05-parallel.html">5. Improve computation time of CAST methods</a></li>
+  </ul>
 </li>
-<li class="nav-item">
-  <a class="nav-link" href="../news/index.html">Changelog</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
-<form class="form-inline my-2 my-lg-0" role="search">
-        <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
-</form>
-
-      <ul class="navbar-nav">
-<li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/HannaMeyer/CAST/" aria-label="github">
-    <span class="fab fa fab fa-github fa-lg"></span>
-     
-  </a>
-</li>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/HannaMeyer/CAST/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
-    
+
   </div>
 </nav><div class="container template-article">
 
@@ -75,13 +59,13 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="" class="logo" alt=""><h1>3. Nearest neighbor distance matching Cross-validation in CAST</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>3. Nearest neighbor distance matching Cross-validation in CAST</h1>
                         <h4 data-toc-skip class="author">Carles
 Milà</h4>
             
-            <h4 data-toc-skip class="date">2024-06-17</h4>
+            <h4 data-toc-skip class="date">2024-11-28</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/HEAD/vignettes/cast03-CV.Rmd" class="external-link"><code>vignettes/cast03-CV.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/master/vignettes/cast03-CV.Rmd" class="external-link"><code>vignettes/cast03-CV.Rmd</code></a></small>
       <div class="d-none name"><code>cast03-CV.Rmd</code></div>
     </div>
 
@@ -110,9 +94,9 @@ as a last resort to obtain an estimate of the map error.</p>
 <p>The objective of this vignette is to showcase the CV methods
 implemented in <code>CAST</code>. To do so, we will work with two
 datasets of annual average air temperature and fine Particulate Matter
-(PM<span class="math inline">\(_{2.5}\)</span>) air pollution in
-continental Spain for 2019, for which several predictors have been
-collected. For more details, check our <a href="https://egusphere.copernicus.org/preprints/2024/egusphere-2024-138/" class="external-link">preprint</a>
+(PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>)
+air pollution in continental Spain for 2019, for which several
+predictors have been collected. For more details, check our <a href="https://egusphere.copernicus.org/preprints/2024/egusphere-2024-138/" class="external-link">preprint</a>
 where the dataset is described in detail.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Read data</span></span>
@@ -202,10 +186,12 @@ sampled:</p>
 <p><img src="cast03-CV_files/figure-html/geodist%20density-1.png" width="576" style="display: block; margin: auto;"></p>
 <p>We see that, for temperature, although the distribution of
 geographical distances during CV vs. during prediction do not exactly
-match, the overlap between the two is substantial. In the PM<span class="math inline">\(_{2.5}\)</span> case, however, the clustering of
-the stations make prediction-to-sample distances to be much longer that
-those found during CV. In other words, there are parts of the prediction
-area that do not have a PM<span class="math inline">\(_{2.5}\)</span>
+match, the overlap between the two is substantial. In the
+PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>
+case, however, the clustering of the stations make prediction-to-sample
+distances to be much longer that those found during CV. In other words,
+there are parts of the prediction area that do not have a
+PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>
 station nearby, while this does not happen nearly as often during a
 random 5-fold CV.</p>
 <p>Before we jump into the CV methods included in <code>CAST</code>, it
@@ -312,8 +298,9 @@ single iteration.</p>
 <span>                       method<span class="op">=</span><span class="st">"rf"</span>, importance<span class="op">=</span><span class="cn">FALSE</span>,</span>
 <span>                       trControl<span class="op">=</span><span class="va">temp_nndm_ctrl</span>, ntree<span class="op">=</span><span class="fl">100</span>, tuneLength<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">temp_nndm_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">temp_nndm_mod</span><span class="op">)</span></span></code></pre></div>
-<p>Next, we run PM<span class="math inline">\(_{2.5}\)</span> models
-using population and road density, nighttime lights (NTL), and
+<p>Next, we run
+PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>
+models using population and road density, nighttime lights (NTL), and
 impervious surface (IMD) as predictors:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># LOO CV</span></span>
@@ -377,10 +364,11 @@ impervious surface (IMD) as predictors:</p>
 <p>We can observe that the statistics for temperature models are almost
 the same for both CV methods since the NNDM algorithm did not detect any
 spatial clustering and thus returned a configuration almost identical to
-a standard LOO CV. However, for PM<span class="math inline">\(_{2.5}\)</span>, there are important differences
-between the performance estimated by the two CV methods, with NNDM LOO
-CV suggesting a much lower performance when the actual predictive
-conditions are taken into account.</p>
+a standard LOO CV. However, for
+PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>,
+there are important differences between the performance estimated by the
+two CV methods, with NNDM LOO CV suggesting a much lower performance
+when the actual predictive conditions are taken into account.</p>
 </div>
 <div class="section level3">
 <h3 id="knndm-cv-for-medium-and-large-datasets">kNNDM CV for medium and large datasets<a class="anchor" aria-label="anchor" href="#knndm-cv-for-medium-and-large-datasets"></a>
@@ -395,15 +383,20 @@ ECDF of nearest neighbour distances during CV to the ECDF found during
 prediction. Nonetheless, the means to achieve it are different. In
 kNNDM, what we do is to use a clustering algorithm (k-means and
 agglomerative clustering are currently implemented) to cluster our
-samples data into <span class="math inline">\(q\)</span> groups based on
-the coordinates, which are then merged into the final <span class="math inline">\(k\)</span> folds. The smaller the <span class="math inline">\(q\)</span>, the stronger the spatial structure of
-the CV will be.</p>
-<p>Among all candidate <span class="math inline">\(q\)</span>, we choose
-the fold configuration that offers the best match between the two ECDFs.
-We choose it based on the Wassterstein’s W statistic, which is the
-integral of the absolute value differences between the two ECDFs. The
-lower the W, the better the match. kNNDM will yield configurations with
-a spatial structure for clustered training samples while it will
+samples data into
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math>
+groups based on the coordinates, which are then merged into the final
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+folds. The smaller the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math>,
+the stronger the spatial structure of the CV will be.</p>
+<p>Among all candidate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math>,
+we choose the fold configuration that offers the best match between the
+two ECDFs. We choose it based on the Wassterstein’s W statistic, which
+is the integral of the absolute value differences between the two ECDFs.
+The lower the W, the better the match. kNNDM will yield configurations
+with a spatial structure for clustered training samples while it will
 generalize to a standard random k-fold CV whenever the training data are
 random or regularly-distributed.</p>
 <p>If you want to learn all the finer details of kNNDM and check our
@@ -427,7 +420,8 @@ clustering algorithm:</p>
 <p><img src="cast03-CV_files/figure-html/kNNDM%20temp-1.png" width="576" style="display: block; margin: auto;"></p>
 <p>Similarly to NNDM LOO CV, kNNDM does not find any clustering and
 generalizes to a random k-fold CV. Now let’s see what happens in the
-PM<span class="math inline">\(_{2.5}\)</span> dataset:</p>
+PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>
+dataset:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pm25_knndm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/knndm.html">knndm</a></span><span class="op">(</span><span class="va">pm25</span>, k <span class="op">=</span> <span class="fl">5</span>, modeldomain <span class="op">=</span> <span class="va">spain</span>, samplesize <span class="op">=</span> <span class="fl">1000</span>, </span>
 <span>                    clustering <span class="op">=</span> <span class="st">"hierarchical"</span>, linkf <span class="op">=</span> <span class="st">"ward.D2"</span><span class="op">)</span></span>
@@ -444,12 +438,15 @@ PM<span class="math inline">\(_{2.5}\)</span> dataset:</p>
 <p><img src="cast03-CV_files/figure-html/kNNDM%20pm25-1.png" width="576" style="display: block; margin: auto;"></p>
 <p>In this case, we <em>do</em> find clustered samples and kNNDM
 spatially clusters observations into folds as indicated by the number of
-intermediate clusters <span class="math inline">\(q\)</span>. With this
-kNNDM configuration, the match between the CV and the prediction
-distance distribution now seems to be quite good!</p>
+intermediate clusters
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math>.
+With this kNNDM configuration, the match between the CV and the
+prediction distance distribution now seems to be quite good!</p>
 <p>Another thing we can do is to check whether other clustering
 algorithms, or a different number of folds, might yield a better match.
-For example, let’s try using k-means clustering for the PM<span class="math inline">\(_{2.5}\)</span> dataset:</p>
+For example, let’s try using k-means clustering for the
+PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>
+dataset:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pm25_knndm_v2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/knndm.html">knndm</a></span><span class="op">(</span><span class="va">pm25</span>, k <span class="op">=</span> <span class="fl">5</span>, modeldomain <span class="op">=</span> <span class="va">spain</span>, samplesize <span class="op">=</span> <span class="fl">1000</span>, </span>
 <span>                       clustering <span class="op">=</span> <span class="st">"kmeans"</span><span class="op">)</span></span>
@@ -465,10 +462,12 @@ For example, let’s try using k-means clustering for the PM<span class="math in
 the quality of the match in this alternative kNNDM configuration is
 actually poorer, so we will stick to the first one. We can easily
 visualize the resulting 5-fold kNNDM configurations for both temperature
-and PM<span class="math inline">\(_{2.5}\)</span>:</p>
+and
+PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>:</p>
 <p><img src="cast03-CV_files/figure-html/kNNDM%20viz-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>As we already knew, the 5-fold kNNDM configuration for temperature is
-random whereas the one for PM<span class="math inline">\(_{2.5}\)</span>
+random whereas the one for
+PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>
 has a clear spatial pattern where observations close in space tend to be
 in the same fold.</p>
 <p>Now, we can finally run our models (same predictors as before) and
@@ -496,7 +495,9 @@ models:</p>
 <span>                        method<span class="op">=</span><span class="st">"rf"</span>, importance<span class="op">=</span><span class="cn">FALSE</span>,</span>
 <span>                        trControl<span class="op">=</span><span class="va">temp_knndm_ctrl</span>, ntree<span class="op">=</span><span class="fl">100</span>, tuneLength<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">temp_knndm_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">temp_knndm_mod</span><span class="op">)</span></span></code></pre></div>
-<p>And the PM<span class="math inline">\(_{2.5}\)</span> models:</p>
+<p>And the
+PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>
+models:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Random 5-fold CV</span></span>
 <span><span class="va">pm25_rndmk_ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>, number<span class="op">=</span><span class="fl">5</span>, savePredictions<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
@@ -558,9 +559,10 @@ models:</p>
 <p>Here, we see the same pattern as in the LOO CV results. Since
 temperature data aren’t clustered, kNNDM CV has generalized to a random
 k-fold CV and thus results of both methods are very similar. This is not
-true for PM<span class="math inline">\(_{2.5}\)</span>, where kNNDM CV
-shows that once predictive conditions are taken into account, the
-estimated performance is lower.</p>
+true for
+PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>,
+where kNNDM CV shows that once predictive conditions are taken into
+account, the estimated performance is lower.</p>
 </div>
 </div>
 <div class="section level2">
@@ -590,7 +592,7 @@ estimation, EGUsphere [preprint], <a href="https://doi.org/10.5194/egusphere-202
 </li>
 </ul>
 </div>
-  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
 
@@ -601,15 +603,15 @@ estimation, EGUsphere [preprint], <a href="https://doi.org/10.5194/egusphere-202
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>
 </div>
 
-  
 
-  
+
+
 
   </body>
 </html>
