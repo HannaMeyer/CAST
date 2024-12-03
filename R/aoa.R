@@ -53,6 +53,11 @@
 #' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
 #' Methods in Ecology and Evolution 12: 1620-1633. \doi{10.1111/2041-210X.13650}
+#'
+#' Schumacher, F., Knoth, C., Ludwig, M., Meyer, H. (2024):
+#' Estimation of local training data point densities to support the assessment
+#' of spatial prediction uncertainty. EGUsphere. \doi{10.5194/egusphere-2024-2730}.
+#'
 #' @seealso \code{\link{trainDI}}, \code{\link{normalize_DI}}, \code{\link{errorProfiles}}
 #' @examples
 #' \dontrun{
