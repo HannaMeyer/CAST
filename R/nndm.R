@@ -23,7 +23,7 @@
 #' (distances for G function construction during LOO CV), Gjstar (distances
 #' for modified G function during NNDM LOO CV), phi (landscape autocorrelation range).
 #' indx_train and indx_test can directly be used as "index" and "indexOut" in
-#' caret's \code{\link{trainControl}} function or used to initiate a custom validation strategy in mlr3.
+#' caret's \code{\link[caret]{trainControl}} function or used to initiate a custom validation strategy in mlr3.
 #'
 #' @details NNDM proposes a LOO CV scheme such that the nearest neighbour distance distribution function between the test and training data during the CV process is matched to the nearest neighbour
 #' distance distribution function between the prediction and training points. Details of the method can be found in Milà et al. (2022).

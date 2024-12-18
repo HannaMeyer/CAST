@@ -45,7 +45,7 @@ G function construction between prediction and target points), Gj
 (distances for G function construction during LOO CV), Gjstar (distances
 for modified G function during NNDM LOO CV), phi (landscape autocorrelation range).
 indx_train and indx_test can directly be used as "index" and "indexOut" in
-caret's \code{\link{trainControl}} function or used to initiate a custom validation strategy in mlr3.
+caret's \code{\link[caret]{trainControl}} function or used to initiate a custom validation strategy in mlr3.
 }
 \description{
 This function implements the NNDM algorithm and returns the necessary indices to perform a NNDM LOO CV for map validation.

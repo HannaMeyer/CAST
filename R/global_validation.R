@@ -1,7 +1,7 @@
 #' Evaluate 'global' cross-validation
 #' @description Calculate validation metric using all held back predictions at once
-#' @param model an object of class \code{\link{train}}
-#' @return regression (\code{\link{postResample}}) or classification  (\code{\link{confusionMatrix}}) statistics
+#' @param model an object of class \code{\link[caret]{train}}
+#' @return regression (\code{\link[caret]{postResample}}) or classification  (\code{\link[caret]{confusionMatrix}}) statistics
 #' @details Relevant when folds are not representative for the entire area of interest.
 #' In this case, metrics like R2 are not meaningful since it doesn't reflect the general ability of
 #' the model to explain the entire gradient of the response.

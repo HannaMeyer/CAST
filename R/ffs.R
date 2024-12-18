@@ -1,18 +1,18 @@
 #' Forward feature selection
 #' @description A simple forward feature selection algorithm
-#' @param predictors see \code{\link{train}}
-#' @param response see \code{\link{train}}
-#' @param method see \code{\link{train}}
-#' @param metric see \code{\link{train}}
-#' @param maximize see \code{\link{train}}
+#' @param predictors see \code{\link[caret]{train}}
+#' @param response see \code{\link[caret]{train}}
+#' @param method see \code{\link[caret]{train}}
+#' @param metric see \code{\link[caret]{train}}
+#' @param maximize see \code{\link[caret]{train}}
 #' @param globalval Logical. Should models be evaluated based on 'global' performance? See \code{\link{global_validation}}
 #' @param withinSE Logical Models are only selected if they are better than the
 #' currently best models Standard error
 #' @param minVar Numeric. Number of variables to combine for the first selection.
 #' See Details.
-#' @param trControl see \code{\link{train}}
-#' @param tuneLength see \code{\link{train}}
-#' @param tuneGrid see \code{\link{train}}
+#' @param trControl see \code{\link[caret]{train}}
+#' @param tuneLength see \code{\link[caret]{train}}
+#' @param tuneGrid see \code{\link[caret]{train}}
 #' @param seed A random number used for model training
 #' @param cores Numeric. If > 2, mclapply will be used. see \code{\link{mclapply}}
 #' @param verbose Logical. Should information about the progress be printed?
@@ -53,8 +53,8 @@
 #' See Meyer et al. (2018) and Meyer et al. (2019) for further details.
 #'
 #' @author Hanna Meyer
-#' @seealso \code{\link{train}},\code{\link{bss}},
-#' \code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}},\code{\link{nndm}}
+#' @seealso \code{\link[caret]{train}},\code{\link{bss}},
+#' \code{\link[caret]{trainControl}},\code{\link{CreateSpacetimeFolds}},\code{\link{nndm}}
 #' @references
 #' \itemize{
 #' \item Gasch, C.K., Hengl, T., Gräler, B., Meyer, H., Magney, T., Brown, D.J. (2015): Spatio-temporal interpolation of soil water, temperature, and electrical conductivity in 3D+T: the Cook Agronomy Farm data set. Spatial Statistics 14: 70-90.

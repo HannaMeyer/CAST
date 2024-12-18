@@ -33,7 +33,7 @@ errorProfiles(
 
 \item{length.out}{Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.}
 
-\item{window.size}{Numeric. Size of the moving window. See \code{\link{rollapply}}.}
+\item{window.size}{Numeric. Size of the moving window. See \code{\link[zoo]{rollapply}}.}
 
 \item{calib}{Character. Function to model the DI/LPD~performance relationship. Currently lm and scam are supported}
 

@@ -80,8 +80,8 @@ plot(bssmodel)
 }
 }
 \seealso{
-\code{\link{train}},\code{\link{ffs}},
-\code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}},
+\code{\link[caret]{train}},\code{\link{ffs}},
+\code{\link[caret]{trainControl}},\code{\link{CreateSpacetimeFolds}},
 \code{\link{nndm}}
 }
 \author{

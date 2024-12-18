@@ -69,7 +69,7 @@ str(indices)
 Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.
 }
 \seealso{
-\code{\link{trainControl}},\code{\link{ffs}}, \code{\link{nndm}}
+\code{\link[caret]{trainControl}},\code{\link{ffs}}, \code{\link{nndm}}
 }
 \author{
 Hanna Meyer

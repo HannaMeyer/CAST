@@ -5,7 +5,7 @@
 #' @param locations Optional. sf object for the training data used in model. Only used if variable=="geodist". Note that they must be in the same order as model$trainingData.
 #' @param variable Character. Which dissimilarity or distance measure to use for the error metric. Current options are "DI" or "LPD"
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
-#' @param window.size Numeric. Size of the moving window. See \code{\link{rollapply}}.
+#' @param window.size Numeric. Size of the moving window. See \code{\link[zoo]{rollapply}}.
 #' @param calib Character. Function to model the DI/LPD~performance relationship. Currently lm and scam are supported
 #' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
 #' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer. See ?aoa for further explanation

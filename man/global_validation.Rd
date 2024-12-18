@@ -7,10 +7,10 @@
 global_validation(model)
 }
 \arguments{
-\item{model}{an object of class \code{\link{train}}}
+\item{model}{an object of class \code{\link[caret]{train}}}
 }
 \value{
-regression (\code{\link{postResample}}) or classification  (\code{\link{confusionMatrix}}) statistics
+regression (\code{\link[caret]{postResample}}) or classification  (\code{\link[caret]{confusionMatrix}}) statistics
 }
 \description{
 Calculate validation metric using all held back predictions at once

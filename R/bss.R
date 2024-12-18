@@ -33,8 +33,8 @@
 #' Note that bss is very slow since all combinations of variables are tested.
 #' A more time efficient alternative is the forward feature selection (\code{\link{ffs}}).
 #' @author Hanna Meyer
-#' @seealso \code{\link{train}},\code{\link{ffs}},
-#' \code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}},
+#' @seealso \code{\link[caret]{train}},\code{\link{ffs}},
+#' \code{\link[caret]{trainControl}},\code{\link{CreateSpacetimeFolds}},
 #' \code{\link{nndm}}
 #' @examples
 #' \dontrun{
