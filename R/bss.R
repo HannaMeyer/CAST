@@ -1,14 +1,14 @@
 #' Best subset feature selection
 #' @description Evaluate all combinations of predictors during model training
-#' @param predictors see \code{\link{train}}
-#' @param response see \code{\link{train}}
-#' @param method see \code{\link{train}}
-#' @param metric see \code{\link{train}}
-#' @param maximize see \code{\link{train}}
+#' @param predictors see \code{\link[caret]{train}}
+#' @param response see \code{\link[caret]{train}}
+#' @param method see \code{\link[caret]{train}}
+#' @param metric see \code{\link[caret]{train}}
+#' @param maximize see \code{\link[caret]{train}}
 #' @param globalval Logical. Should models be evaluated based on 'global' performance? See \code{\link{global_validation}}
-#' @param trControl see \code{\link{train}}
-#' @param tuneLength see \code{\link{train}}
-#' @param tuneGrid see \code{\link{train}}
+#' @param trControl see \code{\link[caret]{train}}
+#' @param tuneLength see \code{\link[caret]{train}}
+#' @param tuneGrid see \code{\link[caret]{train}}
 #' @param seed A random number
 #' @param verbose Logical. Should information about the progress be printed?
 #' @param ... arguments passed to the classification or regression routine
@@ -33,8 +33,8 @@
 #' Note that bss is very slow since all combinations of variables are tested.
 #' A more time efficient alternative is the forward feature selection (\code{\link{ffs}}).
 #' @author Hanna Meyer
-#' @seealso \code{\link{train}},\code{\link{ffs}},
-#' \code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}},
+#' @seealso \code{\link[caret]{train}},\code{\link{ffs}},
+#' \code{\link[caret]{trainControl}},\code{\link{CreateSpacetimeFolds}},
 #' \code{\link{nndm}}
 #' @examples
 #' \dontrun{

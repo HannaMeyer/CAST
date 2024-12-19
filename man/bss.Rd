@@ -20,23 +20,23 @@ bss(
 )
 }
 \arguments{
-\item{predictors}{see \code{\link{train}}}
+\item{predictors}{see \code{\link[caret]{train}}}
 
-\item{response}{see \code{\link{train}}}
+\item{response}{see \code{\link[caret]{train}}}
 
-\item{method}{see \code{\link{train}}}
+\item{method}{see \code{\link[caret]{train}}}
 
-\item{metric}{see \code{\link{train}}}
+\item{metric}{see \code{\link[caret]{train}}}
 
-\item{maximize}{see \code{\link{train}}}
+\item{maximize}{see \code{\link[caret]{train}}}
 
 \item{globalval}{Logical. Should models be evaluated based on 'global' performance? See \code{\link{global_validation}}}
 
-\item{trControl}{see \code{\link{train}}}
+\item{trControl}{see \code{\link[caret]{train}}}
 
-\item{tuneLength}{see \code{\link{train}}}
+\item{tuneLength}{see \code{\link[caret]{train}}}
 
-\item{tuneGrid}{see \code{\link{train}}}
+\item{tuneGrid}{see \code{\link[caret]{train}}}
 
 \item{seed}{A random number}
 
@@ -80,8 +80,8 @@ plot(bssmodel)
 }
 }
 \seealso{
-\code{\link{train}},\code{\link{ffs}},
-\code{\link{trainControl}},\code{\link{CreateSpacetimeFolds}},
+\code{\link[caret]{train}},\code{\link{ffs}},
+\code{\link[caret]{trainControl}},\code{\link{CreateSpacetimeFolds}},
 \code{\link{nndm}}
 }
 \author{
