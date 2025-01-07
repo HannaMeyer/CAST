@@ -301,7 +301,7 @@ sample2sample <- function(x, type,variables,time_unit,timevar, catVars){
     for (i in 1:nrow(x_clean)){
 
       if(is.null(catVars)) {
-        trainDist <-  FNN::knnx.dist(x_clean[i,],x_clean,k=1)
+        trainDist <-  FNN::knnx.dist(x_clean[i,],x_clean,k=1, algorithm = "brute")
       } else {
         trainDist <- gower::gower_dist(x_clean[i,],x_clean)
       }
@@ -378,7 +378,7 @@ sample2prediction = function(x, modeldomain, type, samplesize,variables,time_uni
     for (i in 1:nrow(modeldomain)){
 
       if(is.null(catVars)) {
-        trainDist <-  FNN::knnx.dist(modeldomain[i,],x_clean,k=1)
+        trainDist <-  FNN::knnx.dist(modeldomain[i,],x_clean,k=1, algorithm = "brute")
       } else {
         trainDist <- gower::gower_dist(modeldomain[i,], x_clean)
       }
@@ -460,7 +460,7 @@ sample2test <- function(x, testdata, type,variables,time_unit,timevar, catVars){
     for (i in 1:nrow(testdata)){
 
       if(is.null(catVars)) {
-        testDist <- FNN::knnx.dist(testdata[i,],x_clean,k=1)
+        testDist <- FNN::knnx.dist(testdata[i,],x_clean,k=1, algorithm = "brute")
       } else {
         testDist <- gower::gower_dist(testdata[i,], x_clean)
       }
@@ -550,7 +550,7 @@ cvdistance <- function(x, cvfolds, cvtrain, type, variables,time_unit,timevar, c
       for (k in 1:nrow(testdata_i)){
 
         if(is.null(catVars)) {
-          trainDist <-  tryCatch(FNN::knnx.dist(testdata_i[k,],traindata_i,k=1),
+          trainDist <-  tryCatch(FNN::knnx.dist(testdata_i[k,],traindata_i,k=1, algorithm = "brute"),
                                  error = function(e)e)
           if(inherits(trainDist, "error")){
             trainDist <- NA

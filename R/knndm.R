@@ -392,9 +392,9 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat
     units(Gij) <- NULL
     Gij <- apply(Gij, 1, min)
   }else{
-    Gj <- c(FNN::knn.dist(tcoords, k = 1))
+    Gj <- c(FNN::knn.dist(tcoords, k = 1, algorithm = "brute"))
     Gij <- c(FNN::knnx.dist(query = sf::st_coordinates(predpoints)[,1:2],
-                            data = tcoords, k = 1))
+                            data = tcoords, k = 1, algorithm = "brute"))
   }
 
   # Check if Gj > Gij (warning suppressed regarding ties)
@@ -576,8 +576,8 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
 
     } else {
       # use FNN with Euclidean distances if no categorical variables are present
-      Gj <- c(FNN::knn.dist(tpoints, k = 1))
-      Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1))
+      Gj <- c(FNN::knn.dist(tpoints, k = 1, algorithm = "brute"))
+      Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1, algorithm = "brute"))
     }
 
 
@@ -793,7 +793,7 @@ distclust_euclidean <- function(tr_coords, folds){
   alldist <- rep(NA, length(folds))
   for(f in unique(folds)){
     alldist[f == folds] <- c(FNN::knnx.dist(query = tr_coords[f == folds,,drop=FALSE],
-                                            data = tr_coords[f != folds,,drop=FALSE], k = 1))
+                                            data = tr_coords[f != folds,,drop=FALSE], k = 1, algorithm = "brute"))
   }
   alldist
 }

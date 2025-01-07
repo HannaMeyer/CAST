@@ -452,7 +452,7 @@ aoa <- function(newdata,
             maxLPD = maxLPD) {
     if (method == "L2") {
       # Euclidean Distance
-      return(FNN::knnx.dist(reference, point, k = maxLPD))
+      return(FNN::knnx.dist(reference, point, k = maxLPD, algorithm = "brute"))
     } else if (method == "MD") {
       return(t(sapply(1:dim(point)[1],
                       function(y)
@@ -470,7 +470,7 @@ aoa <- function(newdata,
             maxLPD = maxLPD) {
     if (method == "L2") {
       # Euclidean Distance
-      return(FNN::knnx.index(reference, point, k = maxLPD))
+      return(FNN::knnx.index(reference, point, k = maxLPD, algorithm = "brute"))
     } else if (method == "MD") {
       stop("MD currently not implemented for LPD")
     }

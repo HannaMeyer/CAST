@@ -521,7 +521,7 @@ aoa_get_variables <- function(variables, model, train){
 .mindistfun <- function(point, reference, method, S_inv=NULL){
 
   if (method == "L2"){ # Euclidean Distance
-    return(c(FNN::knnx.dist(reference, point, k = 1)))
+    return(c(FNN::knnx.dist(reference, point, k = 1, algorithm = "brute")))
   } else if (method == "MD"){ # Mahalanobis Distance
     return(sapply(1:dim(point)[1],
                   function(y) min(sapply(1:dim(reference)[1],
@@ -533,9 +533,9 @@ aoa_get_variables <- function(variables, model, train){
 
   if (method == "L2"){ # Euclidean Distance
     if(sorted){
-      return(FNN::knnx.dist(reference, point, k = dim(reference)[1]))
+      return(FNN::knnx.dist(reference, point, k = dim(reference)[1], algorithm = "brute"))
     } else {
-      return(FNN::knnx.dist(point,reference,k=1))
+      return(FNN::knnx.dist(point,reference,k=1, algorithm = "brute"))
     }
   } else if (method == "MD"){ # Mahalanobis Distance
     if(sorted){

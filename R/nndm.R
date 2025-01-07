@@ -350,7 +350,7 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     if(is.null(catVars)) {
 
       # Euclidean distances if no categorical variables are present
-      Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1))
+      Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1, algorithm = "brute"))
       tdist <- as.matrix(stats::dist(tpoints, upper = TRUE))
       diag(tdist) <- NA
       Gj <- apply(tdist, 1, function(x) min(x, na.rm=TRUE))
