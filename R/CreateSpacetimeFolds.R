@@ -20,9 +20,13 @@
 #' training data come as training polygons. In this case the data should be split in a way
 #' that entire polygons are held back (spacevar="polygonID") but at the same time the distribution of classes
 #' should be similar in each fold (class="LUC").
-#' @note Standard k-fold cross-validation can lead to considerable misinterpretation in spatial-temporal modelling tasks. This function can be used to prepare a Leave-Location-Out, Leave-Time-Out or Leave-Location-and-Time-Out cross-validation as target-oriented validation strategies for spatial-temporal prediction tasks. See Meyer et al. (2018) for further information.
+#' @note Standard k-fold cross-validation can lead to considerable misinterpretation in spatial-temporal modelling tasks.
+#' This function can be used to prepare a Leave-Location-Out, Leave-Time-Out or Leave-Location-and-Time-Out cross-validation
+#' as target-oriented validation strategies for spatial-temporal prediction tasks.
+#' See Meyer et al. (2018) for further information. CreateSpaceTiemFolds is just a evry simple approach and the suitability depends on the choice of the groups.
+#' You may check the suitability with \code{\link{geodist}}. Consider \code{\link{nndm}} or \code{\link{knndm}} as alternatives or other approaches such as Spatial Blocks.
 #' @author Hanna Meyer
-#' @seealso \code{\link[caret]{trainControl}},\code{\link{ffs}}, \code{\link{nndm}}
+#' @seealso \code{\link[caret]{trainControl}},\code{\link{ffs}}, \code{\link{nndm}}, \code{\link{geodist}}
 #' @references
 #' Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.
 #' @examples
