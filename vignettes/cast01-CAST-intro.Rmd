@@ -193,7 +193,7 @@ global_validation(model)
 
 By inspecting the output of the model, we see that in view to new locations, the R² is much lower and the RMSE much higher compared to what was expected from the random CV.
 
-Apparently, there is considerable overfitting in the model, causing a good random performance but a poor performance in view to new locations. This might partly be attributed to the choice of variables where we must suspect that certain variables are misinterpreted by the model (see [Meyer et al 2018](https://www.sciencedirect.com/science/article/pii/S1364815217310976) or [talk at the OpenGeoHub summer school 2019](https://www.youtube.com/watch?v=mkHlmYEzsVQ)).
+Apparently, there is considerable overfitting in the model, causing a good random performance but a poor performance in view to new locations. This might partly be attributed to the choice of variables where we must suspect that certain variables are misinterpreted by the model (see [Meyer et al 2018](https://doi.org/10.1016/j.envsoft.2017.12.001) or [talk at the OpenGeoHub summer school 2019](https://www.youtube.com/watch?v=mkHlmYEzsVQ)).
 
 Let's have a look at the variable importance ranking of Random Forest. Assuming that certain variables are misinterpreted by the algorithm we should be able to produce a higher LLO performance when such variables are removed. Let's see if this is true...
 

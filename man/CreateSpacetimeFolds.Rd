@@ -52,7 +52,7 @@ Standard k-fold cross-validation can lead to considerable misinterpretation in s
 This function can be used to prepare a Leave-Location-Out, Leave-Time-Out or Leave-Location-and-Time-Out cross-validation
 as target-oriented validation strategies for spatial-temporal prediction tasks.
 See Meyer et al. (2018) for further information. CreateSpaceTiemFolds is just a evry simple approach and the suitability depends on the choice of the groups.
-You may check the suitability with  \code{\link{geodist}}. Consider \code{\link{nndm}} or \code{\link{knndm}} as alternatives or other approaches such as Spatial Blocks.
+You may check the suitability with \code{\link{geodist}}. Consider \code{\link{nndm}} or \code{\link{knndm}} as alternatives or other approaches such as Spatial Blocks.
 }
 \examples{
 \dontrun{
