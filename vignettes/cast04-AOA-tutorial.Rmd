@@ -341,7 +341,7 @@ plot(LPD_updated_AOA, col=c("grey","transparent"),add=TRUE,plg=list(x="topleft",
 The example above used simulated data so that it allows to analyze the reliability of the AOA. However, a simulated area-wide response is not available in usual prediction tasks. Therefore, as a second example the AOA is estimated for a dataset that has point observations as a reference only.
 
 ## Data and preprocessing
-To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://www.sciencedirect.com/science/article/pii/S2211675315000251). The dataset included in CAST is a re-structured dataset. Find more details also in the vignette "Introduction to CAST".
+To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://doi.org/10.1016/j.spasta.2015.04.001). The dataset included in CAST is a re-structured dataset. Find more details also in the vignette "Introduction to CAST".
 We will use soil moisture (VW) as response variable here. Hence, we're aiming at making a spatial continuous prediction based on limited measurements from data loggers.
 
 ```{r, message = FALSE, warning=FALSE}
