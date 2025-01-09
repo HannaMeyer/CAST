@@ -1,3 +1,6 @@
+# `CAST` 1.0.3
+* bug fix: default algorithm for FNN functions changed
+
 # `CAST` 1.0.2
 * bug fix: tests run conditionally
 

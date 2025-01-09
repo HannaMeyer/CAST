@@ -19,7 +19,7 @@
 #' Only required if modeldomain is used instead of predpoints.
 #' @param useMD boolean. Only for `space`=feature: shall the Mahalanobis distance be calculated instead of Euclidean?
 #' Only works with numerical variables.
-#'
+#' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
 #' @return An object of class \emph{knndm} consisting of a list of eight elements:
 #' indx_train, indx_test (indices of the observations to use as
 #' training/test data in each kNNDM CV iteration), Gij (distances for
@@ -205,7 +205,8 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
                   space = "geographical",
                   k = 10, maxp = 0.5,
                   clustering = "hierarchical", linkf = "ward.D2",
-                  samplesize = 1000, sampling = "regular", useMD=FALSE){
+                  samplesize = 1000, sampling = "regular", useMD=FALSE,
+                  algorithm="brute"){
 
   # create sample points from modeldomain
   if(is.null(predpoints)&!is.null(modeldomain)){
@@ -312,14 +313,14 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     # prior checks
     check_knndm_geo(tpoints, predpoints, space, k, maxp, clustering, islonglat)
     # kNNDM in geographical space
-    knndm_res <- knndm_geo(tpoints, predpoints, k, maxp, clustering, linkf, islonglat)
+    knndm_res <- knndm_geo(tpoints, predpoints, k, maxp, clustering, linkf, islonglat, algorithm=algorithm)
 
   } else if (isTRUE(space == "feature")) {
 
     # prior checks
     check_knndm_feature(tpoints, predpoints, space, k, maxp, clustering, islonglat, catVars,useMD)
     # kNNDM in feature space
-    knndm_res <- knndm_feature(tpoints, predpoints, k, maxp, clustering, linkf, catVars, useMD)
+    knndm_res <- knndm_feature(tpoints, predpoints, k, maxp, clustering, linkf, catVars, useMD, algorithm=algorithm)
 
   }
 
@@ -379,7 +380,7 @@ check_knndm_feature <- function(tpoints, predpoints, space, k, maxp, clustering,
 
 
 # kNNDM in the geographical space
-knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat){
+knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat, algorithm){
 
   # Gj and Gij calculation
   tcoords <- sf::st_coordinates(tpoints)[,1:2]
@@ -392,9 +393,9 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat
     units(Gij) <- NULL
     Gij <- apply(Gij, 1, min)
   }else{
-    Gj <- c(FNN::knn.dist(tcoords, k = 1))
+    Gj <- c(FNN::knn.dist(tcoords, k = 1, algorithm=algorithm))
     Gij <- c(FNN::knnx.dist(query = sf::st_coordinates(predpoints)[,1:2],
-                            data = tcoords, k = 1))
+                            data = tcoords, k = 1, algorithm=algorithm))
   }
 
   # Check if Gj > Gij (warning suppressed regarding ties)
@@ -406,7 +407,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat
     if(isTRUE(islonglat)){
       Gjstar <- distclust_distmat(distmat, clust)
     }else{
-      Gjstar <- distclust_euclidean(tcoords, clust)
+      Gjstar <- distclust_euclidean(tcoords, clust, algorithm=algorithm)
     }
     k_final <- "random CV"
     W_final <- twosamples::wass_stat(Gjstar, Gij)
@@ -479,7 +480,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat
         if(isTRUE(islonglat)){
           Gjstar_i <- distclust_distmat(distmat, clust_k)
         }else{
-          Gjstar_i <- distclust_euclidean(tcoords, clust_k)
+          Gjstar_i <- distclust_euclidean(tcoords, clust_k,algorithm=algorithm)
         }
         clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
         clustgroups[[paste0("nk", nk)]] <- clust_k
@@ -493,7 +494,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat
     if(isTRUE(islonglat)){
       Gjstar <- distclust_distmat(distmat, clust)
     }else{
-      Gjstar <- distclust_euclidean(tcoords, clust)
+      Gjstar <- distclust_euclidean(tcoords, clust,algorithm=algorithm)
     }
   }
 
@@ -509,7 +510,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, islonglat
 
 
 # kNNDM in the feature space
-knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVars, useMD) {
+knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVars, useMD, algorithm) {
 
   # rescale data
   if(is.null(catVars)) {
@@ -576,8 +577,8 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
 
     } else {
       # use FNN with Euclidean distances if no categorical variables are present
-      Gj <- c(FNN::knn.dist(tpoints, k = 1))
-      Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1))
+      Gj <- c(FNN::knn.dist(tpoints, k = 1, algorithm=algorithm))
+      Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1, algorithm=algorithm))
     }
 
 
@@ -600,7 +601,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
       if(isTRUE(useMD)) {
         Gjstar <- distclust_MD(tpoints, clust)
       } else {
-        Gjstar <- distclust_euclidean(tpoints, clust)
+        Gjstar <- distclust_euclidean(tpoints, clust,algorithm=algorithm)
       }
 
     } else {
@@ -727,7 +728,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
               if(isTRUE(useMD)){
                 Gjstar_i <- distclust_MD(tpoints, clust_k)
               } else {
-                Gjstar_i <- distclust_euclidean(tpoints, clust_k)
+                Gjstar_i <- distclust_euclidean(tpoints, clust_k,algorithm=algorithm)
               }
             } else {
               Gjstar_i <- distclust_gower(tpoints, clust_k)
@@ -755,7 +756,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
         if(isTRUE(useMD)) {
           Gjstar <- distclust_MD(tpoints, clust)
         } else {
-          Gjstar <- distclust_euclidean(tpoints, clust)
+          Gjstar <- distclust_euclidean(tpoints, clust,algorithm=algorithm)
         }
 
       } else {
@@ -789,11 +790,11 @@ distclust_distmat <- function(distm, folds){
 }
 
 # Helper function: Compute out-of-fold NN distance (projected coordinates / numerical variables)
-distclust_euclidean <- function(tr_coords, folds){
+distclust_euclidean <- function(tr_coords, folds, algorithm){
   alldist <- rep(NA, length(folds))
   for(f in unique(folds)){
     alldist[f == folds] <- c(FNN::knnx.dist(query = tr_coords[f == folds,,drop=FALSE],
-                                            data = tr_coords[f != folds,,drop=FALSE], k = 1))
+                                            data = tr_coords[f != folds,,drop=FALSE], k = 1, algorithm=algorithm))
   }
   alldist
 }

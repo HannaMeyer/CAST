@@ -16,6 +16,7 @@
 #' @param variables character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.
 #' @param timevar optional. character. Column that indicates the date. Only used if type="time".
 #' @param time_unit optional. Character. Unit for temporal distances See ?difftime.Only used if type="time".
+#' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
 #' @return A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
 #'     If type = "feature", the argument modeldomain (and if provided then also the testdata and/or preddata) has to include predictors. Predictor values for x, testdata and preddata are optional if modeldomain is a raster.
@@ -129,7 +130,8 @@ geodist <- function(x,
                     sampling = "regular",
                     variables=NULL,
                     timevar=NULL,
-                    time_unit="auto"){
+                    time_unit="auto",
+                    algorithm="brute"){
 
   # input formatting ------------
   if(is.null(modeldomain)&!is.null(preddata)){
@@ -221,22 +223,22 @@ geodist <- function(x,
   }
 
   # always do sample-to-sample and sample-to-prediction
-  s2s <- sample2sample(x, type,variables,time_unit,timevar, catVars)
-  s2p <- sample2prediction(x, modeldomain, type, samplesize,variables,time_unit,timevar, catVars)
+  s2s <- sample2sample(x, type,variables,time_unit,timevar, catVars, algorithm=algorithm)
+  s2p <- sample2prediction(x, modeldomain, type, samplesize,variables,time_unit,timevar, catVars, algorithm=algorithm)
 
   dists <- rbind(s2s, s2p)
 
   # optional steps ----
   ##### Distance to test data:
   if(!is.null(testdata)){
-    s2t <- sample2test(x, testdata, type,variables,time_unit,timevar, catVars)
+    s2t <- sample2test(x, testdata, type,variables,time_unit,timevar, catVars, algorithm=algorithm)
     dists <- rbind(dists, s2t)
   }
 
   ##### Distance to CV data:
   if(!is.null(cvfolds)){
 
-    cvd <- cvdistance(x, cvfolds, cvtrain, type, variables,time_unit,timevar, catVars)
+    cvd <- cvdistance(x, cvfolds, cvtrain, type, variables,time_unit,timevar, catVars, algorithm=algorithm)
     dists <- rbind(dists, cvd)
   }
   class(dists) <- c("geodist", class(dists))
@@ -270,7 +272,7 @@ geodist <- function(x,
 
 # Sample to Sample Distance
 
-sample2sample <- function(x, type,variables,time_unit,timevar, catVars){
+sample2sample <- function(x, type,variables,time_unit,timevar, catVars, algorithm){
   if(type == "geo"){
     sf::sf_use_s2(TRUE)
     d <- sf::st_distance(x)
@@ -301,7 +303,7 @@ sample2sample <- function(x, type,variables,time_unit,timevar, catVars){
     for (i in 1:nrow(x_clean)){
 
       if(is.null(catVars)) {
-        trainDist <-  FNN::knnx.dist(x_clean[i,],x_clean,k=1)
+        trainDist <-  FNN::knnx.dist(x_clean[i,],x_clean,k=1, algorithm=algorithm)
       } else {
         trainDist <- gower::gower_dist(x_clean[i,],x_clean)
       }
@@ -331,7 +333,7 @@ sample2sample <- function(x, type,variables,time_unit,timevar, catVars){
 
 
 # Sample to Prediction
-sample2prediction = function(x, modeldomain, type, samplesize,variables,time_unit,timevar, catVars){
+sample2prediction = function(x, modeldomain, type, samplesize,variables,time_unit,timevar, catVars, algorithm){
 
   if(type == "geo"){
     modeldomain <- sf::st_transform(modeldomain, sf::st_crs(x))
@@ -378,7 +380,7 @@ sample2prediction = function(x, modeldomain, type, samplesize,variables,time_uni
     for (i in 1:nrow(modeldomain)){
 
       if(is.null(catVars)) {
-        trainDist <-  FNN::knnx.dist(modeldomain[i,],x_clean,k=1)
+        trainDist <-  FNN::knnx.dist(modeldomain[i,],x_clean,k=1, algorithm=algorithm)
       } else {
         trainDist <- gower::gower_dist(modeldomain[i,], x_clean)
       }
@@ -410,7 +412,7 @@ sample2prediction = function(x, modeldomain, type, samplesize,variables,time_uni
 # sample to test
 
 
-sample2test <- function(x, testdata, type,variables,time_unit,timevar, catVars){
+sample2test <- function(x, testdata, type,variables,time_unit,timevar, catVars, algorithm){
 
   if(type == "geo"){
     testdata <- sf::st_transform(testdata,4326)
@@ -460,7 +462,7 @@ sample2test <- function(x, testdata, type,variables,time_unit,timevar, catVars){
     for (i in 1:nrow(testdata)){
 
       if(is.null(catVars)) {
-        testDist <- FNN::knnx.dist(testdata[i,],x_clean,k=1)
+        testDist <- FNN::knnx.dist(testdata[i,],x_clean,k=1, algorithm=algorithm)
       } else {
         testDist <- gower::gower_dist(testdata[i,], x_clean)
       }
@@ -491,7 +493,7 @@ sample2test <- function(x, testdata, type,variables,time_unit,timevar, catVars){
 
 # between folds
 
-cvdistance <- function(x, cvfolds, cvtrain, type, variables,time_unit,timevar, catVars){
+cvdistance <- function(x, cvfolds, cvtrain, type, variables,time_unit,timevar, catVars, algorithm){
 
   if(!is.null(cvfolds)&!is.list(cvfolds)){ # restructure input if CVtest only contains the fold ID
     tmp <- list()
@@ -550,7 +552,7 @@ cvdistance <- function(x, cvfolds, cvtrain, type, variables,time_unit,timevar, c
       for (k in 1:nrow(testdata_i)){
 
         if(is.null(catVars)) {
-          trainDist <-  tryCatch(FNN::knnx.dist(testdata_i[k,],traindata_i,k=1),
+          trainDist <-  tryCatch(FNN::knnx.dist(testdata_i[k,],traindata_i,k=1, algorithm=algorithm),
                                  error = function(e)e)
           if(inherits(trainDist, "error")){
             trainDist <- NA

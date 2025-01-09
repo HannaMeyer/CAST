@@ -15,7 +15,8 @@ knndm(
   linkf = "ward.D2",
   samplesize = 1000,
   sampling = "regular",
-  useMD = FALSE
+  useMD = FALSE,
+  algorithm = "brute"
 )
 }
 \arguments{
@@ -44,6 +45,8 @@ Only required if modeldomain is used instead of predpoints.}
 
 \item{useMD}{boolean. Only for `space`=feature: shall the Mahalanobis distance be calculated instead of Euclidean?
 Only works with numerical variables.}
+
+\item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
 }
 \value{
 An object of class \emph{knndm} consisting of a list of eight elements:

@@ -16,7 +16,8 @@ geodist(
   sampling = "regular",
   variables = NULL,
   timevar = NULL,
-  time_unit = "auto"
+  time_unit = "auto",
+  algorithm = "brute"
 )
 }
 \arguments{
@@ -45,6 +46,8 @@ locations within the modeldomain rather than the whole area.}
 \item{timevar}{optional. character. Column that indicates the date. Only used if type="time".}
 
 \item{time_unit}{optional. Character. Unit for temporal distances See ?difftime.Only used if type="time".}
+
+\item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
 }
 \value{
 A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.

@@ -252,7 +252,7 @@ Still it is required to analyse if the model can be applied to the entire study 
 
 ```{r, message = FALSE, warning=FALSE}
 ### AOA for which the spatial CV error applies:
-AOA <- aoa(predictors_sp,ffsmodel,LPD = TRUE,verbose=FALSE)
+AOA <- aoa(predictors_sp,ffsmodel,LPD = TRUE, verbose=FALSE)
 
 # tmap3
 tm_shape(prediction)+

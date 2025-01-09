@@ -26,7 +26,7 @@
 #' @param useCV Logical. Only if a model is given. Use the CV folds to calculate the DI threshold?
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
 #' @param verbose Logical. Print progress or not?
-#'
+#' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
 #' @seealso \code{\link{aoa}}
 #' @importFrom graphics boxplot
 #' @import ggplot2
@@ -104,7 +104,8 @@ trainDI <- function(model = NA,
                     useWeight = TRUE,
                     useCV =TRUE,
                     LPD = FALSE,
-                    verbose = TRUE){
+                    verbose = TRUE,
+                    algorithm = "brute"){
 
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
@@ -194,7 +195,7 @@ trainDI <- function(model = NA,
     #trainDist_avrg <- append(trainDist_avrg, mean(trainDistAll, na.rm = TRUE))
 
     # calculate  distance to other training data:
-    trainDist      <- matrix(.alldistfun(t(matrix(train[i,])), train, method, sorted = FALSE, S_inv))
+    trainDist      <- matrix(.alldistfun(t(matrix(train[i,])), train, method, sorted = FALSE, S_inv,algorithm=algorithm))
     trainDist[i]   <- NA
     trainDist_avrg <- append(trainDist_avrg, mean(trainDist, na.rm = TRUE))
 
@@ -261,7 +262,7 @@ trainDI <- function(model = NA,
     for (j in  seq(nrow(train))) {
 
       # calculate  distance to other training data:
-      trainDist      <- .alldistfun(t(matrix(train[j,])), train, method, sorted = FALSE, S_inv)
+      trainDist      <- .alldistfun(t(matrix(train[j,])), train, method, sorted = FALSE, S_inv,algorithm=algorithm)
       DItrainDist <- trainDist/trainDist_avrgmean
       DItrainDist[j]   <- NA
 
@@ -518,10 +519,10 @@ aoa_get_variables <- function(variables, model, train){
 
 
 
-.mindistfun <- function(point, reference, method, S_inv=NULL){
+.mindistfun <- function(point, reference, method, S_inv=NULL,algorithm){
 
   if (method == "L2"){ # Euclidean Distance
-    return(c(FNN::knnx.dist(reference, point, k = 1)))
+    return(c(FNN::knnx.dist(reference, point, k = 1, algorithm = algorithm)))
   } else if (method == "MD"){ # Mahalanobis Distance
     return(sapply(1:dim(point)[1],
                   function(y) min(sapply(1:dim(reference)[1],
@@ -529,13 +530,13 @@ aoa_get_variables <- function(variables, model, train){
   }
 }
 
-.alldistfun <- function(point, reference, method, sorted = TRUE,S_inv=NULL){
+.alldistfun <- function(point, reference, method, sorted = TRUE,S_inv=NULL,algorithm){
 
   if (method == "L2"){ # Euclidean Distance
     if(sorted){
-      return(FNN::knnx.dist(reference, point, k = dim(reference)[1]))
+      return(FNN::knnx.dist(reference, point, k = dim(reference)[1], algorithm = algorithm))
     } else {
-      return(FNN::knnx.dist(point,reference,k=1))
+      return(FNN::knnx.dist(point,reference,k=1, algorithm=algorithm))
     }
   } else if (method == "MD"){ # Mahalanobis Distance
     if(sorted){

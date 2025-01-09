@@ -15,7 +15,8 @@ trainDI(
   useWeight = TRUE,
   useCV = TRUE,
   LPD = FALSE,
-  verbose = TRUE
+  verbose = TRUE,
+  algorithm = "brute"
 )
 }
 \arguments{
@@ -45,6 +46,8 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 \item{LPD}{Logical. Indicates whether the local point density should be calculated or not.}
 
 \item{verbose}{Logical. Print progress or not?}
+
+\item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
 }
 \value{
 A list of class \code{trainDI} containing:

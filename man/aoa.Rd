@@ -19,7 +19,8 @@ aoa(
   LPD = FALSE,
   maxLPD = 1,
   indices = FALSE,
-  verbose = TRUE
+  verbose = TRUE,
+  algorithm = "brute"
 )
 }
 \arguments{
@@ -59,6 +60,8 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 \item{indices}{logical. Calculate indices of the training data points that are responsible for the LPD of a new prediction location? Output is a matrix with the dimensions num(raster_cells) x maxLPD. Each row holds the indices of the training data points that are relevant for the specific LPD value at that location. Can be used in combination with exploreAOA(aoa) function from the \href{https://github.com/fab-scm/CASTvis}{CASTvis package} for a better visual interpretation of the results. Note that the matrix can be quite big for examples with a high resolution and a larger number of training samples, which can cause memory issues.}
 
 \item{verbose}{Logical. Print progress or not?}
+
+\item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
 }
 \value{
 An object of class \code{aoa} containing:
