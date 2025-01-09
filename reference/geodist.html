@@ -9,7 +9,7 @@ Optional, the nearest neighbor distances between training data and test data or 
 
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,7 +38,7 @@ Optional, the nearest neighbor distances between training data and test data or 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Calculate euclidean nearest neighbor distances in geographic space or feature space</h1>
-      <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/v1.0.2/R/geodist.R" class="external-link"><code>R/geodist.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/master/R/geodist.R" class="external-link"><code>R/geodist.R</code></a></small>
       <div class="d-none name"><code>geodist.Rd</code></div>
     </div>
 
@@ -61,7 +61,8 @@ Optional, the nearest neighbor distances between training data and test data or 
 <span>  sampling <span class="op">=</span> <span class="st">"regular"</span>,</span>
 <span>  variables <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  timevar <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  time_unit <span class="op">=</span> <span class="st">"auto"</span></span>
+<span>  time_unit <span class="op">=</span> <span class="st">"auto"</span>,</span>
+<span>  algorithm <span class="op">=</span> <span class="st">"brute"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -117,6 +118,10 @@ locations within the modeldomain rather than the whole area.</p></dd>
 
 <dt id="arg-time-unit">time_unit<a class="anchor" aria-label="anchor" href="#arg-time-unit"></a></dt>
 <dd><p>optional. Character. Unit for temporal distances See ?difftime.Only used if type="time".</p></dd>
+
+
+<dt id="arg-algorithm">algorithm<a class="anchor" aria-label="anchor" href="#arg-algorithm"></a></dt>
+<dd><p>see <code><a href="https://rdrr.io/pkg/FNN/man/knn.dist.html" class="external-link">knnx.dist</a></code> and <code><a href="https://rdrr.io/pkg/FNN/man/knn.index.html" class="external-link">knnx.index</a></code></p></dd>
 
 </dl></div>
     <div class="section level2">

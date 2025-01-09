@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,9 +63,9 @@
                         <h4 data-toc-skip class="author">Hanna Meyer,
 Marvin Ludwig</h4>
             
-            <h4 data-toc-skip class="date">2024-12-10</h4>
+            <h4 data-toc-skip class="date">2025-01-09</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/v1.0.2/vignettes/cast01-CAST-intro.Rmd" class="external-link"><code>vignettes/cast01-CAST-intro.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/master/vignettes/cast01-CAST-intro.Rmd" class="external-link"><code>vignettes/cast01-CAST-intro.Rmd</code></a></small>
       <div class="d-none name"><code>cast01-CAST-intro.Rmd</code></div>
     </div>
 
@@ -488,16 +488,26 @@ details in the vignette on the Area of applicability and <a href="https://doi.or
 2021</a>.</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">### AOA for which the spatial CV error applies:</span></span>
-<span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">ffsmodel</span>,LPD <span class="op">=</span> <span class="cn">TRUE</span>,verbose<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_raster.html" class="external-link">tm_raster</a></span><span class="op">(</span>col.scale <span class="op">=</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_scale_continuous.html" class="external-link">tm_scale_continuous</a></span><span class="op">(</span>values <span class="op">=</span> <span class="st">"-viridis"</span><span class="op">)</span>,</span>
-<span>            col.legend <span class="op">=</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_legend.html" class="external-link">tm_legend</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Species \nrichness"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_raster.html" class="external-link">tm_raster</a></span><span class="op">(</span>col.scale <span class="op">=</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_scale_categorical.html" class="external-link">tm_scale_categorical</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey"</span>, <span class="st">"#00000000"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>            col.legend <span class="op">=</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_legend.html" class="external-link">tm_legend</a></span><span class="op">(</span>show <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_layout.html" class="external-link">tm_layout</a></span><span class="op">(</span>frame <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_add_legend.html" class="external-link">tm_add_legend</a></span><span class="op">(</span>type<span class="op">=</span><span class="st">"polygons"</span>, fill <span class="op">=</span> <span class="st">"grey"</span>, labels <span class="op">=</span> <span class="st">"Outside \nAOA"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">ffsmodel</span>,LPD <span class="op">=</span> <span class="cn">TRUE</span>, verbose<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># tmap3</span></span>
+<span><span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_raster.html" class="external-link">tm_raster</a></span><span class="op">(</span>title<span class="op">=</span><span class="st">"Species \nrichness"</span>,style<span class="op">=</span><span class="st">"cont"</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_shape.html" class="external-link">tm_shape</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_raster.html" class="external-link">tm_raster</a></span><span class="op">(</span>palette<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1"</span><span class="op">=</span><span class="cn">NA</span>,<span class="st">"0"</span><span class="op">=</span><span class="st">"grey"</span><span class="op">)</span>,style<span class="op">=</span><span class="st">"cat"</span>,legend.show <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_layout.html" class="external-link">tm_layout</a></span><span class="op">(</span>frame<span class="op">=</span><span class="cn">FALSE</span>,legend.outside <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_add_legend.html" class="external-link">tm_add_legend</a></span><span class="op">(</span>type<span class="op">=</span><span class="st">"fill"</span>,col<span class="op">=</span><span class="st">"grey"</span>,border.lwd<span class="op">=</span><span class="fl">0</span>, labels<span class="op">=</span><span class="st">"Outside \nAOA"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-18-1.png" width="847.68"></p>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># tmap4</span></span>
+<span><span class="co"># tm_shape(prediction) +</span></span>
+<span><span class="co">#   tm_raster(col.scale = tm_scale_continuous(values = "-viridis"),</span></span>
+<span><span class="co">#             col.legend = tm_legend(title = "Species \nrichness")) +</span></span>
+<span><span class="co">#   tm_shape(AOA$AOA) +</span></span>
+<span><span class="co">#   tm_raster(col.scale = tm_scale_categorical(values = c("grey", "#00000000")),</span></span>
+<span><span class="co">#             col.legend = tm_legend(show = FALSE)) +</span></span>
+<span><span class="co">#   tm_layout(frame = FALSE) +</span></span>
+<span><span class="co">#   tm_add_legend(type="polygons", fill = "grey", labels = "Outside \nAOA")</span></span></code></pre></div>
 <p>The figure shows in grey areas that are outside the area of
 applicability, hence predictions should not be considered for these
 locations. See tutorial on the AOA in this package for more information.
@@ -514,22 +524,22 @@ and the LPD indicates the data point density in feature space.</p>
 prediction performance, i.e. we expect that areas that have a low DI and
 a high LPD (well covered by reference data) have a lower error. We are
 going to analyze this using CAST::errorProfiles.</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>,<span class="va">AOA</span><span class="op">$</span><span class="va">LPD</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-1.png" width="847.68"></p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">errormodel_DI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/errorProfiles.html">errorProfiles</a></span><span class="op">(</span><span class="va">model_default</span>,<span class="va">AOA</span>,variable<span class="op">=</span><span class="st">"DI"</span><span class="op">)</span></span>
 <span><span class="va">errormodel_LPD</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/errorProfiles.html">errorProfiles</a></span><span class="op">(</span><span class="va">model_default</span>,<span class="va">AOA</span>,variable<span class="op">=</span><span class="st">"LPD"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">errormodel_DI</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-2.png" width="847.68"></p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">errormodel_LPD</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-3.png" width="847.68"></p>
 <p>Since the relationship between LPD and the RMSE seems to be
 comparably high, we’re going to use this to model the error for the
 entire prediction area.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expected_error_LPD</span> <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">LPD</span>, <span class="va">errormodel_LPD</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">expected_error_LPD</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-20-1.png" width="847.68"></p>

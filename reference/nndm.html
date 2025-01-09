@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,7 +36,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Nearest Neighbour Distance Matching (NNDM) algorithm</h1>
-      <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/v1.0.2/R/nndm.R" class="external-link"><code>R/nndm.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/master/R/nndm.R" class="external-link"><code>R/nndm.R</code></a></small>
       <div class="d-none name"><code>nndm.Rd</code></div>
     </div>
 
@@ -54,7 +54,8 @@
 <span>  samplesize <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  sampling <span class="op">=</span> <span class="st">"regular"</span>,</span>
 <span>  phi <span class="op">=</span> <span class="st">"max"</span>,</span>
-<span>  min_train <span class="op">=</span> <span class="fl">0.5</span></span>
+<span>  min_train <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>  algorithm <span class="op">=</span> <span class="st">"brute"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -97,6 +98,10 @@ Per default (phi="max"), the maximum distance found in the training and predicti
 <dt id="arg-min-train">min_train<a class="anchor" aria-label="anchor" href="#arg-min-train"></a></dt>
 <dd><p>Numeric between 0 and 1. Minimum proportion of training
 data that must be used in each CV fold. Defaults to 0.5 (i.e. half of the training points).</p></dd>
+
+
+<dt id="arg-algorithm">algorithm<a class="anchor" aria-label="anchor" href="#arg-algorithm"></a></dt>
+<dd><p>see <code><a href="https://rdrr.io/pkg/FNN/man/knn.dist.html" class="external-link">knnx.dist</a></code> and <code><a href="https://rdrr.io/pkg/FNN/man/knn.index.html" class="external-link">knnx.index</a></code></p></dd>
 
 </dl></div>
     <div class="section level2">
