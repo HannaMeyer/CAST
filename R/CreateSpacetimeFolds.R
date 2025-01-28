@@ -12,7 +12,7 @@
 #' @param seed numeric. See ?seed
 #' @return A list that contains a list for model training and a list for
 #' model validation that can directly be used as "index" and "indexOut" in
-#' caret's trainControl function
+#' caret's trainControl function. "cluster" gives us the information to which validation fold a sample belongs.
 #' @details The function creates train and test sets by taking (spatial and/or temporal) groups into account.
 #' In contrast to \code{\link{nndm}}, it requires that the groups are already defined (e.g. spatial clusters or blocks or temporal units).
 #' Using "class" is helpful in the case that data are clustered in space
@@ -23,8 +23,9 @@
 #' @note Standard k-fold cross-validation can lead to considerable misinterpretation in spatial-temporal modelling tasks.
 #' This function can be used to prepare a Leave-Location-Out, Leave-Time-Out or Leave-Location-and-Time-Out cross-validation
 #' as target-oriented validation strategies for spatial-temporal prediction tasks.
-#' See Meyer et al. (2018) for further information. CreateSpaceTiemFolds is just a evry simple approach and the suitability depends on the choice of the groups.
+#' See Meyer et al. (2018) for further information. CreateSpaceTimeFolds is just a very simple approach and the suitability depends on the choice of the groups.
 #' You may check the suitability with \code{\link{geodist}}. Consider \code{\link{nndm}} or \code{\link{knndm}} as alternatives or other approaches such as Spatial Blocks.
+#' For spatial visualization of fold affiliation see examples.
 #' @author Hanna Meyer
 #' @seealso \code{\link[caret]{trainControl}},\code{\link{ffs}}, \code{\link{nndm}}, \code{\link{geodist}}
 #' @references
@@ -36,12 +37,24 @@
 #' indices <- CreateSpacetimeFolds(cookfarm,"SOURCEID","Date")
 #' str(indices)
 #' ### Prepare for 10-fold Leave-Location-Out cross validation
-#' indices <- CreateSpacetimeFolds(dat,spacevar="SOURCEID")
+#' indices <- CreateSpacetimeFolds(cookfarm,spacevar="SOURCEID")
 #' str(indices)
 #' ### Prepare for leave-One-Location-Out cross validation
-#' indices <- CreateSpacetimeFolds(dat,spacevar="SOURCEID",
-#'     k=length(unique(dat$SOURCEID)))
+#' indices <- CreateSpacetimeFolds(cookfarm,spacevar="SOURCEID",
+#'     k=length(unique(cookfarm$SOURCEID)))
 #' str(indices)
+#'
+#' ### example from splotopen and visualization
+#' data(splotdata)
+#' indices <- CreateSpacetimeFolds(splotdata,spacevar="Country")
+#' ggplot() +
+#' geom_sf(data = splotdata, aes(col = factor(indices$cluster)))
+#' ## is this representative?
+#' data(splotdata)
+#' studyArea <- rnaturalearth::ne_countries(continent = "South America", returnclass = "sf")
+#' dist <- geodist(splotdata, studyArea,cvfolds=indices$cluster)
+#' plot(dist)+ scale_x_log10(labels=round)
+#'
 #' }
 #' @export CreateSpacetimeFolds
 #' @aliases CreateSpacetimeFolds
@@ -104,5 +117,13 @@ CreateSpacetimeFolds <- function(x,spacevar=NA,timevar=NA,
     }
   }
 
-  return(list("index"=cvindices_train,"indexOut"=cvindices_test))
+  ## summarize folds:
+  result <- list("index"=cvindices_train,"indexOut"=cvindices_test)
+  cluster <- do.call(rbind, lapply(seq_along(result$indexOut), function(i) {
+    data.frame(Number = result$indexOut[[i]], List = i)
+  }))
+  x$Number <- seq_len(nrow(x))
+  df <- merge(x, cluster, by = "Number", all.x = TRUE)
+  result$cluster <- df$List
+  return(result)
 }

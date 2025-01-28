@@ -103,6 +103,9 @@ In this case, nearest neighbour distances are calculated in n-dimensional featur
 In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances [Experimental]. If categorical
 features are present, and `clustering` = "kmeans", K-Prototype clustering will be performed instead.
 }
+\note{
+For spatial visualization of fold affiliation see examples.
+}
 \examples{
 ########################################################################
 # Example 1: Simulated data - Randomly-distributed training points

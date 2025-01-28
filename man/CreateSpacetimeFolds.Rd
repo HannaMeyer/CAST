@@ -33,7 +33,7 @@ set k to the number of unique spatial or temporal units.}
 \value{
 A list that contains a list for model training and a list for
 model validation that can directly be used as "index" and "indexOut" in
-caret's trainControl function
+caret's trainControl function. "cluster" gives us the information to which validation fold a sample belongs.
 }
 \description{
 Create spatial, temporal or spatio-temporal Folds for cross validation based on pre-defined groups
@@ -51,8 +51,9 @@ should be similar in each fold (class="LUC").
 Standard k-fold cross-validation can lead to considerable misinterpretation in spatial-temporal modelling tasks.
 This function can be used to prepare a Leave-Location-Out, Leave-Time-Out or Leave-Location-and-Time-Out cross-validation
 as target-oriented validation strategies for spatial-temporal prediction tasks.
-See Meyer et al. (2018) for further information. CreateSpaceTiemFolds is just a evry simple approach and the suitability depends on the choice of the groups.
+See Meyer et al. (2018) for further information. CreateSpaceTimeFolds is just a very simple approach and the suitability depends on the choice of the groups.
 You may check the suitability with \code{\link{geodist}}. Consider \code{\link{nndm}} or \code{\link{knndm}} as alternatives or other approaches such as Spatial Blocks.
+For spatial visualization of fold affiliation see examples.
 }
 \examples{
 \dontrun{
@@ -61,12 +62,24 @@ data(cookfarm)
 indices <- CreateSpacetimeFolds(cookfarm,"SOURCEID","Date")
 str(indices)
 ### Prepare for 10-fold Leave-Location-Out cross validation
-indices <- CreateSpacetimeFolds(dat,spacevar="SOURCEID")
+indices <- CreateSpacetimeFolds(cookfarm,spacevar="SOURCEID")
 str(indices)
 ### Prepare for leave-One-Location-Out cross validation
-indices <- CreateSpacetimeFolds(dat,spacevar="SOURCEID",
-    k=length(unique(dat$SOURCEID)))
+indices <- CreateSpacetimeFolds(cookfarm,spacevar="SOURCEID",
+    k=length(unique(cookfarm$SOURCEID)))
 str(indices)
+
+### example from splotopen and visualization
+data(splotdata)
+indices <- CreateSpacetimeFolds(splotdata,spacevar="Country")
+ggplot() +
+geom_sf(data = splotdata, aes(col = factor(indices$cluster)))
+## is this representative?
+data(splotdata)
+studyArea <- rnaturalearth::ne_countries(continent = "South America", returnclass = "sf")
+dist <- geodist(splotdata, studyArea,cvfolds=indices$cluster)
+plot(dist)+ scale_x_log10(labels=round)
+
 }
 }
 \references{

@@ -70,6 +70,8 @@
 #' In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances [Experimental]. If categorical
 #' features are present, and `clustering` = "kmeans", K-Prototype clustering will be performed instead.
 #'
+#' @note
+#' For spatial visualization of fold affiliation see examples.
 #' @references
 #' \itemize{
 #' \item Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM: k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2023-1308, 2023.
