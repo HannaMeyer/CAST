@@ -30,6 +30,8 @@
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
 #' @param maxLPD numeric or integer. Only if \code{LPD = TRUE}. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso \code{\link{DItoErrormetric}})
 #' @param indices logical. Calculate indices of the training data points that are responsible for the LPD of a new prediction location? Output is a matrix with the dimensions num(raster_cells) x maxLPD. Each row holds the indices of the training data points that are relevant for the specific LPD value at that location. Can be used in combination with exploreAOA(aoa) function from the \href{https://github.com/fab-scm/CASTvis}{CASTvis package} for a better visual interpretation of the results. Note that the matrix can be quite big for examples with a high resolution and a larger number of training samples, which can cause memory issues.
+#' @param parallelize Logical. Parallelize the process. Only possible if LPD = TRUE. Can reduce computation time significantly.
+#' @param cores Logical. Number of cores to use for the the parallelization. Default: detectCores()/2 (see \code{\link[parallel]{detectCores})
 #' @param verbose Logical. Print progress or not?
 #' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
 #' @details The Dissimilarity Index (DI), the Local Data Point Density (LPD) and the corresponding Area of Applicability (AOA) are calculated.
@@ -338,11 +340,7 @@ aoa <- function(newdata,
     DI_out <- rep(NA, nrow(newdata))
     LPD_out <- rep(NA, nrow(newdata))
     if (indices) {
-        # Indices_out <- data.frame(id = okrows,
-        #                       indices = I(rep(list(NA), length(okrows)))
-        # Indices_out <- matrix(NA, nrow = nrow(newdata), ncol = maxLPD)
         Indices_out <- matrix(NA, nrow = nrow(newdataCC), ncol = maxLPD)
-        # rownames(Indices_out) <- okrows
     }
 
     if (!parallelize) {
@@ -357,8 +355,6 @@ aoa <- function(newdata,
         if (indices) {
           if (LPD_out[okrows[i]] > 0) {
             knnIndex  <- .knnindexfun(t(matrix(newdataCC[i,])), train_scaled, method, S_inv, maxLPD = LPD_out[okrows[i]],algorithm=algorithm)
-            # Indices_out$indices[[i]] <- as.numeric(knnIndex)
-            # Indices_out[okrows[i],1:LPD_out[okrows[i]]] <- as.numeric(knnIndex)
             Indices_out[i,1:LPD_out[okrows[i]]] <- as.numeric(knnIndex)
           }
         }
@@ -383,8 +379,7 @@ aoa <- function(newdata,
       cl <- makeForkCluster(cores)
 
       # Export the necessary data and functions to the cluster
-      clusterExport(cl, c("newdataCC",
-                          "train_scaled",
+      clusterExport(cl, c("train_scaled",
                           "method",
                           "S_inv",
                           "trainDI",
@@ -398,20 +393,15 @@ aoa <- function(newdata,
       # # Split the indices into chunks for each core (important for large datasets)
       size_chunks <- ceiling(nrow(newdataCC) / cores)
       indices_chunks <- split(seq(nrow(newdataCC)), rep(1:cores, each = size_chunks, length.out = nrow(newdataCC)))
-      # chunks <- lapply(indices_chunks, function(indices) matrix(newdataCC[indices, ]) )
+      chunks <- lapply(indices_chunks, function(indices) newdataCC[indices, ] )
 
       # Apply parLapply over chunks
-      # results_chunks <- parLapply(cl, chunks, .process_row) # lapply within each chunk
-
-      # Apply parLapply over chunks
-      results_chunks <- parLapply(cl, indices_chunks, function(chunk) {
-        lapply(chunk, .process_row) # lapply within each chunk
+      results_chunks <- parLapply(cl, chunks, function(chunk) {
+        apply(chunk, MARGIN = 1, .process_row)
       })
 
       # Combine the results from the computation of the data chunks
       results <- unlist(results_chunks, recursive = FALSE)
-
-
 
       # Stop the cluster
       stopCluster(cl)
@@ -421,8 +411,6 @@ aoa <- function(newdata,
         DI_out[okrows[i]] <- results[[i]]$DI_out_i
         LPD_out[okrows[i]] <- results[[i]]$LPD_out_i
         if (indices & results[[i]]$LPD_out_i > 0) {
-          # Indices_out[[i]] <- as.numeric(results[[i]]$Indices_out_i)
-          # Indices_out[okrows[i],1:LPD_out[okrows[i]]] <- as.numeric(results[[i]]$Indices_out_i)
           Indices_out[i,1:LPD_out[okrows[i]]] <- as.numeric(results[[i]]$Indices_out_i)
         }
       }
@@ -549,36 +537,8 @@ aoa <- function(newdata,
     }
   }
 
-
-# Function to encapsulate the work done in each loop iteration for computing on data chunks
-# .process_row <- function(chunk) {
-#   knnDist <- .knndistfun(t(chunk), train_scaled, method, S_inv, maxLPD = maxLPD, algorithm=algorithm)
-#   knnDI <- knnDist / trainDI$trainDist_avrgmean
-#   knnDI <- c(knnDI)
-#
-#   DI_out_i <- knnDI[1]
-#   LPD_out_i <- sum(knnDI < trainDI$threshold)
-#
-#   if (indices) {
-#     knnIndex <- .knnindexfun(t(chunk), train_scaled, method, S_inv, maxLPD = LPD_out_i, algorithm=algorithm)
-#     Indices_out_i <- if (LPD_out_i > 0) { knnIndex } else { NA }
-#
-#     # return here if indices to be calculated
-#     return(list(DI_out_i = DI_out_i,
-#                 LPD_out_i = LPD_out_i,
-#                 Indices_out_i = Indices_out_i
-#     ))
-#   }
-#
-#   # return if indices not to be calculated
-#   return(list(DI_out_i = DI_out_i,
-#               LPD_out_i = LPD_out_i
-#   ))
-# }
-
-
-.process_row <- function(i) {
-  knnDist <- .knndistfun(t(matrix(newdataCC[i,])), train_scaled, method = "L2", S_inv, maxLPD = maxLPD, algorithm=algorithm)
+.process_row <- function(row) {
+  knnDist <- .knndistfun(t(matrix(row)), train_scaled, method, S_inv, maxLPD = maxLPD, algorithm=algorithm)
   knnDI <- knnDist / trainDI$trainDist_avrgmean
   knnDI <- c(knnDI)
 
@@ -586,7 +546,7 @@ aoa <- function(newdata,
   LPD_out_i <- sum(knnDI < trainDI$threshold)
 
   if (indices) {
-    knnIndex <- .knnindexfun(t(matrix(newdataCC[i,])), train_scaled, method, S_inv, maxLPD = LPD_out_i, algorithm=algorithm)
+    knnIndex <- .knnindexfun(t(matrix(row)), train_scaled, method, S_inv, maxLPD = LPD_out_i, algorithm=algorithm)
     Indices_out_i <- if (LPD_out_i > 0) { knnIndex } else { NA }
 
     # return here if indices to be calculated
@@ -601,5 +561,6 @@ aoa <- function(newdata,
               LPD_out_i = LPD_out_i
   ))
 }
+
 
 
