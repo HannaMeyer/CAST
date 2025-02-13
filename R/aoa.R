@@ -30,8 +30,8 @@
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
 #' @param maxLPD numeric or integer. Only if \code{LPD = TRUE}. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso \code{\link{DItoErrormetric}})
 #' @param indices logical. Calculate indices of the training data points that are responsible for the LPD of a new prediction location? Output is a matrix with the dimensions num(raster_cells) x maxLPD. Each row holds the indices of the training data points that are relevant for the specific LPD value at that location. Can be used in combination with exploreAOA(aoa) function from the \href{https://github.com/fab-scm/CASTvis}{CASTvis package} for a better visual interpretation of the results. Note that the matrix can be quite big for examples with a high resolution and a larger number of training samples, which can cause memory issues.
-#' @param parallelize Logical. Parallelize the process. Only possible if LPD = TRUE. Can reduce computation time significantly.
-#' @param cores Logical. Number of cores to use for the the parallelization. Default: detectCores()/2 (see \code{\link[parallel]{detectCores}})
+#' @param parallel Logical. Parallelization the process. Only possible if LPD = TRUE. Can reduce computation time significantly.
+#' @param cores Integer or Character. Number of cores to use for the the parallelization. You can use "auto" to set your cores to \code{detectCores()/2} (see \code{\link[parallel]{detectCores}}).
 #' @param verbose Logical. Print progress or not?
 #' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
 #' @details The Dissimilarity Index (DI), the Local Data Point Density (LPD) and the corresponding Area of Applicability (AOA) are calculated.
@@ -160,8 +160,8 @@ aoa <- function(newdata,
                 LPD = FALSE,
                 maxLPD = 1,
                 indices = FALSE,
-                parallelize = FALSE,
-                cores = detectCores()/2,
+                parallel = FALSE,
+                cores = 4,
                 verbose = TRUE,
                 algorithm = "brute") {
 
@@ -212,6 +212,10 @@ aoa <- function(newdata,
     } else {
       stop("maxLPD must be a number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
     }
+  }
+
+  if (parallel & Sys.info()["sysname"] != "Linux") {
+    stop("Paralellization only works for UNIX-alike systems. Please use single core computation.")
   }
 
 
@@ -313,7 +317,7 @@ aoa <- function(newdata,
     }
     S_inv <- MASS::ginv(S)
   } else {
-    S_inv <- NULL # S_inv summy variable to not crash on parallization
+    S_inv <- NULL # S_inv dummy variable to not crash on parallization
   }
 
   if (calc_LPD == FALSE) {
@@ -331,19 +335,20 @@ aoa <- function(newdata,
       message("Computing DI and LPD of new data...")
     }
 
-    if (verbose & !parallelize) {
-      pb <- txtProgressBar(min = 0,
-                           max = nrow(newdataCC),
-                           style = 3)
-    }
-
     DI_out <- rep(NA, nrow(newdata))
     LPD_out <- rep(NA, nrow(newdata))
     if (indices) {
         Indices_out <- matrix(NA, nrow = nrow(newdataCC), ncol = maxLPD)
     }
 
-    if (!parallelize) {
+    if (!parallel) {
+
+      if (verbose) {
+        pb <- txtProgressBar(min = 0,
+                             max = nrow(newdataCC),
+                             style = 3)
+      }
+
       for (i in seq(nrow(newdataCC))) {
         knnDist  <- .knndistfun(t(matrix(newdataCC[i,])), train_scaled, method, S_inv, maxLPD = maxLPD, algorithm=algorithm)
         knnDI <- knnDist / trainDI$trainDist_avrgmean
@@ -363,20 +368,23 @@ aoa <- function(newdata,
           setTxtProgressBar(pb, i)
         }
       }
+
+      # end progress bar
+      if (verbose) {
+        close(pb)
+      }
     }
 
-    # end progress bar
-    if (verbose & !parallelize) {
-      close(pb)
-    }
+    # parallelized computatio using parLapply
+    if (parallel) {
+      message("Progress cannot be visualized for parallel computation.")
 
-    if (parallelize) {
-      message("Progress cannot be visualized for parallel computation...")
-
-      # Parallel version using parLapply
+      if (cores == "auto") {
+        cores <- detectCores()/2
+      }
 
       # Create a cluster
-      cl <- makeForkCluster(cores)
+      cl <- makeForkCluster(cores, useXDR = FALSE, methods = FALSE)
 
       # Export the necessary data and functions to the cluster
       clusterExport(cl, c("train_scaled",
@@ -390,7 +398,7 @@ aoa <- function(newdata,
                           ".knndistfun",
                           ".knnindexfun"), envir = environment())
 
-      # # Split the indices into chunks for each core (important for large datasets)
+      # # Split newdataCC into chunks for each core (important for large datasets)
       size_chunks <- ceiling(nrow(newdataCC) / cores)
       indices_chunks <- split(seq(nrow(newdataCC)), rep(1:cores, each = size_chunks, length.out = nrow(newdataCC)))
       chunks <- lapply(indices_chunks, function(indices) newdataCC[indices, ] )
