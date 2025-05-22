@@ -256,15 +256,23 @@ of spatial prediction uncertainty. EGUsphere. <a href="https://doi.org/10.5194/e
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co">#... or if preferred calculate the aoa and the LPD of the study area:</span></span></span>
-<span class="r-in"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu">aoa</span><span class="op">(</span><span class="va">studyArea</span>, <span class="va">model</span>, LPD <span class="op">=</span> <span class="cn">TRUE</span>, maxLPD <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu">aoa</span><span class="op">(</span><span class="va">studyArea</span>, <span class="va">model</span>, LPD <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">LPD</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">#note that it is not required to use Random Forests. The method is model agnostic.</span></span></span>
+<span class="r-in"><span><span class="co"># Let's chnage to SVM:</span></span></span>
+<span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">trainDat</span><span class="op">)</span><span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span><span class="va">variables</span><span class="op">)</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span><span class="va">trainDat</span><span class="op">$</span><span class="va">VW</span>, method<span class="op">=</span><span class="st">"svmRadial"</span>, importance<span class="op">=</span><span class="cn">TRUE</span>, tuneLength<span class="op">=</span><span class="fl">1</span>,</span></span>
+<span class="r-in"><span>trControl<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"cv"</span>,number<span class="op">=</span><span class="fl">5</span>,savePredictions<span class="op">=</span><span class="cn">T</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu">aoa</span><span class="op">(</span><span class="va">studyArea</span>, <span class="va">model</span>, LPD <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">LPD</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">####</span></span></span>
 <span class="r-in"><span><span class="co">#The AOA can also be calculated without a trained model.</span></span></span>
 <span class="r-in"><span><span class="co">#All variables are weighted equally in this case:</span></span></span>
 <span class="r-in"><span><span class="co">####</span></span></span>
-<span class="r-in"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu">aoa</span><span class="op">(</span><span class="va">studyArea</span>,train<span class="op">=</span><span class="va">trainDat</span>,variables<span class="op">=</span><span class="va">variables</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu">aoa</span><span class="op">(</span><span class="va">studyArea</span>,train<span class="op">=</span><span class="va">trainDat</span>,variables<span class="op">=</span><span class="va">variables</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">####</span></span></span>
 <span class="r-in"><span><span class="co"># The AOA can also be used for models trained via mlr3 (parameters have to be assigned manually):</span></span></span>
@@ -308,7 +316,7 @@ of spatial prediction uncertainty. EGUsphere. <a href="https://doi.org/10.5194/e
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
     </footer></div>
