@@ -99,15 +99,23 @@
 #' plot(AOA)
 #' plot(AOA$AOA)
 #' #... or if preferred calculate the aoa and the LPD of the study area:
-#' AOA <- aoa(studyArea, model, LPD = TRUE, maxLPD = 1)
+#' AOA <- aoa(studyArea, model, LPD = TRUE)
+#' plot(AOA$LPD)
+#'
+#' #note that it is not required to use Random Forests. The method is model agnostic.
+#' # Let's chnage to SVM:
+#' model <- train(trainDat[,which(names(trainDat)%in%variables)],
+#' trainDat$VW, method="svmRadial", importance=TRUE, tuneLength=1,
+#' trControl=trainControl(method="cv",number=5,savePredictions=T))
+#' AOA <- aoa(studyArea, model, LPD = TRUE)
 #' plot(AOA$LPD)
 #'
 #' ####
 #' #The AOA can also be calculated without a trained model.
 #' #All variables are weighted equally in this case:
 #' ####
-#' AOA <- aoa(studyArea,train=trainDat,variables=variables)
 #'
+#' AOA <- aoa(studyArea,train=trainDat,variables=variables)
 #'
 #' ####
 #' # The AOA can also be used for models trained via mlr3 (parameters have to be assigned manually):
