@@ -51,6 +51,8 @@
 #'  \item{LPD}{SpatRaster, stars object or data frame. Local Point Density of newdata.}
 #'  \item{AOA}{SpatRaster, stars object or data frame. Area of Applicability of newdata. AOA has values 0 (outside AOA) and 1 (inside AOA)}
 #'
+#' @importFrom parallel detectCores makeForkCluster clusterExport parLapply stopCluster
+#'
 #' @author
 #' Hanna Meyer, Fabian Schumacher
 #' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
@@ -391,6 +393,8 @@ aoa <- function(newdata,
         cores <- detectCores()/2
       }
 
+
+
       # Create a cluster
       cl <- makeForkCluster(cores, useXDR = FALSE, methods = FALSE)
 
@@ -575,6 +579,14 @@ aoa <- function(newdata,
   # return if indices not to be calculated
   return(list(DI_out_i = DI_out_i,
               LPD_out_i = LPD_out_i
+  ))
+}
+
+# Tell R CMD check these variables are fine
+if (getRversion() >= "2.15.1") {
+  utils::globalVariables(c(
+    "train_scaled", "method", "S_inv", "maxLPD",
+    "algorithm", "indices"
   ))
 }
 
