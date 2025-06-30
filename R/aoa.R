@@ -583,12 +583,15 @@ aoa <- function(newdata,
 }
 
 # Tell R CMD check these variables are fine
-if (getRversion() >= "2.15.1") {
-  utils::globalVariables(c(
-    "train_scaled", "method", "S_inv", "maxLPD",
-    "algorithm", "indices"
-  ))
-}
-
+utils::globalVariables(
+  c(
+    "train_scaled",
+    "method",
+    "S_inv",
+    "maxLPD",
+    "algorithm",
+    "indices"
+    )
+  )
 
 

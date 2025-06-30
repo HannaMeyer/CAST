@@ -32,7 +32,6 @@ Suggests:
     mapview,
     rmarkdown,
     scales,
-    parallel,
     gridExtra,
     viridis,
     stars,
