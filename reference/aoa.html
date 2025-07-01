@@ -85,6 +85,8 @@ Optionally, the local point density is calculated which indicates the number of 
 <span>  LPD <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maxLPD <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  indices <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  cores <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  algorithm <span class="op">=</span> <span class="st">"brute"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -155,6 +157,14 @@ Relevant if some data points are excluded, e.g. when using <code><a href="nndm.h
 
 <dt id="arg-indices">indices<a class="anchor" aria-label="anchor" href="#arg-indices"></a></dt>
 <dd><p>logical. Calculate indices of the training data points that are responsible for the LPD of a new prediction location? Output is a matrix with the dimensions num(raster_cells) x maxLPD. Each row holds the indices of the training data points that are relevant for the specific LPD value at that location. Can be used in combination with exploreAOA(aoa) function from the <a href="https://github.com/fab-scm/CASTvis" class="external-link">CASTvis package</a> for a better visual interpretation of the results. Note that the matrix can be quite big for examples with a high resolution and a larger number of training samples, which can cause memory issues.</p></dd>
+
+
+<dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
+<dd><p>Logical. Parallelization the process. Only possible if LPD = TRUE. Can reduce computation time significantly.</p></dd>
+
+
+<dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
+<dd><p>Integer or Character. Number of cores to use for the the parallelization. You can use "auto" to set your cores to <code>detectCores()/2</code> (see <code><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></code>).</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
