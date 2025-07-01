@@ -22,7 +22,7 @@ Encoding: UTF-8
 LazyData: false
 Depends: R (>= 4.1.0)
 BugReports: https://github.com/HannaMeyer/CAST/issues/
-Imports: caret, stats, utils, ggplot2, graphics, FNN, plyr, zoo, methods, grDevices, data.table, sf, forcats, twosamples, terra, sp
+Imports: caret, stats, utils, ggplot2, graphics, FNN, plyr, zoo, methods, grDevices, data.table, sf, forcats, twosamples, terra, sp, parallel
 Suggests: 
     doParallel,
     lubridate,
@@ -32,7 +32,6 @@ Suggests:
     mapview,
     rmarkdown,
     scales,
-    parallel,
     gridExtra,
     viridis,
     stars,
