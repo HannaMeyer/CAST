@@ -389,8 +389,10 @@ aoa <- function(newdata,
     if (parallel) {
       message("Progress cannot be visualized for parallel computation.")
 
+      trainDIdat <- trainDI # store trainDI in different variable to avoid environment conflict with function trainDI()
+
       if (cores == "auto") {
-        cores <- detectCores()/2
+        cores <- floor(detectCores()/2)
       }
 
 
@@ -402,7 +404,7 @@ aoa <- function(newdata,
       clusterExport(cl, c("train_scaled",
                           "method",
                           "S_inv",
-                          "trainDI",
+                          "trainDIdat",
                           "indices",
                           "maxLPD",
                           "algorithm",
@@ -559,11 +561,11 @@ aoa <- function(newdata,
 
 .process_row <- function(row) {
   knnDist <- .knndistfun(t(matrix(row)), train_scaled, method, S_inv, maxLPD = maxLPD, algorithm=algorithm)
-  knnDI <- knnDist / trainDI$trainDist_avrgmean
+  knnDI <- knnDist / trainDIdat$trainDist_avrgmean
   knnDI <- c(knnDI)
 
   DI_out_i <- knnDI[1]
-  LPD_out_i <- sum(knnDI < trainDI$threshold)
+  LPD_out_i <- sum(knnDI < trainDIdat$threshold)
 
   if (indices) {
     knnIndex <- .knnindexfun(t(matrix(row)), train_scaled, method, S_inv, maxLPD = LPD_out_i, algorithm=algorithm)
@@ -588,6 +590,7 @@ utils::globalVariables(
     "train_scaled",
     "method",
     "S_inv",
+    "trainDIdat",
     "maxLPD",
     "algorithm",
     "indices"
