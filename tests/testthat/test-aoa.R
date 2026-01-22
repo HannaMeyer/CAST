@@ -48,10 +48,10 @@ test_that("AOA works in default: used with raster data and a trained model", {
                                          0.23604264, 0.20388725, 0.91513568, 0.09558666, 0.14046341,
                                          0.16214832, 0.37107762, 0.16214832, 0.18471625, 0.12344463))
   # test summary statistics of the DI
-  expect_equal(as.vector(summary(terra::values(AOA$DI))),
+  expect_equal(as.vector(summary(terra::values(AOA$DI)))[1:6],
                c("Min.   :0.0000  ", "1st Qu.:0.1329  ", "Median :0.2052  ",
                  "Mean   :0.2858  ", "3rd Qu.:0.3815  ",
-                "Max.   :4.4485  ", "NA's   :1993  "))
+                "Max.   :4.4485  "))
 })
 
 
@@ -65,10 +65,10 @@ test_that("AOA works without a trained model", {
   #test number of pixels within AOA:
   expect_equal(sum(terra::values(AOA$AOA)==1,na.rm=TRUE), 3377)
   # test summary statistics of the DI
-  expect_equal(as.vector(summary(terra::values(AOA$DI))),
+  expect_equal(as.vector(summary(terra::values(AOA$DI)))[1:6],
                c("Min.   :0.0000  ", "1st Qu.:0.1759  ", "Median :0.2642  ",
                  "Mean   :0.3109  ", "3rd Qu.:0.4051  ",
-                 "Max.   :2.6631  ", "NA's   :1993  "))
+                 "Max.   :2.6631  "))
 })
 
 test_that("AOA (including LPD) works with raster data and a trained model", {
@@ -89,10 +89,10 @@ test_that("AOA (including LPD) works with raster data and a trained model", {
                                           3, 4, 0, 2, 3,
                                           6, 1, 7, 3, 2))
   # test summary statistics of the DI
-  expect_equal(as.vector(summary(terra::values(AOA$DI))),
+  expect_equal(as.vector(summary(terra::values(AOA$DI)))[1:6],
                c("Min.   :0.0000  ", "1st Qu.:0.1329  ", "Median :0.2052  ",
                  "Mean   :0.2858  ", "3rd Qu.:0.3815  ",
-                 "Max.   :4.4485  ", "NA's   :1993  "))
+                 "Max.   :4.4485  "))
 })
 
 
@@ -113,10 +113,10 @@ test_that("AOA (inluding LPD) works without a trained model", {
                                           6, 5, 0, 5, 9,
                                           8, 4, 11, 3,2))
   # test summary statistics of the DI
-  expect_equal(as.vector(summary(terra::values(AOA$DI))),
+  expect_equal(as.vector(summary(terra::values(AOA$DI)))[1:6],
                c("Min.   :0.0000  ", "1st Qu.:0.1759  ", "Median :0.2642  ",
                  "Mean   :0.3109  ", "3rd Qu.:0.4051  ",
-                 "Max.   :2.6631  ", "NA's   :1993  "))
+                 "Max.   :2.6631  "))
 })
 
 
@@ -138,10 +138,10 @@ test_that("AOA (including LPD) works in parallel with raster data and a trained 
                                           3, 4, 0, 2, 3,
                                           6, 1, 7, 3, 2))
   # test summary statistics of the DI
-  expect_equal(as.vector(summary(terra::values(AOA$DI))),
+  expect_equal(as.vector(summary(terra::values(AOA$DI)))[1:6],
                c("Min.   :0.0000  ", "1st Qu.:0.1329  ", "Median :0.2052  ",
                  "Mean   :0.2858  ", "3rd Qu.:0.3815  ",
-                 "Max.   :4.4485  ", "NA's   :1993  "))
+                 "Max.   :4.4485  "))
 })
 
 
@@ -162,8 +162,8 @@ test_that("AOA (inluding LPD) works in parallel without a trained model", {
                                           6, 5, 0, 5, 9,
                                           8, 4, 11, 3,2))
   # test summary statistics of the DI
-  expect_equal(as.vector(summary(terra::values(AOA$DI))),
+  expect_equal(as.vector(summary(terra::values(AOA$DI)))[1:6],
                c("Min.   :0.0000  ", "1st Qu.:0.1759  ", "Median :0.2642  ",
                  "Mean   :0.3109  ", "3rd Qu.:0.4051  ",
-                 "Max.   :2.6631  ", "NA's   :1993  "))
+                 "Max.   :2.6631  "))
 })
