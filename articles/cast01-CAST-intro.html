@@ -63,7 +63,7 @@
                         <h4 data-toc-skip class="author">Hanna Meyer,
 Marvin Ludwig</h4>
             
-            <h4 data-toc-skip class="date">2025-07-04</h4>
+            <h4 data-toc-skip class="date">2026-01-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/master/vignettes/cast01-CAST-intro.Rmd" class="external-link"><code>vignettes/cast01-CAST-intro.Rmd</code></a></small>
       <div class="d-none name"><code>cast01-CAST-intro.Rmd</code></div>
@@ -183,7 +183,7 @@ America, plotted on top of a elevation model:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">predictors_sp</span><span class="op">$</span><span class="va">elev</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">[</span>,<span class="st">"Species_richness"</span><span class="op">]</span>,add<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-6-1.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 </div>
 <div class="section level2">
@@ -216,7 +216,7 @@ trained model on this data set.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">model_default</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-8-1.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="847.68"></p>
 <p>The result is a spatially comprehensive map of the species richness
 of South America. We see that simply creating a map using machine
 learning and caret is an easy task, however accurately measuring its
@@ -336,15 +336,15 @@ geodistance visualizations in this package for more information.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,cvfolds <span class="op">=</span><span class="va">model_default</span><span class="op">$</span><span class="va">control</span><span class="op">$</span><span class="va">indexOut</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-12-1.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="847.68"></p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,cvfolds <span class="op">=</span><span class="va">indices_LLO</span><span class="op">$</span><span class="va">indexOut</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-12-2.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-12-2.png" class="r-plt" alt="" width="847.68"></p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,cvfolds <span class="op">=</span><span class="va">indices_knndm</span><span class="op">$</span><span class="va">indx_test</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-12-3.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-12-3.png" class="r-plt" alt="" width="847.68"></p>
 <p>We see that using random folds, we’re only testing how well the model
 can make predictions for new areas that are a few hundreds of meters
 away from the training data. Using createSpaceTimeFolds with the Country
@@ -396,7 +396,7 @@ algorithm we should be able to produce a higher LLO performance when
 such variables are removed. Let’s see if this is true…</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/varImp.html" class="external-link">varImp</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-14-1.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 </div>
 <div class="section level2">
@@ -463,7 +463,7 @@ are even counterproductive.</p>
 of the model changed depending on the variables being used:</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">ffsmodel</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-16-1.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="847.68"></p>
 <p>See that the best model using all combinations of two variables.
 Based on the best performing two variables, using a third variable could
 slightly increase the R², same applies to a fourth variable. Any further
@@ -476,7 +476,7 @@ species richness?</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">prediction_ffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors_sp</span>, <span class="va">ffsmodel</span>, na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">prediction_ffs</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-17-1.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 <div class="section level2">
 <h2 id="area-of-applicability">Area of Applicability<a class="anchor" aria-label="anchor" href="#area-of-applicability"></a>
@@ -507,7 +507,7 @@ details in the vignette on the Area of applicability and <a href="https://doi.or
 <span>             col.legend <span class="op">=</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_legend.html" class="external-link">tm_legend</a></span><span class="op">(</span>show <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>   <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_layout.html" class="external-link">tm_layout</a></span><span class="op">(</span>frame <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>   <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_add_legend.html" class="external-link">tm_add_legend</a></span><span class="op">(</span>type<span class="op">=</span><span class="st">"polygons"</span>, fill <span class="op">=</span> <span class="st">"grey"</span>, labels <span class="op">=</span> <span class="st">"Outside \nAOA"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-18-1.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="" width="847.68"></p>
 <p>The figure shows in grey areas that are outside the area of
 applicability, hence predictions should not be considered for these
 locations. See tutorial on the AOA in this package for more information.
@@ -526,23 +526,23 @@ a high LPD (well covered by reference data) have a lower error. We are
 going to analyze this using CAST::errorProfiles.</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>,<span class="va">AOA</span><span class="op">$</span><span class="va">LPD</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-1.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-1.png" class="r-plt" alt="" width="847.68"></p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">errormodel_DI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/errorProfiles.html">errorProfiles</a></span><span class="op">(</span><span class="va">model_default</span>,<span class="va">AOA</span>,variable<span class="op">=</span><span class="st">"DI"</span><span class="op">)</span></span>
 <span><span class="va">errormodel_LPD</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/errorProfiles.html">errorProfiles</a></span><span class="op">(</span><span class="va">model_default</span>,<span class="va">AOA</span>,variable<span class="op">=</span><span class="st">"LPD"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">errormodel_DI</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-2.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-2.png" class="r-plt" alt="" width="847.68"></p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">errormodel_LPD</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-3.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-3.png" class="r-plt" alt="" width="847.68"></p>
 <p>Since the relationship between LPD and the RMSE seems to be
 comparably high, we’re going to use this to model the error for the
 entire prediction area.</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expected_error_LPD</span> <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">LPD</span>, <span class="va">errormodel_LPD</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">expected_error_LPD</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-20-1.png" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 </div>
 <div class="section level2">
@@ -659,7 +659,7 @@ spatial prediction models. Global Ecology and Biogeography. <a href="https://doi
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

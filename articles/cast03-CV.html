@@ -63,7 +63,7 @@
                         <h4 data-toc-skip class="author">Carles
 Milà</h4>
             
-            <h4 data-toc-skip class="date">2025-07-04</h4>
+            <h4 data-toc-skip class="date">2026-01-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/master/vignettes/cast03-CV.Rmd" class="external-link"><code>vignettes/cast03-CV.Rmd</code></a></small>
       <div class="d-none name"><code>cast03-CV.Rmd</code></div>
@@ -124,7 +124,7 @@ where the dataset is described in detail.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">""</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">Average</span><span class="op">~</span><span class="fl">2019</span><span class="op">~</span><span class="va">PM</span><span class="op">[</span><span class="fl">2.5</span><span class="op">]</span><span class="op">~</span><span class="op">(</span><span class="va">mu</span><span class="op">*</span><span class="va">g</span><span class="op">/</span><span class="va">m</span><span class="op">^</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, nrow<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast03-CV_files/figure-html/read%20data-1.png" width="480" style="display: block; margin: auto;"></p>
+<p><img src="cast03-CV_files/figure-html/read%20data-1.png" class="r-plt" alt="" width="480" style="display: block; margin: auto;"></p>
 <p>Looking at the two maps we can see that while air temperature
 stations are nicely distributed around the area of interest, air
 pollution stations are concentrated in specific regions.</p>
@@ -183,7 +183,7 @@ sampled:</p>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">predcond_temp</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Temperature"</span><span class="op">)</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">predcond_pm25</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">PM</span><span class="op">[</span><span class="fl">2.5</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, nrow<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast03-CV_files/figure-html/geodist%20density-1.png" width="576" style="display: block; margin: auto;"></p>
+<p><img src="cast03-CV_files/figure-html/geodist%20density-1.png" class="r-plt" alt="" width="576" style="display: block; margin: auto;"></p>
 <p>We see that, for temperature, although the distribution of
 geographical distances during CV vs. during prediction do not exactly
 match, the overlap between the two is substantial. In the
@@ -207,7 +207,7 @@ and are one of the building blocks of our proposed methods.</p>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">predcond_temp</span>, stat <span class="op">=</span> <span class="st">"ecdf"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Temperature"</span><span class="op">)</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">predcond_pm25</span>, stat <span class="op">=</span> <span class="st">"ecdf"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">PM</span><span class="op">[</span><span class="fl">2.5</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, nrow<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast03-CV_files/figure-html/geodist%20ecdf-1.png" width="576" style="display: block; margin: auto;"></p>
+<p><img src="cast03-CV_files/figure-html/geodist%20ecdf-1.png" class="r-plt" alt="" width="576" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level3">
 <h3 id="nndm-loo-cv-for-small-datasets">NNDM LOO CV for small datasets<a class="anchor" aria-label="anchor" href="#nndm-loo-cv-for-small-datasets"></a>
@@ -247,7 +247,7 @@ We run it first for temperature:</p>
 <span><span class="co">## Minimum number of training points: 191</span></span></code></pre>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">temp_nndm</span>, type <span class="op">=</span> <span class="st">"simple"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast03-CV_files/figure-html/NNDM%20LOO%20temp-1.png" width="576" style="display: block; margin: auto;"></p>
+<p><img src="cast03-CV_files/figure-html/NNDM%20LOO%20temp-1.png" class="r-plt" alt="" width="576" style="display: block; margin: auto;"></p>
 <p>For temperature, we see that the ECDF of the NNDM LOO CV
 (CV-distances) is very similar to that of the LOO CV (sample-to-sample),
 as virtually no point is excluded from the training data during the CV.
@@ -263,13 +263,13 @@ Now, we do the same for air pollution:</p>
 <span><span class="co">## Minimum number of training points: 105</span></span></code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">pm25_nndm</span>, type <span class="op">=</span> <span class="st">"simple"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast03-CV_files/figure-html/NNDM%20LOO%20pm25-1-1.png" width="576" style="display: block; margin: auto;"></p>
+<p><img src="cast03-CV_files/figure-html/NNDM%20LOO%20pm25-1-1.png" class="r-plt" alt="" width="576" style="display: block; margin: auto;"></p>
 <p>Here, things are quite different and many more points are excluded in
 order to match the prediction-to-sample ECDF successfully. As pointed
 out before, this is caused by the clustered pattern of the training
 samples. We can see how an iteration of NNDM LOO CV looks like by
 plotting it:</p>
-<p><img src="cast03-CV_files/figure-html/NNDM%20LOO%20pm25-2-1.png" width="576" style="display: block; margin: auto;"></p>
+<p><img src="cast03-CV_files/figure-html/NNDM%20LOO%20pm25-2-1.png" class="r-plt" alt="" width="576" style="display: block; margin: auto;"></p>
 <p>In this CV iteration, many samples around the point being validated
 are excluded. Now it’s time to fit the models and estimate their
 performance using 1) a standard LOO CV, and 2) NNDM LOO CV. Note that
@@ -417,7 +417,7 @@ clustering algorithm:</p>
 <span><span class="co">## Observations in each fold:  39 39 39 39 39</span></span></code></pre>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">temp_nndm</span>, type <span class="op">=</span> <span class="st">"simple"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast03-CV_files/figure-html/kNNDM%20temp-1.png" width="576" style="display: block; margin: auto;"></p>
+<p><img src="cast03-CV_files/figure-html/kNNDM%20temp-1.png" class="r-plt" alt="" width="576" style="display: block; margin: auto;"></p>
 <p>Similarly to NNDM LOO CV, kNNDM does not find any clustering and
 generalizes to a random k-fold CV. Now let’s see what happens in the
 PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>
@@ -435,7 +435,7 @@ dataset:</p>
 <span><span class="co">## Observations in each fold:  29 22 18 32 23</span></span></code></pre>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">pm25_knndm</span>, type <span class="op">=</span> <span class="st">"simple"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast03-CV_files/figure-html/kNNDM%20pm25-1.png" width="576" style="display: block; margin: auto;"></p>
+<p><img src="cast03-CV_files/figure-html/kNNDM%20pm25-1.png" class="r-plt" alt="" width="576" style="display: block; margin: auto;"></p>
 <p>In this case, we <em>do</em> find clustered samples and kNNDM
 spatially clusters observations into folds as indicated by the number of
 intermediate clusters
@@ -464,7 +464,7 @@ actually poorer, so we will stick to the first one. We can easily
 visualize the resulting 5-fold kNNDM configurations for both temperature
 and
 PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>:</p>
-<p><img src="cast03-CV_files/figure-html/kNNDM%20viz-1.png" width="672" style="display: block; margin: auto;"></p>
+<p><img src="cast03-CV_files/figure-html/kNNDM%20viz-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>As we already knew, the 5-fold kNNDM configuration for temperature is
 random whereas the one for
 PM<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi></mi><mn>2.5</mn></msub><annotation encoding="application/x-tex">_{2.5}</annotation></semantics></math>
@@ -603,7 +603,7 @@ estimation, EGUsphere [preprint], <a href="https://doi.org/10.5194/egusphere-202
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

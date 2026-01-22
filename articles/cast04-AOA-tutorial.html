@@ -63,7 +63,7 @@
                         <h4 data-toc-skip class="author">Hanna
 Meyer</h4>
             
-            <h4 data-toc-skip class="date">2025-07-04</h4>
+            <h4 data-toc-skip class="date">2026-01-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/master/vignettes/cast04-AOA-tutorial.Rmd" class="external-link"><code>vignettes/cast04-AOA-tutorial.Rmd</code></a></small>
       <div class="d-none name"><code>cast04-AOA-tutorial.Rmd</code></div>
@@ -129,7 +129,7 @@ provided in the CAST package.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">predictors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,<span class="st">"bioclim.tif"</span>,package<span class="op">=</span><span class="st">"CAST"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">predictors</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-3-1.png" width="847.68"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 <div class="section level4">
 <h4 id="generate-response">Generate Response<a class="anchor" aria-label="anchor" href="#generate-response"></a>
@@ -172,7 +172,7 @@ variable from the bioclimatic variables.</p>
 <pre><code><span><span class="co">## [1] "bio2^1 * bio5^1 + bio10^2 - bio13^2 / bio14^2 / bio19^1"</span></span></code></pre>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">response</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"virtual response"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-5-1.png" width="847.68"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 <div class="section level4">
 <h4 id="simulate-sampling-locations">Simulate sampling locations<a class="anchor" aria-label="anchor" href="#simulate-sampling-locations"></a>
@@ -192,7 +192,7 @@ times.</p>
 <span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">response</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">samplepoints</span>,col<span class="op">=</span><span class="st">"red"</span>,add<span class="op">=</span><span class="cn">T</span>,pch<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-7-1.png" width="847.68"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 </div>
 <div class="section level3">
@@ -250,7 +250,7 @@ prediction error.</p>
 individual predictor variables.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/varImp.html" class="external-link">varImp</a></span><span class="op">(</span><span class="va">model</span>,scale <span class="op">=</span> <span class="cn">F</span><span class="op">)</span>,col<span class="op">=</span><span class="st">"black"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-10-1.png" width="847.68"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 <div class="section level4">
 <h4 id="predict-and-calculate-error">Predict and calculate error<a class="anchor" aria-label="anchor" href="#predict-and-calculate-error"></a>
@@ -263,7 +263,7 @@ reference.</p>
 <code class="sourceCode R"><span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">model</span>,na.rm<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span>
 <span><span class="va">truediff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">-</span><span class="va">response</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">prediction</span>,<span class="va">response</span><span class="op">)</span><span class="op">)</span>,main<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"prediction"</span>,<span class="st">"reference"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-11-1.png" width="847.68"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 </div>
 <div class="section level3">
@@ -333,7 +333,7 @@ are given in form of a table).</p>
 values within the training data and the DI of the new data.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-13-1.png" width="847.68">
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="847.68">
 The most important output of the <code>aoa</code> function are three
 raster data sets: The first is the DI that is the normalized and
 weighted minimum distance to a nearest training data point divided by
@@ -357,7 +357,7 @@ information about the DI and LPD of the training data is returned in the
 <span><span class="co">#mask prediction with AOA:</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/mask.html" class="external-link">mask</a></span><span class="op">(</span><span class="va">prediction</span>,<span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,maskvalue<span class="op">=</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>     col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"Prediction for AOA"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-14-1.png" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-14-2.png" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-14-3.png" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-14-4.png" width="50%"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-14-2.png" class="r-plt" alt="" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-14-3.png" class="r-plt" alt="" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-14-4.png" class="r-plt" alt="" width="50%"></p>
 <p>The patterns in the DI and LPD are in general agreement with the true
 prediction error. Very high DI values are present in the Alps, as they
 have not been covered by training data but feature very distinct
@@ -394,7 +394,7 @@ not located in the same spatial cluster.</p>
 <span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">response</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">samplepoints</span>,col<span class="op">=</span><span class="st">"red"</span>,add<span class="op">=</span><span class="cn">T</span>,pch<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-15-1.png" width="847.68"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="847.68"></p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trainDat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">predictors</span>,<span class="va">samplepoints</span>,na.rm<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">trainDat</span><span class="op">$</span><span class="va">response</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">response</span>,<span class="va">samplepoints</span>,na.rm<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span><span class="va">response</span></span>
@@ -477,7 +477,7 @@ automatically extracted from the model.</p>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/mask.html" class="external-link">mask</a></span><span class="op">(</span><span class="va">prediction</span>,<span class="va">AOA_spatial</span><span class="op">$</span><span class="va">AOA</span>,maskvalue<span class="op">=</span><span class="fl">0</span><span class="op">)</span>, col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA (spatial CV error applies)"</span>,</span>
 <span>     cex.main<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/mask.html" class="external-link">mask</a></span><span class="op">(</span><span class="va">prediction_random</span>,<span class="va">AOA_random</span><span class="op">$</span><span class="va">AOA</span>,maskvalue<span class="op">=</span><span class="fl">0</span><span class="op">)</span>, col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"prediction for AOA (random CV error applies)"</span>, cex.main<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-20-1.png" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-20-2.png" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-20-3.png" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-20-4.png" width="50%"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" alt="" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-20-2.png" class="r-plt" alt="" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-20-3.png" class="r-plt" alt="" width="50%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-20-4.png" class="r-plt" alt="" width="50%"></p>
 <p>Note that the AOA is much larger for the spatial CV approach.
 However, the spatial cross-validation error is considerably larger,
 hence also the area for which this error applies is larger. The random
@@ -491,7 +491,7 @@ the training sample.</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a></span><span class="op">(</span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_spatial</span>, variable <span class="op">=</span> <span class="st">"DI"</span><span class="op">)</span> <span class="op">+</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Spatial CV"</span><span class="op">)</span>,</span>
 <span>             <span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">AOA_random</span>, variable <span class="op">=</span> <span class="st">"DI"</span><span class="op">)</span> <span class="op">+</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Random CV"</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-21-1.png" width="847.68"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 <div class="section level3">
 <h3 id="comparison-prediction-error-with-model-error">Comparison prediction error with model error<a class="anchor" aria-label="anchor" href="#comparison-prediction-error-with-model-error"></a>
@@ -553,12 +553,12 @@ DI and the RMSE here (see details in the paper).</p>
 <code class="sourceCode R"><span><span class="va">DI_RMSE_relation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/errorProfiles.html">errorProfiles</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">AOA_spatial</span><span class="op">$</span><span class="va">parameters</span>, multiCV<span class="op">=</span><span class="cn">TRUE</span>,</span>
 <span>                                    window.size <span class="op">=</span> <span class="fl">5</span>, length.out <span class="op">=</span> <span class="fl">5</span>, variable <span class="op">=</span> <span class="st">"DI"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">DI_RMSE_relation</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-1.png" width="847.68"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-1.png" class="r-plt" alt="" width="847.68"></p>
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">LPD_RMSE_relation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/errorProfiles.html">errorProfiles</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">AOA_spatial</span><span class="op">$</span><span class="va">parameters</span>, multiCV<span class="op">=</span><span class="cn">TRUE</span>,</span>
 <span>                                    window.size <span class="op">=</span> <span class="fl">5</span>, length.out <span class="op">=</span> <span class="fl">5</span>, variable <span class="op">=</span> <span class="st">"LPD"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">LPD_RMSE_relation</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-2.png" width="847.68"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-2.png" class="r-plt" alt="" width="847.68"></p>
 <div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">DI_expected_RMSE</span> <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">DI</span>, <span class="va">DI_RMSE_relation</span><span class="op">)</span></span>
 <span><span class="va">LPD_expected_RMSE</span> <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">AOA_spatial</span><span class="op">$</span><span class="va">LPD</span>, <span class="va">LPD_RMSE_relation</span><span class="op">)</span></span>
@@ -571,10 +571,10 @@ DI and the RMSE here (see details in the paper).</p>
 <span></span>
 <span><span class="co">#mask prediction with AOA:</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/mask.html" class="external-link">mask</a></span><span class="op">(</span><span class="va">DI_expected_RMSE</span>,<span class="va">DI_updated_AOA</span>,maskvalue<span class="op">=</span><span class="fl">0</span><span class="op">)</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"DI expected RMSE"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-3.png" width="847.68"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-3.png" class="r-plt" alt="" width="847.68"></p>
 <div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/mask.html" class="external-link">mask</a></span><span class="op">(</span><span class="va">LPD_expected_RMSE</span>,<span class="va">LPD_updated_AOA</span>,maskvalue<span class="op">=</span><span class="fl">0</span><span class="op">)</span>,col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,main<span class="op">=</span><span class="st">"LPD expected RMSE"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-4.png" width="847.68"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-4.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 </div>
 <div class="section level2">
@@ -673,7 +673,7 @@ area.</p>
 <div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#Predictors:</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/stretch.html" class="external-link">stretch</a></span><span class="op">(</span><span class="va">studyArea</span><span class="op">[[</span><span class="va">predictors</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-26-1.png" width="847.68"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-26-1.png" class="r-plt" alt="" width="847.68"></p>
 <div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#prediction:</span></span>
 <span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">studyArea</span>,<span class="va">model</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
@@ -696,7 +696,7 @@ the AOA should be excluded.</p>
 <span></span>
 <span><span class="co">#show only predictions inside the AOA (mask):</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/mask.html" class="external-link">mask</a></span><span class="op">(</span><span class="va">prediction</span>,<span class="va">AOA</span><span class="op">$</span><span class="va">AOA</span>,maskvalue<span class="op">=</span><span class="fl">0</span><span class="op">)</span>, col<span class="op">=</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, main<span class="op">=</span><span class="st">"prediction for AOA (LOOCV error applies)"</span>, cex.main<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-27-1.png" width="30%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-27-2.png" width="30%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-27-3.png" width="30%"></p>
+<p><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-27-1.png" class="r-plt" alt="" width="30%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-27-2.png" class="r-plt" alt="" width="30%"><img src="cast04-AOA-tutorial_files/figure-html/unnamed-chunk-27-3.png" class="r-plt" alt="" width="30%"></p>
 </div>
 </div>
 <div class="section level2">
@@ -741,7 +741,7 @@ OpenGeoHub summer school 2022: <a href="https://doi.org/10.5446/59412" class="ex
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

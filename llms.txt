@@ -1,0 +1,208 @@
+# CAST: Caret Applications for Spatio-Temporal models
+
+[![R-CMD-check](https://github.com/HannaMeyer/CAST/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/HannaMeyer/CAST/actions/workflows/R-CMD-check.yaml)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/CAST)](https://cran.r-project.org/package=CAST)
+[![CRAN RStudio mirror downloads
+total](http://cranlogs.r-pkg.org/badges/grand-total/CAST)](https://cran.r-project.org/package=CAST)
+[![CRAN RStudio mirror
+downloads](http://cranlogs.r-pkg.org/badges/CAST)](https://cran.r-project.org/package=CAST)
+
+Supporting functionality to run ‘caret’ with spatial or spatial-temporal
+data. ‘caret’ is a frequently used package for model training and
+prediction using machine learning. CAST includes functions to improve
+spatial or spatial-temporal modelling tasks using ‘caret’. To decrease
+spatial overfitting and to improve model performances, the package
+implements a forward feature selection that selects suitable predictor
+variables in view to their contribution to spatial or spatio-temporal
+model performance. CAST further includes functionality to estimate the
+(spatial) area of applicability of prediction models.
+
+Note: The developer version of CAST can be found on
+<https://github.com/HannaMeyer/CAST>. The CRAN Version can be found on
+<https://CRAN.R-project.org/package=CAST>
+
+![](reference/figures/CAST_workflow.png) *The figure shows a very simple
+workflow for a spatial prediction mapping workflow, indicating which
+function in CAST can be used in the different steps to support the
+spatial prediction.*
+
+## Package Website
+
+<https://hannameyer.github.io/CAST/>
+
+## Tutorials
+
+- [Book chapter: The CAST package for training and assessment of spatial
+  prediction models in R](https://doi.org/10.1007/978-3-031-99665-8_11).
+  [Preprint](https://arxiv.org/abs/2404.06978)
+
+- [Introduction to
+  CAST](https://hannameyer.github.io/CAST/articles/cast01-CAST-intro.html)
+
+- [Visualization of nearest neighbor distance
+  distributions](https://hannameyer.github.io/CAST/articles/cast02-plotgeodist.html)
+
+- [Nearest neighbor distance matching Cross-validation in
+  CAST](https://hannameyer.github.io/CAST/articles/cast03-CV.html)
+
+- [Area of applicability of spatial prediction
+  models](https://hannameyer.github.io/CAST/articles/cast04-AOA-tutorial.html)
+
+- [Improve computation time of CAST
+  methods](https://hannameyer.github.io/CAST/articles/cast05-parallel.html)
+
+- The talk from the OpenGeoHub summer school 2019 on spatial validation
+  and variable selection: <https://www.youtube.com/watch?v=mkHlmYEzsVQ>.
+
+- Tutorial (<https://youtu.be/EyP04zLe9qo>) and Lecture
+  (<https://youtu.be/OoNH6Nl-X2s>) recording from OpenGeoHub summer
+  school 2020 on the area of applicability. As well as talk at the
+  OpenGeoHub summer school 2021: <https://av.tib.eu/media/54879>
+
+- Talk and tutorial from the OpenGeoHub 2022 summer school on Machine
+  learning-based maps of the environment - challenges of extrapolation
+  and overfitting, including discussions on the area of applicability
+  and the nearest neighbor distance matching cross-validation
+  (<https://doi.org/10.5446/59412>).
+
+## Scientific documentation of the methods
+
+- Meyer, H., Ludwig, M., Milà, C., Linnenbrink, J., Schumacher, F.
+  (2026). The CAST Package for Training and Assessment of Spatial
+  Prediction Models. In: Rocchini, D. (eds) R Coding for Ecology. Use
+  R!. Springer, Cham. <https://doi.org/10.1007/978-3-031-99665-8_11>.
+  Preprint: <https://doi.org/10.48550/arXiv.2404.06978>.
+
+### Spatial cross-validation
+
+- Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour
+  Distance Matching Leave-One-Out Cross-Validation for map validation.
+  Methods in Ecology and Evolution 13, 1304– 1316.
+  <https://doi.org/10.1111/2041-210X.13851>
+
+- Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM (2024):
+  k-fold Nearest Neighbour Distance Matching Cross-Validation for map
+  accuracy estimation. Geosci. Model Dev., 17, 5897–5912.
+  <https://doi.org/10.5194/gmd-17-5897-2024>.
+
+- Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauss, T. (2018):
+  Improving performance of spatio-temporal machine learning models using
+  forward feature selection and target-oriented validation.
+  Environmental Modelling & Software, 101, 1-9.
+  <https://doi.org/10.1016/j.envsoft.2017.12.001>
+
+### Spatial variable selection
+
+- Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauss, T. (2018):
+  Improving performance of spatio-temporal machine learning models using
+  forward feature selection and target-oriented validation.
+  Environmental Modelling & Software, 101, 1-9.
+  <https://doi.org/10.1016/j.envsoft.2017.12.001>
+
+- Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance
+  of spatial predictor variable selection in machine learning
+  applications - Moving from data reproduction to spatial prediction.
+  Ecological Modelling. 411.
+  <https://doi.org/10.1016/j.ecolmodel.2019.108815>
+
+### Area of applicability
+
+- Meyer, H., Pebesma, E. (2021). Predicting into unknown space?
+  Estimating the area of applicability of spatial prediction models.
+  Methods in Ecology and Evolution, 12, 1620– 1633.
+  <https://doi.org/10.1111/2041-210X.13650>
+
+- Schumacher, F., Knoth, C., Ludwig, M., Meyer, H. (2025): Estimation of
+  local training data point densities to support the assessment of
+  spatial prediction uncertainty. Geosci. Model Dev., 18, 10185–10202.
+  <https://doi.org/10.5194/gmd-18-10185-2025>.
+
+### Applications and use cases
+
+- Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of
+  ecological variables and the challenge of assessing them. Nature
+  Communications, 13.
+  <https://www.nature.com/articles/s41467-022-29838-9>
+
+- Ludwig, M., Moreno-Martinez, A., Hoelzel, N., Pebesma, E., Meyer, H.
+  (2023): Assessing and improving the transferability of current global
+  spatial prediction models. Global Ecology and Biogeography, 32,
+  356–368. <https://doi.org/10.1111/geb.13635>.
+
+- Milà, C., Ludwig, M., Pebesma, E., Tonne, C., and Meyer, H. (2024):
+  Random forests with spatial proxies for environmental modelling:
+  opportunities and pitfalls. Geosci. Model Dev., 17, 6007–6033.
+  <https://doi.org/10.5194/gmd-17-6007-2024>.
+
+# Package index
+
+## All functions
+
+- [`CAST`](https://hannameyer.github.io/CAST/reference/CAST.md)
+  [`CAST-package`](https://hannameyer.github.io/CAST/reference/CAST.md)
+  : 'caret' Applications for Spatial-Temporal Models
+- [`CreateSpacetimeFolds()`](https://hannameyer.github.io/CAST/reference/CreateSpacetimeFolds.md)
+  : Create Space-time Folds
+- [`aoa()`](https://hannameyer.github.io/CAST/reference/aoa.md) : Area
+  of Applicability
+- [`bss()`](https://hannameyer.github.io/CAST/reference/bss.md) : Best
+  subset feature selection
+- [`clustered_sample()`](https://hannameyer.github.io/CAST/reference/clustered_sample.md)
+  : Clustered samples simulation
+- [`cookfarm`](https://hannameyer.github.io/CAST/reference/cookfarm.md)
+  : Cookfarm soil logger data
+- [`errorProfiles()`](https://hannameyer.github.io/CAST/reference/errorProfiles.md)
+  : Model and inspect the relationship between the prediction error and
+  measures of dissimilarities and distances
+- [`ffs()`](https://hannameyer.github.io/CAST/reference/ffs.md) :
+  Forward feature selection
+- [`geodist()`](https://hannameyer.github.io/CAST/reference/geodist.md)
+  : Calculate euclidean nearest neighbor distances in geographic space
+  or feature space
+- [`global_validation()`](https://hannameyer.github.io/CAST/reference/global_validation.md)
+  : Evaluate 'global' cross-validation
+- [`knndm()`](https://hannameyer.github.io/CAST/reference/knndm.md) :
+  K-fold Nearest Neighbour Distance Matching
+- [`nndm()`](https://hannameyer.github.io/CAST/reference/nndm.md) :
+  Nearest Neighbour Distance Matching (NNDM) algorithm
+- [`normalize_DI()`](https://hannameyer.github.io/CAST/reference/normalize_DI.md)
+  : Normalize DI values
+- [`plot(`*`<trainDI>`*`)`](https://hannameyer.github.io/CAST/reference/plot.md)
+  [`plot(`*`<aoa>`*`)`](https://hannameyer.github.io/CAST/reference/plot.md)
+  [`plot(`*`<nndm>`*`)`](https://hannameyer.github.io/CAST/reference/plot.md)
+  [`plot(`*`<knndm>`*`)`](https://hannameyer.github.io/CAST/reference/plot.md)
+  [`plot(`*`<ffs>`*`)`](https://hannameyer.github.io/CAST/reference/plot.md)
+  [`plot(`*`<geodist>`*`)`](https://hannameyer.github.io/CAST/reference/plot.md)
+  [`plot(`*`<errorModel>`*`)`](https://hannameyer.github.io/CAST/reference/plot.md)
+  : Plot CAST classes
+- [`print(`*`<trainDI>`*`)`](https://hannameyer.github.io/CAST/reference/print.md)
+  [`show.trainDI()`](https://hannameyer.github.io/CAST/reference/print.md)
+  [`print(`*`<aoa>`*`)`](https://hannameyer.github.io/CAST/reference/print.md)
+  [`show.aoa()`](https://hannameyer.github.io/CAST/reference/print.md)
+  [`print(`*`<nndm>`*`)`](https://hannameyer.github.io/CAST/reference/print.md)
+  [`show.nndm()`](https://hannameyer.github.io/CAST/reference/print.md)
+  [`print(`*`<knndm>`*`)`](https://hannameyer.github.io/CAST/reference/print.md)
+  [`show.knndm()`](https://hannameyer.github.io/CAST/reference/print.md)
+  [`print(`*`<ffs>`*`)`](https://hannameyer.github.io/CAST/reference/print.md)
+  [`show.ffs()`](https://hannameyer.github.io/CAST/reference/print.md) :
+  Print CAST classes
+- [`splotdata`](https://hannameyer.github.io/CAST/reference/splotdata.md)
+  : sPlotOpen Data of Species Richness
+- [`trainDI()`](https://hannameyer.github.io/CAST/reference/trainDI.md)
+  : Calculate Dissimilarity Index of training data
+
+# Articles
+
+### All vignettes
+
+- [1. Introduction to
+  CAST](https://hannameyer.github.io/CAST/articles/cast01-CAST-intro.md):
+- [2. Visualization of nearest neighbor distance
+  distributions](https://hannameyer.github.io/CAST/articles/cast02-plotgeodist.md):
+- [3. Nearest neighbor distance matching Cross-validation in
+  CAST](https://hannameyer.github.io/CAST/articles/cast03-CV.md):
+- [4. Area of applicability of spatial prediction
+  models](https://hannameyer.github.io/CAST/articles/cast04-AOA-tutorial.md):
+- [5. Improve computation time of CAST
+  methods](https://hannameyer.github.io/CAST/articles/cast05-parallel.md):

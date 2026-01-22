@@ -63,7 +63,7 @@
                         <h4 data-toc-skip class="author">Marvin
 Ludwig</h4>
             
-            <h4 data-toc-skip class="date">2025-07-04</h4>
+            <h4 data-toc-skip class="date">2026-01-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/master/vignettes/cast05-parallel.Rmd" class="external-link"><code>vignettes/cast05-parallel.Rmd</code></a></small>
       <div class="d-none name"><code>cast05-parallel.Rmd</code></div>
@@ -261,7 +261,7 @@ previous step to multiple rasters at once.</p>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">r1</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,main <span class="op">=</span> <span class="st">"Tile 1"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">r2</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,main <span class="op">=</span> <span class="st">"Tile 2"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">r3</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,main <span class="op">=</span> <span class="st">"Tile 3"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast05-parallel_files/figure-html/unnamed-chunk-5-1.png" width="30%"><img src="cast05-parallel_files/figure-html/unnamed-chunk-5-2.png" width="30%"><img src="cast05-parallel_files/figure-html/unnamed-chunk-5-3.png" width="30%"></p>
+<p><img src="cast05-parallel_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="30%"><img src="cast05-parallel_files/figure-html/unnamed-chunk-5-2.png" class="r-plt" alt="" width="30%"><img src="cast05-parallel_files/figure-html/unnamed-chunk-5-3.png" class="r-plt" alt="" width="30%"></p>
 <p>Use the <code>trainDI</code> argument in the <code>aoa</code>
 function to specify, that you want to use a previously computed trainDI
 object.</p>
@@ -271,7 +271,7 @@ object.</p>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">r1</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, main <span class="op">=</span> <span class="st">"Tile 1: Predictors"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">aoa_r1</span><span class="op">$</span><span class="va">DI</span>, main <span class="op">=</span> <span class="st">"Tile 1: DI"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">aoa_r1</span><span class="op">$</span><span class="va">AOA</span>, main <span class="op">=</span> <span class="st">"Tile 1: AOA"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast05-parallel_files/figure-html/unnamed-chunk-6-1.png" width="30%"><img src="cast05-parallel_files/figure-html/unnamed-chunk-6-2.png" width="30%"><img src="cast05-parallel_files/figure-html/unnamed-chunk-6-3.png" width="30%"></p>
+<p><img src="cast05-parallel_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="30%"><img src="cast05-parallel_files/figure-html/unnamed-chunk-6-2.png" class="r-plt" alt="" width="30%"><img src="cast05-parallel_files/figure-html/unnamed-chunk-6-3.png" class="r-plt" alt="" width="30%"></p>
 <p>You can now run the aoa function in parallel on the different tiles!
 Of course you can use for favorite parallel backend for this task, here
 we use mclapply from the <code>parallel</code> package.</p>
@@ -286,7 +286,7 @@ we use mclapply from the <code>parallel</code> package.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">tiles_aoa</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">AOA</span>, main <span class="op">=</span> <span class="st">"Tile 1"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">tiles_aoa</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">AOA</span>, main <span class="op">=</span> <span class="st">"Tile 2"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">tiles_aoa</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">AOA</span>, main <span class="op">=</span> <span class="st">"Tile 3"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast05-parallel_files/figure-html/unnamed-chunk-9-1.png" width="30%"><img src="cast05-parallel_files/figure-html/unnamed-chunk-9-2.png" width="30%"><img src="cast05-parallel_files/figure-html/unnamed-chunk-9-3.png" width="30%"></p>
+<p><img src="cast05-parallel_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="30%"><img src="cast05-parallel_files/figure-html/unnamed-chunk-9-2.png" class="r-plt" alt="" width="30%"><img src="cast05-parallel_files/figure-html/unnamed-chunk-9-3.png" class="r-plt" alt="" width="30%"></p>
 <p>For even larger tasks it might be useful to save the tiles to you
 hard-drive and load them one by one to avoid filling up your RAM.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
@@ -312,7 +312,7 @@ hard-drive and load them one by one to avoid filling up your RAM.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
