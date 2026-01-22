@@ -74,8 +74,8 @@
 #' For spatial visualization of fold affiliation see examples.
 #' @references
 #' \itemize{
-#' \item Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM: k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2023-1308, 2023.
-#' \item Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.
+#' \item Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H. (2024): kNNDM: k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation. Geosci. Model Dev., 17, 5897–5912. https://doi.org/10.5194/gmd-17-5897-2024.
+#' \item Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 13, 1304– 1316. https://doi.org/10.1111/2041-210X.13851.
 #' }
 #' @seealso \code{\link{geodist}}, \code{\link{nndm}}
 #'

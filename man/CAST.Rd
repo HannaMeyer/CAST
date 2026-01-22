@@ -22,9 +22,10 @@ The package is described in detail in Meyer et al. (2024).
 }
 \references{
 \itemize{
-\item Meyer, H., Ludwig, L., Milà, C., Linnenbrink, J., Schumacher, F. (2024): The CAST package for training and assessment of spatial prediction models in R. arXiv, https://doi.org/10.48550/arXiv.2404.06978.
-\item Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM: k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2023-1308, 2023.
-\item Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.
+\item Meyer, H., Ludwig, L., Milà, C., Linnenbrink, J., Schumacher, F. (2026): The CAST package for training and assessment of spatial prediction models in R. In: Rocchini, D. (eds) R Coding for Ecology. Use R!. Springer, Cham.
+\item Schumacher, F., Knoth, C., Ludwig, M., Meyer, H. (2025): Estimation of local training data point densities to support the assessment of spatial prediction uncertainty. Geosci. Model Dev., 18, 10185–10202.
+\item Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H. (2024): kNNDM: k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation, Geosci. Model Dev., 17, 5897–5912.
+\item Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 13, 1304– 1316.
 \item Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications. 13.
 \item Meyer, H., Pebesma, E. (2021): Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution. 12, 1620– 1633.
 \item Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance of spatial predictor variable selection in machine learning applications - Moving from data reproduction to spatial prediction. Ecological Modelling. 411, 108815.
