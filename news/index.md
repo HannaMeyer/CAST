@@ -1,5 +1,10 @@
 # Changelog
 
+## `CAST` 1.0.4
+
+- bug fix: formatting issues in tests
+- references updated
+
 ## `CAST` 1.0.3
 
 CRAN release: 2025-01-09
