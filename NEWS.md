@@ -1,3 +1,7 @@
+# `CAST` 1.0.4
+* bug fix: formatting issues in tests
+* references updated
+
 # `CAST` 1.0.3
 * bug fix: default algorithm for FNN functions changed
 
