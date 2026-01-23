@@ -121,6 +121,7 @@ test_that("AOA (inluding LPD) works without a trained model", {
 
 
 test_that("AOA (including LPD) works in parallel with raster data and a trained model", {
+  skip_on_cran()
   skip_if_not_installed("randomForest")
   dat <- loaddata()
   # calculate the AOA of the trained model for the study area:
@@ -146,6 +147,7 @@ test_that("AOA (including LPD) works in parallel with raster data and a trained 
 
 
 test_that("AOA (inluding LPD) works in parallel without a trained model", {
+  skip_on_cran()
   skip_if_not_installed("randomForest")
   dat <- loaddata()
   AOA <- aoa(dat$studyArea,train=dat$trainDat,variables=dat$variables, LPD = TRUE, maxLPD = 1, verbose = F, parallel = TRUE, cores = 2) # limit to 2 cores
