@@ -464,7 +464,7 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
   names(myColors) <- labs
 
 
-  type <- attr(x, "type")
+  type <- attr(x, "space")
 
   if(unit=="km"){
     x$dist <- x$dist/1000

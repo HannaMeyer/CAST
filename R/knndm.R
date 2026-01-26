@@ -831,3 +831,16 @@ distclust_MD <- function(tr_coords, folds){
   }
   unlist(alldist)
 }
+
+# Helper function: Compute out-of-fold NN distance (Temporal distance)
+# (Only used in geodist at the moment, might be used in future implementations of kNNDM in the temporal space)
+distclust_time <- function(time_values, folds, time_unit = "days") {
+  alldist <- rep(NA, length(folds))
+  
+  for(f in unique(folds)) {
+    diffs <- outer(time_values[folds == f], time_values[folds != f], function(x, y) abs(as.numeric(difftime(x, y, units=time_unit))))
+    alldist[folds == f] <- apply(diffs, 1, min)
+  }
+
+  alldist
+}

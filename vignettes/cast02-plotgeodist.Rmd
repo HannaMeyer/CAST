@@ -93,13 +93,13 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 ## Distances in geographic space
 
 Then we can plot the distributions of the spatial distances of reference
-data to their nearest neighbor ("sample-to-sample") with the distribution of distances from all points of the global land surface to the nearest reference data point ("sample-to-prediction"). Note that samples of prediction locations are used to calculate the sample-to-prediction nearest neighbor distances. Since we're using a global case study here, throughout this tutorial we use sampling=Fibonacci to draw prediction locations with constant point density on the sphere.
+data to their nearest neighbor ("sample-to-sample") with the distribution of distances from all points of the global land surface to the nearest reference data point ("sample-to-prediction"). Note that samples of prediction locations are used to calculate the sample-to-prediction nearest neighbor distances. Since we're using a global case study here, throughout this tutorial we use sampling=regular to draw prediction locations with constant point density on the sphere.
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 dist_random <- geodist(pts_random,co.ee,
-                            sampling="Fibonacci")
+                            sampling="regular")
 dist_clstr <- geodist(pts_clustered,co.ee,
-                           sampling="Fibonacci")
+                           sampling="regular")
 
 plot(dist_random, unit = "km")+scale_x_log10(labels=round)+ggtitle("Randomly distributed reference data")
 plot(dist_clstr, unit = "km")+scale_x_log10(labels=round)+ggtitle("Clustered reference data")
@@ -133,7 +133,7 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 dist_clstr <- geodist(pts_clustered,co.ee,
-                           sampling="Fibonacci", 
+                           sampling="regular", 
                            cvfolds= randomfolds)
 plot(dist_clstr, unit = "km")+scale_x_log10(labels=round)
 
@@ -159,7 +159,7 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 dist_clstr <- geodist(pts_clustered,co.ee,
-                           sampling="Fibonacci",
+                           sampling="regular",
                            cvfolds= spatialfolds$indexOut)
 plot(dist_clstr, unit = "km")+scale_x_log10(labels=round)
 
@@ -193,7 +193,7 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 spfolds_rand <- CreateSpacetimeFolds(pts_random_co,spacevar = "subregion",
                                      k=length(unique(pts_random_co$subregion)))
 dist_rand_sp <- geodist(pts_random_co,co.ee,
-                             sampling="Fibonacci", 
+                             sampling="regular", 
                              cvfolds= spfolds_rand$indexOut)
 plot(dist_rand_sp, unit = "km")+scale_x_log10(labels=round)
 ```
@@ -212,9 +212,8 @@ See (see [Linnenbrink et al., 2023](https://doi.org/10.5194/egusphere-2023-1308)
 
 nndmfolds_clstr <- knndm(pts_clustered, modeldomain=co.ee, samplesize = 2000)
 dist_clstr <- geodist(pts_clustered,co.ee,
-                           sampling = "Fibonacci",
-                           cvfolds = nndmfolds_clstr$indx_test, 
-                           cvtrain = nndmfolds_clstr$indx_train)
+                           sampling = "regular",
+                           cvfolds = nndmfolds_clstr$indx_test)
 plot(dist_clstr, unit = "km")+scale_x_log10(labels=round)
 
 ```
@@ -225,9 +224,9 @@ The NNDM CV-distance distribution matches the sample-to-prediction distribution 
 
 nndmfolds_rand <- knndm(pts_random_co,  modeldomain=co.ee, samplesize = 2000)
 dist_rand <- geodist(pts_random_co,co.ee,
-                          sampling = "Fibonacci",
-                          cvfolds = nndmfolds_rand$indx_test, 
-                          cvtrain = nndmfolds_rand$indx_train)
+                          sampling = "regular",
+                          cvfolds = nndmfolds_rand$indx_test
+                          )
 plot(dist_rand, unit = "km")+scale_x_log10(labels=round)
 
 ```
@@ -253,13 +252,13 @@ Then we visualize nearest neighbor feature space distances under consideration o
 
 # use random CV:
 dist_clstr_rCV <- geodist(pts_clustered,predictors_global,
-                               type = "feature", 
+                               space = "feature", 
                                sampling="Fibonacci",
                                cvfolds = randomfolds)
 
 # use spatial CV:
 dist_clstr_sCV <- geodist(pts_clustered,predictors_global,
-                               type = "feature", sampling="Fibonacci",
+                               space = "feature", sampling="Fibonacci",
                                cvfolds = spatialfolds$indexOut)
 
 

@@ -22,7 +22,7 @@ Encoding: UTF-8
 LazyData: false
 Depends: R (>= 4.1.0)
 BugReports: https://github.com/HannaMeyer/CAST/issues/
-Imports: caret, stats, utils, ggplot2, graphics, FNN, plyr, zoo, methods, grDevices, data.table, sf, forcats, twosamples, terra, sp, parallel
+Imports: caret, stats, utils, ggplot2, graphics, FNN, plyr, zoo, methods, grDevices, data.table, sf, forcats, twosamples, terra, parallel
 Suggests: 
     doParallel,
     lubridate,
@@ -44,6 +44,6 @@ Suggests:
     gower, 
     clustMixType,
     testthat (>= 3.0.0)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 Config/testthat/edition: 3
