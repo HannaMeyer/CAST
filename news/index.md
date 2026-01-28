@@ -2,6 +2,8 @@
 
 ## `CAST` 1.0.4
 
+CRAN release: 2026-01-26
+
 - bug fix: formatting issues in tests
 - references updated
 
