@@ -252,13 +252,13 @@ Then we visualize nearest neighbor feature space distances under consideration o
 
 # use random CV:
 dist_clstr_rCV <- geodist(pts_clustered,predictors_global,
-                               space = "feature", 
+                               dist_space = "feature", 
                                sampling="Fibonacci",
                                cvfolds = randomfolds)
 
 # use spatial CV:
 dist_clstr_sCV <- geodist(pts_clustered,predictors_global,
-                               space = "feature", sampling="Fibonacci",
+                               dist_space = "feature", sampling="Fibonacci",
                                cvfolds = spatialfolds$indexOut)
 
 

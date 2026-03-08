@@ -13,14 +13,14 @@ test_that("geodist handles CRS mismatch between x and modeldomain", {
   pts <- sf::st_as_sfc("MULTIPOINT ((500000 5700000), (500100 5700100))", crs = 3035) |> 
     sf::st_cast("POINT")
 
-  dist <- geodist(pts, aoi, space = "geo")
+  dist <- geodist(pts, aoi, dist_space = "geographical")
   expect_true(all(dist$dist > 0))
 })
 
 test_that("geodist warns on missing CRS", {
   pts <- sf::st_as_sfc("POINT (1 1)")
   dist <- expect_warning(
-    geodist(sf::st_as_sf(pts), preddata = sf::st_as_sf(pts)),
+    geodist(sf::st_as_sf(pts), preddata = sf::st_as_sf(pts), dist_space = "geographical"),
     "Missing CRS of the modeldomain or prediction points. Assuming projected CRS."
   )
 })
@@ -30,7 +30,7 @@ test_that("geodist supports Fibonacci sampling", {
   data(splotdata)
   studyArea <- rnaturalearth::ne_countries(continent = "South America", returnclass = "sf")
   expect_message(
-    geodist(splotdata, studyArea, sampling = "Fibonacci"),
+    geodist(splotdata, studyArea, sampling = "Fibonacci", dist_space = "geographical", dist_fun = "great_circle"),
     "Sampling 2000 prediction locations from the modeldomain vector."
   )
 })
@@ -47,7 +47,8 @@ test_that("geodist works with points and polygon in geographic space", {
   dist_geo <- geodist(x=splotdata,
                       modeldomain=studyArea,
                       cvfolds=folds$indexOut,
-                      space = "geo")
+                      dist_space = "geographical",
+                      dist_fun = "great_circle")
 
   mean_sample2sample <- round(mean(dist_geo[dist_geo$what=="sample-to-sample","dist"]))
   mean_CV_distances <- round(mean(dist_geo[dist_geo$what=="CV-distances","dist"]))
@@ -72,7 +73,7 @@ test_that("geodist works with points and polygon in feature space", {
   dist_fspace <- geodist(x = splotdata,
                          modeldomain = predictors,
                          cvfolds=folds$indexOut,
-                         space = "feature",
+                         dist_space = "feature",
                          variables = c("bio_1","bio_12", "elev"))
 
   mean_sample2sample <- round(mean(dist_fspace[dist_fspace$what=="sample-to-sample","dist"]), 4)
@@ -95,9 +96,9 @@ test_that("geodist works with points and polygon in feature space using Mahalano
   dist_fspace <- geodist(x = splotdata,
                          modeldomain = predictors,
                          cvfolds=folds$indexOut,
-                         space = "feature",
+                         dist_space = "feature",
                          variables = c("bio_1","bio_12", "elev"), 
-                         useMD = TRUE)
+                         dist_fun = "mahalanobis")
 
   mean_sample2sample <- round(mean(dist_fspace[dist_fspace$what=="sample-to-sample","dist"]), 4)
   mean_CV_distances <- round(mean(dist_fspace[dist_fspace$what=="CV-distances","dist"]), 4)
@@ -122,7 +123,7 @@ test_that("geodist works space with points and preddata in geographic space", {
 
   dist_geo <- geodist(x=tpoints,
                       preddata=ppoints,
-                      space = "geo")
+                      dist_space = "geographical")
 
   mean_sample2sample <- round(mean(dist_geo[dist_geo$what=="sample-to-sample","dist"]), 4)
   mean_prediction_to_sample <- round(mean(dist_geo[dist_geo$what=="prediction-to-sample","dist"]), 4)
@@ -148,7 +149,7 @@ test_that("geodist works with points and preddata in feature space", {
   dist <- geodist(x=tpoints,
                   modeldomain=raster,
                   preddata=ppoints,
-                  space = "feature")
+                  dist_space = "feature")
 
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
   mean_prediction_to_sample <- round(mean(dist[dist$what=="prediction-to-sample","dist"]), 4)
@@ -169,7 +170,7 @@ test_that("geodist works with points and raster in geographic space", {
 
   dist <- geodist(x=tpoints,
                   modeldomain=raster,
-                  space = "geo")
+                  dist_space = "geographical")
 
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
   expect_equal(mean_sample2sample, 1.4294)
@@ -187,7 +188,7 @@ test_that("geodist works with points and raster in feature space", {
 
   dist <- geodist(x=tpoints,
                   modeldomain=raster,
-                  space = "feature")
+                  dist_space = "feature")
 
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
   expect_equal(mean_sample2sample, 0.3814)
@@ -207,7 +208,7 @@ test_that("geodist works with points and stars raster in geographic space", {
 
   dist <- geodist(x=tpoints,
                   modeldomain=raster,
-                  space = "feature")
+                  dist_space = "feature")
 
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
   expect_equal(mean_sample2sample, 0.3814)
@@ -229,7 +230,7 @@ test_that("geodist works with points and test data in geographic space", {
   dist <- geodist(x=tpoints,
                   modeldomain=aoi,
                   testdata=test_point,
-                  space = "geo")
+                  dist_space = "geographical")
 
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
   mean_test_to_sample <- round(mean(dist[dist$what=="test-to-sample","dist"]), 4)
@@ -258,7 +259,7 @@ test_that("geodist works with points and test data in feature space", {
   dist <- geodist(x=tpoints,
                   modeldomain=raster,
                   testdata = test_points,
-                  space = "feature")
+                  dist_space = "feature")
 
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
   mean_test_to_sample <- round(mean(dist[dist$what=="test-to-sample","dist"]), 4)
@@ -298,7 +299,7 @@ test_that("geodist works with categorical variables in feature space", {
 
   dist <- geodist(x=pts,
                   modeldomain=predictor_stack,
-                  space = "feature",
+                  dist_space = "feature",
                   testdata = test_pts,
                   cvfolds = folds$indexOut)
 
@@ -320,7 +321,7 @@ test_that("geodist works in temporal space", {
   sf::st_crs(dat) <- 26911
   trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
   predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
-  dist <- CAST::geodist(trainDat, preddata = predictionDat, space = "time", time_unit = "days")
+  dist <- CAST::geodist(trainDat, preddata = predictionDat, dist_space = "time", time_unit = "days")
 
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
   mean_prediction_to_sample <- round(mean(dist[dist$what=="prediction-to-sample","dist"]), 4)
@@ -328,7 +329,7 @@ test_that("geodist works in temporal space", {
   expect_equal(mean_sample2sample, 0.02)
   expect_equal(mean_prediction_to_sample, 194.7656)
 
-  dist <- CAST::geodist(trainDat, preddata = predictionDat, space = "time", time_unit = "hours")
+  dist <- CAST::geodist(trainDat, preddata = predictionDat, dist_space = "time", time_unit = "hours")
   mean_prediction_to_sample <- round(mean(dist[dist$what=="prediction-to-sample","dist"]), 2)
   expect_equal(mean_prediction_to_sample, 4674.37)
 
@@ -345,7 +346,7 @@ test_that("geodist works in temporal space and with CV", {
   cvfolds <- CreateSpacetimeFolds(trainDat,timevar = "week")
 
   dist <- CAST::geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,
-                        space = "time",time_unit = "days")
+                        dist_space = "time",time_unit = "days")
 
   mean_cv <- round(mean(dist[dist$what=="CV-distances","dist"]), 3)
 
