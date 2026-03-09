@@ -309,9 +309,16 @@ geodist <- function(
     
   }
 
+  # 5. Temporal-space preparation (if needed)
 
-  # 5. Distance computation ----------
+  if(dist_space == "temporal") {
+    x <- sf::st_drop_geometry(x)
+    pred_points <- sf::st_drop_geometry(pred_points)
+    if (!is.null(testdata)) testdata <- sf::st_drop_geometry(testdata)
+  }
 
+
+  # 6. Distance computation ----------
 
   # check that distance function was correctly specified:
   if(!dist_fun %in% c("euclidean", "mahalanobis", "gower", "great_circle")) {
@@ -331,29 +338,36 @@ geodist <- function(
   }
 
   # Calculate NNDs between training points
-  s2s <- sample2sample(
-    x=x, dist_space = dist_space, variables = variables, time_unit = time_unit, time_var = time_var,
-    algorithm = algorithm, dist_fun = dist_fun
+  s2s <- compute_NND(
+    x=x, y=NULL, dist_space = dist_space, dist_type_label = "sample-to-sample",  dist_fun = dist_fun,
+    folds = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
   )
+
   # Calculate NNDs between prediction and training points
-  p2s <- prediction2sample(
-    x=x, modeldomain = pred_points, dist_space=dist_space, samplesize=samplesize, variables = variables,
-    time_unit = time_unit, time_var = time_var, algorithm = algorithm, dist_fun = dist_fun
+  p2s <- compute_NND(
+    x=x, y=pred_points, dist_space = dist_space, dist_type_label = "prediction-to-sample",  dist_fun = dist_fun,
+    folds = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
   )
   dists <- rbind(s2s, p2s)
 
   # Calculate NNDs between test points and training points
   if (!is.null(testdata)) {
-    dists <- rbind(dists, test2sample(x=x, testdata=testdata, dist_space=dist_space, variables=variables,
-      time_unit=time_unit, time_var=time_var, algorithm=algorithm, dist_fun=dist_fun))
+    t2s <- compute_NND(
+      x=x, y=testdata, dist_space = dist_space, dist_type_label = "test-to-sample",  dist_fun = dist_fun,
+      folds = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
+    )
+    dists <- rbind(dists, t2s)
   }
   # Calculate NNDs between CV folds
   if (!is.null(cvfolds)) {
-    dists <- rbind(dists, cvdistance(x=x, cvfolds=cvfolds, dist_space=dist_space, variables=variables, 
-      time_unit=time_unit, time_var=time_var, algorithm=algorithm, dist_fun=dist_fun))
+    cvdist <- compute_NND(
+      x=x, y=NULL, dist_space = dist_space, dist_type_label = "CV-distances",  dist_fun = dist_fun,
+      folds = cvfolds, time_var = time_var, time_unit = time_unit, algorithm = algorithm
+    )
+    dists <- rbind(dists, cvdist)
   }
 
-  # 6. Post-processing ----------
+  # 7. Post-processing ----------
 
   class(dists) <- c("geodist", class(dists))
   attr(dists, "dist_space") <- dist_space
@@ -383,298 +397,199 @@ geodist <- function(
 
 
 
-## Function definitions ----------
-
-# Sample to sample distance calculation
-sample2sample <- function(x, dist_space, variables, time_unit, time_var, algorithm, dist_fun){
-  if(dist_space == "geographical"){
-
-    # Extract the coordinates of the training points
-    tcoords <- sf::st_coordinates(x)[, 1:2]
-
-    # Calculate geographical NNDs
-    if(isTRUE(dist_fun == "great_circle")){
-      distmat <- sf::st_distance(x)
-      units(distmat) <- NULL
-      diag(distmat) <- NA
-      min_d <- apply(distmat, 1, function(x) min(x, na.rm=TRUE))
-    }else{
-      min_d <- c(FNN::knn.dist(tcoords, k = 1, algorithm=algorithm))
-    }
-
-    sampletosample <- data.frame(dist = min_d,
-                                 what = factor("sample-to-sample"),
-                                 dist_type = "geographical")
-  }else if(dist_space == "feature"){
-    
-    if(isTRUE(dist_fun == "mahalanobis")) {
-        tpoints_mat <- as.matrix(x)
-
-        # use Mahalanobis distances
-        if (dim(tpoints_mat)[2] == 1) {
-          S <- matrix(stats::var(tpoints_mat), 1, 1)
-          tpoints_mat <- as.matrix(tpoints_mat, ncol = 1)
-        } else {
-          S <- stats::cov(tpoints_mat)
-        }
-        S_inv <- MASS::ginv(S)
-
-        # calculate distance matrix
-        n_rows <- nrow(tpoints_mat)
-        distmat <- vapply(seq_len(n_rows), function(i) {
-          vapply(seq_len(n_rows), function(j) {
-            diff <- tpoints_mat[i, ] - tpoints_mat[j, ]
-            sqrt(t(diff) %*% S_inv %*% diff)
-          }, numeric(1))
-        }, numeric(n_rows))
-        diag(distmat) <- NA
-
-        d <- apply(distmat, 1, min, na.rm=TRUE)
-      
-    } else if (dist_fun == "euclidean") {
-        d <- c(FNN::knn.dist(x, k = 1, algorithm=algorithm))
-      } else if (dist_fun == "gower") {
-        d <- vapply(1:nrow(x), function(i) gower::gower_topn(x[i,], x[-i,], n=1)$distance[[1]], numeric(1))
-      }
-
-    sampletosample <- data.frame(dist = d,
-                                 what = factor("sample-to-sample"),
-                                 dist_type = "feature")
-
-  }else if(dist_space == "time"){ # calculate temporal distance matrix
-    if(dist_fun == "euclidean") {
-      time_values <- sf::st_drop_geometry(x)[, time_var]
-      d <- abs(outer(time_values, time_values, FUN=function(a,b) as.numeric(difftime(a,b,units=time_unit))))
-      diag(d) <- Inf
-      min_d <- apply(d, 1, min)
-    }
-
-    sampletosample <- data.frame(dist = min_d,
-                                what = factor("sample-to-sample"),
-                                dist_type = "time")
-    
-  }
-  return(sampletosample)
-}
-
-
-# Prediction to sample distance calculation
-prediction2sample = function(x, modeldomain, dist_space, samplesize, variables, time_unit, time_var, algorithm, dist_fun){
-
-  if(dist_space == "geographical"){
-
-    # Extract the coordinates of the training points
-    tcoords <- sf::st_coordinates(x)[, 1:2]
-    
-    # Calculate the geographical NNDs between prediction points and training points
-    if(isTRUE(dist_fun == "great_circle")){
-      d0 <- sf::st_distance(modeldomain, x)
-      units(d0) <- NULL
-      min_d0 <- apply(d0, 1, min)
-    }else{
-      min_d0 <- c(FNN::knnx.dist(query = sf::st_coordinates(modeldomain)[,1:2],
-                              data = tcoords, k = 1, algorithm=algorithm))
-    }
-
-    sampletoprediction <- data.frame(dist = min_d0,
-                                     what = factor("prediction-to-sample"),
-                                     dist_type = "geographical")
-
-  }else if(dist_space == "feature"){
-
-    if(isTRUE(dist_fun == "mahalanobis")) {
-       tpoints_mat <- as.matrix(x)
-        predpoints_mat <- as.matrix(modeldomain)
-
-        # use Mahalanobis distances
-        if (dim(tpoints_mat)[2] == 1) {
-          S <- matrix(stats::var(tpoints_mat), 1, 1)
-          tpoints_mat <- as.matrix(tpoints_mat, ncol = 1)
-        } else {
-          S <- stats::cov(tpoints_mat)
-        }
-        S_inv <- MASS::ginv(S)
-
-      n_rows_p <- nrow(predpoints_mat)
-      n_rows_t <- nrow(tpoints_mat)
-
-      target_dist_feature <- vapply(seq_len(n_rows_p), function(i) {
-        min(vapply(seq_len(n_rows_t), function(j) {
-          diff <- predpoints_mat[i, ] - tpoints_mat[j, ]
-          sqrt(t(diff) %*% S_inv %*% diff)
-        }, numeric(1)))
-      }, numeric(1))
-      
-    } else if(isTRUE(dist_fun == "euclidean")) {
-      target_dist_feature <- c(FNN::knnx.dist(query = modeldomain, data = x, k = 1, algorithm=algorithm))
-    } else if(isTRUE(dist_fun == "gower")) {
-      target_dist_feature <- c(gower::gower_topn(modeldomain, x, n = 1)$distance)
-    }
-
-    sampletoprediction <- data.frame(dist = target_dist_feature,
-                                     what = "prediction-to-sample",
-                                     dist_type = "feature")
-  }else if(dist_space == "time"){
-
-    if(dist_fun == "euclidean") {
-      time_train <- sf::st_drop_geometry(x)[, time_var]
-      time_pred <- sf::st_drop_geometry(modeldomain)[, time_var]
-      dmat <- abs(outer(time_pred, time_train, FUN=function(a,b) as.numeric(difftime(a,b,units=time_unit))))
-      min_d0 <- apply(dmat, 1, min)
-    }
-
-    sampletoprediction <- data.frame(dist = min_d0,
-                                     what = factor("prediction-to-sample"),
-                                     dist_type = "time")
-
-  }
-
-  return(sampletoprediction)
-}
-
-
-# Test to sample distance calculation
-test2sample <- function(x, testdata, dist_space, variables, time_unit, time_var, algorithm, dist_fun){
-
-  if(dist_space == "geographical"){
-
-    # Extract the coordinates of the training points
-    tcoords <- sf::st_coordinates(x)[, 1:2]
-    
-    # Calculate the geographical NNDs between test points and training points
-    if(isTRUE(dist_fun == "great_circle")){
-      d_test <- sf::st_distance(testdata, x)
-      units(d_test) <- NULL
-      min_d_test <- apply(d_test, 1, min)
-    }else{
-      min_d_test <- c(FNN::knnx.dist(query = sf::st_coordinates(testdata)[,1:2],
-                              data = tcoords, k = 1, algorithm=algorithm))
-    }
+## Distance calculation based on space ----------
+# include the possibility to input train and test folds, not only a vector of fold indices as currently in CV
+# OR: allow for NAs in this vector
+compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","time"), 
+                      dist_type_label = "sample-to-sample", 
+                      dist_fun = c("euclidean","mahalanobis","gower","great_circle"), 
+                      folds = NULL, time_var = NULL, time_unit = "days", algorithm) {
   
-   dists_test <- data.frame(dist = min_d_test,
-                             what = factor("test-to-sample"),
-                             dist_type = "geographical")
+  dist_space <- match.arg(dist_space)
+  dist_fun <- match.arg(dist_fun)
 
+  # Stop when encountering invalid parameter combinations
+  if(!is.null(y) && !is.null(folds)) stop("Currently, `folds` and `y` cannot be specified simultaniously.")
+  if(dist_space == "time" && dist_fun != "euclidean") stop("Temporal space only supports euclidean distances.")
+  if(dist_space == "feature" && dist_fun == "great_circle") stop("Great-circle distances only work with in geographical space.")
+  if(dist_space == "geographical" && dist_fun %in% c("mahalanobis", "gower")) stop("Mahalanobis and Gower distances only work in feature space.")
 
-  }else if(dist_space == "feature"){
+  # Extract coordinates from x (and y)
+  coords_x <- if(dist_space == "geographical") sf::st_coordinates(x)[,1:2] else NULL
+  coords_y <- if(dist_space == "geographical" && !is.null(y)) sf::st_coordinates(y)[,1:2] else NULL
 
-    if(isTRUE(dist_fun == "mahalanobis")) {
-      tpoints_mat <- as.matrix(x)
-        testpoints_mat <- as.matrix(testdata)
+  # prepare folds (if needed)
+  if(!is.null(folds)){
+     # Convert cvfold list to vector
+    if(is.list(folds)){
+      clust <- rep(NA_integer_, nrow(x))
 
-        # use Mahalanobis distances
-        if (dim(tpoints_mat)[2] == 1) {
-          S <- matrix(stats::var(tpoints_mat), 1, 1)
-          tpoints_mat <- as.matrix(tpoints_mat, ncol = 1)
-        } else {
-          S <- stats::cov(tpoints_mat)
-        }
-        S_inv <- MASS::ginv(S)
-
-        n_rows_test <- nrow(testpoints_mat)
-        n_rows_train <- nrow(tpoints_mat)
-
-        target_dist_feature <- vapply(seq_len(n_rows_test), function(i) {
-          min(vapply(seq_len(n_rows_train), function(j) {
-            diff <- testpoints_mat[i, ] - tpoints_mat[j, ]
-            sqrt(t(diff) %*% S_inv %*% diff)
-          }, numeric(1)))
-        }, numeric(1))
-      
-    } else if(isTRUE(dist_fun == "euclidean")) {
-      test_dist_feature <- c(FNN::knnx.dist(query = testdata, data = x, k = 1, algorithm=algorithm))
-    } else if(isTRUE(dist_fun == "gower")) {
-      test_dist_feature <- c(gower::gower_topn(testdata, x, n = 1)$distance)
+      for (k in seq_along(folds)) {
+        clust[folds[[k]]] <- k
+      }
+    } else {
+      clust <- folds
     }
-
-    dists_test <- data.frame(dist = test_dist_feature,
-                             what = "test-to-sample",
-                             dist_type = "feature")
-  }else if (dist_space=="time"){
-    
-    if(dist_fun == "euclidean") {
-      time_train <- sf::st_drop_geometry(x)[, time_var]
-      time_test <- sf::st_drop_geometry(testdata)[, time_var]
-      dmat <- abs(outer(time_test, time_train, FUN=function(a,b) as.numeric(difftime(a,b,units=time_unit))))
-      min_d0 <- apply(dmat, 1, min)
-    }
-
-    dists_test <- data.frame(dist = min_d0,
-                             what = factor("test-to-sample"),
-                             dist_type = "time")
-
-
-
-  }
-  return(dists_test)
-}
-
-
-# Calculate distances between folds
-cvdistance <- function(x, cvfolds, dist_space, variables, time_unit, time_var, algorithm, dist_fun){
-  # Convert cvfold list to vector
-  if(is.list(cvfolds)){
-    n <- max(unlist(cvfolds))
-    clust <- integer(n)
-
-    for (k in seq_along(cvfolds)) {
-      clust[cvfolds[[k]]] <- k
-    }
-  } else {
-    clust <- cvfolds
   }
 
-  if(dist_space == "geographical"){
-
-    # Extract the coordinates of the training points
-    tcoords <- sf::st_coordinates(x)[, 1:2]
-    
-    # Calculate the geographical NNDs between CV folds
-    if(isTRUE(dist_fun == "great_circle")){
-      distmat <- sf::st_distance(x)
+  # Calculate nearest neighbor distances in geographical space
+  if(dist_space == "geographical") {
+    if(dist_fun == "great_circle") {
+      distmat <- if(is.null(y)) sf::st_distance(x) else sf::st_distance(y, x)
       units(distmat) <- NULL
-      diag(distmat) <- NA
-      d_cv <- distclust_distmat(distmat, clust)
-    }else if(isTRUE(dist_fun == "euclidean")) {
-      d_cv <- distclust_euclidean(tcoords, clust, algorithm=algorithm)
+      if(is.null(y)) diag(distmat) <- NA
+      min_d <- if(is.null(folds)) apply(distmat, 1, min, na.rm=TRUE) else distclust_distmat(distmat, folds = clust)
+    } else {
+      min_d <- if(is.null(y)) {
+        if(is.null(folds)) {
+          FNN::knn.dist(coords_x, k = 1, algorithm=algorithm)
+        } else {
+          distclust_euclidean(coords_x, folds = clust, algorithm=algorithm)
+        }
+      } else {
+        FNN::knnx.dist(query = coords_y, data = coords_x, k = 1, algorithm=algorithm)
+      }
     }
-
-    dists_cv <- data.frame(dist = d_cv,
-                           what = factor("CV-distances"),
-                           dist_type = "geographical")
-
-
-  }else if(dist_space == "feature"){
-
-    if(isTRUE(dist_fun == "mahalanobis")) {
-      d_cv <- distclust_MD(x, clust)
-    } else if(isTRUE(dist_fun == "euclidean")) {
-      d_cv <- distclust_euclidean(x, clust, algorithm=algorithm)
-    } else if(isTRUE(dist_fun == "gower")) {
-      d_cv <- distclust_gower(x, clust)
+    
+  } else if(dist_space == "feature"){
+    # Calculate nearest neighbor distances in feature space
+    df_x <- sf::st_drop_geometry(x)
+    df_y <- if(!is.null(y)) sf::st_drop_geometry(y) else df_x
+    mat_x <- as.matrix(df_x)
+    mat_y <- as.matrix(df_y)
+    
+    if(dist_fun == "mahalanobis"){
+      
+      if(is.null(folds)) {
+  
+        S <- if(ncol(mat_x) == 1) matrix(stats::var(mat_x),1,1) else stats::cov(mat_x)
+        S_inv <- MASS::ginv(S)
+        
+        min_d <- vapply(seq_len(nrow(mat_y)), function(i){
+          
+          idx <- if(is.null(y)) seq_len(nrow(mat_x))[-i] else seq_len(nrow(mat_x))
+          
+          min(vapply(idx, function(j){
+            diff <- mat_y[i,] - mat_x[j,]
+            as.numeric(sqrt(t(diff) %*% S_inv %*% diff))
+          }, numeric(1)))
+          
+        }, numeric(1))
+        
+      } else {
+        min_d <- distclust_MD(mat_x, folds = clust)
+      }
+      
+    } else if(dist_fun == "euclidean"){
+      if(is.null(folds)) {
+        min_d <- if(is.null(y)) FNN::knn.dist(mat_x, k=1, algorithm=algorithm) else
+               FNN::knnx.dist(query = mat_y, data = mat_x, k=1, algorithm=algorithm)
+      } else {
+        min_d <- distclust_euclidean(mat_x, folds = clust, algorithm=algorithm)
+      }
+      
+    } else if(dist_fun == "gower"){
+      if(is.null(folds)) {
+        min_d <- if(is.null(y)) {
+          vapply(1:nrow(df_x), function(i) gower::gower_topn(df_x[i,,drop=FALSE], df_x[-i,,drop=FALSE], n=1)$distance[[1]], numeric(1))
+        } else {
+          gower_res <- gower::gower_topn(df_y, df_x, n = 1)
+          vapply(gower_res$distance, function(x) x[1], numeric(1))
+        }
+      } else {
+        min_d <- distclust_gower(df_x, clust)
+      }      
     }
-
-    dists_cv <- data.frame(dist = d_cv,
-                           what = factor("CV-distances"),
-                           dist_type = "feature")
-
-  }else if(dist_space == "time"){
-    time_values <- sf::st_drop_geometry(x)[, time_var]
+    
+  } else if(dist_space == "time"){
+    # Calculate nearest neighbor distances in temporal space
     if(dist_fun == "euclidean") {
-      d_cv <- distclust_time(time_values, clust, time_unit = time_unit)
+      time_x <- sf::st_drop_geometry(x)[,time_var]
+      if(is.null(folds)) {
+        time_y <- if(!is.null(y)) sf::st_drop_geometry(y)[,time_var] else time_x
+        dmat <- abs(outer(time_y, time_x, FUN = function(a,b) as.numeric(difftime(a,b,units=time_unit))))
+        if(is.null(y)) diag(dmat) <- Inf
+        min_d <- apply(dmat, 1, min)
+      } else {
+        min_d <- distclust_time(time_x, clust, time_unit = time_unit)
+      }
+      
     }
-
-    dists_cv <- data.frame(dist = d_cv,
-                           what = factor("CV-distances"),
-                           dist_type = "time")
-
+    
   }
-
-  return(dists_cv)
+  
+  data.frame(dist = min_d,
+             what = factor(dist_type_label),
+             dist_type = dist_space)
 }
 
 
-# Sample prediction points from the prediction area
+## CV-distance functions ----------
+# Helper function: Compute out-of-fold NN distance based on a distance matrix (geographical coordinates / numerical variables)
+distclust_distmat <- function(distm, folds){
+  alldist <- rep(NA, length(folds))
+  for(f in unique(folds)){
+    alldist[f == folds] <- apply(distm[f == folds, f != folds, drop=FALSE], 1, min)
+  }
+  alldist
+}
+
+# Helper function: Compute out-of-fold NN distance using euclidean distances and FNN (projected coordinates / numerical variables)
+distclust_euclidean <- function(tr_coords, folds, algorithm){
+  alldist <- rep(NA, length(folds))
+  for(f in unique(folds)){
+    alldist[f == folds] <- c(FNN::knnx.dist(query = tr_coords[f == folds,,drop=FALSE],
+                                            data = tr_coords[f != folds,,drop=FALSE], k = 1, algorithm=algorithm))
+  }
+  alldist
+}
+
+# Helper function: Compute out-of-fold NN distance using Gower distances (categorical (and numerical) variables)
+distclust_gower <- function(tr_coords, folds){
+
+  alldist <- rep(NA, length(folds))
+  for(f in unique(folds)){
+    alldist[f == folds] <- c(gower::gower_topn(tr_coords[f == folds,,drop=FALSE],
+                                               tr_coords[f != folds,,drop=FALSE], n=1))$distance[[1]]
+  }
+  unlist(alldist)
+}
+
+# Helper function: Compute out-of-fold NN distance using Mahalanobis distances (numerical variables)
+distclust_MD <- function(tr_coords, folds){
+
+  tr_mat <- as.matrix(tr_coords)
+
+  S <- stats::cov(tr_mat)
+  S_inv <- MASS::ginv(S)
+
+  alldist <- rep(NA, length(folds))
+  for(f in unique(folds)) {
+
+    alldist[f == folds] <- apply(tr_mat[f==folds,,drop=FALSE], 1, function(y) {
+      min(apply(tr_mat[f!=folds,,drop=FALSE], 1, function(x) {
+        sqrt(t(y - x) %*% S_inv %*% (y - x))
+      }))
+    })
+  }
+  unlist(alldist)
+}
+
+# Helper function: Compute out-of-fold NN distance using absolute time difference (same as euclidean distances in 1D)
+# (Only used in geodist at the moment, might be used in future implementations of kNNDM in the temporal space)
+distclust_time <- function(time_values, folds, time_unit = "days") {
+  alldist <- rep(NA, length(folds))
+  
+  for(f in unique(folds)) {
+    diffs <- outer(time_values[folds == f], time_values[folds != f], function(x, y) abs(as.numeric(difftime(x, y, units=time_unit))))
+    alldist[folds == f] <- apply(diffs, 1, min)
+  }
+
+  alldist
+}
+
+
+# Helper function: sample prediction points from the prediction area ----------
 sampleFromArea <- function(modeldomain, samplesize, dist_space, variables, sampling){
 
   # Sample points from a Raster
