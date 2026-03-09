@@ -271,7 +271,7 @@ test_that("geodist works with points and test data in feature space", {
 })
 
 
-test_that("geodist works with categorical variables in feature space", {
+test_that("geodist works with categorical variables in feature space using Gower distances", {
   set.seed(1234)
   predictor_stack <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
   predictors <- c("DEM","TWI", "NDRE.M", "Easting", "Northing", "fct")

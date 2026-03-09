@@ -290,10 +290,9 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
       predpoints <- sf::st_set_geometry(predpoints, NULL)
     }
     # get names of categorical variables
-    catVars <- names(tpoints)[which(sapply(tpoints, class)%in%c("factor","character"))]
-    if(length(catVars)==0) {
-      catVars <- NULL
-    }
+    catVars <- names(tpoints)[vapply(tpoints, function(z) inherits(z, c("factor", "character")), logical(1))]
+    if (length(catVars) == 0) catVars <- NULL
+
     if(!is.null(catVars)) {
       message(paste0("variable(s) '", catVars, "' is (are) treated as categorical variables"))
     }
@@ -457,11 +456,12 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, dist_fun,
       tabclust$clust_k <- NA
 
       # compute cluster centroids and apply PC loadings to shuffle along the 1st dimension
-      centr_tpoints <- sapply(tabclust$clust_nk, function(x){
-        centrpca <- matrix(apply(tcoords[clust_nk %in% x, , drop=FALSE], 2, mean), nrow = 1)
+      centr_tpoints <- vapply(tabclust$clust_nk, function(x){
+        centrpca <- matrix(colMeans(tcoords[clust_nk %in% x, , drop = FALSE]), nrow = 1)
         colnames(centrpca) <- colnames(tcoords)
         return(predict(pcacoords, centrpca))
-      })
+      },numeric(1))
+
       tabclust$centrpca <- centr_tpoints
       tabclust <- tabclust[order(tabclust$centrpca),]
 
@@ -567,21 +567,26 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
       S_inv <- MASS::ginv(S)
 
       # calculate distance matrix
-      distmat <- matrix(nrow=nrow(tpoints), ncol=nrow(tpoints))
-      distmat <- sapply(1:nrow(distmat), function(i) {
-        sapply(1:nrow(distmat), function(j) {
-          sqrt(t(tpoints_mat[i,] - tpoints_mat[j,]) %*% S_inv %*% (tpoints_mat[i,] - tpoints_mat[j,]))
-        })
-      })
+      n_rows <- nrow(tpoints_mat)
+      distmat <- vapply(seq_len(n_rows), function(i) {
+          vapply(seq_len(n_rows), function(j) {
+            diff <- tpoints_mat[i, ] - tpoints_mat[j, ]
+            sqrt(t(diff) %*% S_inv %*% diff)
+          }, numeric(1))
+        }, numeric(n_rows))
       diag(distmat) <- NA
-
+      
       Gj <- apply(distmat, 1, min, na.rm=TRUE)
 
-      Gij <- sapply(1:dim(predpoints_mat)[1], function(y) {
-        min(sapply(1:dim(tpoints_mat)[1], function(x) {
-          sqrt(t(predpoints_mat[y,] - tpoints_mat[x,]) %*% S_inv %*% (predpoints_mat[y,] - tpoints_mat[x,]))
-        }))
-      })
+      n_rows_p <- nrow(predpoints_mat)
+      n_rows_t <- nrow(tpoints_mat)
+
+      Gij <- vapply(seq_len(n_rows_p), function(i) {
+        min(vapply(seq_len(n_rows_t), function(j) {
+          diff <- predpoints_mat[i, ] - tpoints_mat[j, ]
+          sqrt(t(diff) %*% S_inv %*% diff)
+        }, numeric(1)))
+      }, numeric(1))
 
 
     } else {
@@ -594,7 +599,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
   } else {
 
     # use Gower distances if categorical variables are present
-    Gj <- sapply(1:nrow(tpoints), function(i) gower::gower_topn(tpoints[i,], tpoints[-i,], n=1)$distance[[1]])
+    Gj <- vapply(1:nrow(tpoints), function(i) gower::gower_topn(tpoints[i,], tpoints[-i,], n=1)$distance[[1]], numeric(1))
     Gij <- c(gower::gower_topn(predpoints, tpoints, n = 1)$distance)
 
   }
@@ -690,13 +695,14 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
 
         # compute cluster centroids and apply PC loadings to shuffle along the 1st dimension
         if(is.null(catVars)) {
-          centr_tpoints <- sapply(tabclust$clust_nk, function(x){
-            centrpca <- matrix(apply(tpoints[clust_nk %in% x, , drop=FALSE], 2, mean), nrow = 1)
+          centr_tpoints <- vapply(tabclust$clust_nk, function(x){
+            centrpca <- matrix(colMeans(tpoints[clust_nk %in% x, , drop = FALSE]), nrow = 1)
             colnames(centrpca) <- colnames(tpoints)
             return(predict(pcacoords, centrpca))
-          })
+          },numeric(1))
+          
         } else {
-          centr_tpoints <- sapply(tabclust$clust_nk, function(x){
+          centr_tpoints <- vapply(tabclust$clust_nk, function(x){
             centrpca_num <- matrix(apply(tpoints[clust_nk %in% x, !(names(tpoints) %in% catVars), drop=FALSE], 2, mean), nrow = 1)
             centrpca_cat <- matrix(apply(tpoints[clust_nk %in% x, names(tpoints) %in% catVars, drop=FALSE], 2,
                                          function(y) names(which.max(table(y)))), nrow = 1)
@@ -705,7 +711,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
 
             return(predict(pcacoords, centrpca_num, centrpca_cat)[,1])
 
-          })
+          }, numeric(1))
         }
 
         tabclust$centrpca <- centr_tpoints

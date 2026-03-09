@@ -161,7 +161,7 @@ geodist <- function(
   ## Check for time variable and unit
   if (dist_space == "time") {
     if (is.null(time_var)) {
-      time_var <- names(which(sapply(x, lubridate::is.Date)))
+      time_var <- names(which(vapply(x, lubridate::is.Date, logical(1))))
       message("time variable selected: ", time_var)
     }
     if (time_unit == "auto") {
@@ -255,7 +255,7 @@ geodist <- function(
     pred_points <- pred_points[, variables]
 
     # Detect categorical variables
-    catVars <- names(x)[sapply(x, function(z) inherits(z, c("factor", "character")))]
+    catVars <- names(x)[vapply(x, function(z) inherits(z, c("factor", "character")), logical(1))]
     if (length(catVars) == 0) catVars <- NULL
 
     # Drop the geometry of the training and prediction (and test) points
@@ -387,20 +387,21 @@ sample2sample <- function(x, dist_space, variables, time_unit, time_var, algorit
         S_inv <- MASS::ginv(S)
 
         # calculate distance matrix
-        distmat <- matrix(nrow=nrow(x), ncol=nrow(x))
-        distmat <- sapply(1:nrow(distmat), function(i) {
-          sapply(1:nrow(distmat), function(j) {
-            sqrt(t(tpoints_mat[i,] - tpoints_mat[j,]) %*% S_inv %*% (tpoints_mat[i,] - tpoints_mat[j,]))
-          })
-        })
+        n_rows <- nrow(tpoints_mat)
+        distmat <- vapply(seq_len(n_rows), function(i) {
+          vapply(seq_len(n_rows), function(j) {
+            diff <- tpoints_mat[i, ] - tpoints_mat[j, ]
+            sqrt(t(diff) %*% S_inv %*% diff)
+          }, numeric(1))
+        }, numeric(n_rows))
         diag(distmat) <- NA
 
         d <- apply(distmat, 1, min, na.rm=TRUE)
       
-      } else if (dist_fun == "euclidean") {
+    } else if (dist_fun == "euclidean") {
         d <- c(FNN::knn.dist(x, k = 1, algorithm=algorithm))
       } else if (dist_fun == "gower") {
-        d <- sapply(1:nrow(x), function(i) gower::gower_topn(x[i,], x[-i,], n=1)$distance[[1]])
+        d <- vapply(1:nrow(x), function(i) gower::gower_topn(x[i,], x[-i,], n=1)$distance[[1]], numeric(1))
       }
 
     sampletosample <- data.frame(dist = d,
@@ -408,13 +409,17 @@ sample2sample <- function(x, dist_space, variables, time_unit, time_var, algorit
                                  dist_type = "feature")
 
   }else if(dist_space == "time"){ # calculate temporal distance matrix
-    time_values <- sf::st_drop_geometry(x)[, time_var]
-    d <- abs(outer(time_values, time_values, FUN=function(a,b) as.numeric(difftime(a,b,units=time_unit))))
-    diag(d) <- Inf
-    min_d <- apply(d, 1, min)
+    if(dist_fun == "euclidean") {
+      time_values <- sf::st_drop_geometry(x)[, time_var]
+      d <- abs(outer(time_values, time_values, FUN=function(a,b) as.numeric(difftime(a,b,units=time_unit))))
+      diag(d) <- Inf
+      min_d <- apply(d, 1, min)
+    }
+
     sampletosample <- data.frame(dist = min_d,
-                                 what = factor("sample-to-sample"),
-                                 dist_type = "time")
+                                what = factor("sample-to-sample"),
+                                dist_type = "time")
+    
   }
   return(sampletosample)
 }
@@ -454,11 +459,16 @@ prediction2sample = function(x, modeldomain, dist_space, samplesize, variables, 
         }
         S_inv <- MASS::ginv(S)
 
-        target_dist_feature <- sapply(1:dim(predpoints_mat)[1], function(y) {
-          min(sapply(1:dim(tpoints_mat)[1], function(x) {
-            sqrt(t(predpoints_mat[y,] - tpoints_mat[x,]) %*% S_inv %*% (predpoints_mat[y,] - tpoints_mat[x,]))
-          }))
-        })
+      n_rows_p <- nrow(predpoints_mat)
+      n_rows_t <- nrow(tpoints_mat)
+
+      target_dist_feature <- vapply(seq_len(n_rows_p), function(i) {
+        min(vapply(seq_len(n_rows_t), function(j) {
+          diff <- predpoints_mat[i, ] - tpoints_mat[j, ]
+          sqrt(t(diff) %*% S_inv %*% diff)
+        }, numeric(1)))
+      }, numeric(1))
+      
     } else if(isTRUE(dist_fun == "euclidean")) {
       target_dist_feature <- c(FNN::knnx.dist(query = modeldomain, data = x, k = 1, algorithm=algorithm))
     } else if(isTRUE(dist_fun == "gower")) {
@@ -470,10 +480,12 @@ prediction2sample = function(x, modeldomain, dist_space, samplesize, variables, 
                                      dist_type = "feature")
   }else if(dist_space == "time"){
 
-    time_train <- sf::st_drop_geometry(x)[, time_var]
-    time_pred <- sf::st_drop_geometry(modeldomain)[, time_var]
-    dmat <- abs(outer(time_pred, time_train, FUN=function(a,b) as.numeric(difftime(a,b,units=time_unit))))
-    min_d0 <- apply(dmat, 1, min)
+    if(dist_fun == "euclidean") {
+      time_train <- sf::st_drop_geometry(x)[, time_var]
+      time_pred <- sf::st_drop_geometry(modeldomain)[, time_var]
+      dmat <- abs(outer(time_pred, time_train, FUN=function(a,b) as.numeric(difftime(a,b,units=time_unit))))
+      min_d0 <- apply(dmat, 1, min)
+    }
 
     sampletoprediction <- data.frame(dist = min_d0,
                                      what = factor("prediction-to-sample"),
@@ -520,11 +532,15 @@ test2sample <- function(x, testdata, dist_space, variables, time_unit, time_var,
         }
         S_inv <- MASS::ginv(S)
 
-        test_dist_feature <- sapply(1:dim(testpoints_mat)[1], function(y) {
-          min(sapply(1:dim(tpoints_mat)[1], function(x) {
-            sqrt(t(testpoints_mat[y,] - tpoints_mat[x,]) %*% S_inv %*% (testpoints_mat[y,] - tpoints_mat[x,]))
-          }))
-        })
+        n_rows_test <- nrow(testpoints_mat)
+        n_rows_train <- nrow(tpoints_mat)
+
+        target_dist_feature <- vapply(seq_len(n_rows_test), function(i) {
+          min(vapply(seq_len(n_rows_train), function(j) {
+            diff <- testpoints_mat[i, ] - tpoints_mat[j, ]
+            sqrt(t(diff) %*% S_inv %*% diff)
+          }, numeric(1)))
+        }, numeric(1))
       
     } else if(isTRUE(dist_fun == "euclidean")) {
       test_dist_feature <- c(FNN::knnx.dist(query = testdata, data = x, k = 1, algorithm=algorithm))
@@ -536,10 +552,13 @@ test2sample <- function(x, testdata, dist_space, variables, time_unit, time_var,
                              what = "test-to-sample",
                              dist_type = "feature")
   }else if (dist_space=="time"){
-    time_train <- sf::st_drop_geometry(x)[, time_var]
-    time_test <- sf::st_drop_geometry(testdata)[, time_var]
-    dmat <- abs(outer(time_test, time_train, FUN=function(a,b) as.numeric(difftime(a,b,units=time_unit))))
-    min_d0 <- apply(dmat, 1, min)
+    
+    if(dist_fun == "euclidean") {
+      time_train <- sf::st_drop_geometry(x)[, time_var]
+      time_test <- sf::st_drop_geometry(testdata)[, time_var]
+      dmat <- abs(outer(time_test, time_train, FUN=function(a,b) as.numeric(difftime(a,b,units=time_unit))))
+      min_d0 <- apply(dmat, 1, min)
+    }
 
     dists_test <- data.frame(dist = min_d0,
                              what = factor("test-to-sample"),
@@ -599,7 +618,9 @@ cvdistance <- function(x, cvfolds, dist_space, variables, time_unit, time_var, a
 
   }else if(dist_space == "time"){
     time_values <- sf::st_drop_geometry(x)[, time_var]
-    d_cv <- distclust_time(time_values, clust, time_unit = time_unit)
+    if(dist_fun == "euclidean") {
+      d_cv <- distclust_time(time_values, clust, time_unit = time_unit)
+    }
 
     dists_cv <- data.frame(dist = d_cv,
                            what = factor("CV-distances"),
