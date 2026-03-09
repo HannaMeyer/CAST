@@ -301,7 +301,8 @@ test_that("geodist works with categorical variables in feature space using Gower
                   modeldomain=predictor_stack,
                   dist_space = "feature",
                   testdata = test_pts,
-                  cvfolds = folds$indexOut)
+                  cvfolds = folds$indexOut,
+                scale_vars = FALSE)
 
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
   mean_prediction2sample <- round(mean(dist[dist$what=="prediction-to-sample","dist"]), 4)

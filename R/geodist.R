@@ -23,7 +23,9 @@
 #' `gower` also works with mixed data including numerical and categorical variables.
 #' For `dist_space`="time", currently only the absolute difference is implemented (which equals euclidean distance in one dimension, and is thus covered by `dist_fun=euclidean`)
 #' For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.
-#' @return A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
+#' @param scale_vars boolean. Should variables be scaled? Only for `dist_space`="feature". 
+#' Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
+#' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.#' @return A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent (if no `preddata` are supplied).
 #'     If `dist_space` = "feature", the argument modeldomain has to be a raster and include predictors. The only exception is when the provided training data and preddata already include the predictor values.
 #'     If not provided they are extracted from the modeldomain raster. If some predictors are categorical (i.e., of class factor or character), gower distances will be used.
@@ -137,7 +139,8 @@ geodist <- function(
   time_var = NULL,
   time_unit = "auto",
   algorithm = "brute",
-  dist_fun = "euclidean"
+  dist_fun = "euclidean",
+  scale_vars = TRUE
 ){
 
   # 1. Input validation & normalization ----------
@@ -179,13 +182,15 @@ geodist <- function(
     sf::st_crs(preddata)
   } else if (!is.null(modeldomain) && inherits(modeldomain, "sf")) {
     sf::st_crs(modeldomain)
+  } else if (!is.null(modeldomain) && inherits(modeldomain, "SpatRaster")) {
+    sf::st_crs(modeldomain)
   } else {
     sf::st_crs(x)
   }
 
   # transform training points to the CRS of preddata (or modeldomain)
   if (!is.na(ref_crs) && !is.na(sf::st_crs(x)) && sf::st_crs(x) != ref_crs) {
-    message("Transforming training data CRS")
+    message("Transforming training data CRS to match the preddata/modeldomain")
     x <- sf::st_transform(x, ref_crs)
   }
 
@@ -194,7 +199,7 @@ geodist <- function(
       !is.na(sf::st_crs(testdata)) &&
       !is.na(sf::st_crs(x)) &&
       sf::st_crs(testdata) != sf::st_crs(x)) {
-    message("Transforming test data CRS")
+    message("Transforming test data CRS to match the preddata/modeldomain")
     testdata <- sf::st_transform(testdata, sf::st_crs(x))
   }
 
@@ -205,10 +210,6 @@ geodist <- function(
   } else {
     sf::st_is_longlat(ref_crs)
   }
-
-  # extract the coordinates of the training points
-  tcoords <- sf::st_coordinates(x)[, 1:2]
-
 
   # 3. Prediction point generation ----------
 
@@ -240,17 +241,17 @@ geodist <- function(
     # Extract predictor values from the modeldomain if they are not attached
     if (any(!variables %in% names(x))) {
       message("Extracting predictors from modeldomain")
-      x <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(x), bind = TRUE))
+      x <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(x), bind = TRUE, na.rm = TRUE))
     }
     x <- x[, variables]
 
     if (!is.null(testdata) && any(!variables %in% names(testdata))) {
-      testdata <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(testdata), bind = TRUE))
+      testdata <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(testdata), bind = TRUE, na.rm = TRUE))
     }
     if (!is.null(testdata)) testdata <- testdata[, variables]
 
     if (any(!variables %in% names(pred_points))) {
-      pred_points <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(pred_points), bind = TRUE))
+      pred_points <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(pred_points), bind = TRUE, na.rm = TRUE))
     }
     pred_points <- pred_points[, variables]
 
@@ -263,19 +264,49 @@ geodist <- function(
     pred_points <- sf::st_drop_geometry(pred_points)
     if (!is.null(testdata)) testdata <- sf::st_drop_geometry(testdata)
 
-    # Scale the training, prediction and test points
-    if (is.null(catVars)) {
-      scaleparam <- attributes(scale(x))
-      x <- data.frame(scale(x))
-      pred_points <- data.frame(scale(pred_points,
-                                      center = scaleparam$`scaled:center`,
-                                      scale = scaleparam$`scaled:scale`))
-      if (!is.null(testdata)) {
-        testdata <- data.frame(scale(testdata,
-                                     center = scaleparam$`scaled:center`,
-                                     scale = scaleparam$`scaled:scale`))
+    # Optionally scale the training, prediction and test points
+    if(isTRUE(scale_vars)) {
+      if (is.null(catVars)) {
+            scaleparam <- attributes(scale(x))
+            x <- data.frame(scale(x))
+            pred_points <- data.frame(scale(pred_points,
+                                            center = scaleparam$`scaled:center`,
+                                            scale = scaleparam$`scaled:scale`))
+            if (!is.null(testdata)) {
+              testdata <- data.frame(scale(testdata,
+                                          center = scaleparam$`scaled:center`,
+                                          scale = scaleparam$`scaled:scale`))
+            }
+          } else {
+            x_cat <- x[,catVars,drop=FALSE]
+            pred_points_cat <- pred_points[,catVars,drop=FALSE]
+        
+            num_cols <- !(names(x) %in% catVars)
+            x_num <- x[,num_cols,drop=FALSE]
+            pred_points_num <- pred_points[,-which(names(pred_points)%in%catVars),drop=FALSE]
+
+            scale_attr <- attributes(scale(x_num))
+            x <- scale(x_num) |> as.data.frame()
+            pred_points <- scale(pred_points_num,center=scale_attr$`scaled:center`,
+                                scale=scale_attr$`scaled:scale`) |>
+              as.data.frame()
+        
+            x <- as.data.frame(cbind(x, lapply(x_cat, as.factor)))
+            pred_points <- as.data.frame(cbind(pred_points, lapply(pred_points_cat, as.factor)))
+          
+            if (!is.null(testdata)) {
+              testdata_cat <- testdata[,catVars,drop=FALSE]
+              testdata_num <- testdata[,num_cols]
+              testdata <- scale(testdata_num,center=scale_attr$`scaled:center`,
+                                scale=scale_attr$`scaled:scale`) |>
+               as.data.frame()
+        
+              testdata <- as.data.frame(cbind(testdata, lapply(testdata_cat, as.factor)))
+            }
+
       }
     }
+    
   }
 
 
@@ -301,28 +332,26 @@ geodist <- function(
 
   # Calculate NNDs between training points
   s2s <- sample2sample(
-    x, dist_space, variables, time_unit, time_var,
-    algorithm, dist_fun, tcoords
+    x=x, dist_space = dist_space, variables = variables, time_unit = time_unit, time_var = time_var,
+    algorithm = algorithm, dist_fun = dist_fun
   )
-
   # Calculate NNDs between prediction and training points
   p2s <- prediction2sample(
-    x, pred_points, dist_space, samplesize, variables,
-    time_unit, time_var, algorithm, dist_fun, tcoords
+    x=x, modeldomain = pred_points, dist_space=dist_space, samplesize=samplesize, variables = variables,
+    time_unit = time_unit, time_var = time_var, algorithm = algorithm, dist_fun = dist_fun
   )
-
   dists <- rbind(s2s, p2s)
 
   # Calculate NNDs between test points and training points
   if (!is.null(testdata)) {
-    dists <- rbind(dists, test2sample(x, testdata, dist_space, variables, time_unit, time_var, algorithm, dist_fun, tcoords))
+    dists <- rbind(dists, test2sample(x=x, testdata=testdata, dist_space=dist_space, variables=variables,
+      time_unit=time_unit, time_var=time_var, algorithm=algorithm, dist_fun=dist_fun))
   }
-
   # Calculate NNDs between CV folds
   if (!is.null(cvfolds)) {
-    dists <- rbind(dists, cvdistance(x, cvfolds, dist_space, variables, time_unit, time_var, algorithm, dist_fun, tcoords))
+    dists <- rbind(dists, cvdistance(x=x, cvfolds=cvfolds, dist_space=dist_space, variables=variables, 
+      time_unit=time_unit, time_var=time_var, algorithm=algorithm, dist_fun=dist_fun))
   }
-
 
   # 6. Post-processing ----------
 
@@ -357,9 +386,13 @@ geodist <- function(
 ## Function definitions ----------
 
 # Sample to sample distance calculation
-sample2sample <- function(x, dist_space, variables, time_unit, time_var, algorithm, dist_fun, tcoords){
+sample2sample <- function(x, dist_space, variables, time_unit, time_var, algorithm, dist_fun){
   if(dist_space == "geographical"){
 
+    # Extract the coordinates of the training points
+    tcoords <- sf::st_coordinates(x)[, 1:2]
+
+    # Calculate geographical NNDs
     if(isTRUE(dist_fun == "great_circle")){
       distmat <- sf::st_distance(x)
       units(distmat) <- NULL
@@ -426,11 +459,14 @@ sample2sample <- function(x, dist_space, variables, time_unit, time_var, algorit
 
 
 # Prediction to sample distance calculation
-prediction2sample = function(x, modeldomain, dist_space, samplesize, variables, time_unit, time_var, algorithm, dist_fun, tcoords){
+prediction2sample = function(x, modeldomain, dist_space, samplesize, variables, time_unit, time_var, algorithm, dist_fun){
 
   if(dist_space == "geographical"){
 
-    # calculate the NNDs between prediction points and training points
+    # Extract the coordinates of the training points
+    tcoords <- sf::st_coordinates(x)[, 1:2]
+    
+    # Calculate the geographical NNDs between prediction points and training points
     if(isTRUE(dist_fun == "great_circle")){
       d0 <- sf::st_distance(modeldomain, x)
       units(d0) <- NULL
@@ -498,11 +534,14 @@ prediction2sample = function(x, modeldomain, dist_space, samplesize, variables, 
 
 
 # Test to sample distance calculation
-test2sample <- function(x, testdata, dist_space, variables, time_unit, time_var, algorithm, dist_fun, tcoords){
+test2sample <- function(x, testdata, dist_space, variables, time_unit, time_var, algorithm, dist_fun){
 
   if(dist_space == "geographical"){
 
-    # calculate the NNDs between test points and training points
+    # Extract the coordinates of the training points
+    tcoords <- sf::st_coordinates(x)[, 1:2]
+    
+    # Calculate the geographical NNDs between test points and training points
     if(isTRUE(dist_fun == "great_circle")){
       d_test <- sf::st_distance(testdata, x)
       units(d_test) <- NULL
@@ -572,8 +611,7 @@ test2sample <- function(x, testdata, dist_space, variables, time_unit, time_var,
 
 
 # Calculate distances between folds
-cvdistance <- function(x, cvfolds, dist_space, variables, time_unit, time_var, algorithm, dist_fun, tcoords){
-  
+cvdistance <- function(x, cvfolds, dist_space, variables, time_unit, time_var, algorithm, dist_fun){
   # Convert cvfold list to vector
   if(is.list(cvfolds)){
     n <- max(unlist(cvfolds))
@@ -588,6 +626,10 @@ cvdistance <- function(x, cvfolds, dist_space, variables, time_unit, time_var, a
 
   if(dist_space == "geographical"){
 
+    # Extract the coordinates of the training points
+    tcoords <- sf::st_coordinates(x)[, 1:2]
+    
+    # Calculate the geographical NNDs between CV folds
     if(isTRUE(dist_fun == "great_circle")){
       distmat <- sf::st_distance(x)
       units(distmat) <- NULL
@@ -663,13 +705,13 @@ sampleFromArea <- function(modeldomain, samplesize, dist_space, variables, sampl
     template <- sf::st_as_sf(terra::as.polygons(raster_template, na.rm = TRUE))
     # Sample points from the polygon
     message(paste0("Sampling ", samplesize, " prediction locations from the modeldomain vector."))
-    predictionloc <- sf::st_sample(template, size = samplesize, type = sampling) |> 
+    predictionloc <- suppressMessages(sf::st_sample(template, size = samplesize, type = sampling)) |> 
       sf::st_set_crs(sf::st_crs(modeldomain))
 
   } else {
     # Sample points from a Polygon
     message(paste0("Sampling ", samplesize, " prediction locations from the modeldomain vector."))
-    predictionloc <- sf::st_sample(modeldomain, size = samplesize, type = sampling) |> 
+    predictionloc <- suppressMessages(sf::st_sample(modeldomain, size = samplesize, type = sampling)) |> 
       sf::st_set_crs(sf::st_crs(modeldomain))
   }
   return(predictionloc)

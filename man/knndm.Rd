@@ -16,7 +16,8 @@ knndm(
   samplesize = 1000,
   sampling = "regular",
   dist_fun = "euclidean",
-  algorithm = "brute"
+  algorithm = "brute",
+  scale_vars = TRUE
 )
 }
 \arguments{
@@ -50,6 +51,10 @@ Only required if modeldomain is used instead of predpoints.}
 For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.}
 
 \item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
+
+\item{scale_vars}{boolean. Should variables be scaled? Only for `dist_space`="feature". 
+Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
+For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.}
 }
 \value{
 An object of class \emph{knndm} consisting of a list of eight elements:

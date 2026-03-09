@@ -250,14 +250,19 @@ Then we visualize nearest neighbor feature space distances under consideration o
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 
+# project the training points to the raster CRS
+pts_clustered <- st_transform(pts_clustered, st_crs(predictors_global))
+
 # use random CV:
-dist_clstr_rCV <- geodist(pts_clustered,predictors_global,
+dist_clstr_rCV <- geodist(pts_clustered,
+                          modeldomain = predictors_global,
                                dist_space = "feature", 
                                sampling="Fibonacci",
                                cvfolds = randomfolds)
 
 # use spatial CV:
-dist_clstr_sCV <- geodist(pts_clustered,predictors_global,
+dist_clstr_sCV <- geodist(pts_clustered,
+                          modeldomain = predictors_global,
                                dist_space = "feature", sampling="Fibonacci",
                                cvfolds = spatialfolds$indexOut)
 

@@ -23,6 +23,9 @@
 #' `gower` also works with mixed data including numerical and categorical variables.
 #' For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.
 #' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
+#' @param scale_vars boolean. Should variables be scaled? Only for `dist_space`="feature". 
+#' Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
+#' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.
 #' @return An object of class \emph{knndm} consisting of a list of eight elements:
 #' indx_train, indx_test (indices of the observations to use as
 #' training/test data in each kNNDM CV iteration), Gij (distances for
@@ -211,7 +214,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
                   k = 10, maxp = 0.5,
                   clustering = "hierarchical", linkf = "ward.D2",
                   samplesize = 1000, sampling = "regular", dist_fun="euclidean",
-                  algorithm="brute"){
+                  algorithm="brute", scale_vars = TRUE){
 
   # create sample points from modeldomain
   if(is.null(predpoints)&!is.null(modeldomain)){
@@ -252,7 +255,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
 
     # We sample
     message(paste0(samplesize, " prediction points are sampled from the modeldomain"))
-    predpoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
+    predpoints <- suppressMessages(sf::st_sample(x = modeldomain, size = samplesize, type = sampling))
     sf::st_crs(predpoints) <- sf::st_crs(modeldomain)
 
     if(dist_space == "feature") {
@@ -324,7 +327,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     # prior checks
     check_knndm_feature(tpoints, predpoints, dist_space, k, maxp, clustering, catVars, dist_fun)
     # kNNDM in feature space
-    knndm_res <- knndm_feature(tpoints, predpoints, k, maxp, clustering, linkf, catVars, dist_fun, algorithm=algorithm)
+    knndm_res <- knndm_feature(tpoints, predpoints, k, maxp, clustering, linkf, catVars, dist_fun, algorithm=algorithm, scale_vars)
 
   }
 
@@ -519,34 +522,35 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, dist_fun,
 
 
 # kNNDM in the feature space
-knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVars, dist_fun, algorithm) {
+knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVars, dist_fun, algorithm, scale_vars)  {
 
-  # rescale data
-  if(is.null(catVars)) {
+  # rescale data (optional)
+  if(isTRUE(scale_vars)) {
+    if(is.null(catVars)) {
 
-    scale_attr <- attributes(scale(tpoints))
-    tpoints <- scale(tpoints) |> as.data.frame()
-    predpoints <- scale(predpoints,center=scale_attr$`scaled:center`,
-                        scale=scale_attr$`scaled:scale`) |>
-      as.data.frame()
+      scale_attr <- attributes(scale(tpoints))
+      tpoints <- scale(tpoints) |> as.data.frame()
+      predpoints <- scale(predpoints,center=scale_attr$`scaled:center`,
+                          scale=scale_attr$`scaled:scale`) |>
+        as.data.frame()
 
-  } else {
-    tpoints_cat <- tpoints[,catVars,drop=FALSE]
-    predpoints_cat <- predpoints[,catVars,drop=FALSE]
+    } else {
+      tpoints_cat <- tpoints[,catVars,drop=FALSE]
+      predpoints_cat <- predpoints[,catVars,drop=FALSE]
 
-    tpoints_num <- tpoints[,-which(names(tpoints)%in%catVars),drop=FALSE]
-    predpoints_num <- predpoints[,-which(names(predpoints)%in%catVars),drop=FALSE]
+      tpoints_num <- tpoints[,-which(names(tpoints)%in%catVars),drop=FALSE]
+      predpoints_num <- predpoints[,-which(names(predpoints)%in%catVars),drop=FALSE]
 
-    scale_attr <- attributes(scale(tpoints_num))
-    tpoints <- scale(tpoints_num) |> as.data.frame()
-    predpoints <- scale(predpoints_num,center=scale_attr$`scaled:center`,
-                        scale=scale_attr$`scaled:scale`) |>
-      as.data.frame()
-    tpoints <- as.data.frame(cbind(tpoints, lapply(tpoints_cat, as.factor)))
-    predpoints <- as.data.frame(cbind(predpoints, lapply(predpoints_cat, as.factor)))
+      scale_attr <- attributes(scale(tpoints_num))
+      tpoints <- scale(tpoints_num) |> as.data.frame()
+      predpoints <- scale(predpoints_num,center=scale_attr$`scaled:center`,
+                          scale=scale_attr$`scaled:scale`) |>
+        as.data.frame()
+      tpoints <- as.data.frame(cbind(tpoints, lapply(tpoints_cat, as.factor)))
+      predpoints <- as.data.frame(cbind(predpoints, lapply(predpoints_cat, as.factor)))
 
+    }
   }
-
 
   # Gj and Gij calculation
   if(is.null(catVars)) {

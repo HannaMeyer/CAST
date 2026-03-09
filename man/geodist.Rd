@@ -17,7 +17,8 @@ geodist(
   time_var = NULL,
   time_unit = "auto",
   algorithm = "brute",
-  dist_fun = "euclidean"
+  dist_fun = "euclidean",
+  scale_vars = TRUE
 )
 }
 \arguments{
@@ -54,9 +55,10 @@ Use sampling = "Fibonacci" for global applications (raster objects will be trans
 `gower` also works with mixed data including numerical and categorical variables.
 For `dist_space`="time", currently only the absolute difference is implemented (which equals euclidean distance in one dimension, and is thus covered by `dist_fun=euclidean`)
 For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.}
-}
-\value{
-A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
+
+\item{scale_vars}{boolean. Should variables be scaled? Only for `dist_space`="feature". 
+Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
+For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.#' @return A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.}
 }
 \description{
 Calculates nearest neighbor distances in geographic space or feature space between training data as well as between prediction locations and training data.
