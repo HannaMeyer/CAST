@@ -293,7 +293,7 @@ test_that("kNNDM works in feature space with categorical variables and predpoint
 
 
   knndm_folds <- knndm(tpoints=train_points, predpoints = prediction_points,
-                       dist_space="feature", clustering = "hierarchical")
+                       dist_space="feature", clustering = "hierarchical", dist_fun = "gower")
 
   expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),3), 0.057)
 
@@ -319,8 +319,8 @@ test_that("kNNDM works in feature space with clustered training points, categori
   pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
   pts <- terra::extract(predictor_stack, terra::vect(pts), ID=FALSE)
 
-  knndm_folds_kproto <- knndm(tpoints=pts, modeldomain = predictor_stack, dist_space="feature", clustering = "kmeans")
-  knndm_folds_hclust <- knndm(tpoints=pts, modeldomain = predictor_stack, dist_space="feature", clustering = "hierarchical")
+  knndm_folds_kproto <- knndm(tpoints=pts, modeldomain = predictor_stack, dist_space="feature", clustering = "kmeans", dist_fun = "gower")
+  knndm_folds_hclust <- knndm(tpoints=pts, modeldomain = predictor_stack, dist_space="feature", clustering = "hierarchical", dist_fun = "gower")
 
   expect_equal(round(as.numeric(knndm_folds_kproto$Gjstar[20]),3), 0.077)
   expect_equal(round(as.numeric(knndm_folds_hclust$Gjstar[20]),3), 0.078)

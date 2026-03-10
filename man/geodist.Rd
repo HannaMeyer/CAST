@@ -37,8 +37,7 @@ geodist(
 Or a vector that contains the ID of the fold for each training point. See e.g. ?createFolds or ?CreateSpacetimeFolds or ?nndm}
 
 \item{CVtrain}{optional.  A list, where each element contains the data points used for training during the cross validation iteration.
-Only accepted when CVtest has been specified, and only required if CVtrain is not the opposite of CVtest.
-Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
+Only required if CVtrain is not the opposite of CVtest. Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
 \item{testdata}{optional. object of class sf: Point data used for independent validation. May already include the predictor values if `dist_space`=feature.}
 
@@ -58,11 +57,11 @@ Use sampling = "Fibonacci" for global applications (raster objects will be trans
 
 \item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
 
-\item{dist_fun}{character. Currently covers `euclidean` (default), `gower`, `mahalanobis` and `great_circle`.
+\item{dist_fun}{character. Currently covers `euclidean` (default), `gower`, `mahalanobis`, `great_circle` and `abs_time`.
 `gower` and `mahalanobis` only work with `dist_space`="feature", while `great_circle` only works with `dist_space`="geographical". 
 `mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables, 
 `gower` also works with mixed data including numerical and categorical variables.
-For `dist_space`="time", currently only the absolute difference is implemented (which equals euclidean distance in one dimension, and is thus covered by `dist_fun=euclidean`)
+For `dist_space`="time", currently only the absolute difference (`abs_time`) is implemented.
 For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.}
 
 \item{scale_vars}{boolean. Should variables be scaled? Only for `dist_space`="feature". 

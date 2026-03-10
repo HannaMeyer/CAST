@@ -394,10 +394,9 @@ check_knndm_geo <- function(tpoints, predpoints, dist_space, k, maxp, clustering
 
 check_knndm_feature <- function(tpoints, predpoints, dist_space, k, maxp, clustering, catVars, dist_fun){
 
-  if(!is.null(catVars) & isTRUE(dist_fun == "mahalanobis")) {
-    warning("Mahalanobis distances not supported for categorical features, Gower distances will be used")
-    dist_fun <- "gower"
-  }
+  if (!is.null(catVars) && dist_fun != "gower") {
+      stop("Only gower distances work with categorical features. Please use dist_fun = 'gower'")
+  } 
 
   if (!(maxp < 1 & maxp > 1/k)) {
     stop("maxp must be strictly between 1/k and 1")
@@ -449,7 +448,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, dist_fun,
     if(isTRUE(dist_fun == "great_circle")){
       Gjstar <- distclust_distmat(distmat, clust)
     }else{
-      Gjstar <- distclust_euclidean(tcoords, clust, algorithm=algorithm)
+      Gjstar <- cv_distances(tcoords, CVtest = clust, algorithm=algorithm, dist_fun = dist_fun)
     }
     k_final <- "random CV"
     W_final <- twosamples::wass_stat(Gjstar, Gij)
@@ -523,7 +522,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, dist_fun,
         if(isTRUE(dist_fun == "great_circle")){
           Gjstar_i <- distclust_distmat(distmat, clust_k)
         }else{
-          Gjstar_i <- distclust_euclidean(tcoords, clust_k,algorithm=algorithm)
+          Gjstar_i <- cv_distances(tcoords, CVtest = clust_k,algorithm=algorithm, dist_fun = dist_fun)
         }
         clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
         clustgroups[[paste0("nk", nk)]] <- clust_k
@@ -537,7 +536,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, clustering, linkf, dist_fun,
     if(isTRUE(dist_fun == "great_circle")){
       Gjstar <- distclust_distmat(distmat, clust)
     }else{
-      Gjstar <- distclust_euclidean(tcoords, clust,algorithm=algorithm)
+      Gjstar <- cv_distances(tcoords, CVtest = clust,algorithm=algorithm, dist_fun = dist_fun)
     }
   }
 
@@ -648,13 +647,13 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
 
     if(is.null(catVars)) {
       if(isTRUE(dist_fun == "mahalanobis")) {
-        Gjstar <- distclust_MD(tpoints, clust)
+        Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
       } else {
-        Gjstar <- distclust_euclidean(tpoints, clust,algorithm=algorithm)
+        Gjstar <- cv_distances(tpoints, clust,algorithm=algorithm, dist_fun = dist_fun)
       }
 
     } else {
-      Gjstar <- distclust_gower(tpoints, clust)
+      Gjstar <- cv_distances(tpoints, clust, dist_fun = dist_fun)
     }
 
     k_final <- "random CV"
@@ -776,12 +775,12 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
           if(clustering == "kmeans") {
             if(is.null(catVars)) {
               if(isTRUE(dist_fun == "mahalanobis")){
-                Gjstar_i <- distclust_MD(tpoints, clust_k)
+                Gjstar_i <- cv_distances(tpoints, CVtest = clust_k, dist_fun = dist_fun)
               } else {
-                Gjstar_i <- distclust_euclidean(tpoints, clust_k,algorithm=algorithm)
+                Gjstar_i <- cv_distances(tpoints, CVtest = clust_k,algorithm=algorithm, dist_fun = dist_fun)
               }
             } else {
-              Gjstar_i <- distclust_gower(tpoints, clust_k)
+              Gjstar_i <- cv_distances(tpoints, CVtest = clust_k, dist_fun = dist_fun)
             }
 
           } else {
@@ -804,13 +803,13 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
     if(clustering == "kmeans") {
       if(is.null(catVars)) {
         if(isTRUE(dist_fun == "mahalanobis")) {
-          Gjstar <- distclust_MD(tpoints, clust)
+          Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
         } else {
-          Gjstar <- distclust_euclidean(tpoints, clust,algorithm=algorithm)
+          Gjstar <- cv_distances(tpoints, CVtest = clust,algorithm=algorithm, dist_fun = dist_fun)
         }
 
       } else {
-        Gjstar <- distclust_gower(tpoints, clust)
+        Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
       }
     } else {
       Gjstar <- distclust_distmat(distmat, clust)
@@ -830,3 +829,11 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, clustering, linkf, catVa
 }
 
 
+# Helper function: Compute out-of-fold NN distance based on a distance matrix (geographical coordinates / numerical variables)
+distclust_distmat <- function(distm, folds){
+  alldist <- rep(NA, length(folds))
+  for(f in unique(folds)){
+    alldist[f == folds] <- apply(distm[f == folds, f != folds, drop=FALSE], 1, min)
+  }
+  alldist
+}

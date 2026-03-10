@@ -322,7 +322,7 @@ test_that("geodist works in temporal space", {
   sf::st_crs(dat) <- 26911
   trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
   predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
-  dist <- CAST::geodist(trainDat, preddata = predictionDat, dist_space = "time", time_unit = "days")
+  dist <- CAST::geodist(trainDat, preddata = predictionDat, dist_space = "time", dist_fun = "abs_time", time_unit = "days")
 
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
   mean_prediction_to_sample <- round(mean(dist[dist$what=="prediction-to-sample","dist"]), 4)
@@ -330,7 +330,7 @@ test_that("geodist works in temporal space", {
   expect_equal(mean_sample2sample, 0.02)
   expect_equal(mean_prediction_to_sample, 194.7656)
 
-  dist <- CAST::geodist(trainDat, preddata = predictionDat, dist_space = "time", time_unit = "hours")
+  dist <- CAST::geodist(trainDat, preddata = predictionDat, dist_space = "time", dist_fun = "abs_time", time_unit = "hours")
   mean_prediction_to_sample <- round(mean(dist[dist$what=="prediction-to-sample","dist"]), 2)
   expect_equal(mean_prediction_to_sample, 4674.37)
 
@@ -347,7 +347,7 @@ test_that("geodist works in temporal space and with CV", {
   CVtest <- CreateSpacetimeFolds(trainDat,timevar = "week")
 
   dist <- CAST::geodist(trainDat,preddata = predictionDat,CVtest = CVtest$indexOut,
-                        dist_space = "time",time_unit = "days")
+                        dist_space = "time", dist_fun = "abs_time", time_unit = "days")
 
   mean_cv <- round(mean(dist[dist$what=="CV-distances","dist"]), 3)
 
