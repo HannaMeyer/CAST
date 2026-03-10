@@ -166,11 +166,11 @@ See tutorial on geodistance visualizations in this package for more information.
 
 
 ```{r, message = FALSE, warning=FALSE}
-plot(geodist(splotdata,predictors_sp,CVtest=model_default$control$indexOut))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=model_default$control$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
-plot(geodist(splotdata,predictors_sp,CVtest=indices_LLO$indexOut))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=indices_LLO$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
-plot(geodist(splotdata,predictors_sp,CVtest=indices_knndm$indx_test))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=indices_knndm$indx_test, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
 ```
 

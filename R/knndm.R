@@ -26,8 +26,8 @@
 #' @param scale_vars boolean. Should variables be scaled? Only for `dist_space`="feature". 
 #' Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
 #' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.
-#' @param space depreceated. Use `dist_space` instead.
-#' @param useMD depreceated. Use `dist_fun` instead.
+#' @param space deprecated. Use `dist_space` instead.
+#' @param useMD deprecated. Use `dist_fun` instead.
 #' @return An object of class \emph{knndm} consisting of a list of eight elements:
 #' indx_train, indx_test (indices of the observations to use as
 #' training/test data in each kNNDM CV iteration), Gij (distances for
@@ -219,7 +219,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
                   algorithm="brute", scale_vars = TRUE, 
                   space = NULL, useMD = NULL){
 
-  # Check for depreceated arguments
+  # Check for deprecated arguments
   if (!is.null(space)) {
     warning("Argument 'space' is deprecated. Please use 'dist_space' instead.",
             call. = FALSE)
@@ -227,7 +227,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
   }
 
   if (!is.null(useMD)) {
-    warning("Argument 'useMD' is deprecated. Please use 'dist_space' instead.",
+    warning("Argument 'useMD' is deprecated. Please use 'dist_fun' instead.",
             call. = FALSE)
   }
 
@@ -375,9 +375,6 @@ check_knndm_geo <- function(tpoints, predpoints, dist_space, k, maxp, clustering
   }
   if (!(clustering %in% c("kmeans", "hierarchical"))) {
     stop("clustering must be one of `kmeans` or `hierarchical`")
-  }
-  if (dist_space != "geographical") {
-    stop("Only kNNDM in the geographical space is currently implemented.")
   }
   if (!(maxp < 1 & maxp > 1/k)) {
     stop("maxp must be strictly between 1/k and 1")

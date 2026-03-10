@@ -300,6 +300,7 @@ test_that("geodist works with categorical variables in feature space using Gower
   dist <- geodist(x=pts,
                   modeldomain=predictor_stack,
                   dist_space = "feature",
+                  dist_fun = "gower",
                   testdata = test_pts,
                   CVtest = folds$indexOut,
                   scale_vars = FALSE)

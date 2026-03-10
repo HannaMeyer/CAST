@@ -58,9 +58,9 @@ For the geographical space, `great_circle` covers lon/lat coordinates, whereas `
 Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
 For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.}
 
-\item{space}{depreceated. Use `dist_space` instead.}
+\item{space}{deprecated. Use `dist_space` instead.}
 
-\item{useMD}{depreceated. Use `dist_fun` instead.}
+\item{useMD}{deprecated. Use `dist_fun` instead.}
 }
 \value{
 An object of class \emph{knndm} consisting of a list of eight elements:

@@ -33,10 +33,11 @@ geodist(
 
 \item{dist_space}{"geographical", "feature" or "time". Should the distance be computed in geographic space, in the normalized multivariate predictor space or in temporal space? (see Details)}
 
-\item{CVtest}{optional. list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+\item{CVtest}{optional. list or vector. #' @param cvfolds optional. list or vector. Either a list with the length of the number of cross-validation folds
+where each element contains the row indices of the data points used for testing during the cross validation iteration (i.e. held back data).
 Or a vector that contains the ID of the fold for each training point. See e.g. ?createFolds or ?CreateSpacetimeFolds or ?nndm}
 
-\item{CVtrain}{optional.  A list, where each element contains the data points used for training during the cross validation iteration.
+\item{CVtrain}{optional. A list, where each element contains the data points used for training during the cross validation iteration.
 Only required if CVtrain is not the opposite of CVtest. Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
 \item{testdata}{optional. object of class sf: Point data used for independent validation. May already include the predictor values if `dist_space`=feature.}
@@ -68,13 +69,13 @@ For the geographical space, `great_circle` covers lon/lat coordinates, whereas `
 Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
 For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.}
 
-\item{cvtrain}{depreceated. Use `CVtrain` instead.}
+\item{cvtrain}{deprecated. Use `CVtrain` instead.}
 
-\item{cvfolds}{depreceated. Use `CVtest` instead.}
+\item{cvfolds}{deprecated. Use `CVtest` instead.}
 
-\item{type}{depreceated. Use `dist_space` instead.}
+\item{type}{deprecated. Use `dist_space` instead.}
 
-\item{timevar}{depreceated. Use `time_var` instead.}
+\item{timevar}{deprecated. Use `time_var` instead.}
 }
 \value{
 A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.

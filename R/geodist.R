@@ -5,9 +5,10 @@
 #' @param x object of class sf, training data locations
 #' @param modeldomain SpatRaster, stars or sf object defining the prediction area (see Details)
 #' @param dist_space "geographical", "feature" or "time". Should the distance be computed in geographic space, in the normalized multivariate predictor space or in temporal space? (see Details)
-#' @param CVtest optional. list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+#' @param CVtest optional. list or vector. #' @param cvfolds optional. list or vector. Either a list with the length of the number of cross-validation folds
+#' where each element contains the row indices of the data points used for testing during the cross validation iteration (i.e. held back data).
 #' Or a vector that contains the ID of the fold for each training point. See e.g. ?createFolds or ?CreateSpacetimeFolds or ?nndm
-#' @param CVtrain optional.  A list, where each element contains the data points used for training during the cross validation iteration.
+#' @param CVtrain optional. A list, where each element contains the data points used for training during the cross validation iteration.
 #' Only required if CVtrain is not the opposite of CVtest. Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
 #' @param testdata optional. object of class sf: Point data used for independent validation. May already include the predictor values if `dist_space`=feature.
 #' @param preddata optional. object of class sf: Point data indicating the locations within the modeldomain to be used as target prediction points. Useful when the prediction objective is a subset of
@@ -28,10 +29,10 @@
 #' @param scale_vars boolean. Should variables be scaled? Only for `dist_space`="feature". 
 #' Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
 #' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.
-#' @param cvtrain depreceated. Use `CVtrain` instead.
-#' @param cvfolds depreceated. Use `CVtest` instead.
-#' @param type depreceated. Use `dist_space` instead.
-#' @param timevar depreceated. Use `time_var` instead.
+#' @param cvtrain deprecated. Use `CVtrain` instead.
+#' @param cvfolds deprecated. Use `CVtest` instead.
+#' @param type deprecated. Use `dist_space` instead.
+#' @param timevar deprecated. Use `time_var` instead.
 #' @return A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent (if no `preddata` are supplied).
 #'     If `dist_space` = "feature", the argument modeldomain has to be a raster and include predictors. The only exception is when the provided training data and preddata already include the predictor values.
@@ -157,7 +158,7 @@ geodist <- function(
 
   # 1. Input validation & normalization ----------
 
-  ## Guard against old parameter names / depreceated parameters
+  ## Guard against old parameter names / deprecated parameters
   if (!is.null(cvtrain)) {
     warning("Argument 'cvtrain' is deprecated. Please use 'CVtrain' instead.",
             call. = FALSE)
@@ -374,13 +375,11 @@ geodist <- function(
   # Some more input checks
   if(dist_space == "feature") {
     if (!is.null(catVars) && dist_fun != "gower") {
-        message("Only gower distances work with categorical features. 'dist_type' was set to 'gower'")
-        dist_fun <- "gower"
-    } 
+        stop("Only 'gower' distances are allowed for categorical variables.")
+    }
   } else if(dist_space == "geographical") {
     if(isTRUE(islonglat) && dist_fun != "great_circle")  {
-      message("Only great-circle distances are allowed for lon/lat coordinates. 'dist_fun' was set to 'great_circle'")
-      dist_fun <- "great_circle"
+      stop("Only 'great_circle' distances are allowed for lon/lat coordinates.")
     }
   }
 
@@ -449,7 +448,7 @@ geodist <- function(
 compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","time"), 
                       dist_type_label = "sample-to-sample", 
                       dist_fun = c("euclidean","mahalanobis","gower","great_circle", "abs_time"), 
-                      CVtest = NULL, CVtrain = NULL, time_var = NULL, time_unit = "days", algorithm) {
+                      CVtest = NULL, CVtrain = NULL, time_var = NULL, time_unit = "auto", algorithm = "brute") {
   
   dist_space <- match.arg(dist_space)
   dist_fun <- match.arg(dist_fun)
@@ -558,7 +557,7 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
 
 
 ## Helper function: Compute out-of-fold NN distance ----------
-cv_distances <- function(x, CVtest, CVtrain = NULL, dist_fun = "euclidean", algorithm = NULL, time_unit = "days") {
+cv_distances <- function(x, CVtest, CVtrain = NULL, dist_fun = "euclidean", algorithm = "brute", time_unit = "auto") {
 
   # define length of NND vector
   n <- if(inherits(x, c("Date","POSIXct","POSIXt"))) length(x) else nrow(x)
