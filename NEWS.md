@@ -1,3 +1,10 @@
+# `CAST` 1.0.5
+* bug fix: 
+  * sampling of prediction points in geodist no longer requires reprojection and transformation of raster modeldomains by default (issue [#130](https://github.com/HannaMeyer/CAST/issues/130))
+* modifications: 
+  * geodist was re-structured, and some parameters have been re-named ('cvtrain' to 'CVtrain', 'cvfolds' to 'CVtest', 'type' to 'dist_space', 'timevar' to 'time_var') or newly introduced ('dist_fun', 'scale_vars')
+  * knndm was re-structured to a lesser extent, the 'space' parameter has been re-named to 'dist_space', 'useMD' was dropped and replaced by 'dist_fun', 'scale_vars' was newly introduced
+
 # `CAST` 1.0.4
 * bug fix: formatting issues in tests
 * references updated

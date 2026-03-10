@@ -32,6 +32,8 @@
 #' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.
 #' @param cvtrain depreceated. Use `CVtrain` instead.
 #' @param cvfolds depreceated. Use `CVtest` instead.
+#' @param type depreceated. Use `dist_space` instead.
+#' @param timevar depreceated. Use `time_var` instead.
 #' @return A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent (if no `preddata` are supplied).
 #'     If `dist_space` = "feature", the argument modeldomain has to be a raster and include predictors. The only exception is when the provided training data and preddata already include the predictor values.
@@ -150,7 +152,9 @@ geodist <- function(
   dist_fun = "euclidean",
   scale_vars = TRUE,
   cvtrain = NULL,
-  cvfolds = NULL
+  cvfolds = NULL,
+  type = NULL,
+  timevar = NULL
 ){
 
   # 1. Input validation & normalization ----------
@@ -168,11 +172,28 @@ geodist <- function(
     CVtest <- cvfolds
   }
 
+  if (!is.null(type)) {
+    warning("Argument 'type' is deprecated. Please use 'dist_space' instead.",
+            call. = FALSE)
+    dist_space <- type
+  }
+
+  if (!is.null(timevar)) {
+    warning("Argument 'timevar' is deprecated. Please use 'time_var' instead.",
+            call. = FALSE)
+    time_var <- timevar
+  }
+
+  if (dist_space == "geo") dist_space <- "geographical"
+
 
   ## Check that dist_space was correctly defined
-  if (dist_space == "geo") dist_space <- "geographical"
   if (!dist_space %in% c("geographical", "feature", "time")) {
     stop("dist_space must be one of 'geographical', 'feature' or 'time'")
+  }
+
+  if (!(dist_fun %in% c("euclidean", "mahalanobis", "gower", "great_circle"))) {
+    stop("dist_fun must be one of 'euclidean', 'mahalanobis', 'gower' or 'great_circle'")
   }
 
   if(dist_space == "time" && dist_fun != "euclidean") stop("Temporal space only supports euclidean distances.")

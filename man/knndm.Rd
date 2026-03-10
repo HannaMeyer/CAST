@@ -17,7 +17,9 @@ knndm(
   sampling = "regular",
   dist_fun = "euclidean",
   algorithm = "brute",
-  scale_vars = TRUE
+  scale_vars = TRUE,
+  space = NULL,
+  useMD = NULL
 )
 }
 \arguments{
@@ -55,6 +57,10 @@ For the geographical space, `great_circle` covers lon/lat coordinates, whereas `
 \item{scale_vars}{boolean. Should variables be scaled? Only for `dist_space`="feature". 
 Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
 For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.}
+
+\item{space}{depreceated. Use `dist_space` instead.}
+
+\item{useMD}{depreceated. Use `dist_fun` instead.}
 }
 \value{
 An object of class \emph{knndm} consisting of a list of eight elements:

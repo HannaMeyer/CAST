@@ -21,7 +21,9 @@ geodist(
   dist_fun = "euclidean",
   scale_vars = TRUE,
   cvtrain = NULL,
-  cvfolds = NULL
+  cvfolds = NULL,
+  type = NULL,
+  timevar = NULL
 )
 }
 \arguments{
@@ -70,6 +72,10 @@ For other distances (Mahalanobis, Euclidean), scaling the data is important. Thu
 \item{cvtrain}{depreceated. Use `CVtrain` instead.}
 
 \item{cvfolds}{depreceated. Use `CVtest` instead.}
+
+\item{type}{depreceated. Use `dist_space` instead.}
+
+\item{timevar}{depreceated. Use `time_var` instead.}
 }
 \value{
 A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.

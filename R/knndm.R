@@ -26,6 +26,8 @@
 #' @param scale_vars boolean. Should variables be scaled? Only for `dist_space`="feature". 
 #' Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
 #' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.
+#' @param space depreceated. Use `dist_space` instead.
+#' @param useMD depreceated. Use `dist_fun` instead.
 #' @return An object of class \emph{knndm} consisting of a list of eight elements:
 #' indx_train, indx_test (indices of the observations to use as
 #' training/test data in each kNNDM CV iteration), Gij (distances for
@@ -214,8 +216,37 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
                   k = 10, maxp = 0.5,
                   clustering = "hierarchical", linkf = "ward.D2",
                   samplesize = 1000, sampling = "regular", dist_fun="euclidean",
-                  algorithm="brute", scale_vars = TRUE){
+                  algorithm="brute", scale_vars = TRUE, 
+                  space = NULL, useMD = NULL){
 
+  # Check for depreceated arguments
+  if (!is.null(space)) {
+    warning("Argument 'space' is deprecated. Please use 'dist_space' instead.",
+            call. = FALSE)
+    dist_space <- space
+  }
+
+  if (!is.null(useMD)) {
+    warning("Argument 'useMD' is deprecated. Please use 'dist_space' instead.",
+            call. = FALSE)
+  }
+
+  if (dist_space == "geo") dist_space <- "geographical"
+
+  ## Check that dist_space was correctly defined
+  if (!dist_space %in% c("geographical", "feature")) {
+    stop("dist_space must be one of 'geographical' or 'feature'")
+  }
+
+  if (!(dist_fun %in% c("euclidean", "mahalanobis", "gower", "great_circle"))) {
+    stop("dist_fun must be one of 'euclidean', 'mahalanobis', 'gower' or 'great_circle'")
+  }
+
+  if(dist_space == "time" && dist_fun != "euclidean") stop("Temporal space only supports euclidean distances.")
+  if(dist_space == "feature" && dist_fun == "great_circle") stop("Great-circle distances only work with in geographical space.")
+  if(dist_space == "geographical" && dist_fun %in% c("mahalanobis", "gower")) stop("Mahalanobis and Gower distances only work in feature space.")
+
+  
   # create sample points from modeldomain
   if(is.null(predpoints)&!is.null(modeldomain)){
 
