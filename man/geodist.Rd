@@ -8,7 +8,8 @@ geodist(
   x,
   modeldomain = NULL,
   dist_space = "geographical",
-  cvfolds = NULL,
+  CVtest = NULL,
+  CVtrain = NULL,
   testdata = NULL,
   preddata = NULL,
   samplesize = 2000,
@@ -18,7 +19,9 @@ geodist(
   time_unit = "auto",
   algorithm = "brute",
   dist_fun = "euclidean",
-  scale_vars = TRUE
+  scale_vars = TRUE,
+  cvtrain = NULL,
+  cvfolds = NULL
 )
 }
 \arguments{
@@ -28,8 +31,12 @@ geodist(
 
 \item{dist_space}{"geographical", "feature" or "time". Should the distance be computed in geographic space, in the normalized multivariate predictor space or in temporal space? (see Details)}
 
-\item{cvfolds}{optional. list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+\item{CVtest}{optional. list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
 Or a vector that contains the ID of the fold for each training point. See e.g. ?createFolds or ?CreateSpacetimeFolds or ?nndm}
+
+\item{CVtrain}{optional.  A list, where each element contains the data points used for training during the cross validation iteration.
+Only accepted when CVtest has been specified, and only required if CVtrain is not the opposite of CVtest.
+Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
 \item{testdata}{optional. object of class sf: Point data used for independent validation. May already include the predictor values if `dist_space`=feature.}
 
@@ -58,7 +65,14 @@ For the geographical space, `great_circle` covers lon/lat coordinates, whereas `
 
 \item{scale_vars}{boolean. Should variables be scaled? Only for `dist_space`="feature". 
 Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
-For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.#' @return A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.}
+For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.}
+
+\item{cvtrain}{depreceated. Use `CVtrain` instead.}
+
+\item{cvfolds}{depreceated. Use `CVtest` instead.}
+}
+\value{
+A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
 }
 \description{
 Calculates nearest neighbor distances in geographic space or feature space between training data as well as between prediction locations and training data.
@@ -100,7 +114,7 @@ plot(dist)
 
 ########### Distance between training data, new data and CV folds:
 folds <- createFolds(1:nrow(splotdata), k=3, returnTrain=FALSE)
-dist <- geodist(x=splotdata, modeldomain=studyArea, cvfolds=folds)
+dist <- geodist(x=splotdata, modeldomain=studyArea, CVtest=folds)
 # Using density functions
 plot(dist)
 # Using ECDFs (relevant for nndm and knnmd methods)
@@ -130,9 +144,9 @@ st_crs(dat) <- 26911
 trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
 predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
 trainDat$week <- lubridate::week(trainDat$Date)
-cvfolds <- CreateSpacetimeFolds(trainDat,time_var = "week")
+CVtest <- CreateSpacetimeFolds(trainDat,time_var = "week")
 
-dist <- geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,
+dist <- geodist(trainDat,preddata = predictionDat,CVtest = CVtest$indexOut,
    dist_space="time",time_unit="days")
 plot(dist)+ xlim(0,10)
 

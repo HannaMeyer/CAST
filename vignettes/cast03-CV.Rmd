@@ -83,8 +83,8 @@ fold5_temp <- createFolds(1:nrow(temperature), k=5, returnTrain=FALSE)
 fold5_pm25 <- createFolds(1:nrow(pm25), k=5, returnTrain=FALSE)
 
 # Explore geographic predictive conditions
-predcond_temp <- geodist(temperature, modeldomain = spain, cvfolds = fold5_temp)
-predcond_pm25 <- geodist(pm25, modeldomain = spain, cvfolds = fold5_pm25)
+predcond_temp <- geodist(temperature, modeldomain = spain, CVtest = fold5_temp)
+predcond_pm25 <- geodist(pm25, modeldomain = spain, CVtest = fold5_pm25)
 
 # Plot density functions
 p1 <- plot(predcond_temp) + ggtitle("Temperature")

@@ -5,8 +5,12 @@
 #' @param x object of class sf, training data locations
 #' @param modeldomain SpatRaster, stars or sf object defining the prediction area (see Details)
 #' @param dist_space "geographical", "feature" or "time". Should the distance be computed in geographic space, in the normalized multivariate predictor space or in temporal space? (see Details)
-#' @param cvfolds optional. list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+#' @param CVtest optional. list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
 #' Or a vector that contains the ID of the fold for each training point. See e.g. ?createFolds or ?CreateSpacetimeFolds or ?nndm
+#' @param CVtrain optional.  A list, where each element contains the data points used for training during the cross validation iteration.
+#' Only accepted when CVtest has been specified, and only required if CVtrain is not the opposite of CVtest.
+#' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
+#' @param cvtrain depreceated.
 #' @param testdata optional. object of class sf: Point data used for independent validation. May already include the predictor values if `dist_space`=feature.
 #' @param preddata optional. object of class sf: Point data indicating the locations within the modeldomain to be used as target prediction points. Useful when the prediction objective is a subset of
 #' locations within the modeldomain rather than the whole area. May already include the predictor values if `dist_space`="feature".
@@ -25,7 +29,10 @@
 #' For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.
 #' @param scale_vars boolean. Should variables be scaled? Only for `dist_space`="feature". 
 #' Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
-#' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.#' @return A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
+#' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.
+#' @param cvtrain depreceated. Use `CVtrain` instead.
+#' @param cvfolds depreceated. Use `CVtest` instead.
+#' @return A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
 #' @details The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent (if no `preddata` are supplied).
 #'     If `dist_space` = "feature", the argument modeldomain has to be a raster and include predictors. The only exception is when the provided training data and preddata already include the predictor values.
 #'     If not provided they are extracted from the modeldomain raster. If some predictors are categorical (i.e., of class factor or character), gower distances will be used.
@@ -61,7 +68,7 @@
 #'
 #' ########### Distance between training data, new data and CV folds:
 #' folds <- createFolds(1:nrow(splotdata), k=3, returnTrain=FALSE)
-#' dist <- geodist(x=splotdata, modeldomain=studyArea, cvfolds=folds)
+#' dist <- geodist(x=splotdata, modeldomain=studyArea, CVtest=folds)
 #' # Using density functions
 #' plot(dist)
 #' # Using ECDFs (relevant for nndm and knnmd methods)
@@ -91,9 +98,9 @@
 #' trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
 #' predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
 #' trainDat$week <- lubridate::week(trainDat$Date)
-#' cvfolds <- CreateSpacetimeFolds(trainDat,time_var = "week")
+#' CVtest <- CreateSpacetimeFolds(trainDat,time_var = "week")
 #'
-#' dist <- geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,
+#' dist <- geodist(trainDat,preddata = predictionDat,CVtest = CVtest$indexOut,
 #'    dist_space="time",time_unit="days")
 #' plot(dist)+ xlim(0,10)
 #'
@@ -130,7 +137,8 @@ geodist <- function(
   x,
   modeldomain = NULL,
   dist_space = "geographical",
-  cvfolds = NULL,
+  CVtest = NULL,
+  CVtrain = NULL,
   testdata = NULL,
   preddata = NULL,
   samplesize = 2000,
@@ -140,10 +148,26 @@ geodist <- function(
   time_unit = "auto",
   algorithm = "brute",
   dist_fun = "euclidean",
-  scale_vars = TRUE
+  scale_vars = TRUE,
+  cvtrain = NULL,
+  cvfolds = NULL
 ){
 
   # 1. Input validation & normalization ----------
+
+  ## Guard against old parameter names / depreceated parameters
+  if (!is.null(cvtrain)) {
+    warning("Argument 'cvtrain' is deprecated. Please use 'CVtrain' instead.",
+            call. = FALSE)
+    CVtrain <- cvtrain
+  }
+
+  if (!is.null(cvfolds)) {
+    warning("Argument 'cvfolds' is deprecated. Please use 'CVtest' instead.",
+            call. = FALSE)
+    CVtest <- cvfolds
+  }
+
 
   ## Check that dist_space was correctly defined
   if (dist_space == "geo") dist_space <- "geographical"
@@ -151,6 +175,13 @@ geodist <- function(
     stop("dist_space must be one of 'geographical', 'feature' or 'time'")
   }
 
+  if(dist_space == "time" && dist_fun != "euclidean") stop("Temporal space only supports euclidean distances.")
+  if(dist_space == "feature" && dist_fun == "great_circle") stop("Great-circle distances only work with in geographical space.")
+  if(dist_space == "geographical" && dist_fun %in% c("mahalanobis", "gower")) stop("Mahalanobis and Gower distances only work in feature space.")
+
+  ## CVtrain
+  if(!is.list(CVtest) && !is.null(CVtrain)) stop("CVtrain can only be used when CVtest is supplied as a list.")
+  
   ## Check for different raster formats
   if (inherits(modeldomain, "Raster")) {
     modeldomain <- methods::as(modeldomain,"SpatRaster")
@@ -309,16 +340,7 @@ geodist <- function(
     
   }
 
-  # 5. Temporal-space preparation (if needed)
-
-  if(dist_space == "temporal") {
-    x <- sf::st_drop_geometry(x)
-    pred_points <- sf::st_drop_geometry(pred_points)
-    if (!is.null(testdata)) testdata <- sf::st_drop_geometry(testdata)
-  }
-
-
-  # 6. Distance computation ----------
+  # 5. Distance computation ----------
 
   # check that distance function was correctly specified:
   if(!dist_fun %in% c("euclidean", "mahalanobis", "gower", "great_circle")) {
@@ -340,13 +362,13 @@ geodist <- function(
   # Calculate NNDs between training points
   s2s <- compute_NND(
     x=x, y=NULL, dist_space = dist_space, dist_type_label = "sample-to-sample",  dist_fun = dist_fun,
-    folds = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
+    folds = NULL, CVtrain = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
   )
 
   # Calculate NNDs between prediction and training points
   p2s <- compute_NND(
     x=x, y=pred_points, dist_space = dist_space, dist_type_label = "prediction-to-sample",  dist_fun = dist_fun,
-    folds = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
+    folds = NULL, CVtrain = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
   )
   dists <- rbind(s2s, p2s)
 
@@ -354,20 +376,20 @@ geodist <- function(
   if (!is.null(testdata)) {
     t2s <- compute_NND(
       x=x, y=testdata, dist_space = dist_space, dist_type_label = "test-to-sample",  dist_fun = dist_fun,
-      folds = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
+      folds = NULL, CVtrain = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
     )
     dists <- rbind(dists, t2s)
   }
   # Calculate NNDs between CV folds
-  if (!is.null(cvfolds)) {
+  if (!is.null(CVtest)) {
     cvdist <- compute_NND(
       x=x, y=NULL, dist_space = dist_space, dist_type_label = "CV-distances",  dist_fun = dist_fun,
-      folds = cvfolds, time_var = time_var, time_unit = time_unit, algorithm = algorithm
+      folds = CVtest, CVtrain = CVtrain, time_var = time_var, time_unit = time_unit, algorithm = algorithm
     )
     dists <- rbind(dists, cvdist)
   }
 
-  # 7. Post-processing ----------
+  # 6. Post-processing ----------
 
   class(dists) <- c("geodist", class(dists))
   attr(dists, "dist_space") <- dist_space
@@ -385,7 +407,7 @@ geodist <- function(
     )
   }
 
-  if (!is.null(cvfolds)) {
+  if (!is.null(CVtest)) {
     attr(dists, "W_CV") <- twosamples::wass_stat(
       dists[dists$what == "CV-distances", "dist"],
       dists[dists$what == "prediction-to-sample", "dist"]
@@ -403,33 +425,24 @@ geodist <- function(
 compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","time"), 
                       dist_type_label = "sample-to-sample", 
                       dist_fun = c("euclidean","mahalanobis","gower","great_circle"), 
-                      folds = NULL, time_var = NULL, time_unit = "days", algorithm) {
+                      folds = NULL, CVtrain = NULL, time_var = NULL, time_unit = "days", algorithm) {
   
   dist_space <- match.arg(dist_space)
   dist_fun <- match.arg(dist_fun)
 
   # Stop when encountering invalid parameter combinations
   if(!is.null(y) && !is.null(folds)) stop("Currently, `folds` and `y` cannot be specified simultaniously.")
-  if(dist_space == "time" && dist_fun != "euclidean") stop("Temporal space only supports euclidean distances.")
-  if(dist_space == "feature" && dist_fun == "great_circle") stop("Great-circle distances only work with in geographical space.")
-  if(dist_space == "geographical" && dist_fun %in% c("mahalanobis", "gower")) stop("Mahalanobis and Gower distances only work in feature space.")
 
   # Extract coordinates from x (and y)
   coords_x <- if(dist_space == "geographical") sf::st_coordinates(x)[,1:2] else NULL
   coords_y <- if(dist_space == "geographical" && !is.null(y)) sf::st_coordinates(y)[,1:2] else NULL
 
-  # prepare folds (if needed)
+  # Convert folds to vector
   if(!is.null(folds)){
-     # Convert cvfold list to vector
-    if(is.list(folds)){
+    if(is.list(folds)) {
       clust <- rep(NA_integer_, nrow(x))
-
-      for (k in seq_along(folds)) {
-        clust[folds[[k]]] <- k
-      }
-    } else {
-      clust <- folds
-    }
+      for(k in seq_along(folds)) clust[folds[[k]]] <- k
+    } else clust <- folds
   }
 
   # Calculate nearest neighbor distances in geographical space
@@ -438,13 +451,17 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
       distmat <- if(is.null(y)) sf::st_distance(x) else sf::st_distance(y, x)
       units(distmat) <- NULL
       if(is.null(y)) diag(distmat) <- NA
-      min_d <- if(is.null(folds)) apply(distmat, 1, min, na.rm=TRUE) else distclust_distmat(distmat, folds = clust)
+      min_d <- if(is.null(folds)) {
+        apply(distmat, 1, min, na.rm=TRUE)
+      } else {
+        distclust_distmat(distmat, folds = clust, CVtrain = CVtrain)
+      } 
     } else {
       min_d <- if(is.null(y)) {
         if(is.null(folds)) {
           FNN::knn.dist(coords_x, k = 1, algorithm=algorithm)
         } else {
-          distclust_euclidean(coords_x, folds = clust, algorithm=algorithm)
+          distclust_euclidean(coords_x, folds = clust, CVtrain = CVtrain, algorithm=algorithm)
         }
       } else {
         FNN::knnx.dist(query = coords_y, data = coords_x, k = 1, algorithm=algorithm)
@@ -477,7 +494,7 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
         }, numeric(1))
         
       } else {
-        min_d <- distclust_MD(mat_x, folds = clust)
+        min_d <- distclust_MD(mat_x, folds = clust, CVtrain = CVtrain)
       }
       
     } else if(dist_fun == "euclidean"){
@@ -485,7 +502,7 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
         min_d <- if(is.null(y)) FNN::knn.dist(mat_x, k=1, algorithm=algorithm) else
                FNN::knnx.dist(query = mat_y, data = mat_x, k=1, algorithm=algorithm)
       } else {
-        min_d <- distclust_euclidean(mat_x, folds = clust, algorithm=algorithm)
+        min_d <- distclust_euclidean(mat_x, folds = clust, CVtrain = CVtrain, algorithm=algorithm)
       }
       
     } else if(dist_fun == "gower"){
@@ -497,7 +514,7 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
           vapply(gower_res$distance, function(x) x[1], numeric(1))
         }
       } else {
-        min_d <- distclust_gower(df_x, clust)
+        min_d <- distclust_gower(df_x, folds = clust, CVtrain = CVtrain)
       }      
     }
     
@@ -511,7 +528,7 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
         if(is.null(y)) diag(dmat) <- Inf
         min_d <- apply(dmat, 1, min)
       } else {
-        min_d <- distclust_time(time_x, clust, time_unit = time_unit)
+        min_d <- distclust_time(time_x, clust, time_unit = time_unit, CVtrain = CVtrain)
       }
       
     }
@@ -526,65 +543,116 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
 
 ## CV-distance functions ----------
 # Helper function: Compute out-of-fold NN distance based on a distance matrix (geographical coordinates / numerical variables)
-distclust_distmat <- function(distm, folds){
+distclust_distmat <- function(distm, folds, CVtrain = NULL){
   alldist <- rep(NA, length(folds))
+  
   for(f in unique(folds)){
-    alldist[f == folds] <- apply(distm[f == folds, f != folds, drop=FALSE], 1, min)
+
+    test_idx <- which(folds == f)
+
+    if(!is.null(CVtrain)) {
+      train_idx <- CVtrain[[f]]
+    } else {
+      train_idx <- which(folds != f)
+    }
+    
+    alldist[test_idx] <- apply(distm[test_idx, train_idx, drop=FALSE], 1, min)
   }
+  
   alldist
 }
 
+
 # Helper function: Compute out-of-fold NN distance using euclidean distances and FNN (projected coordinates / numerical variables)
-distclust_euclidean <- function(tr_coords, folds, algorithm){
+distclust_euclidean <- function(tr_coords, folds, CVtrain = NULL, algorithm){
   alldist <- rep(NA, length(folds))
   for(f in unique(folds)){
-    alldist[f == folds] <- c(FNN::knnx.dist(query = tr_coords[f == folds,,drop=FALSE],
-                                            data = tr_coords[f != folds,,drop=FALSE], k = 1, algorithm=algorithm))
+    
+    test_idx <- which(folds == f)
+    
+    if(!is.null(CVtrain)) {
+      train_idx <- CVtrain[[f]]
+    } else {
+      train_idx <- which(folds != f)
+    }
+
+    tr_train <- tr_coords[train_idx,, drop=FALSE]
+    tr_test <- tr_coords[test_idx,, drop=FALSE]
+    
+    alldist[test_idx] <- FNN::knnx.dist(query = tr_test,
+                                  data = tr_train,
+                                  k = 1,
+                                  algorithm = algorithm)
   }
   alldist
 }
 
 # Helper function: Compute out-of-fold NN distance using Gower distances (categorical (and numerical) variables)
-distclust_gower <- function(tr_coords, folds){
-
+distclust_gower <- function(tr_coords, folds, CVtrain = NULL){
   alldist <- rep(NA, length(folds))
+  
   for(f in unique(folds)){
-    alldist[f == folds] <- c(gower::gower_topn(tr_coords[f == folds,,drop=FALSE],
-                                               tr_coords[f != folds,,drop=FALSE], n=1))$distance[[1]]
+    
+    test_idx <- which(folds == f)
+    
+    if(!is.null(CVtrain)) {
+      train_idx <- CVtrain[[f]]
+    } else {
+      train_idx <- which(folds != f)
+    }
+
+    alldist[test_idx] <- c(gower::gower_topn(tr_coords[test_idx,,drop=FALSE],
+                                   tr_coords[train_idx,,drop=FALSE],
+                                   n = 1))$distance[[1]]
   }
-  unlist(alldist)
+  
+  alldist
 }
 
 # Helper function: Compute out-of-fold NN distance using Mahalanobis distances (numerical variables)
-distclust_MD <- function(tr_coords, folds){
-
+distclust_MD <- function(tr_coords, folds, CVtrain = NULL){
   tr_mat <- as.matrix(tr_coords)
-
-  S <- stats::cov(tr_mat)
-  S_inv <- MASS::ginv(S)
-
+  S_inv <- MASS::ginv(stats::cov(tr_mat))
+  
   alldist <- rep(NA, length(folds))
-  for(f in unique(folds)) {
-
-    alldist[f == folds] <- apply(tr_mat[f==folds,,drop=FALSE], 1, function(y) {
-      min(apply(tr_mat[f!=folds,,drop=FALSE], 1, function(x) {
+  
+  for(f in unique(folds)){
+    test_idx <- which(folds == f)
+    
+    if(!is.null(CVtrain)) {
+      train_idx <- CVtrain[[f]]
+    } else {
+      train_idx <- which(folds != f)
+    }
+    
+    alldist[test_idx] <- apply(tr_mat[test_idx,,drop=FALSE], 1, function(y){
+      min(apply(tr_mat[train_idx,,drop=FALSE], 1, function(x){
         sqrt(t(y - x) %*% S_inv %*% (y - x))
       }))
     })
   }
-  unlist(alldist)
+  
+  alldist
 }
 
 # Helper function: Compute out-of-fold NN distance using absolute time difference (same as euclidean distances in 1D)
 # (Only used in geodist at the moment, might be used in future implementations of kNNDM in the temporal space)
-distclust_time <- function(time_values, folds, time_unit = "days") {
+distclust_time <- function(time_values, folds, CVtrain = NULL, time_unit = "days"){
   alldist <- rep(NA, length(folds))
   
-  for(f in unique(folds)) {
-    diffs <- outer(time_values[folds == f], time_values[folds != f], function(x, y) abs(as.numeric(difftime(x, y, units=time_unit))))
-    alldist[folds == f] <- apply(diffs, 1, min)
+  for(f in unique(folds)){
+    test_idx <- which(folds == f)
+    
+    if(!is.null(CVtrain)) {
+      train_idx <- CVtrain[[f]]
+    } else {
+      train_idx <- which(folds != f)
+    }
+    
+    diffs <- outer(time_values[test_idx], time_values[train_idx], function(x,y) abs(as.numeric(difftime(x, y, units=time_unit))))
+    alldist[test_idx] <- apply(diffs, 1, min)
   }
-
+  
   alldist
 }
 

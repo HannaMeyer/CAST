@@ -46,7 +46,7 @@ test_that("geodist works with points and polygon in geographic space", {
 
   dist_geo <- geodist(x=splotdata,
                       modeldomain=studyArea,
-                      cvfolds=folds$indexOut,
+                      CVtest=folds$indexOut,
                       dist_space = "geographical",
                       dist_fun = "great_circle")
 
@@ -72,7 +72,7 @@ test_that("geodist works with points and polygon in feature space", {
 
   dist_fspace <- geodist(x = splotdata,
                          modeldomain = predictors,
-                         cvfolds=folds$indexOut,
+                         CVtest=folds$indexOut,
                          dist_space = "feature",
                          variables = c("bio_1","bio_12", "elev"))
 
@@ -95,7 +95,7 @@ test_that("geodist works with points and polygon in feature space using Mahalano
 
   dist_fspace <- geodist(x = splotdata,
                          modeldomain = predictors,
-                         cvfolds=folds$indexOut,
+                         CVtest=folds$indexOut,
                          dist_space = "feature",
                          variables = c("bio_1","bio_12", "elev"), 
                          dist_fun = "mahalanobis")
@@ -301,7 +301,7 @@ test_that("geodist works with categorical variables in feature space using Gower
                   modeldomain=predictor_stack,
                   dist_space = "feature",
                   testdata = test_pts,
-                  cvfolds = folds$indexOut,
+                  CVtest = folds$indexOut,
                   scale_vars = FALSE)
 
   mean_sample2sample <- round(mean(dist[dist$what=="sample-to-sample","dist"]), 4)
@@ -344,9 +344,9 @@ test_that("geodist works in temporal space and with CV", {
   predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
   trainDat$week <- lubridate::week(trainDat$Date)
   set.seed(100)
-  cvfolds <- CreateSpacetimeFolds(trainDat,timevar = "week")
+  CVtest <- CreateSpacetimeFolds(trainDat,timevar = "week")
 
-  dist <- CAST::geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,
+  dist <- CAST::geodist(trainDat,preddata = predictionDat,CVtest = CVtest$indexOut,
                         dist_space = "time",time_unit = "days")
 
   mean_cv <- round(mean(dist[dist$what=="CV-distances","dist"]), 3)
@@ -354,4 +354,22 @@ test_that("geodist works in temporal space and with CV", {
   expect_equal(mean_cv,  2.446)
 })
 
+test_that("geodist works with buffered CV", {
 
+  # Simulate 100 clustered training points in a 100x100 square
+  set.seed(123)
+  poly <- list(matrix(c(0,0,0,100,100,100,100,0,0,0), ncol=2, byrow=TRUE))
+  sample_poly <- sf::st_polygon(poly)
+  train_points <- clustered_sample(sample_poly, 100, 10, 5)
+  pred_points <- sf::st_sample(sample_poly, 100, type = "regular")
+  nndm_pred <- nndm(train_points, predpoints=pred_points)
+
+  geod <- suppressWarnings(geodist(train_points, preddata = pred_points, CVtest = nndm_pred$indx_test, 
+    CVtrain = nndm_pred$indx_train, dist_fun = "euclidean"))
+
+  geod_dist_cv_mean <- round(mean(geod[geod$what == "CV-distances",]$dist), 3)
+  nndm_dist_cv_mean <- round(mean(nndm_pred$Gjstar), 3)
+  
+  expect_equal(geod_dist_cv_mean, nndm_dist_cv_mean)
+
+})
