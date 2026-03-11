@@ -230,7 +230,6 @@ if (FALSE) { # \dontrun{
 library(sf)
 library(terra)
 library(caret)
-library(viridis)
 
 # prepare sample data:
 data(cookfarm)
