@@ -497,23 +497,14 @@ aoa.data.frame <- function(newdata,
     message("Computing AOA...")
   }
 
-
-  out <- DI_out
-  AOA <- rep(1, length(out))
-  AOA[out > trainDI$thres] <- 0
-
-  if (calc_LPD == TRUE) {
-    LPD <- LPD_out
-  }
-
   result <- list(
     parameters = trainDI,
-    DI = out,
-    AOA = AOA
+    DI = DI_out,
+    AOA = ifelse(DI_out > trainDI$thres, 0L, 1L)
   )
 
   if (calc_LPD == TRUE) {
-    result$LPD <- LPD
+    result$LPD <- LPD_out
     if (indices) {
       result$indices <- Indices_out
     }
