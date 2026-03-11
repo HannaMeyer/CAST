@@ -370,7 +370,7 @@ aoa <- function(newdata,
 
         if (indices) {
           if (LPD_out[okrows[i]] > 0) {
-            knnIndex  <- .knnindexfun(t(matrix(newdataCC[i,])), train_scaled, method, S_inv, maxLPD = LPD_out[okrows[i]],algorithm=algorithm)
+            knnIndex  <- .mindistfun(train_scaled,newdataCC[i,], k = LPD_out[okrows[i]], method=method, algorithm=algorithm, S_inv=S_in, distance = FALSE)
             Indices_out[i,1:LPD_out[okrows[i]]] <- as.numeric(knnIndex)
           }
         }
@@ -410,8 +410,7 @@ aoa <- function(newdata,
                           "maxLPD",
                           "algorithm",
                           ".process_row",
-                          ".mindistfun",
-                          ".knnindexfun"), envir = environment())
+                          ".mindistfun"), envir = environment())
 
       # # Split newdataCC into chunks for each core (important for large datasets)
       size_chunks <- ceiling(nrow(newdataCC) / cores)
@@ -525,21 +524,6 @@ aoa <- function(newdata,
   return(result)
 }
 
-.knnindexfun <-
-  function (point,
-            reference,
-            method,
-            S_inv = NULL,
-            maxLPD = maxLPD,
-            algorithm) {
-    if (method == "L2") {
-      # Euclidean Distance
-      return(FNN::knnx.index(reference, point, k = maxLPD, algorithm = algorithm))
-    } else if (method == "MD") {
-      stop("MD currently not implemented for LPD")
-    }
-  }
-
 .process_row <- function(row) {
   knnDist <- .mindistfun(train_scaled, row,  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_in)
   knnDI <- knnDist / trainDIdat$trainDist_avrgmean
@@ -547,17 +531,6 @@ aoa <- function(newdata,
 
   DI_out_i <- knnDI[1]
   LPD_out_i <- sum(knnDI < trainDIdat$threshold)
-
-  if (indices) {
-    knnIndex <- .knnindexfun(t(matrix(row)), train_scaled, method, S_inv, maxLPD = LPD_out_i, algorithm=algorithm)
-    Indices_out_i <- if (LPD_out_i > 0) { knnIndex } else { NA }
-
-    # return here if indices to be calculated
-    return(list(DI_out_i = DI_out_i,
-                LPD_out_i = LPD_out_i,
-                Indices_out_i = Indices_out_i
-    ))
-  }
 
   # return if indices not to be calculated
   return(list(DI_out_i = DI_out_i,
