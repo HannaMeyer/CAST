@@ -47,6 +47,7 @@
 #' ### example from splotopen and visualization
 #' data(splotdata)
 #' indices <- CreateSpacetimeFolds(splotdata,spacevar="Country")
+#' library(ggplot)
 #' ggplot() +
 #' geom_sf(data = splotdata, aes(col = factor(indices$cluster)))
 #' ## is this representative?

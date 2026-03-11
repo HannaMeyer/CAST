@@ -276,10 +276,12 @@ aoa <- function(newdata,
   if (!inherits(catvars,"error")&length(catvars)>0){
     for (catvar in catvars){
       # mask all unknown levels in newdata as NA (even technically no predictions can be made)
-      trainDI$train[,catvar]<-droplevels(trainDI$train[,catvar])
-      newdata[,catvar] <- factor(newdata[,catvar])
-      newdata[!newdata[,catvar]%in%unique(trainDI$train[,catvar]),catvar] <- NA
-      newdata[,catvar] <- droplevels(newdata[,catvar])
+	  # x[,catvar] is a vector if x is a data.frame, but a tibble if x is a tibble
+	  # x[[catvar]] extracts the catvar variable for both data.frame and tibble
+      trainDI$train[[catvar]]<-droplevels(trainDI$train[[catvar]])
+      newdata[[catvar]] <- factor(newdata[[catvar]])
+      newdata[!newdata[[catvar]]%in%unique(trainDI$train[[catvar]]),catvar] <- NA
+      newdata[[catvar]] <- droplevels(newdata[[catvar]])
       # then create dummy variables for the remaining levels in train:
       dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = trainDI$train),trainDI$train)
       dvi_newdata <- predict(caret::dummyVars(paste0("~",catvar), data=trainDI$train),newdata)
