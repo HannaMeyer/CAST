@@ -336,7 +336,7 @@ aoa <- function(newdata,
     }
     mindist <- rep(NA, nrow(newdata))
     mindist[okrows] <-
-      .mindistfun(newdataCC, train_scaled, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
+      .mindistfun(train_scaled, newdataCC, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
     DI_out <- mindist / trainDI$trainDist_avrgmean
   }
 
