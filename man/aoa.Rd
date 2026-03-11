@@ -2,12 +2,25 @@
 % Please edit documentation in R/aoa.R
 \name{aoa}
 \alias{aoa}
+\alias{aoa.stars}
+\alias{aoa.Raster}
+\alias{aoa.SpatRaster}
+\alias{aoa.data.frame}
 \title{Area of Applicability}
 \usage{
-aoa(
+aoa(newdata, model, trainDI, ...)
+
+\method{aoa}{stars}(newdata, model = NA, trainDI = NA, ...)
+
+\method{aoa}{Raster}(newdata, model = NA, trainDI = NA, ...)
+
+\method{aoa}{SpatRaster}(newdata, model = NA, trainDI = NA, ...)
+
+\method{aoa}{data.frame}(
   newdata,
   model = NA,
   trainDI = NA,
+  ...,
   train = NULL,
   weight = NA,
   variables = "all",
@@ -33,6 +46,8 @@ the model was meant to make predictions for.}
 See examples for the case that no model is available or for models trained via e.g. mlr3.}
 
 \item{trainDI}{A trainDI object. Optional if \code{\link{trainDI}} was calculated beforehand.}
+
+\item{...}{ignored}
 
 \item{train}{A data.frame containing the data used for model training. Optional. Only required when no model is given}
 
