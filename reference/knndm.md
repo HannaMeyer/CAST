@@ -250,11 +250,6 @@ knndm_folds
 #> Number of folds: 5
 #> Observations in each fold:  200 200 200 200 200 
 plot(knndm_folds)
-#> Warning: `aes_string()` was deprecated in ggplot2 3.0.0.
-#> ℹ Please use tidy evaluation idioms with `aes()`.
-#> ℹ See also `vignette("ggplot2-in-packages")` for more information.
-#> ℹ The deprecated feature was likely used in the CAST package.
-#>   Please report the issue at <https://github.com/HannaMeyer/CAST/issues/>.
 
 plot(knndm_folds, type = "simple") # For more accessible legend labels
 
