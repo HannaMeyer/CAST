@@ -18,7 +18,7 @@
 #' @param weight A data.frame containing weights for each variable. Optional. Only required if no model is given.
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the model are used or if no model is given then of the train dataset.
-#' @param CVtest list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+#' @param CVtest list or vector. Either a list with the length of the number of cross-validation folds where each element contains the row indices of the data points used for testing during the cross validation iteration (i.e. held back data).
 #' Or a vector that contains the ID of the fold for each training point.
 #' Only required if no model is given.
 #' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
