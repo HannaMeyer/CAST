@@ -1,4 +1,6 @@
 # `CAST` 1.0.5
+* new features:
+  * tests for bss
 * bug fix: 
   * sampling of prediction points in geodist no longer requires reprojection and transformation of raster modeldomains by default (issue [#130](https://github.com/HannaMeyer/CAST/issues/130))
 * modifications: 
