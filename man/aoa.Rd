@@ -107,7 +107,6 @@ Will be fixed.
 library(sf)
 library(terra)
 library(caret)
-library(viridis)
 
 # prepare sample data:
 data(cookfarm)
