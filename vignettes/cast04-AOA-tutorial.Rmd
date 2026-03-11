@@ -23,11 +23,11 @@ knitr::opts_chunk$set(fig.width = 8.83)
 # Introduction
 In spatial predictive mapping, models are often applied to make predictions far beyond sampling locations (i.e. field observations used to map a variable even on a global scale), where new locations might considerably differ in their environmental properties. However, areas in the predictor space without support of training data are problematic. The model has not been enabled to learn about relationships in these environments and predictions for such areas have to be considered highly uncertain. 
 
-In CAST, we implement the methodology described in [Meyer\&Pebesma (2021)](https://doi.org/10.1111/2041-210X.13650) to estimate the "area of applicability" (AOA) of (spatial) prediction models. The AOA is defined as the area where we enabled the model to learn about relationships based on the training data, and where the estimated cross-validation performance holds. To delineate the AOA, first an dissimilarity index (DI) is calculated that is based on distances to the training data in the multidimensional predictor variable space. To account for relevance of predictor variables responsible for prediction patterns we weight variables by the model-derived importance scores prior to distance calculation. The AOA is then derived by applying a threshold based on the DI observed in the training data using cross-validation.
+In CAST, we implement the methodology described in [Meyer and Pebesma (2021)](https://doi.org/10.1111/2041-210X.13650) to estimate the "area of applicability" (AOA) of (spatial) prediction models. The AOA is defined as the area where we enabled the model to learn about relationships based on the training data, and where the estimated cross-validation performance holds. To delineate the AOA, first an dissimilarity index (DI) is calculated that is based on distances to the training data in the multidimensional predictor variable space. To account for relevance of predictor variables responsible for prediction patterns we weight variables by the model-derived importance scores prior to distance calculation. The AOA is then derived by applying a threshold based on the DI observed in the training data using cross-validation.
  
 This tutorial shows an example of how to estimate the area of applicability of spatial prediction models. 
 
-For further information see: Meyer, H., & Pebesma, E. (2021). Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution, 12, 1620– 1633. [https://doi.org/10.1111/2041-210X.13650]
+For further information see [Meyer and Pebesma (2021)](https://doi.org/10.1111/2041-210X.13650).
 
 ### Getting started
 ```{r, message = FALSE, warning=FALSE}
@@ -199,11 +199,11 @@ Very high DI values are present in the Alps, as they have not been covered by tr
 ## AOA for spatially clustered data?
 
 The example above had randomly distributed training samples. However, sampling locations might also be highly clustered in space. In this case, the random cross-validation is not meaningful (see e.g.
-[Meyer et al. 2018](https://doi.org/10.1016/j.envsoft.2017.12.001), [Meyer et al. 2019](https://doi.org/10.1016/j.ecolmodel.2019.108815),
-[Valavi et al. 2019](https://doi.org/10.1111/2041-210X.13107),
-[Roberts et al. 2018](https://doi.org/10.1111/ecog.02881),
-[Pohjankukka et al. 2017](https://doi.org/10.1080/13658816.2017.1346255),
-[Brenning 2012](https://CRAN.R-project.org/package=sperrorest))
+[Meyer et al., 2018](https://doi.org/10.1016/j.envsoft.2017.12.001); [Meyer et al., 2019](https://doi.org/10.1016/j.ecolmodel.2019.108815);
+[Valavi et al., 2019](https://doi.org/10.1111/2041-210X.13107);
+[Roberts et al., 2018](https://doi.org/10.1111/ecog.02881);
+[Pohjankukka et al., 2017](https://doi.org/10.1080/13658816.2017.1346255);
+[Brenning, 2012](https://CRAN.R-project.org/package=sperrorest))
 
 A random cross-validation in this case would lead to a apparently high prediction performance, but this would only apply to a very small AOA, because the threshold on the DI is based in distance to a nearest data point within the training data (which is usually very small when data are clustered). To assess the model performance for larger areas, cross-validation should be based on a spatial CV, e.g. a leave-cluster-out approach (see vignette on spatial CV in this package for a more detailed discussion on cross validation strategies), where also the AOA estimation is based on distances to a nearest data point not located in the same spatial cluster.
  
@@ -341,7 +341,7 @@ plot(mask(LPD_expected_RMSE,LPD_updated_AOA,maskvalue=0),col=viridis(100),main="
 The example above used simulated data so that it allows to analyze the reliability of the AOA. However, a simulated area-wide response is not available in usual prediction tasks. Therefore, as a second example the AOA is estimated for a dataset that has point observations as a reference only.
 
 ## Data and preprocessing
-To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al 2015](https://doi.org/10.1016/j.spasta.2015.04.001). The dataset included in CAST is a re-structured dataset. Find more details also in the vignette "Introduction to CAST".
+To do so, we will work with the cookfarm dataset, described in e.g. [Gasch et al. (2015)](https://doi.org/10.1016/j.spasta.2015.04.001). The dataset included in CAST is a re-structured dataset. Find more details also in the vignette "Introduction to CAST".
 We will use soil moisture (VW) as response variable here. Hence, we're aiming at making a spatial continuous prediction based on limited measurements from data loggers.
 
 ```{r, message = FALSE, warning=FALSE}
@@ -413,8 +413,8 @@ plot(mask(prediction,AOA$AOA,maskvalue=0), col=viridis(100), main="prediction fo
 
 ## Further reading
 
-*  Meyer, H., & Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications. [https://doi.org/10.1038/s41467-022-29838-9]
+* Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of ecological variables and the challenge of assessing them. Nature Communications 13, 2208. https://doi.org/10.1038/s41467-022-29838-9.
 
-*  Meyer, H., & Pebesma, E. (2021). Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution, 12, 1620– 1633. [https://doi.org/10.1111/2041-210X.13650]
+* Meyer, H., Pebesma, E. (2021). Predicting into unknown space? Estimating the area of applicability of spatial prediction models. Methods in Ecology and Evolution, 12, 1620– 1633. https://doi.org/10.1111/2041-210X.13650.
 
-*  Tutorial (https://youtu.be/EyP04zLe9qo) and Lecture (https://youtu.be/OoNH6Nl-X2s) recording from OpenGeoHub summer school 2020 on the area of applicability. As well as talk at the OpenGeoHub summer school 2022: https://doi.org/10.5446/59412
+*  Tutorial (https://youtu.be/EyP04zLe9qo) and Lecture (https://youtu.be/OoNH6Nl-X2s) recording from OpenGeoHub summer school 2020 on the area of applicability. As well as talk at the OpenGeoHub summer school 2022: https://doi.org/10.5446/59412.
