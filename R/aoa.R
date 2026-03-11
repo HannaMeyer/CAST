@@ -361,7 +361,7 @@ aoa <- function(newdata,
       }
 
       for (i in seq(nrow(newdataCC))) {
-        knnDist  <- .knndistfun(t(matrix(newdataCC[i,])), train_scaled, method, S_inv, maxLPD = maxLPD, algorithm=algorithm)
+        knnDist  <- .mindistfun(train_scaled, newdataCC[i,],  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_in)
         knnDI <- knnDist / trainDI$trainDist_avrgmean
         knnDI <- c(knnDI)
 
@@ -410,7 +410,7 @@ aoa <- function(newdata,
                           "maxLPD",
                           "algorithm",
                           ".process_row",
-                          ".knndistfun",
+                          ".mindistfun",
                           ".knnindexfun"), envir = environment())
 
       # # Split newdataCC into chunks for each core (important for large datasets)
@@ -525,26 +525,6 @@ aoa <- function(newdata,
   return(result)
 }
 
-
-.knndistfun <-
-  function (point,
-            reference,
-            method,
-            S_inv = NULL,
-            maxLPD = maxLPD,
-            algorithm) {
-    if (method == "L2") {
-      # Euclidean Distance
-      return(FNN::knnx.dist(reference, point, k = maxLPD, algorithm = algorithm))
-    } else if (method == "MD") {
-      return(t(sapply(1:dim(point)[1],
-                      function(y)
-                        sort(sapply(1:dim(reference)[1],
-                                    function(x)
-                                      sqrt(t(point[y, ] - reference[x, ]) %*% S_inv %*% (point[y, ] - reference[x,]) )))[1:maxLPD])))
-    }
-  }
-
 .knnindexfun <-
   function (point,
             reference,
@@ -561,7 +541,7 @@ aoa <- function(newdata,
   }
 
 .process_row <- function(row) {
-  knnDist <- .knndistfun(t(matrix(row)), train_scaled, method, S_inv, maxLPD = maxLPD, algorithm=algorithm)
+  knnDist <- .mindistfun(train_scaled, row,  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_in)
   knnDI <- knnDist / trainDIdat$trainDist_avrgmean
   knnDI <- c(knnDI)
 
