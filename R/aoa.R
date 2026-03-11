@@ -156,16 +156,15 @@
 
 #' @export
 #' @name aoa
-aoa = function(newdata, model, trainDI, ...) UseMethod("aoa") # the generic
+aoa = function(newdata, model=NA, ...) UseMethod("aoa") # the generic
 
 #' @export
 #' @name aoa
-aoa.stars = function(newdata, model=NA, trainDI=NA, ...) {
+aoa.stars = function(newdata, model=NA, ...) {
     if (!requireNamespace("stars", quietly = TRUE))
       stop("package stars required: install that first")
-    newdata <- methods::as(newdata, "SpatRaster")
-    res = aoa(newdata, model, trainDI, ...)
-	# convert to stars...
+    res = aoa(methods::as(newdata, "SpatRaster"), model=model, ...)
+	# convert back to stars...
     res$DI <- stars::st_as_stars(res$DI)
     res$AOA <- stars::st_as_stars(res$AOA)
     if (!is.null(res$LPD)) {
@@ -176,31 +175,29 @@ aoa.stars = function(newdata, model=NA, trainDI=NA, ...) {
 
 #' @export
 #' @name aoa
-aoa.Raster = function(newdata, model=NA, trainDI=NA, ...) {
+aoa.Raster = function(newdata, model=NA, ...) {
     stop("Raster will soon not longer be supported. Use terra or stars instead")
-    newdata <- methods::as(newdata, "SpatRaster")
-    aoa(newdata, model, trainDI, ...)
+    aoa(methods::as(newdata, "SpatRaster"), model=model, ...)
 }
 
 #' @export
 #' @name aoa
-aoa.SpatRaster = function(newdata, model=NA, trainDI=NA, ...) {
+aoa.SpatRaster = function(newdata, model=NA, ...) {
   #### order data:
   out_template = newdata[[1]]
   if (any(is.factor(newdata)))
     newdata[[which(is.factor(newdata))]] <- as.numeric(newdata[[which(is.factor(newdata))]])
-  newdata <- terra::as.data.frame(newdata,na.rm=FALSE)
   # call the data.frame method:
-  res = aoa(newdata, model, trainDI, ...)
+  res = aoa(terra::as.data.frame(newdata, na.rm = FALSE), model=model, ...)
 
-  # set DI:
+  # convert DI:
   DI = out_template
   terra::values(DI) <- res$DI
   DI <- terra::mask(DI, out_template)
   names(DI) = "DI"
   res$DI = DI
 
-  # set AOA:
+  # convert AOA:
   AOA = out_template
   terra::values(AOA) <- res$AOA
   AOA <- terra::mask(AOA, out_template)
@@ -208,6 +205,7 @@ aoa.SpatRaster = function(newdata, model=NA, trainDI=NA, ...) {
   res$AOA = AOA
 
   if (!is.null(res$LPD)) {
+    # convert LPD:
     LPD <- out_template
     terra::values(LPD) <- res$LPD
     names(LPD) = "LPD"
@@ -221,8 +219,8 @@ aoa.SpatRaster = function(newdata, model=NA, trainDI=NA, ...) {
 #' @name aoa
 aoa.data.frame <- function(newdata,
                 model=NA,
-                trainDI = NA,
 				...,
+                trainDI = NA,
                 train=NULL,
                 weight=NA,
                 variables="all",
