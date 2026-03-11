@@ -337,7 +337,7 @@ aoa <- function(newdata,
     }
     mindist <- rep(NA, nrow(newdata))
     mindist[okrows] <-
-      .mindistfun(train_scaled, newdataCC, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
+      .knndistfun(train_scaled, newdataCC, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
     DI_out <- mindist / trainDI$trainDist_avrgmean
   }
 
@@ -361,7 +361,7 @@ aoa <- function(newdata,
       }
 
       for (i in seq(nrow(newdataCC))) {
-        knnDist  <- .mindistfun(train_scaled, newdataCC[i,],  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_in)
+        knnDist  <- .knndistfun(train_scaled, newdataCC[i,],  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_in)
         knnDI <- knnDist / trainDI$trainDist_avrgmean
         knnDI <- c(knnDI)
 
@@ -370,7 +370,7 @@ aoa <- function(newdata,
 
         if (indices) {
           if (LPD_out[okrows[i]] > 0) {
-            knnIndex  <- .mindistfun(train_scaled,newdataCC[i,], k = LPD_out[okrows[i]], method=method, algorithm=algorithm, S_inv=S_in, distance = FALSE)
+            knnIndex  <- .knndistfun(train_scaled,newdataCC[i,], k = LPD_out[okrows[i]], method=method, algorithm=algorithm, S_inv=S_in, distance = FALSE)
             Indices_out[i,1:LPD_out[okrows[i]]] <- as.numeric(knnIndex)
           }
         }
@@ -410,7 +410,7 @@ aoa <- function(newdata,
                           "maxLPD",
                           "algorithm",
                           ".process_row",
-                          ".mindistfun"), envir = environment())
+                          ".knndistfun"), envir = environment())
 
       # # Split newdataCC into chunks for each core (important for large datasets)
       size_chunks <- ceiling(nrow(newdataCC) / cores)
@@ -525,7 +525,7 @@ aoa <- function(newdata,
 }
 
 .process_row <- function(row) {
-  knnDist <- .mindistfun(train_scaled, row,  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_in)
+  knnDist <- .knndistfun(train_scaled, row,  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_in)
   knnDI <- knnDist / trainDIdat$trainDist_avrgmean
   knnDI <- c(knnDI)
 

@@ -190,7 +190,7 @@ trainDI <- function(model = NA,
   for(i in seq(nrow(train))){
 
     # calculate  distance to other training data:
-    trainDist      <- .mindistfun(train[i, ], train, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
+    trainDist      <- .knndistfun(train[i, ], train, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
     trainDist[i]   <- NA
     trainDist_avrg <- append(trainDist_avrg, mean(trainDist, na.rm = TRUE))
 
@@ -257,7 +257,7 @@ trainDI <- function(model = NA,
     for (j in  seq(nrow(train))) {
 
       # calculate  distance to other training data:
-      trainDist      <- .mindistfun(train[j, ], train, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
+      trainDist      <- .knndistfun(train[j, ], train, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
       DItrainDist <- trainDist/trainDist_avrgmean
       DItrainDist[j]   <- NA
 
@@ -508,7 +508,7 @@ aoa_get_variables <- function(variables, model, train){
 
 }
 
-.mindistfun <- function(
+.knndistfun <- function(
   point, 
   reference, 
   k = 1, 
