@@ -50,10 +50,11 @@ trainDI(
 
 - CVtest:
 
-  list or vector. Either a list where each element contains the data
-  points used for testing during the cross validation iteration (i.e.
-  held back data). Or a vector that contains the ID of the fold for each
-  training point. Only required if no model is given.
+  list or vector. Either a list with the length of the number of
+  cross-validation folds where each element contains the row indices of
+  the data points used for testing during the cross validation iteration
+  (i.e. held back data). Or a vector that contains the ID of the fold
+  for each training point. Only required if no model is given.
 
 - CVtrain:
 
