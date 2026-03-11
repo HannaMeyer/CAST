@@ -10,7 +10,7 @@
 #' @export
 
 plot.trainDI = function(x, ...){
-  ggplot(data.frame(TrainDI = x$trainDI), aes_string(x = "TrainDI"))+
+  ggplot(data.frame(TrainDI = x$trainDI), aes(x = .data[["TrainDI"]]))+
     geom_density()+
     geom_vline(aes(xintercept = x$threshold, linetype = "AOA_threshold"))+
     scale_linetype_manual(name = "", values = c(AOA_threshold = "dashed"))+
@@ -66,17 +66,14 @@ plot.aoa = function(x, samplesize = 1000, variable = "DI", ...){
 
     dfDI = rbind(trainDI, targetDI)
 
-    plot = ggplot(dfDI, aes_string(x = "DI", group = "what", fill = "what"))+
+    ggplot(dfDI, aes(x = .data[["DI"]], group = .data[["what"]], fill = .data[["what"]]))+
       geom_density(adjust=1.5, alpha=.4)+
       scale_fill_discrete(name = "Set")+
       geom_vline(aes(xintercept = x$parameters$threshold, linetype = "AOA_threshold"))+
       scale_linetype_manual(name = "", values = c(AOA_threshold = "dashed"))+
       theme_bw()+
       theme(legend.position = "bottom")
-  }
-
-
-  if (variable == "LPD") {
+  } else if (variable == "LPD") {
     trainLPD = data.frame(LPD = x$parameters$trainLPD,
                           what = "trainLPD")
 
@@ -104,17 +101,15 @@ plot.aoa = function(x, samplesize = 1000, variable = "DI", ...){
     dfLPD = rbind(trainLPD, targetLPD)
 
 
-    plot = ggplot(dfLPD, aes_string(x = "LPD", group = "what", fill = "what"))+
+    ggplot(dfLPD, aes(x = .data[["LPD"]], group = .data[["what"]], fill = .data[["what"]]))+
       geom_density(adjust=1.5, alpha=0.4)+
       scale_fill_discrete(name = "Set")+
       geom_vline(aes(xintercept = median(x$parameters$trainLPD), linetype = "MtrainLPD"))+
       scale_linetype_manual(name = "", values = c(MtrainLPD = "dashed"))+
       theme_bw()+
       theme(legend.position = "bottom")
-
-  }
-
-  return(plot)
+  } else
+	stop("argument 'variable' needs to be either 'DI' or 'LPD'")
 }
 
 
@@ -172,7 +167,7 @@ plot.nndm <- function(x, type="strict", stat = "ecdf", ...){
 
   # Plot
   if(stat=="ecdf"){
-    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes_string(x="r", group="Function", col="Function")) +
+    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes(x=.data[["r"]], group=.data[["Function"]], col=.data[["Function"]])) +
       ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
       ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
       ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
@@ -198,7 +193,7 @@ plot.nndm <- function(x, type="strict", stat = "ecdf", ...){
     }
 
   }else if(stat=="density"){
-    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes_string(x="r", group="Function", fill="Function")) +
+    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes(x=.data[["r"]], group=.data[["Function"]], fill=.data[["Function"]])) +
       ggplot2::geom_density(adjust=1.5, alpha=.5, stat=stat, lwd = 0.3) +
       ggplot2::theme_bw() +
       ggplot2::ylab("Density") +
@@ -257,7 +252,7 @@ plot.knndm <- function(x, type="strict", stat = "ecdf", ...){
 
   # Plot
   if(stat=="ecdf"){
-    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes_string(x="r", group="Function", col="Function")) +
+    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes(x=.data[["r"]], group=.data[["Function"]], col=.data[["Function"]])) +
       ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
       ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
       ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
@@ -283,7 +278,7 @@ plot.knndm <- function(x, type="strict", stat = "ecdf", ...){
     }
 
   }else if(stat=="density"){
-    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes_string(x="r", group="Function", fill="Function")) +
+    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes(x=.data[["r"]], group=.data[["Function"]], fill=.data[["Function"]])) +
       ggplot2::geom_density(adjust=1.5, alpha=.5, stat=stat, lwd = 0.3) +
       ggplot2::theme_bw() +
       ggplot2::ylab("Density") +
@@ -364,10 +359,10 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
                          perfse = x$selectedvars_perf_SE)
 
 
-    p <- ggplot(plot_df, aes_string(x = "perf", y = "labels"))+
+    p <- ggplot(plot_df, aes(x = .data[["perf"]], y = .data[["labels"]]))+
       geom_point()+
-      geom_segment(aes_string(x = "perf - perfse", xend = "perf + perfse",
-                       y = "labels", yend = "labels"))+
+      geom_segment(aes(x = .data[["perf - perfse"]], xend = .data[["perf + perfse"]],
+                       y = .data[["labels"]], yend = .data[["labels"]]))+
       xlab(x$metric)+
       ylab(NULL)
     return(p)
@@ -406,12 +401,12 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
     ymin <- output_df$value - output_df$SE
     ymax <- output_df$value + output_df$SE
     if (max(output_df$nvar)>11){
-      p <- ggplot2::ggplot(output_df, ggplot2::aes_string(x = "run", y = "value"))+
+      p <- ggplot2::ggplot(output_df, ggplot2::aes(x = .data[["run"]], y = .data[["value"]]))+
         ggplot2::geom_errorbar(ggplot2::aes(ymin = ymin, ymax = ymax),
                                color = cols[output_df$nvar-(min(output_df$nvar)-1)],lwd=lwd)+
-        ggplot2::geom_point(ggplot2::aes_string(colour="nvar"),size=size)+
+        ggplot2::geom_point(ggplot2::aes(colour=.data[["nvar"]]),size=size)+
         ggplot2::geom_point(data=output_df[bestmodels, ],
-                            ggplot2::aes_string(x = "run", y = "value"),
+                            ggplot2::aes(x = .data[["run"]], y = .data[["value"]]),
                             pch=pch,colour=marker,size=size)+
         ggplot2::scale_x_continuous(name = "Model run", breaks = pretty(output_df$run))+
         ggplot2::scale_y_continuous(name = metric)+
@@ -421,12 +416,12 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
     }else{
       dfint <- output_df
       dfint$nvar <- as.factor(dfint$nvar)
-      p <- ggplot2::ggplot(dfint, ggplot2::aes_string(x = "run", y = "value"))+
+      p <- ggplot2::ggplot(dfint, ggplot2::aes(x = .data[["run"]], y = .data[["value"]]))+
         ggplot2::geom_errorbar(ggplot2::aes(ymin = ymin, ymax = ymax),
                                color = cols[output_df$nvar-(min(output_df$nvar)-1)],lwd=lwd)+
-        ggplot2::geom_point(ggplot2::aes_string(colour="nvar"),size=size)+
+        ggplot2::geom_point(ggplot2::aes(colour=.data[["nvar"]]),size=size)+
         ggplot2::geom_point(data=output_df[bestmodels, ],
-                            ggplot2::aes_string(x = "run", y = "value"),
+                            ggplot2::aes(x = .data[["run"]], y = .data[["value"]]),
                             pch=pch,colour=marker,size=size)+
         ggplot2::scale_x_continuous(name = "Model run", breaks = pretty(dfint$run))+
         ggplot2::scale_y_continuous(name = metric)+
@@ -526,8 +521,8 @@ plot.errorModel <- function(x, ...){
                           what = "model")
 
   p = ggplot()+
-    geom_point(data = performance, mapping = aes_string(x = variable, y = "metric", shape = "what"))+
-    geom_line(data = model_line, mapping =  aes_string(x = "variable", y = "metric", linetype = "what"), lwd = 1)+
+    geom_point(data = performance, mapping = aes(x = .data[[variable]], y = .data[["metric"]], shape = .data[["what"]]))+
+    geom_line(data = model_line, mapping =  aes(x = .data[["variable"]], y = .data[["metric"]], linetype = .data[["what"]]), lwd = 1)+
     labs(x = variable, y = metric)+
     theme(legend.title = element_blank(), legend.position = "bottom")
 
