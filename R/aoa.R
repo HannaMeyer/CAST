@@ -337,7 +337,7 @@ aoa <- function(newdata,
     }
     mindist <- rep(NA, nrow(newdata))
     mindist[okrows] <-
-      .mindistfun(train_scaled, newdataCC, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
+      .knndistfun(train_scaled, newdataCC, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
     DI_out <- mindist / trainDI$trainDist_avrgmean
   }
 
@@ -361,7 +361,7 @@ aoa <- function(newdata,
       }
 
       for (i in seq(nrow(newdataCC))) {
-        knnDist  <- .knndistfun(t(matrix(newdataCC[i,])), train_scaled, method, S_inv, maxLPD = maxLPD, algorithm=algorithm)
+        knnDist  <- .knndistfun(train_scaled, newdataCC[i,],  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_in)
         knnDI <- knnDist / trainDI$trainDist_avrgmean
         knnDI <- c(knnDI)
 
@@ -370,7 +370,7 @@ aoa <- function(newdata,
 
         if (indices) {
           if (LPD_out[okrows[i]] > 0) {
-            knnIndex  <- .knnindexfun(t(matrix(newdataCC[i,])), train_scaled, method, S_inv, maxLPD = LPD_out[okrows[i]],algorithm=algorithm)
+            knnIndex  <- .knndistfun(train_scaled,newdataCC[i,], k = LPD_out[okrows[i]], method=method, algorithm=algorithm, S_inv=S_in, distance = FALSE)
             Indices_out[i,1:LPD_out[okrows[i]]] <- as.numeric(knnIndex)
           }
         }
@@ -410,8 +410,7 @@ aoa <- function(newdata,
                           "maxLPD",
                           "algorithm",
                           ".process_row",
-                          ".knndistfun",
-                          ".knnindexfun"), envir = environment())
+                          ".knndistfun"), envir = environment())
 
       # # Split newdataCC into chunks for each core (important for large datasets)
       size_chunks <- ceiling(nrow(newdataCC) / cores)
@@ -525,59 +524,13 @@ aoa <- function(newdata,
   return(result)
 }
 
-
-.knndistfun <-
-  function (point,
-            reference,
-            method,
-            S_inv = NULL,
-            maxLPD = maxLPD,
-            algorithm) {
-    if (method == "L2") {
-      # Euclidean Distance
-      return(FNN::knnx.dist(reference, point, k = maxLPD, algorithm = algorithm))
-    } else if (method == "MD") {
-      return(t(sapply(1:dim(point)[1],
-                      function(y)
-                        sort(sapply(1:dim(reference)[1],
-                                    function(x)
-                                      sqrt(t(point[y, ] - reference[x, ]) %*% S_inv %*% (point[y, ] - reference[x,]) )))[1:maxLPD])))
-    }
-  }
-
-.knnindexfun <-
-  function (point,
-            reference,
-            method,
-            S_inv = NULL,
-            maxLPD = maxLPD,
-            algorithm) {
-    if (method == "L2") {
-      # Euclidean Distance
-      return(FNN::knnx.index(reference, point, k = maxLPD, algorithm = algorithm))
-    } else if (method == "MD") {
-      stop("MD currently not implemented for LPD")
-    }
-  }
-
 .process_row <- function(row) {
-  knnDist <- .knndistfun(t(matrix(row)), train_scaled, method, S_inv, maxLPD = maxLPD, algorithm=algorithm)
+  knnDist <- .knndistfun(train_scaled, row,  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_in)
   knnDI <- knnDist / trainDIdat$trainDist_avrgmean
   knnDI <- c(knnDI)
 
   DI_out_i <- knnDI[1]
   LPD_out_i <- sum(knnDI < trainDIdat$threshold)
-
-  if (indices) {
-    knnIndex <- .knnindexfun(t(matrix(row)), train_scaled, method, S_inv, maxLPD = LPD_out_i, algorithm=algorithm)
-    Indices_out_i <- if (LPD_out_i > 0) { knnIndex } else { NA }
-
-    # return here if indices to be calculated
-    return(list(DI_out_i = DI_out_i,
-                LPD_out_i = LPD_out_i,
-                Indices_out_i = Indices_out_i
-    ))
-  }
 
   # return if indices not to be calculated
   return(list(DI_out_i = DI_out_i,

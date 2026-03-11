@@ -190,7 +190,7 @@ trainDI <- function(model = NA,
   for(i in seq(nrow(train))){
 
     # calculate  distance to other training data:
-    trainDist      <- .mindistfun(train[i, ], train, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
+    trainDist      <- .knndistfun(train[i, ], train, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
     trainDist[i]   <- NA
     trainDist_avrg <- append(trainDist_avrg, mean(trainDist, na.rm = TRUE))
 
@@ -257,7 +257,7 @@ trainDI <- function(model = NA,
     for (j in  seq(nrow(train))) {
 
       # calculate  distance to other training data:
-      trainDist      <- .mindistfun(train[j, ], train, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
+      trainDist      <- .knndistfun(train[j, ], train, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
       DItrainDist <- trainDist/trainDist_avrgmean
       DItrainDist[j]   <- NA
 
@@ -490,10 +490,6 @@ aoa_get_folds <- function(model, CVtrain, CVtest, useCV){
 }
 
 
-
-
-
-
 # Get variables from train object
 
 aoa_get_variables <- function(variables, model, train){
@@ -512,15 +508,14 @@ aoa_get_variables <- function(variables, model, train){
 
 }
 
-
-
-.mindistfun <- function(
+.knndistfun <- function(
   point, 
   reference, 
   k = 1, 
   method = c("L2", "MD"), 
   algorithm=c("kd_tree", "cover_tree", "brute"), 
-  S_inv = NULL) {
+  S_inv = NULL,
+  distance = TRUE) {
   
   if (inherits(point, "numeric")) {
     point <- matrix(point, nrow = 1)
@@ -530,11 +525,18 @@ aoa_get_variables <- function(variables, model, train){
   }
   
   if (method == "L2"){ # Euclidean Distance
-    return(c(FNN::knnx.dist(point, reference, k = k, algorithm = algorithm)))
+    if (distance) {
+      return(c(FNN::knnx.dist(point, reference, k = k, algorithm = algorithm)))
+    } else {
+      return(FNN::knnx.index(reference, point, k = k, algorithm = algorithm))
+    }
   } else if (method == "MD"){ # Mahalanobis Distance
+    if (distance) {
     return(sapply(1:dim(point)[1],
                   function(y) min(sapply(1:dim(reference)[1],
                                          function(x) sqrt( t(point[y,] - reference[x,]) %*% S_inv %*% (point[y,] - reference[x,]) )))))
+    } else {
+      stop("KNN-index return not implemented for Mahalanobis distance")
+    }
   }
-}
-
+}  
