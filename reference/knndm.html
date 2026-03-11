@@ -64,7 +64,10 @@ indices to perform a k-fold NNDM CV for map validation.</p>
 <span>  algorithm <span class="op">=</span> <span class="st">"brute"</span>,</span>
 <span>  scale_vars <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  space <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  useMD <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  useMD <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  test_prop <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  test_tolerance <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  nk_len <span class="op">=</span> <span class="fl">100</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -140,6 +143,21 @@ For other distances (Mahalanobis, Euclidean), scaling the data is important. Thu
 <dt id="arg-usemd">useMD<a class="anchor" aria-label="anchor" href="#arg-usemd"></a></dt>
 <dd><p>deprecated. Use `dist_fun` instead.</p></dd>
 
+
+<dt id="arg-test-prop">test_prop<a class="anchor" aria-label="anchor" href="#arg-test-prop"></a></dt>
+<dd><p>numeric. The proportion of test data. NULL by default (i.e., no train/test split).</p></dd>
+
+
+<dt id="arg-test-tolerance">test_tolerance<a class="anchor" aria-label="anchor" href="#arg-test-tolerance"></a></dt>
+<dd><p>numeric. The allowed deviance from `test_prop`. The higher the tolerance,
+the larger the possibility to obtain train/test splits that yield good approximations of the prediction situation.</p></dd>
+
+
+<dt id="arg-nk-len">nk_len<a class="anchor" aria-label="anchor" href="#arg-nk-len"></a></dt>
+<dd><p>integer. The number of fold configurations to test. By default 100.
+Larger numbers increase computational times, but also might lead to better W statistics.
+Useful for train/test splits, where a large number of configurations is discarded.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -181,12 +199,18 @@ Then, the function takes a regular point sample (amount defined by `samplesize`)
 As an alternative use `predpoints` instead of `modeldomain`, if you have already defined the prediction locations (e.g. raster pixel centroids).
 When using either `modeldomain` or `predpoints`, we advise to plot the study area polygon and the training/prediction points as a previous step to ensure they are aligned.</p>
 <p>`knndm` can also be performed in the feature space by setting `dist_space` to "feature".
-Euclidean distances or Mahalanobis distances can be used for distance calculation, but only Euclidean are tested.
+Euclidean distances, Gower distance or Mahalanobis distances can be used for distance calculation, but only Euclidean are tested.
 In this case, nearest neighbour distances are calculated in n-dimensional feature space rather than in geographical space.
 `tpoints` and `predpoints` can be data frames or sf objects containing the values of the features. Note that the names of `tpoints` and `predpoints` must be the same.
 `predpoints` can also be missing, if `modeldomain` is of class SpatRaster. In this case, the values of of the SpatRaster will be extracted to the `predpoints`.
 In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances [Experimental]. If categorical
 features are present, and `clustering` = "kmeans", K-Prototype clustering will be performed instead.</p>
+<p>`knndm` can be used to split the data into training and test sets. Here, the proportion of points belonging to the test set (`test_prop`) can be specified,
+as well as the allowed deviation from this specified proportion (`test_tolerance`).
+Based on these, `minp` and `maxp` are defined as the `test_prop` +/- `test_tolerance`.
+Compared to k-fold CV, using knndm for train/test splits is less flexible and often results in larger NNDs between test and train locations
+than between prediction and train locations. Hence, it is essential to plot the results of `knndm` and check how well the split can resemble the prediction situation.
+Modifying the `test_prop` parameter, as well as increasing `test_prop` allow more flexible matching and can potentially improve the match.</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
@@ -321,7 +345,41 @@ features are present, and `clustering` = "kmeans", K-Prototype clustering will b
 <span class="r-in"><span><span class="fu"><a href="global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">model_knndm</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span><span class="co">########################################################################</span></span></span>
-<span class="r-in"><span><span class="co"># Example 4: Real- world example; kNNDM in feature space</span></span></span>
+<span class="r-in"><span><span class="co"># Example 4: Simulated data - Train/test split with clustered training points</span></span></span>
+<span class="r-in"><span><span class="co">########################################################################</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Simulate 1000 clustered training points in a 100x100 square</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">simarea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">100</span>,<span class="fl">100</span>,<span class="fl">100</span>,<span class="fl">100</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">2</span>, byrow<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">simarea</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st.html" class="external-link">st_polygon</a></span><span class="op">(</span><span class="va">simarea</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">train_points</span> <span class="op">&lt;-</span> <span class="fu"><a href="clustered_sample.html">clustered_sample</a></span><span class="op">(</span><span class="va">simarea</span>, <span class="fl">1000</span>, <span class="fl">50</span>, <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">pred_points</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_sample.html" class="external-link">st_sample</a></span><span class="op">(</span><span class="va">simarea</span>, <span class="fl">1000</span>, type <span class="op">=</span> <span class="st">"regular"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">simarea</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">pred_points</span>, add <span class="op">=</span> <span class="cn">TRUE</span>, col <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">train_points</span>, add <span class="op">=</span> <span class="cn">TRUE</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Use kNNDM to split the data into 30% +- 10% test and 70% train</span></span></span>
+<span class="r-in"><span><span class="va">knndm_folds</span> <span class="op">&lt;-</span> <span class="fu">knndm</span><span class="op">(</span><span class="va">train_points</span>, predpoints <span class="op">=</span> <span class="va">pred_points</span>, test_prop <span class="op">=</span> <span class="fl">0.3</span>, tolerance <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># How many samples have been used for testing:</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">knndm_folds</span><span class="op">$</span><span class="va">clusters</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">knndm_folds</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># The train/test split could not represent the prediction situation well</span></span></span>
+<span class="r-in"><span><span class="co"># Increase tolerance to increase number of configurations tried, and thus to find a suitable split</span></span></span>
+<span class="r-in"><span><span class="va">knndm_folds</span> <span class="op">&lt;-</span> <span class="fu">knndm</span><span class="op">(</span><span class="va">train_points</span>, predpoints <span class="op">=</span> <span class="va">pred_points</span>, test_prop <span class="op">=</span> <span class="fl">0.3</span>, tolerance <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">knndm_folds</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">knndm_folds</span><span class="op">$</span><span class="va">clusters</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># This resulted in better match of the prediction situation, but a 50/50 split</span></span></span>
+<span class="r-in"><span><span class="va">folds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">knndm_folds</span><span class="op">$</span><span class="va">clusters</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">simarea</span>, alpha <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">train_points</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>col <span class="op">=</span> <span class="va">folds</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">########################################################################</span></span></span>
+<span class="r-in"><span><span class="co"># Example 5: Real- world example; kNNDM in feature space</span></span></span>
 <span class="r-in"><span><span class="co">########################################################################</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span></span>

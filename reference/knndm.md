@@ -21,7 +21,10 @@ knndm(
   algorithm = "brute",
   scale_vars = TRUE,
   space = NULL,
-  useMD = NULL
+  useMD = NULL,
+  test_prop = NULL,
+  test_tolerance = NULL,
+  nk_len = 100
 )
 ```
 
@@ -113,6 +116,24 @@ knndm(
 
   deprecated. Use \`dist_fun\` instead.
 
+- test_prop:
+
+  numeric. The proportion of test data. NULL by default (i.e., no
+  train/test split).
+
+- test_tolerance:
+
+  numeric. The allowed deviance from \`test_prop\`. The higher the
+  tolerance, the larger the possibility to obtain train/test splits that
+  yield good approximations of the prediction situation.
+
+- nk_len:
+
+  integer. The number of fold configurations to test. By default 100.
+  Larger numbers increase computational times, but also might lead to
+  better W statistics. Useful for train/test splits, where a large
+  number of configurations is discarded.
+
 ## Value
 
 An object of class *knndm* consisting of a list of eight elements:
@@ -177,11 +198,11 @@ study area polygon and the training/prediction points as a previous step
 to ensure they are aligned.
 
 \`knndm\` can also be performed in the feature space by setting
-\`dist_space\` to "feature". Euclidean distances or Mahalanobis
-distances can be used for distance calculation, but only Euclidean are
-tested. In this case, nearest neighbour distances are calculated in
-n-dimensional feature space rather than in geographical space.
-\`tpoints\` and \`predpoints\` can be data frames or sf objects
+\`dist_space\` to "feature". Euclidean distances, Gower distance or
+Mahalanobis distances can be used for distance calculation, but only
+Euclidean are tested. In this case, nearest neighbour distances are
+calculated in n-dimensional feature space rather than in geographical
+space. \`tpoints\` and \`predpoints\` can be data frames or sf objects
 containing the values of the features. Note that the names of
 \`tpoints\` and \`predpoints\` must be the same. \`predpoints\` can also
 be missing, if \`modeldomain\` is of class SpatRaster. In this case, the
@@ -190,6 +211,19 @@ the case of any categorical features, Gower distances will be used to
 calculate the Nearest Neighbour distances \[Experimental\]. If
 categorical features are present, and \`clustering\` = "kmeans",
 K-Prototype clustering will be performed instead.
+
+\`knndm\` can be used to split the data into training and test sets.
+Here, the proportion of points belonging to the test set (\`test_prop\`)
+can be specified, as well as the allowed deviation from this specified
+proportion (\`test_tolerance\`). Based on these, \`minp\` and \`maxp\`
+are defined as the \`test_prop\` +/- \`test_tolerance\`. Compared to
+k-fold CV, using knndm for train/test splits is less flexible and often
+results in larger NNDs between test and train locations than between
+prediction and train locations. Hence, it is essential to plot the
+results of \`knndm\` and check how well the split can resemble the
+prediction situation. Modifying the \`test_prop\` parameter, as well as
+increasing \`test_prop\` allow more flexible matching and can
+potentially improve the match.
 
 ## Note
 
@@ -331,7 +365,41 @@ model_knndm <- train(dat[,c("DEM","TWI", "NDRE.M")],
 global_validation(model_knndm)
 } # }
 ########################################################################
-# Example 4: Real- world example; kNNDM in feature space
+# Example 4: Simulated data - Train/test split with clustered training points
+########################################################################
+if (FALSE) { # \dontrun{
+library(sf)
+library(ggplot2)
+
+# Simulate 1000 clustered training points in a 100x100 square
+set.seed(1234)
+simarea <- list(matrix(c(0,0,0,100,100,100,100,0,0,0), ncol=2, byrow=TRUE))
+simarea <- sf::st_polygon(simarea)
+train_points <- clustered_sample(simarea, 1000, 50, 5)
+pred_points <- sf::st_sample(simarea, 1000, type = "regular")
+plot(simarea)
+plot(pred_points, add = TRUE, col = "blue")
+plot(train_points, add = TRUE, col = "red")
+
+# Use kNNDM to split the data into 30% +- 10% test and 70% train
+knndm_folds <- knndm(train_points, predpoints = pred_points, test_prop = 0.3, tolerance = 0.1)
+# How many samples have been used for testing:
+table(knndm_folds$clusters)
+plot(knndm_folds)
+# The train/test split could not represent the prediction situation well
+# Increase tolerance to increase number of configurations tried, and thus to find a suitable split
+knndm_folds <- knndm(train_points, predpoints = pred_points, test_prop = 0.3, tolerance = 0.2)
+plot(knndm_folds)
+table(knndm_folds$clusters)
+# This resulted in better match of the prediction situation, but a 50/50 split
+folds <- as.character(knndm_folds$clusters)
+ggplot() +
+  geom_sf(data = simarea, alpha = 0) +
+  geom_sf(data = train_points, aes(col = folds))
+} # }
+
+########################################################################
+# Example 5: Real- world example; kNNDM in feature space
 ########################################################################
 if (FALSE) { # \dontrun{
 library(sf)
