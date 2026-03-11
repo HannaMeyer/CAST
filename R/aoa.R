@@ -314,8 +314,7 @@ aoa <- function(newdata,
 
 
   # Distance Calculation ---------
-  okrows <- which(apply(newdata, 1, function(x)
-    all(!is.na(x))))
+  okrows <- which(rowSums(is.na(newdata)) == 0)
   newdataCC <- newdata[okrows, ,drop=F]
 
   if (method == "MD") {
