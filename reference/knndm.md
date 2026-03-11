@@ -148,15 +148,29 @@ the function call).
 ## Details
 
 knndm is a k-fold version of NNDM LOO CV for medium and large datasets.
-Brielfy, the algorithm tries to find a k-fold configuration such that
-the integral of the absolute differences (Wasserstein W statistic)
-between the empirical nearest neighbour distance distribution function
-between the test and training data during CV (Gj\*), and the empirical
+It can be used for cross-validation and train / test splits (the latter
+is experimental). Brielfy, the algorithm tries to find a configuration
+such that the integral of the absolute differences (Wasserstein W
+statistic) between the empirical nearest neighbour distance distribution
+function between the test and training data (Gj\*), and the empirical
 nearest neighbour distance distribution function between the prediction
 and training points (Gij), is minimised. It does so by performing
 clustering of the training points' coordinates for different numbers of
 clusters that range from k to N (number of observations), merging them
 into k final folds, and selecting the configuration with the lowest W.
+
+When using \`knndm\` to split the data into training and test sets
+(experimental), the proportion of points belonging to the test set
+(\`test_prop\`) replaces the number of folds \`k\`. Based on the
+\`test_prop\` , \`minp\` and \`maxp\` are calculated as the
+\`test_prop\` +/- \`test_tolerance\`. Compared to k-fold CV, using knndm
+for train/test splits is less flexible and often results in larger NNDs
+between test and train locations than between prediction and train
+locations. Hence, it is essential to plot the results of \`knndm\` and
+check how well the split can resemble the prediction situation.
+Modifying the \`test_prop\` parameter, as well as increasing
+\`test_prop\` allow more flexible matching and can potentially improve
+the match.
 
 Using a projected CRS in \`knndm\` has large computational advantages
 since fast nearest neighbour search can be done via the \`FNN\` package,
@@ -211,19 +225,6 @@ the case of any categorical features, Gower distances will be used to
 calculate the Nearest Neighbour distances \[Experimental\]. If
 categorical features are present, and \`clustering\` = "kmeans",
 K-Prototype clustering will be performed instead.
-
-\`knndm\` can be used to split the data into training and test sets.
-Here, the proportion of points belonging to the test set (\`test_prop\`)
-can be specified, as well as the allowed deviation from this specified
-proportion (\`test_tolerance\`). Based on these, \`minp\` and \`maxp\`
-are defined as the \`test_prop\` +/- \`test_tolerance\`. Compared to
-k-fold CV, using knndm for train/test splits is less flexible and often
-results in larger NNDs between test and train locations than between
-prediction and train locations. Hence, it is essential to plot the
-results of \`knndm\` and check how well the split can resemble the
-prediction situation. Modifying the \`test_prop\` parameter, as well as
-increasing \`test_prop\` allow more flexible matching and can
-potentially improve the match.
 
 ## Note
 
