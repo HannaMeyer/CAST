@@ -41,7 +41,7 @@ See examples for the case that no model is available or for models trained via e
 \item{variables}{character vector of predictor variables. if "all" then all variables
 of the model are used or if no model is given then of the train dataset.}
 
-\item{CVtest}{list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+\item{CVtest}{list or vector. Either a list with the length of the number of cross-validation folds where each element contains the row indices of the data points used for testing during the cross validation iteration (i.e. held back data).
 Or a vector that contains the ID of the fold for each training point.
 Only required if no model is given.}
 

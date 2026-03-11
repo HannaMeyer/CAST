@@ -29,7 +29,7 @@ of the model are used or if no model is given then of the train dataset.}
 
 \item{weight}{A data.frame containing weights for each variable. Only required if no model is given.}
 
-\item{CVtest}{list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+\item{CVtest}{list or vector. Either a list with the length of the number of cross-validation folds where each element contains the row indices of the data points used for testing during the cross validation iteration (i.e. held back data).
 Or a vector that contains the ID of the fold for each training point.
 Only required if no model is given.}
 
