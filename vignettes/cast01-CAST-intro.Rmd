@@ -157,7 +157,7 @@ indices_LLO <- CreateSpacetimeFolds(splotdata,spacevar = "Country",
 Example for knndm:
 ```{r, message = FALSE, warning=FALSE}
 set.seed(10)
-indices_knndm <- knndm(splotdata,predictors_sp,k=3)
+indices_knndm <- knndm(splotdata,predictors_sp,k=3, dist_fun = "great_circle")
 ```
 
 Let's compare how well these strategies fit the prediction task, especially in comparison to a random cross-validation. We will use CAST's geodist function for that. Geodist calculates nearest neighbor distances in geographic space or feature space between training data as well as between training data and prediction locations. Optional, an that is what we want to focus on here, the nearest neighbor distances between training data and CV folds is computed.
@@ -166,11 +166,11 @@ See tutorial on geodistance visualizations in this package for more information.
 
 
 ```{r, message = FALSE, warning=FALSE}
-plot(geodist(splotdata,predictors_sp,cvfolds =model_default$control$indexOut))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=model_default$control$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
-plot(geodist(splotdata,predictors_sp,cvfolds =indices_LLO$indexOut))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=indices_LLO$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
-plot(geodist(splotdata,predictors_sp,cvfolds =indices_knndm$indx_test))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=indices_knndm$indx_test, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
 ```
 
@@ -324,8 +324,8 @@ https://www.youtube.com/watch?v=mkHlmYEzsVQ.
 * Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.
 https://doi.org/10.1111/2041-210X.13851
 
-* Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM (2023): k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation. EGUsphere [preprint]. 
-https://doi.org/10.5194/egusphere-2023-1308
+* Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM (2024):k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation. Geosci Model Dev., 17, 5897–5912.
+https://doi.org/10.5194/gmd-17-5897-2024.
 
 * Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauss, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software, 101, 1-9. https://doi.org/10.1016/j.envsoft.2017.12.001
 

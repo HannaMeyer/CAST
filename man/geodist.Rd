@@ -7,17 +7,23 @@
 geodist(
   x,
   modeldomain = NULL,
-  type = "geo",
-  cvfolds = NULL,
-  cvtrain = NULL,
+  dist_space = "geographical",
+  CVtest = NULL,
+  CVtrain = NULL,
   testdata = NULL,
   preddata = NULL,
   samplesize = 2000,
   sampling = "regular",
   variables = NULL,
-  timevar = NULL,
+  time_var = NULL,
   time_unit = "auto",
-  algorithm = "brute"
+  algorithm = "brute",
+  dist_fun = "euclidean",
+  scale_vars = TRUE,
+  cvtrain = NULL,
+  cvfolds = NULL,
+  type = NULL,
+  timevar = NULL
 )
 }
 \arguments{
@@ -25,42 +31,64 @@ geodist(
 
 \item{modeldomain}{SpatRaster, stars or sf object defining the prediction area (see Details)}
 
-\item{type}{"geo" or "feature". Should the distance be computed in geographic space or in the normalized multivariate predictor space (see Details)}
+\item{dist_space}{"geographical", "feature" or "time". Should the distance be computed in geographic space, in the normalized multivariate predictor space or in temporal space? (see Details)}
 
-\item{cvfolds}{optional. list or vector. Either a list where each element contains the data points used for testing during the cross validation iteration (i.e. held back data).
+\item{CVtest}{optional. list or vector. #' @param cvfolds optional. list or vector. Either a list with the length of the number of cross-validation folds
+where each element contains the row indices of the data points used for testing during the cross validation iteration (i.e. held back data).
 Or a vector that contains the ID of the fold for each training point. See e.g. ?createFolds or ?CreateSpacetimeFolds or ?nndm}
 
-\item{cvtrain}{optional. List of row indices of x to fit the model to in each CV iteration. If cvtrain is null but cvfolds is not, all samples but those included in cvfolds are used as training data}
+\item{CVtrain}{optional. A list, where each element contains the data points used for training during the cross validation iteration.
+Only required if CVtrain is not the opposite of CVtest. Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
-\item{testdata}{optional. object of class sf: Point data used for independent validation}
+\item{testdata}{optional. object of class sf: Point data used for independent validation. May already include the predictor values if `dist_space`=feature.}
 
 \item{preddata}{optional. object of class sf: Point data indicating the locations within the modeldomain to be used as target prediction points. Useful when the prediction objective is a subset of
-locations within the modeldomain rather than the whole area.}
+locations within the modeldomain rather than the whole area. May already include the predictor values if `dist_space`="feature".}
 
 \item{samplesize}{numeric. How many prediction samples should be used?}
 
-\item{sampling}{character. How to draw prediction samples? See \link[sp]{spsample}. Use sampling = "Fibonacci" for global applications.}
+\item{sampling}{character. How to draw prediction samples? See \link[sf]{st_sample} for modeldomains that are sf objects and \link[terra]{spatSample} for raster objects.
+Use sampling = "Fibonacci" for global applications (raster objects will be transformed to polygons in this case).}
 
-\item{variables}{character vector defining the predictor variables used if type="feature. If not provided all variables included in modeldomain are used.}
+\item{variables}{character vector defining the predictor variables used if dist_space="feature". If not provided all variables included in modeldomain are used.}
 
-\item{timevar}{optional. character. Column that indicates the date. Only used if type="time".}
+\item{time_var}{optional. character. Column that indicates the date. Only used if dist_space="time".}
 
-\item{time_unit}{optional. Character. Unit for temporal distances See ?difftime.Only used if type="time".}
+\item{time_unit}{optional. Character. Unit for temporal distances See ?difftime.Only used if dist_space="time".}
 
 \item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
+
+\item{dist_fun}{character. Currently covers `euclidean` (default), `gower`, `mahalanobis`, `great_circle` and `abs_time`.
+`gower` and `mahalanobis` only work with `dist_space`="feature", while `great_circle` only works with `dist_space`="geographical". 
+`mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables, 
+`gower` also works with mixed data including numerical and categorical variables.
+For `dist_space`="time", currently only the absolute difference (`abs_time`) is implemented.
+For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.}
+
+\item{scale_vars}{boolean. Should variables be scaled? Only for `dist_space`="feature". 
+Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
+For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.}
+
+\item{cvtrain}{deprecated. Use `CVtrain` instead.}
+
+\item{cvfolds}{deprecated. Use `CVtest` instead.}
+
+\item{type}{deprecated. Use `dist_space` instead.}
+
+\item{timevar}{deprecated. Use `time_var` instead.}
 }
 \value{
 A data.frame containing the distances. Unit of returned geographic distances is meters. attributes contain W statistic between prediction area and either sample data, CV folds or test data. See details.
 }
 \description{
-Calculates nearest neighbor distances in geographic space or feature space between training data as well as between training data and prediction locations.
-Optional, the nearest neighbor distances between training data and test data or between training data and CV iterations is computed.
+Calculates nearest neighbor distances in geographic space or feature space between training data as well as between prediction locations and training data.
+Optional, the nearest neighbor distances between test data and training data or between different CV folds is computed.
 }
 \details{
-The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent.
-    If type = "feature", the argument modeldomain (and if provided then also the testdata and/or preddata) has to include predictors. Predictor values for x, testdata and preddata are optional if modeldomain is a raster.
-    If not provided they are extracted from the modeldomain rasterStack. If some predictors are categorical (i.e., of class factor or character), gower distances will be used.
-    W statistic describes the match between the distributions. See Linnenbrink et al (2023) for further details.
+The modeldomain is a sf polygon or a raster that defines the prediction area. The function takes a regular point sample (amount defined by samplesize) from the spatial extent (if no `preddata` are supplied).
+    If `dist_space` = "feature", the argument modeldomain has to be a raster and include predictors. The only exception is when the provided training data and preddata already include the predictor values.
+    If not provided they are extracted from the modeldomain raster. If some predictors are categorical (i.e., of class factor or character), gower distances will be used.
+    W statistic describes the match between the distributions. See Linnenbrink et al (2024) for further details.
 }
 \note{
 See Meyer and Pebesma (2022) for an application of this plotting function
@@ -92,7 +120,7 @@ plot(dist)
 
 ########### Distance between training data, new data and CV folds:
 folds <- createFolds(1:nrow(splotdata), k=3, returnTrain=FALSE)
-dist <- geodist(x=splotdata, modeldomain=studyArea, cvfolds=folds)
+dist <- geodist(x=splotdata, modeldomain=studyArea, CVtest=folds)
 # Using density functions
 plot(dist)
 # Using ECDFs (relevant for nndm and knnmd methods)
@@ -102,14 +130,14 @@ plot(dist, stat="ecdf")
 predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
 dist <- geodist(x = splotdata,
                 modeldomain = predictors,
-                type = "feature",
+                dist_space = "feature",
                 variables = c("bio_1","bio_12", "elev"))
 plot(dist)
 
 dist <- geodist(x = splotdata[splotdata$Country != "Chile",],
-                modeldomain = predictors, cvfolds = folds,
+                modeldomain = predictors,
                 testdata = splotdata[splotdata$Country == "Chile",],
-                type = "feature",
+                dist_space = "feature",
                 variables=c("bio_1","bio_12", "elev"))
 plot(dist)
 
@@ -122,10 +150,10 @@ st_crs(dat) <- 26911
 trainDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2010,]
 predictionDat <- dat[dat$altitude==-0.3&lubridate::year(dat$Date)==2011,]
 trainDat$week <- lubridate::week(trainDat$Date)
-cvfolds <- CreateSpacetimeFolds(trainDat,timevar = "week")
+CVtest <- CreateSpacetimeFolds(trainDat,time_var = "week")
 
-dist <- geodist(trainDat,preddata = predictionDat,cvfolds = cvfolds$indexOut,
-   type="time",time_unit="days")
+dist <- geodist(trainDat,preddata = predictionDat,CVtest = CVtest$indexOut,
+   dist_space="time",time_unit="days")
 plot(dist)+ xlim(0,10)
 
 

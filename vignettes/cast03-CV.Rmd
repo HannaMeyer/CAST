@@ -83,8 +83,8 @@ fold5_temp <- createFolds(1:nrow(temperature), k=5, returnTrain=FALSE)
 fold5_pm25 <- createFolds(1:nrow(pm25), k=5, returnTrain=FALSE)
 
 # Explore geographic predictive conditions
-predcond_temp <- geodist(temperature, modeldomain = spain, cvfolds = fold5_temp)
-predcond_pm25 <- geodist(pm25, modeldomain = spain, cvfolds = fold5_pm25)
+predcond_temp <- geodist(temperature, modeldomain = spain, CVtest = fold5_temp)
+predcond_pm25 <- geodist(pm25, modeldomain = spain, CVtest = fold5_pm25)
 
 # Plot density functions
 p1 <- plot(predcond_temp) + ggtitle("Temperature")
@@ -333,7 +333,7 @@ Here, we see the same pattern as in the LOO CV results. Since temperature data a
 
 ## Cross-validation in feature space
 
-The ideas underlying NNDM methods in the geographical space can be transferred into the feature space with just a few tweaks. In the current version of `CAST`, we have implemented feature space experimental versions of `CAST::nndm` and `CAST::knndm` (see argument `space= 'feature'`) and we are running validation analyses to verify their performance in a variety of settings. Stay tuned for a future version of the vignette for an overview of feature space NNDM CV methods and how to apply them to your datasets! 
+The ideas underlying NNDM methods in the geographical space can be transferred into the feature space with just a few tweaks. In the current version of `CAST`, we have implemented feature space experimental versions of `CAST::nndm` and `CAST::knndm` (see argument `dist_space= 'feature'`) and we are running validation analyses to verify their performance in a variety of settings. Stay tuned for a future version of the vignette for an overview of feature space NNDM CV methods and how to apply them to your datasets! 
 
 
 ## Further reading
