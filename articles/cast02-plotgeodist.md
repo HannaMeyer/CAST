@@ -97,15 +97,14 @@ distribution of distances from all points of the global land surface to
 the nearest reference data point (“sample-to-prediction”). Note that
 samples of prediction locations are used to calculate the
 sample-to-prediction nearest neighbor distances. Since we’re using a
-global case study here, throughout this tutorial we use
-sampling=Fibonacci to draw prediction locations with constant point
-density on the sphere.
+global case study here, throughout this tutorial we use sampling=regular
+to draw prediction locations with constant point density on the sphere.
 
 ``` r
 dist_random <- geodist(pts_random,co.ee,
-                            sampling="Fibonacci")
+                            sampling="regular")
 dist_clstr <- geodist(pts_clustered,co.ee,
-                           sampling="Fibonacci")
+                           sampling="regular")
 
 plot(dist_random, unit = "km")+scale_x_log10(labels=round)+ggtitle("Randomly distributed reference data")
 ```
@@ -145,8 +144,8 @@ randomfolds <- caret::createFolds(1:nrow(pts_clustered))
 
 ``` r
 dist_clstr <- geodist(pts_clustered,co.ee,
-                           sampling="Fibonacci", 
-                           cvfolds= randomfolds)
+                           sampling="regular", 
+                           CVtest= randomfolds)
 plot(dist_clstr, unit = "km")+scale_x_log10(labels=round)
 ```
 
@@ -173,8 +172,8 @@ spatialfolds <- CreateSpacetimeFolds(pts_clustered,spacevar="parent",k=length(un
 
 ``` r
 dist_clstr <- geodist(pts_clustered,co.ee,
-                           sampling="Fibonacci",
-                           cvfolds= spatialfolds$indexOut)
+                           sampling="regular",
+                           CVtest= spatialfolds$indexOut)
 plot(dist_clstr, unit = "km")+scale_x_log10(labels=round)
 ```
 
@@ -219,8 +218,8 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 spfolds_rand <- CreateSpacetimeFolds(pts_random_co,spacevar = "subregion",
                                      k=length(unique(pts_random_co$subregion)))
 dist_rand_sp <- geodist(pts_random_co,co.ee,
-                             sampling="Fibonacci", 
-                             cvfolds= spfolds_rand$indexOut)
+                             sampling="regular", 
+                             CVtest= spfolds_rand$indexOut)
 plot(dist_rand_sp, unit = "km")+scale_x_log10(labels=round)
 ```
 
@@ -253,9 +252,8 @@ knndm)
 ``` r
 nndmfolds_clstr <- knndm(pts_clustered, modeldomain=co.ee, samplesize = 2000)
 dist_clstr <- geodist(pts_clustered,co.ee,
-                           sampling = "Fibonacci",
-                           cvfolds = nndmfolds_clstr$indx_test, 
-                           cvtrain = nndmfolds_clstr$indx_train)
+                           sampling = "regular",
+                           CVtest = nndmfolds_clstr$indx_test)
 plot(dist_clstr, unit = "km")+scale_x_log10(labels=round)
 ```
 
@@ -268,9 +266,10 @@ randomly-distributed sampling points instead?
 ``` r
 nndmfolds_rand <- knndm(pts_random_co,  modeldomain=co.ee, samplesize = 2000)
 dist_rand <- geodist(pts_random_co,co.ee,
-                          sampling = "Fibonacci",
-                          cvfolds = nndmfolds_rand$indx_test, 
-                          cvtrain = nndmfolds_rand$indx_train)
+                          sampling = "regular",
+                          CVtest = nndmfolds_rand$indx_test,
+                          CVtrain = nndmfolds_rand$indx_train
+                          )
 plot(dist_rand, unit = "km")+scale_x_log10(labels=round)
 ```
 
@@ -299,16 +298,21 @@ Then we visualize nearest neighbor feature space distances under
 consideration of cross-validation.
 
 ``` r
+# project the training points to the raster CRS
+pts_clustered <- st_transform(pts_clustered, st_crs(predictors_global))
+
 # use random CV:
-dist_clstr_rCV <- geodist(pts_clustered,predictors_global,
-                               type = "feature", 
+dist_clstr_rCV <- geodist(pts_clustered,
+                          modeldomain = predictors_global,
+                               dist_space = "feature", 
                                sampling="Fibonacci",
-                               cvfolds = randomfolds)
+                               CVtest = randomfolds)
 
 # use spatial CV:
-dist_clstr_sCV <- geodist(pts_clustered,predictors_global,
-                               type = "feature", sampling="Fibonacci",
-                               cvfolds = spatialfolds$indexOut)
+dist_clstr_sCV <- geodist(pts_clustered,
+                          modeldomain = predictors_global,
+                               dist_space = "feature", sampling="Fibonacci",
+                               CVtest = spatialfolds$indexOut)
 
 
 # Plot results:

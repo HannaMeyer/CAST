@@ -40,6 +40,17 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.5" id="cast-105">
+<code>CAST</code> 1.0.5<a class="anchor" aria-label="anchor" href="#cast-105"></a></h2>
+<ul><li>bug fix:
+<ul><li>sampling of prediction points in geodist no longer requires reprojection and transformation of raster modeldomains by default (issue <a href="https://github.com/HannaMeyer/CAST/issues/130" class="external-link">#130</a>)</li>
+</ul></li>
+<li>modifications:
+<ul><li>geodist was re-structured, and some parameters have been re-named (‘cvtrain’ to ‘CVtrain’, ‘cvfolds’ to ‘CVtest’, ‘type’ to ‘dist_space’, ‘timevar’ to ‘time_var’) or newly introduced (‘dist_fun’, ‘scale_vars’)</li>
+<li>knndm was re-structured to a lesser extent, the ‘space’ parameter has been re-named to ‘dist_space’, ‘useMD’ was dropped and replaced by ‘dist_fun’, ‘scale_vars’ was newly introduced</li>
+</ul></li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.4" id="cast-104">
 <code>CAST</code> 1.0.4<a class="anchor" aria-label="anchor" href="#cast-104"></a></h2><p class="text-muted">CRAN release: 2026-01-26</p>
 <ul><li>bug fix: formatting issues in tests</li>

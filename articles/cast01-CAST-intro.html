@@ -324,7 +324,7 @@ information.</p>
 <p>Example for knndm:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
-<span><span class="va">indices_knndm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/knndm.html">knndm</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,k<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">indices_knndm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/knndm.html">knndm</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,k<span class="op">=</span><span class="fl">3</span>, dist_fun <span class="op">=</span> <span class="st">"great_circle"</span><span class="op">)</span></span></code></pre></div>
 <p>Let’s compare how well these strategies fit the prediction task,
 especially in comparison to a random cross-validation. We will use
 CAST’s geodist function for that. Geodist calculates nearest neighbor
@@ -334,15 +334,15 @@ that is what we want to focus on here, the nearest neighbor distances
 between training data and CV folds is computed. See tutorial on
 geodistance visualizations in this package for more information.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,cvfolds <span class="op">=</span><span class="va">model_default</span><span class="op">$</span><span class="va">control</span><span class="op">$</span><span class="va">indexOut</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> </span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,CVtest<span class="op">=</span><span class="va">model_default</span><span class="op">$</span><span class="va">control</span><span class="op">$</span><span class="va">indexOut</span>, dist_space <span class="op">=</span> <span class="st">"geographical"</span>, dist_fun <span class="op">=</span> <span class="st">"great_circle"</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="847.68"></p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,cvfolds <span class="op">=</span><span class="va">indices_LLO</span><span class="op">$</span><span class="va">indexOut</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> </span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,CVtest<span class="op">=</span><span class="va">indices_LLO</span><span class="op">$</span><span class="va">indexOut</span>, dist_space <span class="op">=</span> <span class="st">"geographical"</span>, dist_fun <span class="op">=</span> <span class="st">"great_circle"</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-12-2.png" class="r-plt" alt="" width="847.68"></p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,cvfolds <span class="op">=</span><span class="va">indices_knndm</span><span class="op">$</span><span class="va">indx_test</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> </span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,CVtest<span class="op">=</span><span class="va">indices_knndm</span><span class="op">$</span><span class="va">indx_test</span>, dist_space <span class="op">=</span> <span class="st">"geographical"</span>, dist_fun <span class="op">=</span> <span class="st">"great_circle"</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-12-3.png" class="r-plt" alt="" width="847.68"></p>
 <p>We see that using random folds, we’re only testing how well the model
@@ -373,14 +373,14 @@ the entire area.</p>
 <span><span class="co">## Summary of sample sizes: 520, 442, 444 </span></span>
 <span><span class="co">## Resampling results:</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">##   RMSE      Rsquared   MAE     </span></span>
-<span><span class="co">##   34.13482  0.4754385  20.79699</span></span>
+<span><span class="co">##   RMSE      Rsquared  MAE     </span></span>
+<span><span class="co">##   34.16029  0.481697  20.71929</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Tuning parameter 'mtry' was held constant at a value of 2</span></span></code></pre>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##       RMSE   Rsquared        MAE </span></span>
-<span><span class="co">## 34.5314356  0.4269648 20.9480996</span></span></code></pre>
+<pre><code><span><span class="co">##      RMSE  Rsquared       MAE </span></span>
+<span><span class="co">## 34.530783  0.428925 20.903479</span></span></code></pre>
 <p>By inspecting the output of the model, we see that in view to new
 locations, the R² is much lower and the RMSE much higher compared to
 what was expected from the random CV.</p>
@@ -602,8 +602,8 @@ cross-validation (<a href="https://doi.org/10.5446/59412" class="external-link u
 Neighbour Distance Matching Leave-One-Out Cross-Validation for map
 validation. Methods in Ecology and Evolution 00, 1– 13. <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link uri">https://doi.org/10.1111/2041-210X.13851</a></p></li>
 <li><p>Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM
-(2023): k-fold Nearest Neighbour Distance Matching Cross-Validation for
-map accuracy estimation. EGUsphere [preprint]. <a href="https://doi.org/10.5194/egusphere-2023-1308" class="external-link uri">https://doi.org/10.5194/egusphere-2023-1308</a></p></li>
+(2024):k-fold Nearest Neighbour Distance Matching Cross-Validation for
+map accuracy estimation. Geosci Model Dev., 17, 5897–5912. <a href="https://doi.org/10.5194/gmd-17-5897-2024" class="external-link uri">https://doi.org/10.5194/gmd-17-5897-2024</a>.</p></li>
 <li><p>Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauss, T.
 (2018): Improving performance of spatio-temporal machine learning models
 using forward feature selection and target-oriented validation.

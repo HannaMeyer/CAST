@@ -286,7 +286,7 @@ Example for knndm:
 
 ``` r
 set.seed(10)
-indices_knndm <- knndm(splotdata,predictors_sp,k=3)
+indices_knndm <- knndm(splotdata,predictors_sp,k=3, dist_fun = "great_circle")
 ```
 
 Let’s compare how well these strategies fit the prediction task,
@@ -299,21 +299,21 @@ between training data and CV folds is computed. See tutorial on
 geodistance visualizations in this package for more information.
 
 ``` r
-plot(geodist(splotdata,predictors_sp,cvfolds =model_default$control$indexOut))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=model_default$control$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
 ```
 
 ![](cast01-CAST-intro_files/figure-html/unnamed-chunk-12-1.png)
 
 ``` r
-plot(geodist(splotdata,predictors_sp,cvfolds =indices_LLO$indexOut))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=indices_LLO$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
 ```
 
 ![](cast01-CAST-intro_files/figure-html/unnamed-chunk-12-2.png)
 
 ``` r
-plot(geodist(splotdata,predictors_sp,cvfolds =indices_knndm$indx_test))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=indices_knndm$indx_test, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
 ```
 
@@ -350,8 +350,8 @@ model
     ## Summary of sample sizes: 520, 442, 444 
     ## Resampling results:
     ## 
-    ##   RMSE      Rsquared   MAE     
-    ##   34.13482  0.4754385  20.79699
+    ##   RMSE      Rsquared  MAE     
+    ##   34.16029  0.481697  20.71929
     ## 
     ## Tuning parameter 'mtry' was held constant at a value of 2
 
@@ -359,8 +359,8 @@ model
 global_validation(model)
 ```
 
-    ##       RMSE   Rsquared        MAE 
-    ## 34.5314356  0.4269648 20.9480996
+    ##      RMSE  Rsquared       MAE 
+    ## 34.530783  0.428925 20.903479
 
 By inspecting the output of the model, we see that in view to new
 locations, the R² is much lower and the RMSE much higher compared to
@@ -618,10 +618,10 @@ small changes in the settings.
   Methods in Ecology and Evolution 00, 1– 13.
   <https://doi.org/10.1111/2041-210X.13851>
 
-- Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM (2023):
-  k-fold Nearest Neighbour Distance Matching Cross-Validation for map
-  accuracy estimation. EGUsphere \[preprint\].
-  <https://doi.org/10.5194/egusphere-2023-1308>
+- Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM
+  (2024):k-fold Nearest Neighbour Distance Matching Cross-Validation for
+  map accuracy estimation. Geosci Model Dev., 17, 5897–5912.
+  <https://doi.org/10.5194/gmd-17-5897-2024>.
 
 - Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauss, T. (2018):
   Improving performance of spatio-temporal machine learning models using

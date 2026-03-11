@@ -10,15 +10,18 @@ knndm(
   tpoints,
   modeldomain = NULL,
   predpoints = NULL,
-  space = "geographical",
+  dist_space = "geographical",
   k = 10,
   maxp = 0.5,
   clustering = "hierarchical",
   linkf = "ward.D2",
   samplesize = 1000,
   sampling = "regular",
-  useMD = FALSE,
-  algorithm = "brute"
+  dist_fun = "euclidean",
+  algorithm = "brute",
+  scale_vars = TRUE,
+  space = NULL,
+  useMD = NULL
 )
 ```
 
@@ -26,8 +29,8 @@ knndm(
 
 - tpoints:
 
-  sf or sfc point object, or data.frame if space = "feature". Contains
-  the training points samples.
+  sf or sfc point object, or data.frame if dist_space = "feature".
+  Contains the training points samples.
 
 - modeldomain:
 
@@ -36,11 +39,11 @@ knndm(
 
 - predpoints:
 
-  sf or sfc point object, or data.frame if space = "feature". Contains
-  the target prediction points. Optional; alternative to modeldomain
-  (see Details).
+  sf or sfc point object, or data.frame if dist_space = "feature".
+  Contains the target prediction points. Optional; alternative to
+  modeldomain (see Details).
 
-- space:
+- dist_space:
 
   character. Either "geographical" or "feature".
 
@@ -76,15 +79,39 @@ knndm(
   \`sf::st_sample\`. Only required if modeldomain is used instead of
   predpoints.
 
-- useMD:
+- dist_fun:
 
-  boolean. Only for \`space\`=feature: shall the Mahalanobis distance be
-  calculated instead of Euclidean? Only works with numerical variables.
+  character. Currently covers \`euclidean\` (default), \`gower\`,
+  \`mahalanobis\` and \`great_circle\`. \`gower\` and \`mahalanobis\`
+  only work with \`dist_space\`="feature", while \`great_circle\` only
+  works with \`dist_space\`="geographical". \`mahalanobis\` takes into
+  account correlation between predictor values. While \`euclidean\` and
+  \`mahalanobis\` only work with numerical variables, \`gower\` also
+  works with mixed data including numerical and categorical variables.
+  For the geographical space, \`great_circle\` covers lon/lat
+  coordinates, whereas \`euclidean\` only works with projected
+  coordinates.
 
 - algorithm:
 
   see [`knnx.dist`](https://rdrr.io/pkg/FNN/man/knn.dist.html) and
   [`knnx.index`](https://rdrr.io/pkg/FNN/man/knn.index.html)
+
+- scale_vars:
+
+  boolean. Should variables be scaled? Only for
+  \`dist_space\`="feature". Calculating Gower distances already includes
+  scaling, and manually rescale the data is redundant. For other
+  distances (Mahalanobis, Euclidean), scaling the data is important.
+  Thus, TRUE by default.
+
+- space:
+
+  deprecated. Use \`dist_space\` instead.
+
+- useMD:
+
+  deprecated. Use \`dist_fun\` instead.
 
 ## Value
 
@@ -94,8 +121,8 @@ training/test data in each kNNDM CV iteration), Gij (distances for G
 function construction between prediction and target points), Gj
 (distances for G function construction during LOO CV), Gjstar (distances
 for modified G function during kNNDM CV), clusters (list of cluster
-IDs), W (Wasserstein statistic), and space (stated by the user in the
-function call).
+IDs), W (Wasserstein statistic), and dist_space (stated by the user in
+the function call).
 
 ## Details
 
@@ -150,19 +177,19 @@ study area polygon and the training/prediction points as a previous step
 to ensure they are aligned.
 
 \`knndm\` can also be performed in the feature space by setting
-\`space\` to "feature". Euclidean distances or Mahalanobis distances can
-be used for distance calculation, but only Euclidean are tested. In this
-case, nearest neighbour distances are calculated in n-dimensional
-feature space rather than in geographical space. \`tpoints\` and
-\`predpoints\` can be data frames or sf objects containing the values of
-the features. Note that the names of \`tpoints\` and \`predpoints\` must
-be the same. \`predpoints\` can also be missing, if \`modeldomain\` is
-of class SpatRaster. In this case, the values of of the SpatRaster will
-be extracted to the \`predpoints\`. In the case of any categorical
-features, Gower distances will be used to calculate the Nearest
-Neighbour distances \[Experimental\]. If categorical features are
-present, and \`clustering\` = "kmeans", K-Prototype clustering will be
-performed instead.
+\`dist_space\` to "feature". Euclidean distances or Mahalanobis
+distances can be used for distance calculation, but only Euclidean are
+tested. In this case, nearest neighbour distances are calculated in
+n-dimensional feature space rather than in geographical space.
+\`tpoints\` and \`predpoints\` can be data frames or sf objects
+containing the values of the features. Note that the names of
+\`tpoints\` and \`predpoints\` must be the same. \`predpoints\` can also
+be missing, if \`modeldomain\` is of class SpatRaster. In this case, the
+values of of the SpatRaster will be extracted to the \`predpoints\`. In
+the case of any categorical features, Gower distances will be used to
+calculate the Nearest Neighbour distances \[Experimental\]. If
+categorical features are present, and \`clustering\` = "kmeans",
+K-Prototype clustering will be performed instead.
 
 ## Note
 
@@ -216,7 +243,7 @@ knndm_folds <- knndm(train_points, predpoints = pred_points, k = 5)
 #> Gij <= Gj; a random CV assignment is returned
 knndm_folds
 #> knndm object
-#> Space: geographical
+#> Space: 
 #> Clustering algorithm: hierarchical
 #> Intermediate clusters (q): random CV
 #> W statistic: 0.1338
@@ -330,7 +357,7 @@ predictors_sp <- terra::rast(system.file("extdata", "predictors_chile.tif",packa
 terra::plot(predictors_sp[["bio_1"]])
 terra::plot(vect(splotdata), add = T)
 
-knndm_folds <- knndm(trainDat[,predictors], modeldomain = predictors_sp, space = "feature",
+knndm_folds <- knndm(trainDat[,predictors], modeldomain = predictors_sp, dist_space = "feature",
                     clustering="kmeans", k=4, maxp=0.8)
 plot(knndm_folds)
 

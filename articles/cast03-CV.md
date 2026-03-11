@@ -118,8 +118,8 @@ fold5_temp <- createFolds(1:nrow(temperature), k=5, returnTrain=FALSE)
 fold5_pm25 <- createFolds(1:nrow(pm25), k=5, returnTrain=FALSE)
 
 # Explore geographic predictive conditions
-predcond_temp <- geodist(temperature, modeldomain = spain, cvfolds = fold5_temp)
-predcond_pm25 <- geodist(pm25, modeldomain = spain, cvfolds = fold5_pm25)
+predcond_temp <- geodist(temperature, modeldomain = spain, CVtest = fold5_temp)
+predcond_pm25 <- geodist(pm25, modeldomain = spain, CVtest = fold5_pm25)
 
 # Plot density functions
 p1 <- plot(predcond_temp) + ggtitle("Temperature")
@@ -345,7 +345,7 @@ print(temp_knndm)
 ```
 
     ## knndm object
-    ## Space: geographical
+    ## Space: 
     ## Clustering algorithm: hierarchical
     ## Intermediate clusters (q): random CV
     ## W statistic: 9384.0966
@@ -369,7 +369,7 @@ print(pm25_knndm)
 ```
 
     ## knndm object
-    ## Space: geographical
+    ## Space: 
     ## Clustering algorithm: hierarchical
     ## Intermediate clusters (q): 46
     ## W statistic: 4919.5574
@@ -399,7 +399,7 @@ print(pm25_knndm_v2)
 ```
 
     ## knndm object
-    ## Space: geographical
+    ## Space: 
     ## Clustering algorithm: kmeans
     ## Intermediate clusters (q): 35
     ## W statistic: 5022.7072
@@ -492,10 +492,10 @@ current version of `CAST`, we have implemented feature space
 experimental versions of
 [`CAST::nndm`](https://hannameyer.github.io/CAST/reference/nndm.md) and
 [`CAST::knndm`](https://hannameyer.github.io/CAST/reference/knndm.md)
-(see argument `space= 'feature'`) and we are running validation analyses
-to verify their performance in a variety of settings. Stay tuned for a
-future version of the vignette for an overview of feature space NNDM CV
-methods and how to apply them to your datasets!
+(see argument `dist_space= 'feature'`) and we are running validation
+analyses to verify their performance in a variety of settings. Stay
+tuned for a future version of the vignette for an overview of feature
+space NNDM CV methods and how to apply them to your datasets!
 
 ## Further reading
 
