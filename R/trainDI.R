@@ -189,13 +189,8 @@ trainDI <- function(model = NA,
 
   for(i in seq(nrow(train))){
 
-    # distance to all other training data (for average)
-    ## redundant distance calculation (removed 13.03.24)
-    #trainDistAll   <- .alldistfun(t(train[i,]), train,  method, S_inv=S_inv)[-1]
-    #trainDist_avrg <- append(trainDist_avrg, mean(trainDistAll, na.rm = TRUE))
-
     # calculate  distance to other training data:
-    trainDist      <- matrix(.alldistfun(t(matrix(train[i,])), train, method, sorted = FALSE, S_inv,algorithm=algorithm))
+    trainDist      <- .mindistfun(train[i, ], train, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
     trainDist[i]   <- NA
     trainDist_avrg <- append(trainDist_avrg, mean(trainDist, na.rm = TRUE))
 
@@ -262,7 +257,7 @@ trainDI <- function(model = NA,
     for (j in  seq(nrow(train))) {
 
       # calculate  distance to other training data:
-      trainDist      <- .alldistfun(t(matrix(train[j,])), train, method, sorted = FALSE, S_inv,algorithm=algorithm)
+      trainDist      <- .mindistfun(train[j, ], train, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
       DItrainDist <- trainDist/trainDist_avrgmean
       DItrainDist[j]   <- NA
 
@@ -284,7 +279,7 @@ trainDI <- function(model = NA,
       if (length(whichfold)==0){
         trainLPD <- append(trainLPD, NA)
       } else {
-        trainLPD <- append(trainLPD, sum(DItrainDist[,1] < thres, na.rm = TRUE))
+        trainLPD <- append(trainLPD, sum(DItrainDist < thres, na.rm = TRUE))
       }
       if (verbose) {
         setTxtProgressBar(pb, j)
@@ -519,35 +514,27 @@ aoa_get_variables <- function(variables, model, train){
 
 
 
-.mindistfun <- function(point, reference, method, S_inv=NULL,algorithm){
-
+.mindistfun <- function(
+  point, 
+  reference, 
+  k = 1, 
+  method = c("L2", "MD"), 
+  algorithm=c("kd_tree", "cover_tree", "brute"), 
+  S_inv = NULL) {
+  
+  if (inherits(point, "numeric")) {
+    point <- matrix(point, nrow = 1)
+  }
+  if (inherits(reference, "numeric")) {
+    reference <- matrix(reference, nrow = 1)
+  }
+  
   if (method == "L2"){ # Euclidean Distance
-    return(c(FNN::knnx.dist(reference, point, k = 1, algorithm = algorithm)))
+    return(c(FNN::knnx.dist(point, reference, k = k, algorithm = algorithm)))
   } else if (method == "MD"){ # Mahalanobis Distance
     return(sapply(1:dim(point)[1],
                   function(y) min(sapply(1:dim(reference)[1],
                                          function(x) sqrt( t(point[y,] - reference[x,]) %*% S_inv %*% (point[y,] - reference[x,]) )))))
-  }
-}
-
-.alldistfun <- function(point, reference, method, sorted = TRUE,S_inv=NULL,algorithm){
-
-  if (method == "L2"){ # Euclidean Distance
-    if(sorted){
-      return(FNN::knnx.dist(reference, point, k = dim(reference)[1], algorithm = algorithm))
-    } else {
-      return(FNN::knnx.dist(point,reference,k=1, algorithm=algorithm))
-    }
-  } else if (method == "MD"){ # Mahalanobis Distance
-    if(sorted){
-      return(t(sapply(1:dim(point)[1],
-                      function(y) sort(sapply(1:dim(reference)[1],
-                                              function(x) sqrt( t(point[y,] - reference[x,]) %*% S_inv %*% (point[y,] - reference[x,]) ))))))
-    } else {
-      return(t(sapply(1:dim(point)[1],
-                      function(y) sapply(1:dim(reference)[1],
-                                         function(x) sqrt( t(point[y,] - reference[x,]) %*% S_inv %*% (point[y,] - reference[x,]) )))))
-    }
   }
 }
 
