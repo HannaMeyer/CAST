@@ -84,10 +84,11 @@
 #' In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances [Experimental]. If categorical
 #' features are present, and `clustering` = "kmeans", K-Prototype clustering will be performed instead.
 #' 
-#' `knndm` can be used to split the data into training and test sets. Here, the `test_prop` can be specified, as well as 
-#' the allowed deviation from this specified proportion (`test_tolerance`). Compared to k-fold CV, using knndm for train/test splits
-#' is less flexible and often results in larger NNDs between test and train locations than between prediction and train locations.
-#' Hence, it is essential to plot the results of `knndm` and check how well the split can resemble the prediction situation.
+#' `knndm` can be used to split the data into training and test sets. Here, the proportion of points belonging to the test set (`test_prop`) can be specified,
+#' as well as the allowed deviation from this specified proportion (`test_tolerance`). 
+#' Based on these, `minp` and `maxp` are defined as the `test_prop` +/- `test_tolerance`.
+#' Compared to k-fold CV, using knndm for train/test splits is less flexible and often results in larger NNDs between test and train locations 
+#' than between prediction and train locations. Hence, it is essential to plot the results of `knndm` and check how well the split can resemble the prediction situation.
 #' Modifying the `test_prop` parameter, as well as increasing `test_prop` allow more flexible matching and can potentially improve the match.
 #'
 #' @note
