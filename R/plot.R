@@ -168,7 +168,7 @@ plot.nndm <- function(x, type="strict", stat = "ecdf", ...){
   }
 
   # Define colours matching those of geodist
-  myColors <- RColorBrewer::brewer.pal(3, "Dark2")
+  myColors <- c("#1B9E77", "#D95F02", "#7570B3")
 
   # Plot
   if(stat=="ecdf"){
@@ -253,7 +253,7 @@ plot.knndm <- function(x, type="strict", stat = "ecdf", ...){
   Gplot <- rbind(Gij_df, Gjstar_df, Gj_df)
 
   # Define colours matching those of geodist
-  myColors <- RColorBrewer::brewer.pal(3, "Dark2")
+  myColors <- c("#1B9E77", "#D95F02", "#7570B3")
 
   # Plot
   if(stat=="ecdf"){
@@ -460,7 +460,7 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
             "prediction-to-sample",
             "CV-distances",
             "test-to-sample")
-  myColors <- RColorBrewer::brewer.pal(4, "Dark2")
+  myColors <- c("#1B9E77", "#D95F02", "#7570B3", "#E7298A")
   names(myColors) <- labs
 
 
