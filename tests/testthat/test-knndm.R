@@ -381,7 +381,7 @@ test_that("kNNDM works with train/test splits in geographical space", {
   tpoints <- sf::st_sample(sample_area, 100)
   predpoints <- sf::st_sample(aoi, 1000)
 
-  kout <- knndm(tpoints, predpoints = predpoints, test_prop = 0.3, test_tolerance = 0.1, dist_space = "geographical")
+  kout <- suppressWarnings(knndm(tpoints, predpoints = predpoints, test_prop = 0.3, test_tolerance = 0.1, dist_space = "geographical"))
   expect_identical(round(kout$W,1), 2.4)
   expect_identical(kout$method, "hierarchical")
   expect_identical(kout$q, 4L)
@@ -401,8 +401,8 @@ test_that("kNNDM works with train/test splits in feature space", {
   trainDat <- sf::st_drop_geometry(splotdata)
   predictors_sp <- terra::rast(system.file("extdata", "predictors_chile.tif",package="CAST"))
 
-  knndm_folds <- knndm(trainDat[,predictors], modeldomain = predictors_sp, dist_space = "feature",
-                       clustering="kmeans", test_prop = 0.4, test_tolerance = 0.1)
+  knndm_folds <- suppressWarnings(knndm(trainDat[,predictors], modeldomain = predictors_sp, dist_space = "feature",
+                       clustering="kmeans", test_prop = 0.4, test_tolerance = 0.1))
 
 
   expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 0.8287)
