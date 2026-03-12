@@ -5,18 +5,20 @@
 #' @param x trainDI object
 #' @param ... other params
 #'
-#'
 #' @author Marvin Ludwig, Hanna Meyer
 #' @export
-
-plot.trainDI = function(x, ...){
-  ggplot(data.frame(TrainDI = x$trainDI), aes(x = .data[["TrainDI"]]))+
-    geom_density()+
-    geom_vline(aes(xintercept = x$threshold, linetype = "AOA_threshold"))+
-    scale_linetype_manual(name = "", values = c(AOA_threshold = "dashed"))+
-    theme_bw()+
-    theme(legend.position="bottom")
-
+plot.trainDI = function(x, ...) {
+  ggplot2::ggplot(data.frame(TrainDI = x$trainDI), ggplot2::aes(x = .data[["TrainDI"]])) +
+    ggplot2::geom_density() +
+    ggplot2::geom_vline(ggplot2::aes(xintercept = x$threshold, linetype = "AOA_threshold")) +
+    ggplot2::scale_linetype_manual(
+      name = "",
+      values = c(AOA_threshold = "dashed"),
+      labels = "AOA threshold"
+    ) +
+    ggplot2::ylab("Density") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(legend.position = "bottom")
 }
 
 #' @name plot
@@ -26,80 +28,120 @@ plot.trainDI = function(x, ...){
 #' @param variable character. Variable for which to generate the density plot. 'DI' or 'LPD'
 #' @param ... other params
 #'
-#' @import ggplot2
-#'
 #' @author Marvin Ludwig, Hanna Meyer
 #'
 #' @export
-
-plot.aoa = function(x, samplesize = 1000, variable = "DI", ...){
-
+plot.aoa = function(x, samplesize = 1000, variable = "DI", ...) {
   if (variable == "DI") {
-    trainDI = data.frame(DI = x$parameters$trainDI,
-                         what = "trainDI")
+    trainDI = data.frame(DI = x$parameters$trainDI, what = "trainDI")
 
-    if(inherits(x$AOA, "RasterLayer")){
-      targetDI = terra::spatSample(methods::as(x$DI, "SpatRaster"),
-                                   size = samplesize, method = "regular")
-      targetDI = data.frame(DI = as.numeric(targetDI[, 1]),
-                            what = "predictionDI")
-    }else if(inherits(x$AOA, "stars")){
-      targetDI = terra::spatSample(methods::as(x$DI, "SpatRaster"),
-                                   size = samplesize, method = "regular")
-      targetDI = data.frame(DI = as.numeric(targetDI[, 1]),
-                            what = "predictionDI")
-    }else if(inherits(x$AOA, "SpatRaster")){
+    if (inherits(x$AOA, "RasterLayer")) {
+      targetDI = terra::spatSample(
+        methods::as(x$DI, "SpatRaster"),
+        size = samplesize,
+        method = "regular"
+      )
+      targetDI = data.frame(
+        DI = as.numeric(targetDI[, 1]),
+        what = "predictionDI"
+      )
+    } else if (inherits(x$AOA, "stars")) {
+      targetDI = terra::spatSample(
+        methods::as(x$DI, "SpatRaster"),
+        size = samplesize,
+        method = "regular"
+      )
+      targetDI = data.frame(
+        DI = as.numeric(targetDI[, 1]),
+        what = "predictionDI"
+      )
+    } else if (inherits(x$AOA, "SpatRaster")) {
       targetDI = terra::spatSample(x$DI, size = samplesize, method = "regular")
-      targetDI = data.frame(DI = as.numeric(targetDI[, 1]),
-                            what = "predictionDI")
-    }else{
-      targetDI = data.frame(DI = sample(x$DI, size = samplesize),
-                            what = "predictionDI")
+      targetDI = data.frame(
+        DI = as.numeric(targetDI[, 1]),
+        what = "predictionDI"
+      )
+    } else {
+      targetDI = data.frame(
+        DI = sample(x$DI, size = samplesize),
+        what = "predictionDI"
+      )
     }
 
     dfDI = rbind(trainDI, targetDI)
 
-    ggplot(dfDI, aes(x = .data[["DI"]], group = .data[["what"]], fill = .data[["what"]]))+
-      geom_density(adjust=1.5, alpha=.4)+
-      scale_fill_discrete(name = "Set")+
-      geom_vline(aes(xintercept = x$parameters$threshold, linetype = "AOA_threshold"))+
-      scale_linetype_manual(name = "", values = c(AOA_threshold = "dashed"))+
-      theme_bw()+
-      theme(legend.position = "bottom")
+    ggplot2::ggplot(
+      dfDI,
+      ggplot2::aes(x = .data[["DI"]], group = .data[["what"]], fill = .data[["what"]])
+    ) +
+      ggplot2::geom_density(adjust = 1.5, alpha = .4) +
+      ggplot2::scale_fill_discrete(name = "Set", palette = "Set1") +
+      ggplot2::geom_vline(ggplot2::aes(
+        xintercept = x$parameters$threshold,
+        linetype = "AOA_threshold"
+      )) +
+      ggplot2::scale_linetype_manual(
+        name = "",
+        values = c(AOA_threshold = "dashed"),
+        labels = "AOA threshold"
+      ) +
+      ggplot2::ylab("Density") +
+      ggplot2::theme_bw() +
+      ggplot2::theme(legend.position = "bottom")
   } else if (variable == "LPD") {
-    trainLPD = data.frame(LPD = x$parameters$trainLPD,
-                          what = "trainLPD")
+    trainLPD = data.frame(LPD = x$parameters$trainLPD, what = "trainLPD")
 
-    if(inherits(x$AOA, "RasterLayer")){
-      targetLPD = terra::spatSample(methods::as(x$LPD, "SpatRaster"),
-                                    size = samplesize, method = "regular")
-      targetLPD = data.frame(LPD = as.numeric(targetLPD[, 1]),
-                             what = "predictionLPD")
-    }else if(inherits(x$AOA, "stars")){
-      targetLPD = terra::spatSample(methods::as(x$LPD, "SpatRaster"),
-                                    size = samplesize, method = "regular")
-      targetLPD = data.frame(LPD = as.numeric(targetLPD[, 1]),
-                             what = "predictionLPD")
-    }else if(inherits(x$AOA, "SpatRaster")){
-      targetLPD = terra::spatSample(x$LPD, size = samplesize, method = "regular")
-      targetLPD = data.frame(LPD = as.numeric(targetLPD[, 1]),
-                             what = "predictionLPD")
-    }else{
-      targetLPD = data.frame(LPD = sample(x$LPD, size = samplesize),
-                             what = "predictionLPD")
+    if (inherits(x$AOA, "RasterLayer")) {
+      targetLPD = terra::spatSample(
+        methods::as(x$LPD, "SpatRaster"),
+        size = samplesize,
+        method = "regular"
+      )
+      targetLPD = data.frame(
+        LPD = as.numeric(targetLPD[, 1]),
+        what = "predictionLPD"
+      )
+    } else if (inherits(x$AOA, "stars")) {
+      targetLPD = terra::spatSample(
+        methods::as(x$LPD, "SpatRaster"),
+        size = samplesize,
+        method = "regular"
+      )
+      targetLPD = data.frame(
+        LPD = as.numeric(targetLPD[, 1]),
+        what = "predictionLPD"
+      )
+    } else if (inherits(x$AOA, "SpatRaster")) {
+      targetLPD = terra::spatSample(
+        x$LPD,
+        size = samplesize,
+        method = "regular"
+      )
+      targetLPD = data.frame(
+        LPD = as.numeric(targetLPD[, 1]),
+        what = "predictionLPD"
+      )
+    } else {
+      targetLPD = data.frame(
+        LPD = sample(x$LPD, size = samplesize),
+        what = "predictionLPD"
+      )
     }
 
     dfLPD = rbind(trainLPD, targetLPD)
 
-    ggplot(dfLPD, aes(x = .data[["LPD"]], group = .data[["what"]], fill = .data[["what"]]))+
-      geom_density(adjust=1.5, alpha=0.4)+
-      scale_fill_discrete(name = "Set")+
-      geom_vline(aes(xintercept = median(x$parameters$trainLPD), linetype = "MtrainLPD"))+
-      scale_linetype_manual(name = "", values = c(MtrainLPD = "dashed"))+
-      theme_bw()+
-      theme(legend.position = "bottom")
-  } else
-	stop("argument 'variable' needs to be either 'DI' or 'LPD'")
+    ggplot2::ggplot(
+      dfLPD,
+      ggplot2::aes(x = .data[["LPD"]], group = .data[["what"]], fill = .data[["what"]])
+    ) +
+      ggplot2::geom_density(adjust = 1.5, alpha = 0.4) +
+      ggplot2::scale_fill_discrete(name = "Set", palette = "Set1") +
+      ggplot2::ylab("Density") +
+      ggplot2::theme_bw() +
+      ggplot2::theme(legend.position = "bottom")
+  } else {
+    stop("argument 'variable' needs to be either 'DI' or 'LPD'")
+  }
 }
 
 #' @name plot
@@ -110,43 +152,54 @@ plot.aoa = function(x, samplesize = 1000, variable = "DI", ...){
 #' @author Carles Milà
 #'
 #' @export
-plot.nndm <- function(x, type="strict", stat = "ecdf", ...){
-
+plot.nndm <- function(x, type = "strict", stat = "ecdf", ...) {
   # Prepare data for plotting: Gij function
-  Gij_df <- data.frame(r=x$Gij[order(x$Gij)])
-  Gij_df$val <- 1:nrow(Gij_df)/nrow(Gij_df)
-  Gij_df <- Gij_df[Gij_df$r <= x$phi,]
-  Gij_df <- rbind(Gij_df, data.frame(r=0, val=0))
-  Gij_df <- rbind(Gij_df, data.frame(r=x$phi,
-                                     val=sum(x$Gij<=x$phi)/length(x$Gij)))
+  Gij_df <- data.frame(r = x$Gij[order(x$Gij)])
+  Gij_df$val <- 1:nrow(Gij_df) / nrow(Gij_df)
+  Gij_df <- Gij_df[Gij_df$r <= x$phi, ]
+  Gij_df <- rbind(Gij_df, data.frame(r = 0, val = 0))
+  Gij_df <- rbind(
+    Gij_df,
+    data.frame(r = x$phi, val = sum(x$Gij <= x$phi) / length(x$Gij))
+  )
   Gij_df$Function <- "1_Gij(r)"
 
   # Prepare data for plotting: Gjstar function
-  Gjstar_df <- data.frame(r=x$Gjstar[order(x$Gjstar)])
-  Gjstar_df$val <- 1:nrow(Gjstar_df)/nrow(Gjstar_df)
-  Gjstar_df <- Gjstar_df[Gjstar_df$r <= x$phi,]
-  Gjstar_df <- rbind(Gjstar_df, data.frame(r=0, val=0))
-  Gjstar_df <- rbind(Gjstar_df, data.frame(r=x$phi,
-                                           val=sum(x$Gjstar<=x$phi)/length(x$Gjstar)))
+  Gjstar_df <- data.frame(r = x$Gjstar[order(x$Gjstar)])
+  Gjstar_df$val <- 1:nrow(Gjstar_df) / nrow(Gjstar_df)
+  Gjstar_df <- Gjstar_df[Gjstar_df$r <= x$phi, ]
+  Gjstar_df <- rbind(Gjstar_df, data.frame(r = 0, val = 0))
+  Gjstar_df <- rbind(
+    Gjstar_df,
+    data.frame(r = x$phi, val = sum(x$Gjstar <= x$phi) / length(x$Gjstar))
+  )
   Gjstar_df$Function <- "2_Gjstar(r)"
 
   # Prepare data for plotting: G function
-  Gj_df <- data.frame(r=x$Gj[order(x$Gj)])
-  Gj_df$val <- 1:nrow(Gj_df)/nrow(Gj_df)
-  Gj_df <- Gj_df[Gj_df$r <= x$phi,]
-  Gj_df <- rbind(Gj_df, data.frame(r=0, val=0))
-  Gj_df <- rbind(Gj_df, data.frame(r=x$phi,
-                                   val=sum(x$Gj<=x$phi)/length(x$Gj)))
+  Gj_df <- data.frame(r = x$Gj[order(x$Gj)])
+  Gj_df$val <- 1:nrow(Gj_df) / nrow(Gj_df)
+  Gj_df <- Gj_df[Gj_df$r <= x$phi, ]
+  Gj_df <- rbind(Gj_df, data.frame(r = 0, val = 0))
+  Gj_df <- rbind(
+    Gj_df,
+    data.frame(r = x$phi, val = sum(x$Gj <= x$phi) / length(x$Gj))
+  )
   Gj_df$Function <- "3_Gj(r)"
 
   # Merge data for plotting, get maxdist relevant for plotting
-  if(any(Gj_df$val==1)&any(Gjstar_df$val==1)&any(Gij_df$val==1)){
+  if (any(Gj_df$val == 1) & any(Gjstar_df$val == 1) & any(Gij_df$val == 1)) {
     Gplot <- rbind(Gij_df, Gjstar_df, Gj_df)
-    maxdist <- max(Gplot$r[Gplot$val!=1]) + 1e-9
-    Gplot <- Gplot[Gplot$r <= maxdist,]
-    Gplot <- rbind(Gplot, data.frame(r=maxdist, val=1,
-                                     Function = c("1_Gij(r)", "2_Gjstar(r)", "3_Gj(r)")))
-  }else{
+    maxdist <- max(Gplot$r[Gplot$val != 1]) + 1e-9
+    Gplot <- Gplot[Gplot$r <= maxdist, ]
+    Gplot <- rbind(
+      Gplot,
+      data.frame(
+        r = maxdist,
+        val = 1,
+        Function = c("1_Gij(r)", "2_Gjstar(r)", "3_Gj(r)")
+      )
+    )
+  } else {
     Gplot <- rbind(Gij_df, Gjstar_df, Gj_df)
   }
 
@@ -154,58 +207,84 @@ plot.nndm <- function(x, type="strict", stat = "ecdf", ...){
   myColors <- c("#1B9E77", "#D95F02", "#7570B3")
 
   # Plot
-  if(stat=="ecdf"){
-    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes(x=.data[["r"]], group=.data[["Function"]], col=.data[["Function"]])) +
-      ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
-      ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
-      ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
+  if (stat == "ecdf") {
+    p <- ggplot2::ggplot(
+      data = Gplot,
+      ggplot2::aes(
+        x = .data[["r"]],
+        group = .data[["Function"]],
+        col = .data[["Function"]]
+      )
+    ) +
+      ggplot2::geom_vline(xintercept = 0, lwd = 0.1) +
+      ggplot2::geom_hline(yintercept = 0, lwd = 0.1) +
+      ggplot2::geom_hline(yintercept = 1, lwd = 0.1) +
       ggplot2::stat_ecdf(geom = "step", lwd = 0.8) +
       ggplot2::theme_bw() +
       ggplot2::ylab("ECDF") +
-      ggplot2::labs(group="Distance function", col="Distance function") +
-      ggplot2::theme(legend.position = "bottom",
-                     legend.text=ggplot2::element_text(size=10))
+      ggplot2::labs(group = "Distance function", col = "Distance function") +
+      ggplot2::theme(
+        legend.position = "bottom",
+        legend.text = ggplot2::element_text(size = 10)
+      )
 
-    if(type=="strict"){
-      p <-  p +
-        ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
-                                     labels=c(expression(hat(G)[ij](r)),
-                                              expression(hat(G)[j]^"*"*"(r,L)"),
-                                              expression(hat(G)[j](r))))
-    }else if(type == "simple"){
-      p <-  p +
-        ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
-                                     labels=c("prediction-to-sample",
-                                              "CV-distances",
-                                              "sample-to-sample"))
+    if (type == "strict") {
+      p <- p +
+        ggplot2::scale_colour_manual(
+          values = c(myColors[2], myColors[3], myColors[1]),
+          labels = c(
+            expression(hat(G)[ij](r)),
+            expression(hat(G)[j]^"*" * "(r,L)"),
+            expression(hat(G)[j](r))
+          )
+        )
+    } else if (type == "simple") {
+      p <- p +
+        ggplot2::scale_colour_manual(
+          name = "Distance function",
+          values = c(myColors[2], myColors[3], myColors[1]),
+          labels = c("prediction-to-sample", "CV-distances", "sample-to-sample")
+        )
     }
-
-  }else if(stat=="density"){
-    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes(x=.data[["r"]], group=.data[["Function"]], fill=.data[["Function"]])) +
-      ggplot2::geom_density(adjust=1.5, alpha=.5, stat=stat, lwd = 0.3) +
+  } else if (stat == "density") {
+    p <- ggplot2::ggplot(
+      data = Gplot,
+      ggplot2::aes(
+        x = .data[["r"]],
+        group = .data[["Function"]],
+        fill = .data[["Function"]]
+      )
+    ) +
+      ggplot2::geom_density(adjust = 1.5, alpha = .5, stat = stat, lwd = 0.3) +
       ggplot2::theme_bw() +
       ggplot2::ylab("Density") +
-      ggplot2::labs(group="Distance function", col="Distance function") +
-      ggplot2::theme(legend.position = "bottom",
-                     legend.text=ggplot2::element_text(size=10))
+      ggplot2::labs(group = "Distance function", col = "Distance function") +
+      ggplot2::theme(
+        legend.position = "bottom",
+        legend.text = ggplot2::element_text(size = 10)
+      )
 
-    if(type=="strict"){
-      p <-  p +
-        ggplot2::scale_fill_manual(values=c(myColors[2], myColors[3], myColors[1]),
-                                   labels=c(expression(hat(G)[ij](r)),
-                                            expression(hat(G)[j]^"*"*"(r,L)"),
-                                            expression(hat(G)[j](r))))
-    }else if(type == "simple"){
-      p <-  p +
-        ggplot2::scale_fill_manual(values=c(myColors[2], myColors[3], myColors[1]),
-                                   labels=c("prediction-to-sample",
-                                            "CV-distances",
-                                            "sample-to-sample"))
+    if (type == "strict") {
+      p <- p +
+        ggplot2::scale_fill_manual(
+          values = c(myColors[2], myColors[3], myColors[1]),
+          labels = c(
+            expression(hat(G)[ij](r)),
+            expression(hat(G)[j]^"*" * "(r,L)"),
+            expression(hat(G)[j](r))
+          )
+        )
+    } else if (type == "simple") {
+      p <- p +
+        ggplot2::scale_fill_manual(
+          name = "Distance function",
+          values = c(myColors[2], myColors[3], myColors[1]),
+          labels = c("prediction-to-sample", "CV-distances", "sample-to-sample")
+        )
     }
   }
 
-  p
-
+  return(p)
 }
 
 #' @name plot
@@ -217,18 +296,17 @@ plot.nndm <- function(x, type="strict", stat = "ecdf", ...){
 #' @author Carles Milà
 #'
 #' @export
-plot.knndm <- function(x, type="strict", stat = "ecdf", ...){
-
+plot.knndm <- function(x, type = "strict", stat = "ecdf", ...) {
   # Prepare data for plotting: Gij function
-  Gij_df <- data.frame(r=x$Gij[order(x$Gij)])
+  Gij_df <- data.frame(r = x$Gij[order(x$Gij)])
   Gij_df$Function <- "1_Gij(r)"
 
   # Prepare data for plotting: Gjstar function
-  Gjstar_df <- data.frame(r=x$Gjstar[order(x$Gjstar)])
+  Gjstar_df <- data.frame(r = x$Gjstar[order(x$Gjstar)])
   Gjstar_df$Function <- "2_Gjstar(r)"
 
   # Prepare data for plotting: G function
-  Gj_df <- data.frame(r=x$Gj[order(x$Gj)])
+  Gj_df <- data.frame(r = x$Gj[order(x$Gj)])
   Gj_df$Function <- "3_Gj(r)"
 
   # Merge data for plotting
@@ -238,57 +316,84 @@ plot.knndm <- function(x, type="strict", stat = "ecdf", ...){
   myColors <- c("#1B9E77", "#D95F02", "#7570B3")
 
   # Plot
-  if(stat=="ecdf"){
-    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes(x=.data[["r"]], group=.data[["Function"]], col=.data[["Function"]])) +
-      ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
-      ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
-      ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
+  if (stat == "ecdf") {
+    p <- ggplot2::ggplot(
+      data = Gplot,
+      ggplot2::aes(
+        x = .data[["r"]],
+        group = .data[["Function"]],
+        col = .data[["Function"]]
+      )
+    ) +
+      ggplot2::geom_vline(xintercept = 0, lwd = 0.1) +
+      ggplot2::geom_hline(yintercept = 0, lwd = 0.1) +
+      ggplot2::geom_hline(yintercept = 1, lwd = 0.1) +
       ggplot2::stat_ecdf(geom = "step", lwd = 0.8) +
       ggplot2::theme_bw() +
       ggplot2::ylab("ECDF") +
-      ggplot2::labs(group="Distance function", col="Distance function") +
-      ggplot2::theme(legend.position = "bottom",
-                     legend.text=ggplot2::element_text(size=10))
+      ggplot2::labs(group = "Distance function", col = "Distance function") +
+      ggplot2::theme(
+        legend.position = "bottom",
+        legend.text = ggplot2::element_text(size = 10)
+      )
 
-    if(type=="strict"){
-      p <-  p +
-        ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
-                                     labels=c(expression(hat(G)[ij](r)),
-                                              expression(hat(G)[j]^"*"*"(r,L)"),
-                                              expression(hat(G)[j](r))))
-    }else if(type == "simple"){
-      p <-  p +
-        ggplot2::scale_colour_manual(values=c(myColors[2], myColors[3], myColors[1]),
-                                     labels=c("prediction-to-sample",
-                                              "CV-distances",
-                                              "sample-to-sample"))
+    if (type == "strict") {
+      p <- p +
+        ggplot2::scale_colour_manual(
+          values = c(myColors[2], myColors[3], myColors[1]),
+          labels = c(
+            expression(hat(G)[ij](r)),
+            expression(hat(G)[j]^"*" * "(r,L)"),
+            expression(hat(G)[j](r))
+          )
+        )
+    } else if (type == "simple") {
+      p <- p +
+        ggplot2::scale_colour_manual(
+          name = "Distance function",
+          values = c(myColors[2], myColors[3], myColors[1]),
+          labels = c("prediction-to-sample", "CV-distances", "sample-to-sample")
+        )
     }
-
-  }else if(stat=="density"){
-    p <- ggplot2::ggplot(data=Gplot, ggplot2::aes(x=.data[["r"]], group=.data[["Function"]], fill=.data[["Function"]])) +
-      ggplot2::geom_density(adjust=1.5, alpha=.5, stat=stat, lwd = 0.3) +
+  } else if (stat == "density") {
+    p <- ggplot2::ggplot(
+      data = Gplot,
+      ggplot2::aes(
+        x = .data[["r"]],
+        group = .data[["Function"]],
+        fill = .data[["Function"]]
+      )
+    ) +
+      ggplot2::geom_density(adjust = 1.5, alpha = .5, stat = stat, lwd = 0.3) +
       ggplot2::theme_bw() +
       ggplot2::ylab("Density") +
-      ggplot2::labs(group="Distance function", col="Distance function") +
-      ggplot2::theme(legend.position = "bottom",
-                     legend.text=ggplot2::element_text(size=10))
+      ggplot2::labs(group = "Distance function", col = "Distance function") +
+      ggplot2::theme(
+        legend.position = "bottom",
+        legend.text = ggplot2::element_text(size = 10)
+      )
 
-    if(type=="strict"){
-      p <-  p +
-        ggplot2::scale_fill_manual(values=c(myColors[2], myColors[3], myColors[1]),
-                                   labels=c(expression(hat(G)[ij](r)),
-                                            expression(hat(G)[j]^"*"*"(r,L)"),
-                                            expression(hat(G)[j](r))))
-    }else if(type == "simple"){
-      p <-  p +
-        ggplot2::scale_fill_manual(values=c(myColors[2], myColors[3], myColors[1]),
-                                   labels=c("prediction-to-sample",
-                                            "CV-distances",
-                                            "sample-to-sample"))
+    if (type == "strict") {
+      p <- p +
+        ggplot2::scale_fill_manual(
+          values = c(myColors[2], myColors[3], myColors[1]),
+          labels = c(
+            expression(hat(G)[ij](r)),
+            expression(hat(G)[j]^"*" * "(r,L)"),
+            expression(hat(G)[j](r))
+          )
+        )
+    } else if (type == "simple") {
+      p <- p +
+        ggplot2::scale_fill_manual(
+          name = "Distance function",
+          values = c(myColors[2], myColors[3], myColors[1]),
+          labels = c("prediction-to-sample", "CV-distances", "sample-to-sample")
+        )
     }
   }
 
-  p
+  return(p)
 }
 
 #' Plot results of a Forward feature selection or best subset selection
@@ -301,7 +406,7 @@ plot.knndm <- function(x, type="strict", stat = "ecdf", ...){
 #' performance is shown.
 #' @param x Result of a forward feature selection see \code{\link{ffs}}
 #' @param plotType character. Either "all" or "selected"
-#' @param palette A color palette
+#' @param palette A color palette function
 #' @param reverse Character. Should the palette be reversed?
 #' @param marker Character. Color to mark the best models
 #' @param size Numeric. Size of the points
@@ -320,23 +425,21 @@ plot.knndm <- function(x, type="strict", stat = "ecdf", ...){
 #'}
 #' @name plot
 #' @export
-
-plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
+plot.ffs <- function(x,plotType="all",palette=hcl.colors,reverse=FALSE,
                      marker="black",size=1.5,lwd=0.5,
                      pch=21,...){
   metric <- x$metric
-  if (is.null(x$type)){
+  if (is.null(x$type)) {
     x$type <- "ffs"
   }
-  if(is.null(x$minVar)){
+  if (is.null(x$minVar)) {
     x$minVar <- 2
   }
-  if(x$type=="bss"&plotType=="selected"){
+  if (x$type == "bss" & plotType == "selected") {
     plotType <- "all"
     print("warning: plotType must be 'all' for a bss model")
   }
-  if (plotType=="selected"){
-
+  if (plotType == "selected") {
     labels <- c(
       paste(x$selectedvars[1:x$minVar], collapse = "\n + "),
       paste("+", x$selectedvars[-1:-x$minVar], sep = " ")
@@ -348,26 +451,30 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
       perfse = x$selectedvars_perf_SE
     )
 
-
-    p <- ggplot(plot_df, aes(x = .data[["perf"]], y = .data[["labels"]]))+
-      geom_point()+
-      geom_segment(aes(x = .data[["perf"]] - .data[["perfse"]], xend = .data[["perf"]] + .data[["perfse"]],
-                       y = .data[["labels"]], yend = .data[["labels"]]))+
-      xlab(x$metric)+
-      ylab(NULL)
+    p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = .data[["perf"]], y = .data[["labels"]])) +
+      ggplot2::geom_point() +
+      ggplot2::geom_segment(ggplot2::aes(
+        x = .data[["perf"]] - .data[["perfse"]],
+        xend = .data[["perf"]] + .data[["perfse"]],
+        y = .data[["labels"]],
+        yend = .data[["labels"]]
+      )) +
+      ggplot2::theme_bw() +
+      ggplot2::theme(
+        legend.position = "bottom",
+        plot.margin = grid::unit(c(0, 0.5, 0, 0), "cm")
+      ) +
+      ggplot2::xlab(x$metric) +
+      ggplot2::ylab(NULL)
     return(p)
-
-  }else{
-
-
+  } else {
     output_df <- x$perf_all
     output_df$run <- seq(nrow(output_df))
-    names(output_df)[which(names(output_df)==metric)] <- "value"
+    names(output_df)[which(names(output_df) == metric)] <- "value"
 
-    if (x$type=="bss"){
-      bestmodels <- output_df$run[which(output_df$value==x$selectedvars_perf)]
-    }else{
-
+    if (x$type == "bss") {
+      bestmodels <- output_df$run[which(output_df$value == x$selectedvars_perf)]
+    } else {
       u <- unique(output_df$nvar)
       bestmodels <- integer(length(u))
 
@@ -386,40 +493,88 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
       bestmodels <- bestmodels[1:(length(x$selectedvars) - 1)]
     }
 
-    if (!reverse){
-      cols <- palette(max(output_df$nvar)-(min(output_df$nvar)-1))
-    }else{
-      cols <- rev(palette(max(output_df$nvar)-(min(output_df$nvar)-1)))
+    if (!reverse) {
+      cols <- palette(max(output_df$nvar) - (min(output_df$nvar) - 1))
+    } else {
+      cols <- rev(palette(max(output_df$nvar) - (min(output_df$nvar) - 1)))
     }
     ymin <- output_df$value - output_df$SE
     ymax <- output_df$value + output_df$SE
-    if (max(output_df$nvar)>11){
-      p <- ggplot2::ggplot(output_df, ggplot2::aes(x = .data[["run"]], y = .data[["value"]]))+
-        ggplot2::geom_errorbar(ggplot2::aes(ymin = ymin, ymax = ymax),
-                               color = cols[output_df$nvar-(min(output_df$nvar)-1)],lwd=lwd)+
-        ggplot2::geom_point(ggplot2::aes(colour=.data[["nvar"]]),size=size)+
-        ggplot2::geom_point(data=output_df[bestmodels, ],
-                            ggplot2::aes(x = .data[["run"]], y = .data[["value"]]),
-                            pch=pch,colour=marker,size=size)+
-        ggplot2::scale_x_continuous(name = "Model run", breaks = pretty(output_df$run))+
-        ggplot2::scale_y_continuous(name = metric)+
-        ggplot2::scale_colour_gradientn(breaks=seq(2,max(output_df$nvar),
-                                                   by=ceiling(max(output_df$nvar)/5)),
-                                        colours = cols, name = "variables",guide = "colourbar")
-    }else{
+    if (max(output_df$nvar) > 11) {
+      p <- ggplot2::ggplot(
+        output_df,
+        ggplot2::aes(x = .data[["run"]], y = .data[["value"]])
+      ) +
+        ggplot2::geom_errorbar(
+          ggplot2::aes(ymin = ymin, ymax = ymax),
+          color = cols[output_df$nvar - (min(output_df$nvar) - 1)],
+          lwd = lwd
+        ) +
+        ggplot2::geom_point(
+          ggplot2::aes(colour = .data[["nvar"]]),
+          size = size
+        ) +
+        ggplot2::geom_point(
+          data = output_df[bestmodels, ],
+          ggplot2::aes(x = .data[["run"]], y = .data[["value"]]),
+          pch = pch,
+          colour = marker,
+          size = size
+        ) +
+        ggplot2::scale_x_continuous(
+          name = "Model run",
+          breaks = pretty(output_df$run)
+        ) +
+        ggplot2::scale_y_continuous(name = metric) +
+        ggplot2::scale_colour_gradientn(
+          breaks = seq(
+            2,
+            max(output_df$nvar),
+            by = ceiling(max(output_df$nvar) / 5)
+          ),
+          colours = cols,
+          name = "variables",
+          guide = "colourbar"
+        ) +
+        ggplot2::theme_bw() +
+        ggplot2::theme(
+          legend.position = "bottom",
+          plot.margin = unit(c(0, 0.5, 0, 0), "cm")
+        )
+    } else {
       dfint <- output_df
       dfint$nvar <- as.factor(dfint$nvar)
-      p <- ggplot2::ggplot(dfint, ggplot2::aes(x = .data[["run"]], y = .data[["value"]]))+
-        ggplot2::geom_errorbar(ggplot2::aes(ymin = ymin, ymax = ymax),
-                               color = cols[output_df$nvar-(min(output_df$nvar)-1)],lwd=lwd)+
-        ggplot2::geom_point(ggplot2::aes(colour=.data[["nvar"]]),size=size)+
-        ggplot2::geom_point(data=output_df[bestmodels, ],
-                            ggplot2::aes(x = .data[["run"]], y = .data[["value"]]),
-                            pch=pch,colour=marker,size=size)+
-        ggplot2::scale_x_continuous(name = "Model run", breaks = pretty(dfint$run))+
-        ggplot2::scale_y_continuous(name = metric)+
-        ggplot2::scale_colour_manual(values = cols, name = "variables")
-
+      p <- ggplot2::ggplot(
+        dfint,
+        ggplot2::aes(x = .data[["run"]], y = .data[["value"]])
+      ) +
+        ggplot2::geom_errorbar(
+          ggplot2::aes(ymin = ymin, ymax = ymax),
+          color = cols[output_df$nvar - (min(output_df$nvar) - 1)],
+          lwd = lwd
+        ) +
+        ggplot2::geom_point(
+          ggplot2::aes(colour = .data[["nvar"]]),
+          size = size
+        ) +
+        ggplot2::geom_point(
+          data = output_df[bestmodels, ],
+          ggplot2::aes(x = .data[["run"]], y = .data[["value"]]),
+          pch = pch,
+          colour = marker,
+          size = size
+        ) +
+        ggplot2::scale_x_continuous(
+          name = "Model run",
+          breaks = pretty(dfint$run)
+        ) +
+        ggplot2::scale_y_continuous(name = metric) +
+        ggplot2::scale_colour_manual(values = cols, name = "Number of variables") + 
+        ggplot2::theme_bw() +
+        ggplot2::theme(
+          legend.position = "bottom",
+          plot.margin = unit(c(0, 0.5, 0, 0), "cm")
+        )
     }
 
     return(p)
@@ -437,55 +592,74 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
 #' @export
 #' @return a ggplot
 #'
-
 plot.geodist <- function(x, unit = "m", stat = "density", ...){
 
   # Define colours - they must match those of knndm and nndm
-  labs <- c("sample-to-sample",
-            "prediction-to-sample",
-            "CV-distances",
-            "test-to-sample")
+  labs <- c(
+    "sample-to-sample",
+    "prediction-to-sample",
+    "CV-distances",
+    "test-to-sample"
+  )
   myColors <- c("#1B9E77", "#D95F02", "#7570B3", "#E7298A")
   names(myColors) <- labs
 
-
   type <- attr(x, "dist_space")
 
-  if(unit=="km"){
-    x$dist <- x$dist/1000
+  if (unit == "km") {
+    x$dist <- x$dist / 1000
     xlabs <- "geographic distances (km)"
-  }else{
+  } else {
     xlabs <- "geographic distances (m)"
   }
 
-  if( type=="feature"){ xlabs <- "feature space distances"}
+  if (type == "feature") {
+    xlabs <- "feature space distances"
+  }
   what <- "" #just to avoid check note
-  if (type=="feature"){unit ="unitless"}
+  if (type == "feature") {
+    unit = "unitless"
+  }
 
-  if (type=="time"){unit = attr(x,"unit")}
-  if( type=="time"){ xlabs <- paste0("temporal distances (",unit,")")}
-  if(stat=="density"){
-    p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, fill=what)) +
-      ggplot2::geom_density(adjust=1.5, alpha=.5, stat=stat, lwd = 0.3) +
-      ggplot2::scale_fill_manual(name = "distance function", values = myColors) +
+  if (type == "time") {
+    unit = attr(x, "unit")
+  }
+  if (type == "time") {
+    xlabs <- paste0("temporal distances (", unit, ")")
+  }
+  if (stat == "density") {
+    p <- ggplot2::ggplot(data = x, ggplot2::aes(x = dist, group = what, fill = what)) +
+      ggplot2::geom_density(adjust = 1.5, alpha = .5, stat = stat, lwd = 0.3) +
+      ggplot2::scale_fill_manual(
+        name = "distance function",
+        values = myColors
+      ) +
       ggplot2::theme_bw() +
+      ggplot2::ylab("Density") +
       ggplot2::xlab(xlabs) +
-      ggplot2::theme(legend.position="bottom",
-                     plot.margin = unit(c(0,0.5,0,0),"cm"))
-  }else if(stat=="ecdf"){
-    p <- ggplot2::ggplot(data=x, aes(x=dist, group=what, col=what)) +
-      ggplot2::geom_vline(xintercept=0, lwd = 0.1) +
-      ggplot2::geom_hline(yintercept=0, lwd = 0.1) +
-      ggplot2::geom_hline(yintercept=1, lwd = 0.1) +
+      ggplot2::theme(
+        legend.position = "bottom",
+        plot.margin = grid::unit(c(0, 0.5, 0, 0), "cm")
+      )
+  } else if (stat == "ecdf") {
+    p <- ggplot2::ggplot(data = x, ggplot2::aes(x = dist, group = what, col = what)) +
+      ggplot2::geom_vline(xintercept = 0, lwd = 0.1) +
+      ggplot2::geom_hline(yintercept = 0, lwd = 0.1) +
+      ggplot2::geom_hline(yintercept = 1, lwd = 0.1) +
       ggplot2::stat_ecdf(geom = "step", lwd = 1) +
-      ggplot2::scale_color_manual(name = "distance function", values = myColors) +
+      ggplot2::scale_color_manual(
+        name = "distance function",
+        values = myColors
+      ) +
       ggplot2::theme_bw() +
       ggplot2::xlab(xlabs) +
       ggplot2::ylab("ECDF") +
-      ggplot2::theme(legend.position="bottom",
-                     plot.margin = unit(c(0,0.5,0,0),"cm"))
+      ggplot2::theme(
+        legend.position = "bottom",
+        plot.margin = grid::unit(c(0, 0.5, 0, 0), "cm")
+      )
   }
-  p
+  return(p)
 }
 
 #' @name plot
@@ -495,24 +669,41 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
 #' @export
 #' @return a ggplot
 #'
-
 plot.errorModel <- function(x, ...){
 
   variable = attr(x, "variable")
   metric = attr(x, "metric")
 
-  performance = attr(x, "performance")[,c(variable, "metric")]
+  performance = attr(x, "performance")[, c(variable, "metric")]
   performance$what = "cross-validation"
 
-  model_line = data.frame(variable = performance[, variable],
-                          metric = predict(x, performance),
-                          what = "model")
+  model_line = data.frame(
+    variable = performance[, variable],
+    metric = predict(x, performance),
+    what = "model"
+  )
 
-  p = ggplot()+
-    geom_point(data = performance, mapping = aes(x = .data[[variable]], y = .data[["metric"]], shape = .data[["what"]]))+
-    geom_line(data = model_line, mapping =  aes(x = .data[["variable"]], y = .data[["metric"]], linetype = .data[["what"]]), lwd = 1)+
-    labs(x = variable, y = metric)+
-    theme(legend.title = element_blank(), legend.position = "bottom")
+  p = ggplot2::ggplot() +
+    ggplot2::geom_point(
+      data = performance,
+      mapping = ggplot2::aes(
+        x = .data[[variable]],
+        y = .data[["metric"]],
+        shape = .data[["what"]]
+      )
+    ) +
+    ggplot2::geom_line(
+      data = model_line,
+      mapping = ggplot2::aes(
+        x = .data[["variable"]],
+        y = .data[["metric"]],
+        linetype = .data[["what"]]
+      ),
+      lwd = 1
+    ) +
+    ggplot2::labs(x = variable, y = metric) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(legend.title = ggplot2::element_blank(), legend.position = "bottom")
 
   return(p)
 
