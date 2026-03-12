@@ -19,13 +19,6 @@ plot.trainDI = function(x, ...){
 
 }
 
-
-
-
-
-
-
-
 #' @name plot
 #'
 #' @param x aoa object
@@ -77,8 +70,6 @@ plot.aoa = function(x, samplesize = 1000, variable = "DI", ...){
     trainLPD = data.frame(LPD = x$parameters$trainLPD,
                           what = "trainLPD")
 
-
-
     if(inherits(x$AOA, "RasterLayer")){
       targetLPD = terra::spatSample(methods::as(x$LPD, "SpatRaster"),
                                     size = samplesize, method = "regular")
@@ -100,7 +91,6 @@ plot.aoa = function(x, samplesize = 1000, variable = "DI", ...){
 
     dfLPD = rbind(trainLPD, targetLPD)
 
-
     ggplot(dfLPD, aes(x = .data[["LPD"]], group = .data[["what"]], fill = .data[["what"]]))+
       geom_density(adjust=1.5, alpha=0.4)+
       scale_fill_discrete(name = "Set")+
@@ -111,8 +101,6 @@ plot.aoa = function(x, samplesize = 1000, variable = "DI", ...){
   } else
 	stop("argument 'variable' needs to be either 'DI' or 'LPD'")
 }
-
-
 
 #' @name plot
 #' @param x An object of type \emph{nndm}.
@@ -220,7 +208,6 @@ plot.nndm <- function(x, type="strict", stat = "ecdf", ...){
 
 }
 
-
 #' @name plot
 #' @param x An object of type \emph{knndm}.
 #' @param type String, defaults to "strict" to show the original nearest neighbour distance definitions in the legend.
@@ -325,17 +312,14 @@ plot.knndm <- function(x, type="strict", stat = "ecdf", ...){
 #' @examples
 #' \dontrun{
 #' data(splotdata)
-#' splotdata <- st_drop_geometry(splotdata)
+#' splotdata <- sf::st_drop_geometry(splotdata)
 #' ffsmodel <- ffs(splotdata[,6:16], splotdata$Species_richness, ntree = 10)
 #' plot(ffsmodel)
 #' #plot performance of selected variables only:
 #' plot(ffsmodel,plotType="selected")
 #'}
 #' @name plot
-#' @importFrom forcats fct_rev fct_inorder
 #' @export
-
-
 
 plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
                      marker="black",size=1.5,lwd=0.5,
@@ -353,15 +337,22 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
   }
   if (plotType=="selected"){
 
-    plot_df = data.frame(labels = forcats::fct_rev(forcats::fct_inorder(c(paste(x$selectedvars[1:x$minVar], collapse = "\n + "),
-                                    paste("+", x$selectedvars[-1:-x$minVar], sep = " ")))),
-                         perf = x$selectedvars_perf,
-                         perfse = x$selectedvars_perf_SE)
+    labels <- c(
+      paste(x$selectedvars[1:x$minVar], collapse = "\n + "),
+      paste("+", x$selectedvars[-1:-x$minVar], sep = " ")
+    )
 
+    plot_df <- data.frame(
+      labels = factor(labels, levels = rev(labels)),
+      perf = x$selectedvars_perf,
+      perfse = x$selectedvars_perf_SE
+    )
+
+    print(head(plot_df))
 
     p <- ggplot(plot_df, aes(x = .data[["perf"]], y = .data[["labels"]]))+
       geom_point()+
-      geom_segment(aes(x = .data[["perf - perfse"]], xend = .data[["perf + perfse"]],
+      geom_segment(aes(x = .data[["perf"]] - .data[["perfse"]], xend = .data[["perf"]] + .data[["perfse"]],
                        y = .data[["labels"]], yend = .data[["labels"]]))+
       xlab(x$metric)+
       ylab(NULL)
@@ -433,7 +424,6 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
   }
 }
 
-
 #' @name plot
 #' @description Density plot of nearest neighbor distances in geographic space or feature space between training data as well as between training data and
 #' prediction locations.
@@ -445,8 +435,6 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
 #' @export
 #' @return a ggplot
 #'
-
-
 
 plot.geodist <- function(x, unit = "m", stat = "density", ...){
 
@@ -498,7 +486,6 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
   p
 }
 
-
 #' @name plot
 #' @description Plot the DI/LPD and errormetric from Cross-Validation with the modeled relationship
 #' @param x errorModel, see \code{\link{DItoErrormetric}}
@@ -506,7 +493,6 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
 #' @export
 #' @return a ggplot
 #'
-
 
 plot.errorModel <- function(x, ...){
 

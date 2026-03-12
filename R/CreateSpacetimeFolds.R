@@ -67,11 +67,13 @@ CreateSpacetimeFolds <- function(x,spacevar=NA,timevar=NA,
   if(!is.na(class)){
     if(is.numeric(x[,class])){
       stop("argument class only works for categorical data")
-      }
-    unit <- unique(x[,c(spacevar,class)])
-    unit$CAST_fold <- createFolds(unit[,which(names(unit)==class)],k = k,list=FALSE)
-    #x <- merge(x,unit,by.x=c(spacevar,class),by.y=c(spacevar,class),all.x=TRUE,sort=FALSE)
-    x <- plyr::join(x,unit,by=c(spacevar,class),match="first")
+    }
+
+    unit <- unique(x[, c(spacevar, class)])
+    unit$CAST_fold <- createFolds(unit[[class]], k = k, list = FALSE)
+    key  <- interaction(x[[spacevar]], x[[class]], drop = TRUE)
+    ukey <- interaction(unit[[spacevar]], unit[[class]], drop = TRUE)
+    x$CAST_fold <- unit$CAST_fold[match(key, ukey)]
     spacevar <- "CAST_fold"  }
 
   if(!is.na(spacevar)){
