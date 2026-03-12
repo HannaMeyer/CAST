@@ -369,19 +369,22 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
       bestmodels <- output_df$run[which(output_df$value==x$selectedvars_perf)]
     }else{
 
-      bestmodels <- c()
-      for (i in unique(output_df$nvar)){
-        if (x$maximize){
-          bestmodels <- c(bestmodels,
-                          output_df$run[output_df$nvar==i][which(output_df$value[
-                            output_df$nvar==i]==max(output_df$value[output_df$nvar==i]))][1])
-        }else{
-          bestmodels <- c(bestmodels,
-                          output_df$run[output_df$nvar==i][which(output_df$value[
-                            output_df$nvar==i]==min(output_df$value[output_df$nvar==i]))][1])
+      u <- unique(output_df$nvar)
+      bestmodels <- integer(length(u))
+
+      for (j in seq_along(u)) {
+        idx <- output_df$nvar == u[j]
+        vals <- output_df$value[idx]
+        runs <- output_df$run[idx]
+        
+        if (x$maximize) {
+          bestmodels[j] <- runs[which.max(vals)]
+        } else {
+          bestmodels[j] <- runs[which.min(vals)]
         }
       }
-      bestmodels <- bestmodels[1:(length(x$selectedvars)-1)]
+
+      bestmodels <- bestmodels[1:(length(x$selectedvars) - 1)]
     }
 
     if (!reverse){
