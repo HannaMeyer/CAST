@@ -705,10 +705,11 @@ ffs <- function (predictors,
   ## return best model --------
 
 
-
   bestmodel$selectedvars <- selectedvars
-  bestmodel$selectedvars_perf <- selectedvars_perf
-  bestmodel$selectedvars_perf_SE <- selectedvars_SE
+  print(selectedvars_perf)
+  print(length(bestmodel$selectedvars))
+  bestmodel$selectedvars_perf <- selectedvars_perf[1:(length(bestmodel$selectedvars)-1)]
+  bestmodel$selectedvars_perf_SE <- selectedvars_SE[1:(length(bestmodel$selectedvars)-1)]
   if(globalval){
     bestmodel$selectedvars_perf_SE <- NA
   }
