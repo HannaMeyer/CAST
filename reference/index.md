@@ -39,17 +39,21 @@
   [`plot(`*`<geodist>`*`)`](https://hannameyer.github.io/CAST/reference/plot.md)
   [`plot(`*`<errorModel>`*`)`](https://hannameyer.github.io/CAST/reference/plot.md)
   : Plot CAST classes
-- [`print(`*`<trainDI>`*`)`](https://hannameyer.github.io/CAST/reference/print.md)
-  [`show.trainDI()`](https://hannameyer.github.io/CAST/reference/print.md)
-  [`print(`*`<aoa>`*`)`](https://hannameyer.github.io/CAST/reference/print.md)
-  [`show.aoa()`](https://hannameyer.github.io/CAST/reference/print.md)
-  [`print(`*`<nndm>`*`)`](https://hannameyer.github.io/CAST/reference/print.md)
-  [`show.nndm()`](https://hannameyer.github.io/CAST/reference/print.md)
-  [`print(`*`<knndm>`*`)`](https://hannameyer.github.io/CAST/reference/print.md)
-  [`show.knndm()`](https://hannameyer.github.io/CAST/reference/print.md)
-  [`print(`*`<ffs>`*`)`](https://hannameyer.github.io/CAST/reference/print.md)
-  [`show.ffs()`](https://hannameyer.github.io/CAST/reference/print.md) :
-  Print CAST classes
+- [`print(`*`<aoa>`*`)`](https://hannameyer.github.io/CAST/reference/print.aoa.md)
+  [`show.aoa()`](https://hannameyer.github.io/CAST/reference/print.aoa.md)
+  : Print AoA objects
+- [`print(`*`<ffs>`*`)`](https://hannameyer.github.io/CAST/reference/print.ffs.md)
+  [`show.ffs()`](https://hannameyer.github.io/CAST/reference/print.ffs.md)
+  : Print ffs objects
+- [`print(`*`<knndm>`*`)`](https://hannameyer.github.io/CAST/reference/print.knndm.md)
+  [`show.knndm()`](https://hannameyer.github.io/CAST/reference/print.knndm.md)
+  : Print knndm objects
+- [`print(`*`<nndm>`*`)`](https://hannameyer.github.io/CAST/reference/print.nndm.md)
+  [`show.nndm()`](https://hannameyer.github.io/CAST/reference/print.nndm.md)
+  : Print nndm objects
+- [`print(`*`<trainDI>`*`)`](https://hannameyer.github.io/CAST/reference/print.trainDI.md)
+  [`show.trainDI()`](https://hannameyer.github.io/CAST/reference/print.trainDI.md)
+  : Print trainDI objects
 - [`splotdata`](https://hannameyer.github.io/CAST/reference/splotdata.md)
   : sPlotOpen Data of Species Richness
 - [`trainDI()`](https://hannameyer.github.io/CAST/reference/trainDI.md)

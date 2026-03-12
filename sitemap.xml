@@ -24,7 +24,11 @@
 <url><loc>https://hannameyer.github.io/CAST/reference/nndm.html</loc></url>
 <url><loc>https://hannameyer.github.io/CAST/reference/normalize_DI.html</loc></url>
 <url><loc>https://hannameyer.github.io/CAST/reference/plot.html</loc></url>
-<url><loc>https://hannameyer.github.io/CAST/reference/print.html</loc></url>
+<url><loc>https://hannameyer.github.io/CAST/reference/print.aoa.html</loc></url>
+<url><loc>https://hannameyer.github.io/CAST/reference/print.ffs.html</loc></url>
+<url><loc>https://hannameyer.github.io/CAST/reference/print.knndm.html</loc></url>
+<url><loc>https://hannameyer.github.io/CAST/reference/print.nndm.html</loc></url>
+<url><loc>https://hannameyer.github.io/CAST/reference/print.trainDI.html</loc></url>
 <url><loc>https://hannameyer.github.io/CAST/reference/splotdata.html</loc></url>
 <url><loc>https://hannameyer.github.io/CAST/reference/trainDI.html</loc></url>
 </urlset>
