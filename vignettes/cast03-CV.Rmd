@@ -33,7 +33,7 @@ set.seed(1234)
 
 Cross-Validation (CV) is important for many tasks in the predictive mapping workflow, including feature selection (see `CAST::ffs` and `CAST::bss`), hyperparameter tuning, area of applicability estimation (see `CAST::aoa`), and error profiling (see `CAST::errorProfiles`). Moreover, in the unfortunate case where no independent samples are available to estimate the performance of the final predicted surfaces, it can be used as a last resort to obtain an estimate of the map error.
 
-The objective of this vignette is to showcase the CV methods implemented in `CAST`. To do so, we will work with two datasets of annual average air temperature and fine Particulate Matter (PM$_{2.5}$) air pollution in continental Spain for 2019, for which several predictors have been collected. For more details, check our [preprint](https://egusphere.copernicus.org/preprints/2024/egusphere-2024-138/) where the dataset is described in detail. 
+The objective of this vignette is to showcase the CV methods implemented in `CAST`. To do so, we will work with two datasets of annual average air temperature and fine Particulate Matter (PM$_{2.5}$) air pollution in continental Spain for 2019, for which several predictors have been collected. For more details, check [Milà et al. (2024)](https://doi.org/10.5194/gmd-17-6007-2024) where the dataset is described in detail. 
 
 ```{r read data, fig.width=5, fig.height=7}
 # Read data
@@ -107,7 +107,7 @@ grid.arrange(p1, p2, nrow=2)
 
 The CV methods included in `CAST` are named Nearest Neighbour Distance Matching (NNDM), and their goal is to match the ECDF of nearest neighbour distances found during CV to the ECDF found during prediction we just saw in the last plots. For the geographical space, we will match geographical or Euclidean distances distributions depending on the CRS of the input data (in our examples we have a projected CRS so Euclidean distances are used).
 
-The first of the two NNDM methods is NNDM LOO CV. It is a greedy, iterative algorithm that starts with a standard LOO CV and repetitively compares the prediction and CV ECDFs. When it finds that, for a given distance, the value of the ECDF during the CV is greater than the ECDF during the prediction, it excludes points in the neighbourhood of the sample being validated until a match is achieved. In practice, NNDM will exclude points whenever training data are clustered, while it will generalize to a standard LOO CV when data are random or regularly-distributed. All details regarding the algorithm and a simulation study evaluating its performance can be found in the article [here](https://doi.org/10.5194/egusphere-2023-1308) (also listed at the end of the vignette).
+The first of the two NNDM methods is NNDM LOO CV. It is a greedy, iterative algorithm that starts with a standard LOO CV and repetitively compares the prediction and CV ECDFs. When it finds that, for a given distance, the value of the ECDF during the CV is greater than the ECDF during the prediction, it excludes points in the neighbourhood of the sample being validated until a match is achieved. In practice, NNDM will exclude points whenever training data are clustered, while it will generalize to a standard LOO CV when data are random or regularly-distributed. All details regarding the algorithm and a simulation study evaluating its performance can be found in the article [here](https://doi.org/10.5194/gmd-17-5897-2024) (also listed at the end of the vignette).
 
 Now, let's run the NNDM LOO CV algorithm for our two datasets and check their output. Here, we use the polygon of Spain as `modeldomain` from which 1,000 are regularly sampled as prediction points. However, it is also be possible to pass to the function a set of prediction points previously defined, for example a set of raster cell centroids (check argument `predpoints`). We run it first for temperature:
 
@@ -221,7 +221,7 @@ The goal of kNNDM is exactly the same as NNDM LOO CV: to match the ECDF of neare
 
 Among all candidate $q$, we choose the fold configuration that offers the best match between the two ECDFs. We choose it based on the Wassterstein's W statistic, which is the integral of the absolute value differences between the two ECDFs. The lower the W, the better the match. kNNDM will yield configurations with a spatial structure for clustered training samples while it will generalize to a standard random k-fold CV whenever the training data are random or regularly-distributed.
 
-If you want to learn all the finer details of kNNDM and check our simulation study evaluating its performance, [here](https://doi.org/10.5194/egusphere-2023-1308) is the link to the document (also listed at the end of the vignette). Now let's apply kNNDM to our data! First, for temperature with the default clustering algorithm:
+If you want to learn all the finer details of kNNDM and check our simulation study evaluating its performance, [here](https://doi.org/10.5194/gmd-17-5897-2024) is the link to the document (also listed at the end of the vignette). Now let's apply kNNDM to our data! First, for temperature with the default clustering algorithm:
 
 ```{r kNNDM temp, fig.width=6, fig.height=4}
 temp_knndm <- knndm(temperature, k = 5, modeldomain = spain, samplesize = 1000, 
@@ -338,5 +338,6 @@ The ideas underlying NNDM methods in the geographical space can be transferred i
 
 ## Further reading
 
-* Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.  https://doi.org/10.1111/2041-210X.13851
-* Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM: k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2023-1308
+* Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour Distance Matching Leave-One-Out Cross-Validation for map validation. Methods in Ecology and Evolution 00, 1– 13.  https://doi.org/10.1111/2041-210X.13851.
+
+* Linnenbrink, J., Milà, C., Ludwig, M., Meyer, H. (2024): kNNDM CV: k-fold Nearest Neighbour Distance Matching Cross-Validation for map accuracy estimation. Geosci Model Dev., 17, 5897–5912. https://doi.org/10.5194/gmd-17-5897-2024.
