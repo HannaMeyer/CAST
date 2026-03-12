@@ -16,6 +16,7 @@
 #' @param trainDI A trainDI object. Optional if \code{\link{trainDI}} was calculated beforehand.
 #' @param train A data.frame containing the data used for model training. Optional. Only required when no model is given
 #' @param weight A data.frame containing weights for each variable. Optional. Only required if no model is given.
+#' @param ... ignored
 #' @param variables character vector of predictor variables. if "all" then all variables
 #' of the model are used or if no model is given then of the train dataset.
 #' @param CVtest list or vector. Either a list with the length of the number of cross-validation folds where each element contains the row indices of the data points used for testing during the cross validation iteration (i.e. held back data).
@@ -151,12 +152,73 @@
 #'            CVtest = rsmp_cv$instance[order(row_id)]$fold)
 #'
 #' }
-#' @export aoa
-#' @aliases aoa
+
+#' @export
+#' @name aoa
+aoa = function(newdata, model=NA, ...) UseMethod("aoa") # the generic
+
+#' @export
+#' @name aoa
+aoa.stars = function(newdata, model=NA, ...) {
+    if (!requireNamespace("stars", quietly = TRUE))
+      stop("package stars required: install that first")
+    res = aoa(methods::as(newdata, "SpatRaster"), model=model, ...)
+	# convert back to stars...
+    res$DI <- stars::st_as_stars(res$DI)
+    res$AOA <- stars::st_as_stars(res$AOA)
+    if (!is.null(res$LPD)) {
+        res$LPD <- stars::st_as_stars(res$LPD)
+    }
+	res
+}
+
+#' @export
+#' @name aoa
+aoa.Raster = function(newdata, model=NA, ...) {
+    stop("Raster will soon not longer be supported. Use terra or stars instead")
+    aoa(methods::as(newdata, "SpatRaster"), model=model, ...)
+}
+
+#' @export
+#' @name aoa
+aoa.SpatRaster = function(newdata, model=NA, ...) {
+  #### order data:
+  out_template = newdata[[1]]
+  if (any(is.factor(newdata)))
+    newdata[[which(is.factor(newdata))]] <- as.numeric(newdata[[which(is.factor(newdata))]])
+  # call the data.frame method:
+  res = aoa(terra::as.data.frame(newdata, na.rm = FALSE), model=model, ...)
+
+  # convert DI:
+  DI = out_template
+  terra::values(DI) <- res$DI
+  DI <- terra::mask(DI, out_template)
+  names(DI) = "DI"
+  res$DI = DI
+
+  # convert AOA:
+  AOA = out_template
+  terra::values(AOA) <- res$AOA
+  AOA <- terra::mask(AOA, out_template)
+  names(AOA) = "AOA"
+  res$AOA = AOA
+
+  if (!is.null(res$LPD)) {
+    # convert LPD:
+    LPD <- out_template
+    terra::values(LPD) <- res$LPD
+    names(LPD) = "LPD"
+	res$LPD = LPD
+  }
+  res
+}
 
 
-aoa <- function(newdata,
+#' @export
+#' @name aoa
+aoa.data.frame <- function(newdata,
                 model=NA,
+				...,
                 trainDI = NA,
                 train=NULL,
                 weight=NA,
@@ -174,29 +236,14 @@ aoa <- function(newdata,
                 verbose = TRUE,
                 algorithm = "brute") {
 
-  # handling of different raster formats
-  as_stars <- FALSE
   leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
-
-  if (inherits(newdata, "stars")) {
-    if (!requireNamespace("stars", quietly = TRUE))
-      stop("package stars required: install that first")
-    newdata <- methods::as(newdata, "SpatRaster")
-    as_stars <- TRUE
-  }
-  if (inherits(newdata, "Raster")) {
-   # if (!requireNamespace("raster", quietly = TRUE))
-  #    stop("package raster required: install that first")
-    message("Raster will soon not longer be supported. Use terra or stars instead")
-    newdata <- methods::as(newdata, "SpatRaster")
-  }
 
   calc_LPD <- LPD
   # validate maxLPD input
   if (LPD == TRUE) {
     if (is.numeric(maxLPD)) {
       if (maxLPD <= 0) {
-        stop("maxLPD can not be negative or equal to 0. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+        stop("maxLPD cannot be negative or equal to 0. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
       }
       if (maxLPD <= 1) {
         if (inherits(model, "train")) {
@@ -216,7 +263,7 @@ aoa <- function(newdata,
         }
       }
       if ((maxLPD > length(if (inherits(model, "train")) { model$trainingData[[1]] } else if (!is.null(train)) { train[[1]] })) || maxLPD %% 1 != 0) {
-        stop("maxLPD can not be bigger than the number of training samples. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+        stop("maxLPD cannot be bigger than the number of training samples. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
       }
     } else {
       stop("maxLPD must be a number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
@@ -226,7 +273,6 @@ aoa <- function(newdata,
   if (parallel & Sys.info()["sysname"] != "Linux") {
     stop("Paralellization only works for UNIX-alike systems. Please use single core computation.")
   }
-
 
   # if not provided, compute train DI
   if(!inherits(trainDI, "trainDI")) {
@@ -241,7 +287,6 @@ aoa <- function(newdata,
     trainDI$maxLPD <- maxLPD
   }
 
-
   # check if variables are in newdata
   if(any(trainDI$variables %in% names(newdata)==FALSE)){
     if(leading_digit){
@@ -251,6 +296,7 @@ aoa <- function(newdata,
   }
 
 
+  # TODO:
   # Prepare output as either as RasterLayer or vector:
   out <- NA
   if (inherits(newdata, "SpatRaster")){
@@ -258,17 +304,7 @@ aoa <- function(newdata,
     names(out) <- "DI"
   }
 
-
-
-  #### order data:
-  if (inherits(newdata, "SpatRaster")){
-    if (any(is.factor(newdata))){
-      newdata[[which(is.factor(newdata))]] <- as.numeric(newdata[[which(is.factor(newdata))]])
-    }
-    newdata <- terra::as.data.frame(newdata,na.rm=FALSE)
-  }
   newdata <- newdata[,na.omit(match(trainDI$variables, names(newdata))),drop = FALSE]
-
 
   ## Handling of categorical predictors:
   catvars <- trainDI$catvars
@@ -459,57 +495,14 @@ aoa <- function(newdata,
     message("Computing AOA...")
   }
 
-  #### Create Mask for AOA and return statistics
-  if (inherits(out, "SpatRaster")) {
-    terra::values(out) <- DI_out
-
-    AOA <- out
-    terra::values(AOA) <- 1
-    AOA[out > trainDI$thres] <- 0
-    AOA <- terra::mask(AOA, out)
-    names(AOA) = "AOA"
-
-    if (calc_LPD == TRUE) {
-      LPD <- out
-      terra::values(LPD) <- LPD_out
-      names(LPD) = "LPD"
-    }
-
-
-    # handling of different raster formats.
-    if (as_stars) {
-      out <- stars::st_as_stars(out)
-      AOA <- stars::st_as_stars(AOA)
-
-      if (calc_LPD == TRUE) {
-        LPD <- stars::st_as_stars(LPD)
-      }
-    }
-
-  } else{
-    out <- DI_out
-    AOA <- rep(1, length(out))
-    AOA[out > trainDI$thres] <- 0
-
-    if (calc_LPD == TRUE) {
-      LPD <- LPD_out
-    }
-  }
-
-
-  #  # used in old versions of the AOA. eventually remove the attributes
-  #  attributes(AOA)$aoa_stats <- list("Mean_train" = trainDI$trainDist_avrgmean,
-  #                                    "threshold" = trainDI$thres)
-  #  attributes(AOA)$TrainDI <- trainDI$trainDI
-
   result <- list(
     parameters = trainDI,
-    DI = out,
-    AOA = AOA
+    DI = DI_out,
+    AOA = ifelse(DI_out > trainDI$thres, 0L, 1L)
   )
 
   if (calc_LPD == TRUE) {
-    result$LPD <- LPD
+    result$LPD <- LPD_out
     if (indices) {
       result$indices <- Indices_out
     }

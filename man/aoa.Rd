@@ -2,11 +2,24 @@
 % Please edit documentation in R/aoa.R
 \name{aoa}
 \alias{aoa}
+\alias{aoa.stars}
+\alias{aoa.Raster}
+\alias{aoa.SpatRaster}
+\alias{aoa.data.frame}
 \title{Area of Applicability}
 \usage{
-aoa(
+aoa(newdata, model = NA, ...)
+
+\method{aoa}{stars}(newdata, model = NA, ...)
+
+\method{aoa}{Raster}(newdata, model = NA, ...)
+
+\method{aoa}{SpatRaster}(newdata, model = NA, ...)
+
+\method{aoa}{data.frame}(
   newdata,
   model = NA,
+  ...,
   trainDI = NA,
   train = NULL,
   weight = NA,
@@ -31,6 +44,8 @@ the model was meant to make predictions for.}
 
 \item{model}{A train object created with caret used to extract weights from (based on variable importance) as well as cross-validation folds.
 See examples for the case that no model is available or for models trained via e.g. mlr3.}
+
+\item{...}{ignored}
 
 \item{trainDI}{A trainDI object. Optional if \code{\link{trainDI}} was calculated beforehand.}
 
