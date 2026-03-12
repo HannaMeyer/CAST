@@ -167,5 +167,65 @@ test_that("ffs works for withinSE = TRUE",{
 
 
 
+  test_that("ffs works with default arguments in parallel",{
+    skip_on_cran()
+    if (.Platform$OS.type != "unix") {
+      testthat::skip("Test only runs on Unix systems")
+    }
+    skip_if_not_installed("randomForest")
+    data("splotdata")
+    splotdata = splotdata |> sf::st_drop_geometry()
+    set.seed(1)
+    selection = ffs(predictors = splotdata[,6:12],
+                    response = splotdata$Species_richness,
+                    seed = 1,
+                    verbose = FALSE,
+                    ntree = 5,
+                    cores=2,
+                    tuneLength = 1)
+
+    expect_identical(selection$selectedvars, c("bio_6", "bio_12"))
+
+  })
+
+  test_that("ffs works with earlyStopping==FALSE ",{
+    skip_on_cran()
+    skip_if_not_installed("randomForest")
+    data("splotdata")
+    splotdata = splotdata |> sf::st_drop_geometry()
+    set.seed(1)
+    selection = ffs(predictors = splotdata[,6:12],
+                    response = splotdata$Species_richness,
+                    seed = 1,
+                    verbose = FALSE,
+                    ntree = 5,
+                    tuneLength = 1,
+                    earlyStopping=FALSE)
+    expect_identical(as.integer(nrow(selection$perf_all)), as.integer(36))
+    expect_identical(selection$selectedvars, c("bio_6", "bio_12","bio_5", "bio_4"))
+
+  })
+
+  test_that("ffs works with earlyStopping==FALSE in parallel",{
+    skip_on_cran()
+    if (.Platform$OS.type != "unix") {
+      testthat::skip("Test only runs on Unix systems")
+    }
+    skip_if_not_installed("randomForest")
+    data("splotdata")
+    splotdata = splotdata |> sf::st_drop_geometry()
+    set.seed(1)
+    selection = ffs(predictors = splotdata[,6:12],
+                    response = splotdata$Species_richness,
+                    seed = 1,
+                    verbose = FALSE,
+                    ntree = 5,
+                    cores=2,
+                    tuneLength = 1,
+                    earlyStopping=FALSE)
+    expect_identical(as.integer(nrow(selection$perf_all)), as.integer(36))
+    expect_identical(selection$selectedvars, c("bio_6", "bio_12"))
+
+  })
 
 

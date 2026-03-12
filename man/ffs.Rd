@@ -13,6 +13,7 @@ ffs(
   globalval = FALSE,
   withinSE = FALSE,
   minVar = 2,
+  earlyStopping = TRUE,
   trControl = caret::trainControl(),
   tuneLength = 3,
   tuneGrid = NULL,
@@ -40,6 +41,9 @@ currently best models Standard error}
 
 \item{minVar}{Numeric. Number of variables to combine for the first selection.
 See Details.}
+
+\item{earlyStopping}{Logical. Should the variable selection stop when none of the further
+variables increases the performance. If FALSE selection is continued.}
 
 \item{trControl}{see \code{\link[caret]{train}}}
 
