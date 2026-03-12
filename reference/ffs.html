@@ -213,6 +213,17 @@ See Meyer et al. (2018) and Meyer et al. (2019) for further details.</p>
 <span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">ffsmodel</span>,plotType<span class="op">=</span><span class="st">"selected"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># if you expect that more variables will improve the model,</span></span></span>
+<span class="r-in"><span><span class="co"># consider running ffs with earlyStopping=FALSE</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">ffsmodel</span> <span class="op">&lt;-</span> <span class="fu">ffs</span><span class="op">(</span><span class="va">splotdata</span><span class="op">[</span>,<span class="fl">6</span><span class="op">:</span><span class="fl">12</span><span class="op">]</span>, <span class="va">splotdata</span><span class="op">$</span><span class="va">Species_richness</span>, ntree <span class="op">=</span> <span class="fl">20</span>,</span></span>
+<span class="r-in"><span>  earlyStopping<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot.html">plot</a></span><span class="op">(</span><span class="va">ffsmodel</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ffsmodel</span><span class="op">$</span><span class="va">best_models_table</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># or perform model with target-oriented validation (LLO CV)</span></span></span>
 <span class="r-in"><span><span class="co">#the example is described in Gasch et al. (2015). The ffs approach for this dataset is described in</span></span></span>
 <span class="r-in"><span><span class="co">#Meyer et al. (2018). Due to high computation time needed, only a small and thus not robust example</span></span></span>
@@ -257,6 +268,7 @@ See Meyer et al. (2018) and Meyer et al. (2019) for further details.</p>
 <span class="r-in"><span><span class="va">model</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co">## on linux machines, you can also run the ffs in parallel with forks:</span></span></span>

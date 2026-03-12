@@ -402,7 +402,9 @@ kept. On the basis of this best model the predictor variables are
 iterativly increased and each of the remaining variables is tested for
 its improvement of the currently best model. The process stops if none
 of the remaining variables increases the model performance when added to
-the current best model.
+the current best model. Unless we assume that more than a single
+variable increases the performance. If so, we can run ffs with
+earlyStopping=FALSE which will prevent the model from stopping.
 
 So let’s run the ffs on our case study. This process will take 1-2
 minutes…

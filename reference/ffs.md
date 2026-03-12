@@ -195,6 +195,17 @@ plot(ffsmodel)
 plot(ffsmodel,plotType="selected")
 } # }
 
+# if you expect that more variables will improve the model,
+# consider running ffs with earlyStopping=FALSE
+
+if (FALSE) { # \dontrun{
+
+ffsmodel <- ffs(splotdata[,6:12], splotdata$Species_richness, ntree = 20,
+  earlyStopping=FALSE)
+plot(ffsmodel)
+ffsmodel$best_models_table
+} # }
+
 # or perform model with target-oriented validation (LLO CV)
 #the example is described in Gasch et al. (2015). The ffs approach for this dataset is described in
 #Meyer et al. (2018). Due to high computation time needed, only a small and thus not robust example
@@ -239,6 +250,7 @@ tuneLength=1, trControl=ctrl)
 model
 stopCluster(cl)
 } # }
+
 
 if (FALSE) { # \dontrun{
 ## on linux machines, you can also run the ffs in parallel with forks:
