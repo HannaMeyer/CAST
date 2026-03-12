@@ -8,17 +8,17 @@
 #' @author Marvin Ludwig, Hanna Meyer
 #' @export
 plot.trainDI = function(x, ...) {
-  ggplot(data.frame(TrainDI = x$trainDI), aes(x = .data[["TrainDI"]])) +
-    geom_density() +
-    geom_vline(aes(xintercept = x$threshold, linetype = "AOA_threshold")) +
-    scale_linetype_manual(
+  ggplot2::ggplot(data.frame(TrainDI = x$trainDI), ggplot2::aes(x = .data[["TrainDI"]])) +
+    ggplot2::geom_density() +
+    ggplot2::geom_vline(ggplot2::aes(xintercept = x$threshold, linetype = "AOA_threshold")) +
+    ggplot2::scale_linetype_manual(
       name = "",
       values = c(AOA_threshold = "dashed"),
       labels = "AOA threshold"
     ) +
-    ylab("Density") +
-    theme_bw() +
-    theme(legend.position = "bottom")
+    ggplot2::ylab("Density") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(legend.position = "bottom")
 }
 
 #' @name plot
@@ -27,8 +27,6 @@ plot.trainDI = function(x, ...) {
 #' @param samplesize numeric. How many prediction samples should be plotted?
 #' @param variable character. Variable for which to generate the density plot. 'DI' or 'LPD'
 #' @param ... other params
-#'
-#' @import ggplot2
 #'
 #' @author Marvin Ludwig, Hanna Meyer
 #'
@@ -72,24 +70,24 @@ plot.aoa = function(x, samplesize = 1000, variable = "DI", ...) {
 
     dfDI = rbind(trainDI, targetDI)
 
-    ggplot(
+    ggplot2::ggplot(
       dfDI,
-      aes(x = .data[["DI"]], group = .data[["what"]], fill = .data[["what"]])
+      ggplot2::aes(x = .data[["DI"]], group = .data[["what"]], fill = .data[["what"]])
     ) +
-      geom_density(adjust = 1.5, alpha = .4) +
-      scale_fill_discrete(name = "Set", palette = "Set1") +
-      geom_vline(aes(
+      ggplot2::geom_density(adjust = 1.5, alpha = .4) +
+      ggplot2::scale_fill_discrete(name = "Set", palette = "Set1") +
+      ggplot2::geom_vline(ggplot2::aes(
         xintercept = x$parameters$threshold,
         linetype = "AOA_threshold"
       )) +
-      scale_linetype_manual(
+      ggplot2::scale_linetype_manual(
         name = "",
         values = c(AOA_threshold = "dashed"),
         labels = "AOA threshold"
       ) +
-      ylab("Density") +
-      theme_bw() +
-      theme(legend.position = "bottom")
+      ggplot2::ylab("Density") +
+      ggplot2::theme_bw() +
+      ggplot2::theme(legend.position = "bottom")
   } else if (variable == "LPD") {
     trainLPD = data.frame(LPD = x$parameters$trainLPD, what = "trainLPD")
 
@@ -132,15 +130,15 @@ plot.aoa = function(x, samplesize = 1000, variable = "DI", ...) {
 
     dfLPD = rbind(trainLPD, targetLPD)
 
-    ggplot(
+    ggplot2::ggplot(
       dfLPD,
-      aes(x = .data[["LPD"]], group = .data[["what"]], fill = .data[["what"]])
+      ggplot2::aes(x = .data[["LPD"]], group = .data[["what"]], fill = .data[["what"]])
     ) +
-      geom_density(adjust = 1.5, alpha = 0.4) +
-      scale_fill_discrete(name = "Set", palette = "Set1") +
-      ylab("Density") +
-      theme_bw() +
-      theme(legend.position = "bottom")
+      ggplot2::geom_density(adjust = 1.5, alpha = 0.4) +
+      ggplot2::scale_fill_discrete(name = "Set", palette = "Set1") +
+      ggplot2::ylab("Density") +
+      ggplot2::theme_bw() +
+      ggplot2::theme(legend.position = "bottom")
   } else {
     stop("argument 'variable' needs to be either 'DI' or 'LPD'")
   }
@@ -286,7 +284,7 @@ plot.nndm <- function(x, type = "strict", stat = "ecdf", ...) {
     }
   }
 
-  p
+  return(p)
 }
 
 #' @name plot
@@ -395,7 +393,7 @@ plot.knndm <- function(x, type = "strict", stat = "ecdf", ...) {
     }
   }
 
-  p
+  return(p)
 }
 
 #' Plot results of a Forward feature selection or best subset selection
@@ -453,9 +451,9 @@ plot.ffs <- function(x,plotType="all",palette=hcl.colors,reverse=FALSE,
       perfse = x$selectedvars_perf_SE
     )
 
-    p <- ggplot(plot_df, aes(x = .data[["perf"]], y = .data[["labels"]])) +
-      geom_point() +
-      geom_segment(aes(
+    p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = .data[["perf"]], y = .data[["labels"]])) +
+      ggplot2::geom_point() +
+      ggplot2::geom_segment(ggplot2::aes(
         x = .data[["perf"]] - .data[["perfse"]],
         xend = .data[["perf"]] + .data[["perfse"]],
         y = .data[["labels"]],
@@ -464,10 +462,10 @@ plot.ffs <- function(x,plotType="all",palette=hcl.colors,reverse=FALSE,
       ggplot2::theme_bw() +
       ggplot2::theme(
         legend.position = "bottom",
-        plot.margin = unit(c(0, 0.5, 0, 0), "cm")
-      ) + 
-      xlab(x$metric) +
-      ylab(NULL)
+        plot.margin = grid::unit(c(0, 0.5, 0, 0), "cm")
+      ) +
+      ggplot2::xlab(x$metric) +
+      ggplot2::ylab(NULL)
     return(p)
   } else {
     output_df <- x$perf_all
@@ -630,7 +628,7 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
     xlabs <- paste0("temporal distances (", unit, ")")
   }
   if (stat == "density") {
-    p <- ggplot2::ggplot(data = x, aes(x = dist, group = what, fill = what)) +
+    p <- ggplot2::ggplot(data = x, ggplot2::aes(x = dist, group = what, fill = what)) +
       ggplot2::geom_density(adjust = 1.5, alpha = .5, stat = stat, lwd = 0.3) +
       ggplot2::scale_fill_manual(
         name = "distance function",
@@ -641,10 +639,10 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
       ggplot2::xlab(xlabs) +
       ggplot2::theme(
         legend.position = "bottom",
-        plot.margin = unit(c(0, 0.5, 0, 0), "cm")
+        plot.margin = grid::unit(c(0, 0.5, 0, 0), "cm")
       )
   } else if (stat == "ecdf") {
-    p <- ggplot2::ggplot(data = x, aes(x = dist, group = what, col = what)) +
+    p <- ggplot2::ggplot(data = x, ggplot2::aes(x = dist, group = what, col = what)) +
       ggplot2::geom_vline(xintercept = 0, lwd = 0.1) +
       ggplot2::geom_hline(yintercept = 0, lwd = 0.1) +
       ggplot2::geom_hline(yintercept = 1, lwd = 0.1) +
@@ -658,10 +656,10 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
       ggplot2::ylab("ECDF") +
       ggplot2::theme(
         legend.position = "bottom",
-        plot.margin = unit(c(0, 0.5, 0, 0), "cm")
+        plot.margin = grid::unit(c(0, 0.5, 0, 0), "cm")
       )
   }
-  p
+  return(p)
 }
 
 #' @name plot
@@ -685,27 +683,27 @@ plot.errorModel <- function(x, ...){
     what = "model"
   )
 
-  p = ggplot() +
-    geom_point(
+  p = ggplot2::ggplot() +
+    ggplot2::geom_point(
       data = performance,
-      mapping = aes(
+      mapping = ggplot2::aes(
         x = .data[[variable]],
         y = .data[["metric"]],
         shape = .data[["what"]]
       )
     ) +
-    geom_line(
+    ggplot2::geom_line(
       data = model_line,
-      mapping = aes(
+      mapping = ggplot2::aes(
         x = .data[["variable"]],
         y = .data[["metric"]],
         linetype = .data[["what"]]
       ),
       lwd = 1
     ) +
-    labs(x = variable, y = metric) +
-    theme_bw() +
-    theme(legend.title = element_blank(), legend.position = "bottom")
+    ggplot2::labs(x = variable, y = metric) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(legend.title = ggplot2::element_blank(), legend.position = "bottom")
 
   return(p)
 
