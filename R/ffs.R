@@ -705,11 +705,15 @@ ffs <- function (predictors,
   ## return best model --------
 
 
-  bestmodel$selectedvars <- selectedvars
-  print(selectedvars_perf)
-  print(length(bestmodel$selectedvars))
-  bestmodel$selectedvars_perf <- selectedvars_perf[1:(length(bestmodel$selectedvars)-1)]
-  bestmodel$selectedvars_perf_SE <- selectedvars_SE[1:(length(bestmodel$selectedvars)-1)]
+  bestmodel$selectedvars <- names(bestmodel$trainingData)[-which(names(bestmodel$trainingData)==".outcome")]
+
+  if(maximize){
+    best_models <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == max(x))), ]
+  }else{
+    best_models <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == min(x))), ]
+  }
+  bestmodel$selectedvars_perf <- best_models[1:(length(bestmodel$selectedvars)-1),metric]
+  bestmodel$selectedvars_perf_SE <- best_models$SE[1:(length(bestmodel$selectedvars)-1)]
   if(globalval){
     bestmodel$selectedvars_perf_SE <- NA
   }
