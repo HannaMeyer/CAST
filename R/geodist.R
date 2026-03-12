@@ -439,7 +439,6 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
  
   } else if(dist_space == "geographical") {
     islonglat <- if (is.na(sf::st_crs(x))) {
-      warning("Missing CRS of the modeldomain or prediction points. Assuming projected CRS.")
       FALSE
     } else {
       sf::st_is_longlat(sf::st_crs(x))
@@ -634,22 +633,23 @@ sampleFromArea <- function(modeldomain, samplesize, dist_space, variables, sampl
     # we then transform that reference and query to calculate the L2 distance in 
     # the transformed space, which is equivalent to the Mahalanobis distance in the original space.
     S_inv <- MASS::ginv(stats::cov(reference))
-    eig <- eigen(S_inv, symmetric = TRUE)
-    W <- eig$vectors %*% diag(1/sqrt(eig$values)) %*% t(eig$vectors)
-    reference = reference %*% W
-    if (!is.null(query)) {
-      query = query %*% W
+    chol_ok <- try(R <- chol(S_inv), silent = TRUE)
+    if (!inherits(chol_ok, "try-error")) {
+      A <- t(R)
+    } else {
+      eig <- eigen(S_inv, symmetric = TRUE)
+      vals <- pmax(eig$values, 0) # guard against tiny negative values
+      A <- eig$vectors %*% diag(sqrt(vals)) %*% t(eig$vectors)
     }
+
+    reference <- reference %*% A
+    if (!is.null(query)) query <- query %*% A
     dist_fun = "euclidean"
   }
 
 
   # calculate the distance matrix
-  if (is.null(reference)) {
-    dists <- philentropy::distance(query, method = dist_fun)
-    if (length(dists) == 1) return(dists)
-    diag(dists) <- NA # Exclude self-distance
-    } else if (is.null(query)) {
+  if (is.null(query)) {
     dists <- philentropy::distance(reference, method = dist_fun)
     if (length(dists) == 1) return(dists)
     diag(dists) <- NA # Exclude self-distance
