@@ -91,8 +91,8 @@ problematic in (at least) two aspects of predictive modelling:
 Overfitted models that are hardly able to make predictions beyond the
 location of the reference data, as well as overly optimistic error
 assessment. To approach these problems, CAST supports the well-known
-caret package (<a href="https://topepo.github.io/caret/index.html" class="external-link">Kuhn
-2018</a> to provide machine learning strategies that we designed for
+caret package (<a href="https://topepo.github.io/caret/index.html" class="external-link">Kuhn,
+2018</a>) to provide machine learning strategies that we designed for
 spatio-temporal data.</p>
 <p>In this tutorial, we will guide through the package and show how CAST
 can be used to train spatial prediction models including objective error
@@ -100,7 +100,7 @@ estimation, detection of spatial overfitting and assessment of the area
 of applicability of the prediction models. In order to follow this
 tutorial, we assume that the reader is familiar with the basics of
 predictive modelling nicely explained in <a href="https://doi.org/10.1007/978-1-4614-6849-3" class="external-link">Kuhn and Johnson
-2013</a> as well as machine learning applications via the caret
+(2013)</a> as well as machine learning applications via the caret
 package.</p>
 </div>
 <div class="section level3">
@@ -132,7 +132,7 @@ spatially-continuous map of plant species richness for South America. As
 reference data, we use plant species richness data from plot-based
 vegetation surveys that are compiled in the sPlotOpen database described
 in <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/geb.13346" class="external-link">Sabatini
-et al. 2021</a> and made available in the CAST package. We will use
+et al. (2021)</a> and made available in the CAST package. We will use
 WorldClim climatic variables and elevation as predictors, assuming that
 they are relevant drivers of species richness. We will use Random
 Forests as a machine learning algorithm in this tutorial.</p>
@@ -288,8 +288,8 @@ this out, we need to repeatedly leave larger spatial regions of one or
 more vegetation plots out and use them as test data during CV. Several
 suggestions of spatial CV exist. CAST implements a straightforward way
 (CAST::createSpaceTimeFolds) and the sophisticated method of nearest
-neighbor distance matching (<a href="https://doi.org/10.1111/2041-210X.13851" class="external-link">Mila et al 2022</a>, <a href="https://egusphere.copernicus.org/preprints/2023/egusphere-2023-1308/" class="external-link">Linnenbrink
-et al 2023</a>) as either leave-one-out CV (CAST::nndm) or as k-fold CV
+neighbor distance matching (<a href="https://doi.org/10.1111/2041-210X.13851" class="external-link">Mila et al., 2022</a>; <a href="https://doi.org/10.5194/gmd-17-5897-2024" class="external-link">Linnenbrink et al.,
+2024</a>) as either leave-one-out CV (CAST::nndm) or as k-fold CV
 (CAST::knndm).</p>
 <p>CAST’s function “CreateSpaceTimeFolds” is designed to provide index
 arguments used by caret’s trainControl. The index defines which data
@@ -387,9 +387,9 @@ what was expected from the random CV.</p>
 <p>Apparently, there is considerable overfitting in the model, causing a
 good random performance but a poor performance in view to new locations.
 This might partly be attributed to the choice of variables where we must
-suspect that certain variables are misinterpreted by the model (see <a href="https://doi.org/10.1016/j.envsoft.2017.12.001" class="external-link">Meyer et al
-2018</a> or <a href="https://www.youtube.com/watch?v=mkHlmYEzsVQ" class="external-link">talk
-at the OpenGeoHub summer school 2019</a>).</p>
+suspect that certain variables are misinterpreted by the model (see <a href="https://doi.org/10.1016/j.envsoft.2017.12.001" class="external-link">Meyer et
+al. (2018)</a> or <a href="https://www.youtube.com/watch?v=mkHlmYEzsVQ" class="external-link">talk at the
+OpenGeoHub summer school 2019</a>).</p>
 <p>Let’s have a look at the variable importance ranking of Random
 Forest. Assuming that certain variables are misinterpreted by the
 algorithm we should be able to produce a higher LLO performance when
@@ -485,7 +485,7 @@ species richness?</p>
 entire study area of if there are locations that are very different in
 their predictor properties to what the model has learned from. See more
 details in the vignette on the Area of applicability and <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link">Meyer and Pebesma
-2021</a>.</p>
+(2021)</a>.</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">### AOA for which the spatial CV error applies:</span></span>
 <span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">ffsmodel</span>,LPD <span class="op">=</span> <span class="cn">TRUE</span>, verbose<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
@@ -578,12 +578,12 @@ small changes in the settings.</p>
 </h3>
 <ul>
 <li><p><a href="https://hannameyer.github.io/CAST/">Tutorials for this
-package</a></p></li>
+package</a>.</p></li>
 <li><p>The talk from the OpenGeoHub summer school 2019 on spatial
 validation and variable selection: <a href="https://www.youtube.com/watch?v=mkHlmYEzsVQ" class="external-link uri">https://www.youtube.com/watch?v=mkHlmYEzsVQ</a>.</p></li>
 <li><p>Tutorial (<a href="https://youtu.be/EyP04zLe9qo" class="external-link uri">https://youtu.be/EyP04zLe9qo</a>) and Lecture (<a href="https://youtu.be/OoNH6Nl-X2s" class="external-link uri">https://youtu.be/OoNH6Nl-X2s</a>) recording from OpenGeoHub
 summer school 2020 on the area of applicability. As well as talk at the
-OpenGeoHub summer school 2021: <a href="https://av.tib.eu/media/54879" class="external-link uri">https://av.tib.eu/media/54879</a></p></li>
+OpenGeoHub summer school 2021: <a href="https://av.tib.eu/media/54879" class="external-link uri">https://av.tib.eu/media/54879</a>.</p></li>
 <li><p>Talk and tutorial from the OpenGeoHub 2022 summer school on
 Machine learning-based maps of the environment - challenges of
 extrapolation and overfitting, including discussions on the area of
@@ -600,14 +600,14 @@ cross-validation (<a href="https://doi.org/10.5446/59412" class="external-link u
 <ul>
 <li><p>Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest
 Neighbour Distance Matching Leave-One-Out Cross-Validation for map
-validation. Methods in Ecology and Evolution 00, 1– 13. <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link uri">https://doi.org/10.1111/2041-210X.13851</a></p></li>
-<li><p>Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM
-(2024):k-fold Nearest Neighbour Distance Matching Cross-Validation for
-map accuracy estimation. Geosci Model Dev., 17, 5897–5912. <a href="https://doi.org/10.5194/gmd-17-5897-2024" class="external-link uri">https://doi.org/10.5194/gmd-17-5897-2024</a>.</p></li>
+validation. Methods in Ecology and Evolution 00, 1– 13. <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link uri">https://doi.org/10.1111/2041-210X.13851</a>.</p></li>
+<li><p>Linnenbrink, J., Milà, C., Ludwig, M., Meyer, H. (2024): kNNDM
+CV: k-fold Nearest Neighbour Distance Matching Cross-Validation for map
+accuracy estimation. Geosci Model Dev., 17, 5897–5912. <a href="https://doi.org/10.5194/gmd-17-5897-2024" class="external-link uri">https://doi.org/10.5194/gmd-17-5897-2024</a>.</p></li>
 <li><p>Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauss, T.
 (2018): Improving performance of spatio-temporal machine learning models
 using forward feature selection and target-oriented validation.
-Environmental Modelling &amp; Software, 101, 1-9. <a href="https://doi.org/10.1016/j.envsoft.2017.12.001" class="external-link uri">https://doi.org/10.1016/j.envsoft.2017.12.001</a></p></li>
+Environmental Modelling &amp; Software, 101, 1-9. <a href="https://doi.org/10.1016/j.envsoft.2017.12.001" class="external-link uri">https://doi.org/10.1016/j.envsoft.2017.12.001</a>.</p></li>
 </ul>
 </div>
 <div class="section level4">
@@ -617,11 +617,11 @@ Environmental Modelling &amp; Software, 101, 1-9. <a href="https://doi.org/10.10
 <li><p>Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauss, T.
 (2018): Improving performance of spatio-temporal machine learning models
 using forward feature selection and target-oriented validation.
-Environmental Modelling &amp; Software, 101, 1-9. <a href="https://doi.org/10.1016/j.envsoft.2017.12.001" class="external-link uri">https://doi.org/10.1016/j.envsoft.2017.12.001</a></p></li>
+Environmental Modelling &amp; Software, 101, 1-9. <a href="https://doi.org/10.1016/j.envsoft.2017.12.001" class="external-link uri">https://doi.org/10.1016/j.envsoft.2017.12.001</a>.</p></li>
 <li><p>Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019):
 Importance of spatial predictor variable selection in machine learning
 applications - Moving from data reproduction to spatial prediction.
-Ecological Modelling. 411. <a href="https://doi.org/10.1016/j.ecolmodel.2019.108815" class="external-link uri">https://doi.org/10.1016/j.ecolmodel.2019.108815</a></p></li>
+Ecological Modelling. 411. <a href="https://doi.org/10.1016/j.ecolmodel.2019.108815" class="external-link uri">https://doi.org/10.1016/j.ecolmodel.2019.108815</a>.</p></li>
 </ul>
 </div>
 <div class="section level4">
@@ -630,8 +630,7 @@ Ecological Modelling. 411. <a href="https://doi.org/10.1016/j.ecolmodel.2019.108
 <ul>
 <li>Meyer, H., Pebesma, E. (2021). Predicting into unknown space?
 Estimating the area of applicability of spatial prediction models.
-Methods in Ecology and Evolution, 12, 1620– 1633. <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link uri">https://doi.org/10.1111/2041-210X.13650</a>
-</li>
+Methods in Ecology and Evolution, 12, 1620–1633. <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link uri">https://doi.org/10.1111/2041-210X.13650</a>.</li>
 </ul>
 </div>
 <div class="section level4">
@@ -640,7 +639,7 @@ Methods in Ecology and Evolution, 12, 1620– 1633. <a href="https://doi.org/10.
 <ul>
 <li><p>Meyer, H., Pebesma, E. (2022): Machine learning-based global maps
 of ecological variables and the challenge of assessing them. Nature
-Communications, 13. <a href="https://www.nature.com/articles/s41467-022-29838-9" class="external-link uri">https://www.nature.com/articles/s41467-022-29838-9</a></p></li>
+Communications, 13. <a href="https://www.nature.com/articles/s41467-022-29838-9" class="external-link uri">https://www.nature.com/articles/s41467-022-29838-9</a>.</p></li>
 <li><p>Ludwig, M., Moreno-Martinez, A., Hoelzel, N., Pebesma, E., Meyer,
 H. (2023): Assessing and improving the transferability of current global
 spatial prediction models. Global Ecology and Biogeography. <a href="https://doi.org/10.1111/geb.13635" class="external-link uri">https://doi.org/10.1111/geb.13635</a>.</p></li>

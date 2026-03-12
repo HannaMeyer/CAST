@@ -133,8 +133,10 @@ Let’s use the clustered data set to show how the distribution of spatial
 nearest neighbor distances during cross-validation can be visualized as
 well. Therefore, we first use the “default” way of a random 10-fold
 cross validation where we randomly split the reference data into
-training and test (see Meyer et al., 2018 and 2019 to see why this might
-not be a good idea).
+training and test (see Meyer et al.,
+[2018](https://doi.org/10.1016/j.envsoft.2017.12.001) and
+[2019](https://doi.org/10.1016/j.ecolmodel.2019.108815) to see why this
+might not be a good idea).
 
 ``` r
 randomfolds <- caret::createFolds(1:nrow(pts_clustered))
@@ -240,14 +242,14 @@ encountered during prediction.
 
 A good way to approximate the geographical prediction distances during
 the CV is to use Nearest Neighbour Distance Matching (NNDM) CV (see
-[Milà et al., 2022](https://doi.org/10.1111/2041-210X.13851) for more
+[Milà et al. (2022)](https://doi.org/10.1111/2041-210X.13851) for more
 details). NNDM CV is a variation of LOO CV in which the empirical
 distribution function of nearest neighbour distances found during
 prediction is matched during the CV process. Since NNDM CV is highly
 time consuming, the k-fold version may provide a good trade-off. See
-(see [Linnenbrink et al.,
-2023](https://doi.org/10.5194/egusphere-2023-1308) for more details on
-knndm)
+(see [Linnenbrink et
+al. (2024)](https://doi.org/10.5194/gmd-17-5897-2024) for more details
+on knndm)
 
 ``` r
 nndmfolds_clstr <- knndm(pts_clustered, modeldomain=co.ee, samplesize = 2000)
@@ -333,16 +335,18 @@ small, compared to what is required during prediction. Again the random
 CV is not representative for the prediction locations while spatial CV
 is doing a better job.
 
-### References
+### Further reading
 
 - Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of
   ecological variables and the challenge of assessing them. Nature
-  Communications 13, 2208. <https://doi.org/10.1038/s41467-022-29838-9>
+  Communications 13, 2208. <https://doi.org/10.1038/s41467-022-29838-9>.
+
 - Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour
   Distance Matching Leave-One-Out Cross-Validation for map validation.
   Methods in Ecology and Evolution 00, 1– 13.
   <https://doi.org/10.1111/2041-210X.13851>.
-- Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H. (2023): kNNDM:
+
+- Linnenbrink, J., Milà, C., Ludwig, M., Meyer, H. (2024): kNNDM CV:
   k-fold Nearest Neighbour Distance Matching Cross-Validation for map
-  accuracy estimation, EGUsphere \[preprint\],
-  <https://doi.org/10.5194/egusphere-2023-1308>.
+  accuracy estimation. Geosci Model Dev., 17, 5897–5912.
+  <https://doi.org/10.5194/gmd-17-5897-2024>.

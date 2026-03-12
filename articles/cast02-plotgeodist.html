@@ -189,8 +189,8 @@ locations, however, are on average much further away.</p>
 spatial nearest neighbor distances during cross-validation can be
 visualized as well. Therefore, we first use the “default” way of a
 random 10-fold cross validation where we randomly split the reference
-data into training and test (see Meyer et al., 2018 and 2019 to see why
-this might not be a good idea).</p>
+data into training and test (see Meyer et al., <a href="https://doi.org/10.1016/j.envsoft.2017.12.001" class="external-link">2018</a> and <a href="https://doi.org/10.1016/j.ecolmodel.2019.108815" class="external-link">2019</a> to see
+why this might not be a good idea).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">randomfolds</span> <span class="op">&lt;-</span> <span class="fu">caret</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/createDataPartition.html" class="external-link">createFolds</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pts_clustered</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="cast02-plotgeodist_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="595.2"></p>
@@ -277,13 +277,13 @@ what is encountered during prediction.</p>
 </h4>
 <p>A good way to approximate the geographical prediction distances
 during the CV is to use Nearest Neighbour Distance Matching (NNDM) CV
-(see <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link">Milà et al.,
-2022</a> for more details). NNDM CV is a variation of LOO CV in which
-the empirical distribution function of nearest neighbour distances found
-during prediction is matched during the CV process. Since NNDM CV is
-highly time consuming, the k-fold version may provide a good trade-off.
-See (see <a href="https://doi.org/10.5194/egusphere-2023-1308" class="external-link">Linnenbrink et al.,
-2023</a> for more details on knndm)</p>
+(see <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link">Milà et
+al. (2022)</a> for more details). NNDM CV is a variation of LOO CV in
+which the empirical distribution function of nearest neighbour distances
+found during prediction is matched during the CV process. Since NNDM CV
+is highly time consuming, the k-fold version may provide a good
+trade-off. See (see <a href="https://doi.org/10.5194/gmd-17-5897-2024" class="external-link">Linnenbrink et
+al. (2024)</a> for more details on knndm)</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nndmfolds_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/knndm.html">knndm</a></span><span class="op">(</span><span class="va">pts_clustered</span>, modeldomain<span class="op">=</span><span class="va">co.ee</span>, samplesize <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
 <span><span class="va">dist_clstr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">pts_clustered</span>,<span class="va">co.ee</span>,</span>
@@ -353,19 +353,18 @@ small, compared to what is required during prediction. Again the random
 CV is not representative for the prediction locations while spatial CV
 is doing a better job.</p>
 <div class="section level3">
-<h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+<h3 id="further-reading">Further reading<a class="anchor" aria-label="anchor" href="#further-reading"></a>
 </h3>
 <ul>
-<li>Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of
-ecological variables and the challenge of assessing them. Nature
-Communications 13, 2208. <a href="https://doi.org/10.1038/s41467-022-29838-9" class="external-link uri">https://doi.org/10.1038/s41467-022-29838-9</a>
-</li>
-<li>Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest
+<li><p>Meyer, H., Pebesma, E. (2022): Machine learning-based global maps
+of ecological variables and the challenge of assessing them. Nature
+Communications 13, 2208. <a href="https://doi.org/10.1038/s41467-022-29838-9" class="external-link uri">https://doi.org/10.1038/s41467-022-29838-9</a>.</p></li>
+<li><p>Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest
 Neighbour Distance Matching Leave-One-Out Cross-Validation for map
-validation. Methods in Ecology and Evolution 00, 1– 13. <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link uri">https://doi.org/10.1111/2041-210X.13851</a>.</li>
-<li>Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H. (2023): kNNDM:
-k-fold Nearest Neighbour Distance Matching Cross-Validation for map
-accuracy estimation, EGUsphere [preprint], <a href="https://doi.org/10.5194/egusphere-2023-1308" class="external-link uri">https://doi.org/10.5194/egusphere-2023-1308</a>.</li>
+validation. Methods in Ecology and Evolution 00, 1– 13. <a href="https://doi.org/10.1111/2041-210X.13851" class="external-link uri">https://doi.org/10.1111/2041-210X.13851</a>.</p></li>
+<li><p>Linnenbrink, J., Milà, C., Ludwig, M., Meyer, H. (2024): kNNDM
+CV: k-fold Nearest Neighbour Distance Matching Cross-Validation for map
+accuracy estimation. Geosci Model Dev., 17, 5897–5912. <a href="https://doi.org/10.5194/gmd-17-5897-2024" class="external-link uri">https://doi.org/10.5194/gmd-17-5897-2024</a>.</p></li>
 </ul>
 </div>
 </div>

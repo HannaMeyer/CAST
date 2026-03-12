@@ -2,8 +2,8 @@
 
 Working with machine learning methods and spatial data can be
 computationally expensive. Especially for larger scale applications like
-[global maps (Ludwig et. al 2024)](https://doi.org/10.1111/geb.13635) or
-high resolution data (e.g. from drones) computation times of CAST
+global maps [(Ludwig et al., 2024)](https://doi.org/10.1111/geb.13635)
+or high resolution data (e.g. from drones) computation times of CAST
 methods can be quite long. This vignette goes over various options for
 efficient spatial modelling workflows and parallelization options in
 order to speed up computation times of CAST methods.
@@ -36,10 +36,11 @@ ffsmodel <- ffs(predictors = splotdata[,6:16],
 
 Regardless of the system, you can speed up the model training in `ffs`,
 as [`caret::train`](https://rdrr.io/pkg/caret/man/train.html) has a
-[parallelization
-option](https://topepo.github.io/caret/parallel-processing.html) that
-trains models on multiple cores. The code below is adapated from
-[https://topepo.github.io/caret/parallel-processing](https://topepo.github.io/caret/parallel-processing.html)
+parallelization option ([see Chapter 9, “Parallel Processing” in Kuhn
+(2019)](https://topepo.github.io/caret/parallel-processing.html) for
+more information) that trains models on multiple cores. The code below
+is adapted from [Kuhn (2019), Chapter
+9](https://topepo.github.io/caret/parallel-processing.html)
 
 ``` r
 library(doParallel)

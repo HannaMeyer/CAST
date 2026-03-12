@@ -33,8 +33,8 @@ spatial prediction.*
 
 ## Tutorials
 
-- [Book chapter: The CAST package for training and assessment of spatial
-  prediction models in R](https://doi.org/10.1007/978-3-031-99665-8_11).
+- [Book chapter: The CAST Package for Training and Assessment of Spatial
+  Prediction Models](https://doi.org/10.1007/978-3-031-99665-8_11).
   [Preprint](https://arxiv.org/abs/2404.06978)
 
 - [Introduction to
@@ -58,7 +58,7 @@ spatial prediction.*
 - Tutorial (<https://youtu.be/EyP04zLe9qo>) and Lecture
   (<https://youtu.be/OoNH6Nl-X2s>) recording from OpenGeoHub summer
   school 2020 on the area of applicability. As well as talk at the
-  OpenGeoHub summer school 2021: <https://av.tib.eu/media/54879>
+  OpenGeoHub summer school 2021: <https://av.tib.eu/media/54879>.
 
 - Talk and tutorial from the OpenGeoHub 2022 summer school on Machine
   learning-based maps of the environment - challenges of extrapolation
@@ -79,9 +79,9 @@ spatial prediction.*
 - Milà, C., Mateu, J., Pebesma, E., Meyer, H. (2022): Nearest Neighbour
   Distance Matching Leave-One-Out Cross-Validation for map validation.
   Methods in Ecology and Evolution 13, 1304– 1316.
-  <https://doi.org/10.1111/2041-210X.13851>
+  <https://doi.org/10.1111/2041-210X.13851>.
 
-- Linnenbrink, J., Milà, C., Ludwig, M., and Meyer, H.: kNNDM (2024):
+- Linnenbrink, J., Milà, C., Ludwig, M., Meyer, H. (2024): kNNDM CV:
   k-fold Nearest Neighbour Distance Matching Cross-Validation for map
   accuracy estimation. Geosci. Model Dev., 17, 5897–5912.
   <https://doi.org/10.5194/gmd-17-5897-2024>.
@@ -90,7 +90,7 @@ spatial prediction.*
   Improving performance of spatio-temporal machine learning models using
   forward feature selection and target-oriented validation.
   Environmental Modelling & Software, 101, 1-9.
-  <https://doi.org/10.1016/j.envsoft.2017.12.001>
+  <https://doi.org/10.1016/j.envsoft.2017.12.001>.
 
 ### Spatial variable selection
 
@@ -98,20 +98,20 @@ spatial prediction.*
   Improving performance of spatio-temporal machine learning models using
   forward feature selection and target-oriented validation.
   Environmental Modelling & Software, 101, 1-9.
-  <https://doi.org/10.1016/j.envsoft.2017.12.001>
+  <https://doi.org/10.1016/j.envsoft.2017.12.001>.
 
 - Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance
   of spatial predictor variable selection in machine learning
   applications - Moving from data reproduction to spatial prediction.
   Ecological Modelling. 411.
-  <https://doi.org/10.1016/j.ecolmodel.2019.108815>
+  <https://doi.org/10.1016/j.ecolmodel.2019.108815>.
 
 ### Area of applicability
 
 - Meyer, H., Pebesma, E. (2021). Predicting into unknown space?
   Estimating the area of applicability of spatial prediction models.
-  Methods in Ecology and Evolution, 12, 1620– 1633.
-  <https://doi.org/10.1111/2041-210X.13650>
+  Methods in Ecology and Evolution, 12, 1620–1633.
+  <https://doi.org/10.1111/2041-210X.13650>.
 
 - Schumacher, F., Knoth, C., Ludwig, M., Meyer, H. (2025): Estimation of
   local training data point densities to support the assessment of
@@ -123,7 +123,7 @@ spatial prediction.*
 - Meyer, H., Pebesma, E. (2022): Machine learning-based global maps of
   ecological variables and the challenge of assessing them. Nature
   Communications, 13.
-  <https://www.nature.com/articles/s41467-022-29838-9>
+  <https://www.nature.com/articles/s41467-022-29838-9>.
 
 - Ludwig, M., Moreno-Martinez, A., Hoelzel, N., Pebesma, E., Meyer, H.
   (2023): Assessing and improving the transferability of current global

@@ -83,7 +83,7 @@ the predictor space without support of training data are problematic.
 The model has not been enabled to learn about relationships in these
 environments and predictions for such areas have to be considered highly
 uncertain.</p>
-<p>In CAST, we implement the methodology described in <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link">Meyer&amp;Pebesma
+<p>In CAST, we implement the methodology described in <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link">Meyer and Pebesma
 (2021)</a> to estimate the “area of applicability” (AOA) of (spatial)
 prediction models. The AOA is defined as the area where we enabled the
 model to learn about relationships based on the training data, and where
@@ -97,10 +97,8 @@ is then derived by applying a threshold based on the DI observed in the
 training data using cross-validation.</p>
 <p>This tutorial shows an example of how to estimate the area of
 applicability of spatial prediction models.</p>
-<p>For further information see: Meyer, H., &amp; Pebesma, E. (2021).
-Predicting into unknown space? Estimating the area of applicability of
-spatial prediction models. Methods in Ecology and Evolution, 12, 1620–
-1633. [<a href="https://doi.org/10.1111/2041-210X.13650" class="external-link uri">https://doi.org/10.1111/2041-210X.13650</a>]</p>
+<p>For further information see <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link">Meyer and Pebesma
+(2021)</a>.</p>
 <div class="section level4">
 <h4 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
 </h4>
@@ -368,12 +366,12 @@ the threshold, we regard this area as outside the AOA.</p>
 </h3>
 <p>The example above had randomly distributed training samples. However,
 sampling locations might also be highly clustered in space. In this
-case, the random cross-validation is not meaningful (see e.g. <a href="https://doi.org/10.1016/j.envsoft.2017.12.001" class="external-link">Meyer et
-al. 2018</a>, <a href="https://doi.org/10.1016/j.ecolmodel.2019.108815" class="external-link">Meyer et
-al. 2019</a>, <a href="https://doi.org/10.1111/2041-210X.13107" class="external-link">Valavi
-et al. 2019</a>, <a href="https://doi.org/10.1111/ecog.02881" class="external-link">Roberts et
-al. 2018</a>, <a href="https://doi.org/10.1080/13658816.2017.1346255" class="external-link">Pohjankukka et
-al. 2017</a>, <a href="https://CRAN.R-project.org/package=sperrorest" class="external-link">Brenning
+case, the random cross-validation is not meaningful (see e.g. <a href="https://doi.org/10.1016/j.envsoft.2017.12.001" class="external-link">Meyer et al.,
+2018</a>; <a href="https://doi.org/10.1016/j.ecolmodel.2019.108815" class="external-link">Meyer et al.,
+2019</a>; <a href="https://doi.org/10.1111/2041-210X.13107" class="external-link">Valavi et
+al., 2019</a>; <a href="https://doi.org/10.1111/ecog.02881" class="external-link">Roberts et
+al., 2018</a>; <a href="https://doi.org/10.1080/13658816.2017.1346255" class="external-link">Pohjankukka et al.,
+2017</a>; <a href="https://CRAN.R-project.org/package=sperrorest" class="external-link">Brenning,
 2012</a>)</p>
 <p>A random cross-validation in this case would lead to a apparently
 high prediction performance, but this would only apply to a very small
@@ -588,10 +586,10 @@ reference only.</p>
 <h3 id="data-and-preprocessing">Data and preprocessing<a class="anchor" aria-label="anchor" href="#data-and-preprocessing"></a>
 </h3>
 <p>To do so, we will work with the cookfarm dataset, described in
-e.g. <a href="https://doi.org/10.1016/j.spasta.2015.04.001" class="external-link">Gasch et al
-2015</a>. The dataset included in CAST is a re-structured dataset. Find
-more details also in the vignette “Introduction to CAST”. We will use
-soil moisture (VW) as response variable here. Hence, we’re aiming at
+e.g. <a href="https://doi.org/10.1016/j.spasta.2015.04.001" class="external-link">Gasch et
+al. (2015)</a>. The dataset included in CAST is a re-structured dataset.
+Find more details also in the vignette “Introduction to CAST”. We will
+use soil moisture (VW) as response variable here. Hence, we’re aiming at
 making a spatial continuous prediction based on limited measurements
 from data loggers.</p>
 <div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
@@ -717,15 +715,15 @@ performances.</li>
 <h3 id="further-reading">Further reading<a class="anchor" aria-label="anchor" href="#further-reading"></a>
 </h3>
 <ul>
-<li><p>Meyer, H., &amp; Pebesma, E. (2022): Machine learning-based
-global maps of ecological variables and the challenge of assessing them.
-Nature Communications. [<a href="https://doi.org/10.1038/s41467-022-29838-9" class="external-link uri">https://doi.org/10.1038/s41467-022-29838-9</a>]</p></li>
-<li><p>Meyer, H., &amp; Pebesma, E. (2021). Predicting into unknown
-space? Estimating the area of applicability of spatial prediction
-models. Methods in Ecology and Evolution, 12, 1620– 1633. [<a href="https://doi.org/10.1111/2041-210X.13650" class="external-link uri">https://doi.org/10.1111/2041-210X.13650</a>]</p></li>
+<li><p>Meyer, H., Pebesma, E. (2022): Machine learning-based global maps
+of ecological variables and the challenge of assessing them. Nature
+Communications 13, 2208. <a href="https://doi.org/10.1038/s41467-022-29838-9" class="external-link uri">https://doi.org/10.1038/s41467-022-29838-9</a>.</p></li>
+<li><p>Meyer, H., Pebesma, E. (2021). Predicting into unknown space?
+Estimating the area of applicability of spatial prediction models.
+Methods in Ecology and Evolution, 12, 1620– 1633. <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link uri">https://doi.org/10.1111/2041-210X.13650</a>.</p></li>
 <li><p>Tutorial (<a href="https://youtu.be/EyP04zLe9qo" class="external-link uri">https://youtu.be/EyP04zLe9qo</a>) and Lecture (<a href="https://youtu.be/OoNH6Nl-X2s" class="external-link uri">https://youtu.be/OoNH6Nl-X2s</a>) recording from OpenGeoHub
 summer school 2020 on the area of applicability. As well as talk at the
-OpenGeoHub summer school 2022: <a href="https://doi.org/10.5446/59412" class="external-link uri">https://doi.org/10.5446/59412</a></p></li>
+OpenGeoHub summer school 2022: <a href="https://doi.org/10.5446/59412" class="external-link uri">https://doi.org/10.5446/59412</a>.</p></li>
 </ul>
 </div>
 </div>
