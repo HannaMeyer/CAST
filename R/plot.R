@@ -348,7 +348,6 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
       perfse = x$selectedvars_perf_SE
     )
 
-    print(head(plot_df))
 
     p <- ggplot(plot_df, aes(x = .data[["perf"]], y = .data[["labels"]]))+
       geom_point()+
@@ -376,7 +375,7 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
         idx <- output_df$nvar == u[j]
         vals <- output_df$value[idx]
         runs <- output_df$run[idx]
-        
+
         if (x$maximize) {
           bestmodels[j] <- runs[which.max(vals)]
         } else {
