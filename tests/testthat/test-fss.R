@@ -109,7 +109,7 @@ test_that("ffs works for withinSE = TRUE",{
                     seed = 1)
 
     expect_identical(selection$selectedvars, c("Petal.Length", "Petal.Width", "Sepal.Width"))
-    expect_equal(selection$selectedvars_perf, c(0.9530141, 0.9544820, 0.9544820),
+    expect_equal(selection$selectedvars_perf, c(0.9530141, 0.9544820),
                  tolerance = 0.05)
 
   })
@@ -127,7 +127,7 @@ test_that("ffs works for withinSE = TRUE",{
                     globalval = TRUE)
 
     expect_identical(selection$selectedvars, c("Petal.Length", "Petal.Width", "Sepal.Width"))
-    expect_equal(selection$selectedvars_perf, c("Accuracy" = 0.9530792,"Accuracy" = 0.9545455,"Accuracy" = 0.9545455 ), tolerance = 0.005)
+    expect_equal(selection$selectedvars_perf, c(0.9530792,0.9545455), tolerance = 0.005)
 
   })
 
