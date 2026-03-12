@@ -363,19 +363,7 @@ aoa.data.frame <- function(newdata,
   okrows <- which(rowSums(is.na(newdata)) == 0)
   newdataCC <- newdata[okrows, ,drop=F]
 
-  if (method == "MD") {
-    if (dim(train_scaled)[2] == 1) {
-      S <- matrix(stats::var(train_scaled), 1, 1)
-      newdataCC <- as.matrix(newdataCC, ncol = 1)
-    } else {
-      S <- stats::cov(train_scaled)
-    }
-    S_inv <- MASS::ginv(S)
-  } else {
-    S_inv <- NULL # S_inv dummy variable to not crash on parallization
-  }
-
-  if (calc_LPD == FALSE) {
+  if (!calc_LPD) {
     if (verbose) {
       message("Computing DI of new data...")
     }
@@ -385,7 +373,7 @@ aoa.data.frame <- function(newdata,
     DI_out <- mindist / trainDI$trainDist_avrgmean
   }
 
-  if (calc_LPD == TRUE) {
+  if (calc_LPD) {
     if (verbose) {
       message("Computing DI and LPD of new data...")
     }
@@ -396,88 +384,14 @@ aoa.data.frame <- function(newdata,
         Indices_out <- matrix(NA, nrow = nrow(newdataCC), ncol = maxLPD)
     }
 
-    if (!parallel) {
-
-      if (verbose) {
-        pb <- txtProgressBar(min = 0,
-                             max = nrow(newdataCC),
-                             style = 3)
-      }
-
-      for (i in seq(nrow(newdataCC))) {
-        knnDist  <- .knndistfun(query=newdataCC[i,], reference=train_scaled, k=maxLPD, dist_fun=method)
-        knnDI <- knnDist / trainDI$trainDist_avrgmean
-        knnDI <- c(knnDI)
-
-        DI_out[okrows[i]] <- knnDI[1]
-        LPD_out[okrows[i]] <- sum(knnDI < trainDI$threshold)
-
-        if (indices) {
-          if (LPD_out[okrows[i]] > 0) {
-            knnIndex  <- .knndistfun(query=newdataCC[i,], reference=train_scaled, k = LPD_out[okrows[i]], dist_fun=method, distance = FALSE)
-            Indices_out[i,1:LPD_out[okrows[i]]] <- as.numeric(knnIndex)
-          }
-        }
-
-        if (verbose) {
-          setTxtProgressBar(pb, i)
-        }
-      }
-
-      # end progress bar
-      if (verbose) {
-        close(pb)
-      }
-    }
-
-    # parallelized computatio using parLapply
-    if (parallel) {
-      message("Progress cannot be visualized for parallel computation.")
-
-      trainDIdat <- trainDI # store trainDI in different variable to avoid environment conflict with function trainDI()
-
-      if (cores == "auto") {
-        cores <- floor(detectCores()/2)
-      }
-
-
-
-      # Create a cluster
-      cl <- makeForkCluster(cores, useXDR = FALSE, methods = FALSE)
-
-      # Export the necessary data and functions to the cluster
-      clusterExport(cl, c("train_scaled",
-                          "method",
-                          "S_inv",
-                          "trainDIdat",
-                          "indices",
-                          "maxLPD",
-                          ".process_row",
-                          ".knndistfun"), envir = environment())
-
-      # # Split newdataCC into chunks for each core (important for large datasets)
-      size_chunks <- ceiling(nrow(newdataCC) / cores)
-      indices_chunks <- split(seq(nrow(newdataCC)), rep(1:cores, each = size_chunks, length.out = nrow(newdataCC)))
-      chunks <- lapply(indices_chunks, function(indices) newdataCC[indices, ] )
-
-      # Apply parLapply over chunks
-      results_chunks <- parLapply(cl, chunks, function(chunk) {
-        apply(chunk, MARGIN = 1, .process_row)
-      })
-
-      # Combine the results from the computation of the data chunks
-      results <- unlist(results_chunks, recursive = FALSE)
-
-      # Stop the cluster
-      stopCluster(cl)
-
-      # Process the results and put them in the original output variables
-      for (i in seq(length(results))) {
-        DI_out[okrows[i]] <- results[[i]]$DI_out_i
-        LPD_out[okrows[i]] <- results[[i]]$LPD_out_i
-        if (indices & results[[i]]$LPD_out_i > 0) {
-          Indices_out[i,1:LPD_out[okrows[i]]] <- as.numeric(results[[i]]$Indices_out_i)
-        }
+    knnDist  <- .knndistfun(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=method)
+    knnDI <- knnDist / trainDI$trainDist_avrgmean
+    DI_out[okrows] <- knnDI[1]
+    LPD_out[okrows] <- sum(knnDI < trainDI$threshold)
+    if (indices) {
+      if (LPD_out[okrows] > 0) {
+        knnIndex  <- .knndistfun(query=newdataCC, reference=train_scaled, k = LPD_out[okrows[i]], dist_fun=method, distance = FALSE)
+        Indices_out[i,1:LPD_out[okrows]] <- as.numeric(knnIndex)
       }
     }
 
@@ -543,7 +457,6 @@ utils::globalVariables(
   c(
     "train_scaled",
     "method",
-    "S_inv",
     "trainDIdat",
     "maxLPD",
     "indices"

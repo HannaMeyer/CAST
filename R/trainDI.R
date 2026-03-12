@@ -157,131 +157,38 @@ trainDI <- function(model = NA,
   # save scale param for later
   scaleparam <- attributes(train)
 
-
   # multiply train data with variable weights (from variable importance)
   if(!inherits(weight, "error")&!is.null(unlist(weight))){
     train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
   }
 
-
   # calculate average mean distance between training data
-
-  trainDist_avrg <- c()
-  trainDist_min <- c()
-
-  if (verbose) {
-    message("Computing DI of training data...")
-    pb <- txtProgressBar(min = 0,
-                         max = nrow(train),
-                         style = 3)
-  }
-
   is_cv <- !is.null(CVtrain)&!is.null(CVtest)
-
-  for(i in seq(nrow(train))){
-
-    # calculate  distance to other training data:
-    trainDist      <- .knndistfun(query=train[i, ], reference=train[-i, ], k=1, dist_fun=method)
-    trainDist_avrg <- append(trainDist_avrg, mean(trainDist, na.rm = TRUE))
-
-    # mask of any data that are not used for training for the respective data point (using CV)
-    whichfold <- NA
-    if(!is.null(CVtrain)&!is.null(CVtest)){
-      whichfold <-  as.numeric(which(lapply(CVtest,function(x){any(x==i)})==TRUE)) # index of the fold where i is held back
-      if(length(whichfold)>1){stop("a datapoint is used for testing in more than one fold. currently this option is not implemented")}
-      if(length(whichfold)!=0){ # in case that a data point is never used for testing
-        trainDist[!seq(nrow(train))%in%CVtrain[[whichfold]]] <- NA # everything that is not in the training data for i is ignored
-      }
-      if(length(whichfold)==0){#in case that a data point is never used for testing, the distances for that point are ignored
-        trainDist <- NA
-      }
-    }
-
-    #######################################
-
-    if (length(whichfold)==0){
-      trainDist_min <- append(trainDist_min, NA)
-    }else{
-      trainDist_min <- append(trainDist_min, min(trainDist, na.rm = TRUE))
-    }
-    if (verbose) {
-      setTxtProgressBar(pb, i)
-    }
+  if (!is_cv) {
+    trainDist_min <- .knndistfun(reference=train, k=1, dist_fun = method, distance = TRUE)
+  } else {
+    trainDist_min <- cv_distances(train, CVtrain = CVtrain, CVtest = CVtest, dist_fun=method, time_unit=time_unit)
   }
 
-  if (verbose) {
-    close(pb)
-  }
-  trainDist_avrgmean <- mean(trainDist_avrg,na.rm=TRUE)
-
-
+  trainDist_avrgmean <- mean(trainDist_min, na.rm = TRUE)
 
   # Dissimilarity Index of training data -----
-  TrainDI <- trainDist_min/trainDist_avrgmean
-
+  TrainDI <- trainDist_min / trainDist_avrgmean
 
   # AOA Threshold ----
-  threshold_quantile <- stats::quantile(TrainDI, 0.75,na.rm=TRUE)
-  threshold_iqr <- (1.5 * stats::IQR(TrainDI,na.rm=T))
+  threshold_quantile <- stats::quantile(TrainDI, 0.75, na.rm=TRUE)
+  threshold_iqr <- (1.5 * stats::IQR(TrainDI, na.rm=T))
   thres <- threshold_quantile + threshold_iqr
-  # account for case that threshold_quantile + threshold_iqr is larger than maximum DI.
-  if (thres>max(TrainDI,na.rm=T)){
-    thres <- max(TrainDI,na.rm=T)
-  }
-
-  # note: previous versions of CAST derived the threshold this way:
-  # thres <- grDevices::boxplot.stats(TrainDI)$stats[5]
-
+  # make sure that the threshold is not larger than the maximum DI in the training data
+  thres <- min(thres, max(TrainDI, na.rm=T)) 
 
   # calculate trainLPD and avrgLPD according to the CV folds
-  if (LPD == TRUE) {
-    if (verbose) {
-      message("Computing LPD of training data...")
-      pb <- txtProgressBar(min = 0,
-                           max = nrow(train),
-                           style = 3)
-    }
-
-    trainLPD <- c()
-    for (j in  seq(nrow(train))) {
-
-      # calculate  distance to other training data:
-      trainDist      <- .knndistfun(query=train[j, ], reference=train, k=1, dist_fun=method)
-      DItrainDist <- trainDist/trainDist_avrgmean
-
-      # mask of any data that are not used for training for the respective data point (using CV)
-      whichfold <- NA
-      if(!is.null(CVtrain)&!is.null(CVtest)){
-        whichfold <- as.numeric(which(lapply(CVtest,function(x){any(x==j)})==TRUE)) # index of the fold where i is held back
-        if(length(whichfold)>1){stop("a datapoint is used for testing in more than one fold. currently this option is not implemented")}
-        if(length(whichfold)!=0){ # in case that a data point is never used for testing
-          DItrainDist[!seq(nrow(train))%in%CVtrain[[whichfold]]] <- NA # everything that is not in the training data for i is ignored
-        }
-        if(length(whichfold)==0){#in case that a data point is never used for testing, the distances for that point are ignored
-          DItrainDist <- NA
-        }
-      }
-
-      #######################################
-
-      if (length(whichfold)==0){
-        trainLPD <- append(trainLPD, NA)
-      } else {
-        trainLPD <- append(trainLPD, sum(DItrainDist < thres, na.rm = TRUE))
-      }
-      if (verbose) {
-        setTxtProgressBar(pb, j)
-      }
-    }
-
-    if (verbose) {
-      close(pb)
-    }
-
-    # Average LPD in trainData
-    avrgLPD <- round(mean(trainLPD))
+  if (LPD) {
+      dist_mat <- .knndistfun(reference=train, k=nrow(train)-1, dist_fun = method, distance = TRUE)
+      dist_mat <- dist_mat / trainDist_avrgmean
+      trainLPD <- as.integer(rowSums(dist_mat < thres, na.rm = TRUE))
+      avrgLPD <- round(mean(trainLPD))
   }
-
 
   # Return: trainDI Object -------
 
@@ -291,7 +198,7 @@ trainDI <- function(model = NA,
     variables = variables,
     catvars = catupdate$catvars,
     scaleparam = scaleparam,
-    trainDist_avrg = trainDist_avrg,
+    trainDist_avrg = trainDist_min,
     trainDist_avrgmean = trainDist_avrgmean,
     trainDI = TrainDI,
     threshold = thres,
