@@ -352,10 +352,18 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
   }
   if (plotType=="selected"){
 
-    plot_df = data.frame(labels = forcats::fct_rev(forcats::fct_inorder(c(paste(x$selectedvars[1:x$minVar], collapse = "\n + "),
-                                    paste("+", x$selectedvars[-1:-x$minVar], sep = " ")))),
-                         perf = x$selectedvars_perf,
-                         perfse = x$selectedvars_perf_SE)
+    labels <- c(
+      paste(x$selectedvars[1:x$minVar], collapse = "\n + "),
+      paste("+", x$selectedvars[-1:-x$minVar], sep = " ")
+    )
+
+    plot_df <- data.frame(
+      labels = factor(labels, levels = rev(labels)),
+      perf = x$selectedvars_perf,
+      perfse = x$selectedvars_perf_SE
+    )
+
+    print(head(plot_df))
 
     p <- ggplot(plot_df, aes(x = .data[["perf"]], y = .data[["labels"]]))+
       geom_point()+
