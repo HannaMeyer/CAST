@@ -1,10 +1,9 @@
-#' Print CAST classes
-#' @description Generic print function for trainDI and aoa
-#' @name print
+#' Print trainDI objects
+#'
+#' Generic print function for objects of class \code{trainDI}.
 #' @param x trainDI object
 #' @param ... other params
 #' @export
-
 print.trainDI = function(x, ...){
   cat(paste0("DI of ", nrow(x$train), " observation \n"))
   cat(paste0("Predictors:"), x$variables, "\n\n")
@@ -14,26 +13,18 @@ print.trainDI = function(x, ...){
 
 }
 
-
-#' @name print
-#' @param x trainDI object
-#' @param ... other params
 #' @export
-
+#' @rdname print.trainDI
 show.trainDI = function(x, ...){
   print.trainDI(x)
 }
 
-
-
-
-
-#' @name print
+#' Print AoA objects
+#'
+#' Generic print function for objects of class \code{aoa}.
 #' @param x aoa object
 #' @param ... other params
 #' @export
-
-
 print.aoa = function(x, ...){
   cat("DI:\n")
   print(x$DI)
@@ -53,24 +44,17 @@ print.aoa = function(x, ...){
   cat("\n\nAOA Threshold: ")
   cat(x$parameters$threshold)
 
-
-
 }
 
-
-#' @name print
-#' @param x aoa object
-#' @param ... other params
 #' @export
-
-
+#' @rdname print.aoa
 show.aoa = function(x, ...){
   print.aoa(x)
 }
 
-
-
-#' @name print
+#' Print nndm objects
+#'
+#' Generic print function for objects of class \code{nndm}.
 #' @param x An object of type \emph{nndm}.
 #' @param ... other arguments.
 #' @export
@@ -83,16 +67,16 @@ print.nndm <- function(x, ...){
              "Minimum number of training points: ", min_train, "\n"))
 }
 
-#' @name print
-#' @param x An object of type \emph{nndm}.
-#' @param ... other arguments.
 #' @export
+#' @rdname print.nndm
+#' 
 show.nndm = function(x, ...){
   print.nndm(x)
 }
 
-
-#' @name print
+#' Print knndm objects
+#'
+#' Generic print function for objects of class \code{knndm}.
 #' @param x An object of type \emph{knndm}.
 #' @param ... other arguments.
 #' @export
@@ -107,22 +91,18 @@ print.knndm <- function(x, ...){
       table(x$clusters), "\n")
 }
 
-#' @name print
-#' @param x An object of type \emph{knndm}.
-#' @param ... other arguments.
 #' @export
+#' @rdname print.knndm
 show.knndm = function(x, ...){
   print.knndm(x)
 }
 
-
-
-#' @name print
+#' Print ffs objects
+#'
+#' Generic print function for objects of class \code{ffs}.
 #' @param x An object of type \emph{ffs}
 #' @param ... other arguments.
 #' @export
-
-
 print.ffs = function(x, ...){
   cat("Selected Variables: \n")
   cat(x$selectedvars)
@@ -131,17 +111,9 @@ print.ffs = function(x, ...){
   print.train(x)
 }
 
-
-#' @name print
-#' @param x An object of type \emph{ffs}
-#' @param ... other arguments.
 #' @export
-
+#' @rdname print.ffs
 show.ffs = function(x, ...){
   print.ffs(x)
 
 }
-
-
-
-
