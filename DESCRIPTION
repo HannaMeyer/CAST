@@ -20,25 +20,39 @@ Encoding: UTF-8
 LazyData: false
 Depends: R (>= 4.1.0)
 BugReports: https://github.com/HannaMeyer/CAST/issues/
-Imports: caret, stats, utils, ggplot2, graphics, FNN, zoo, methods, grDevices, data.table, sf, twosamples, terra, parallel
+Imports: 
+    caret,
+    data.table,
+    FNN, 
+    ggplot2, 
+    graphics,
+    grDevices,
+    methods,
+    parallel
+    sf, 
+    stats, 
+    twosamples, 
+    terra, 
+    utils, 
+    zoo
 Suggests: 
-    doParallel,
-    lubridate,
-    randomForest,
-    knitr,
-    geodata,
-    rmarkdown,
-    scales,
-    gridExtra,
-    stars,
-    scam,
-    rnaturalearth,
-    MASS,
-    tmap,
-    PCAmixdata, 
-    gower, 
     clustMixType,
-    testthat (>= 3.0.0)
+    doParallel,
+    geodata,
+    gower, 
+    gridExtra,
+    knitr,
+    lubridate,
+    MASS,
+    PCAmixdata, 
+    randomForest,
+    rmarkdown,
+    rnaturalearth,
+    scales,
+    scam,
+    stars,
+    testthat (>= 3.0.0),
+    tmap
 RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 Config/testthat/edition: 3
