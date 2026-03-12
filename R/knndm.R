@@ -535,8 +535,8 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
     units(Gij) <- NULL
     Gij <- apply(Gij, 1, min)
   }else{
-    Gj <- compute_NND(tpoints, dist_space = dist_space, dist_fun = dist_fun, algorithm = algorithm)$dist
-    Gij <- compute_NND(tpoints, y = predpoints, dist_space = dist_space, dist_fun = dist_fun, algorithm = algorithm)$dist
+    Gj <- compute_NND(tpoints, dist_space = dist_space, dist_fun = dist_fun)$dist
+    Gij <- compute_NND(tpoints, y = predpoints, dist_space = dist_space, dist_fun = dist_fun)$dist
   }
 
   # Check if Gj > Gij (warning suppressed regarding ties)
@@ -646,7 +646,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
         if(isTRUE(dist_fun == "great_circle")){
           Gjstar_i <- distclust_distmat(distmat, clust_k)
         }else{
-          Gjstar_i <- cv_distances(tcoords, CVtest = clust_k,algorithm=algorithm, dist_fun = dist_fun)
+          Gjstar_i <- cv_distances(tcoords, CVtest = clust_k, dist_fun = dist_fun)
         }
         clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
         clustgroups[[paste0("nk", nk)]] <- clust_k

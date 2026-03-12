@@ -39,14 +39,11 @@ test_that("kNNDM works without crs and prediction points", {
   predpoints <- sf::st_sample(aoi, 20, type="regular")
 
   set.seed(1)
-  kout <- suppressWarnings(knndm(tpoints, predpoints=predpoints, k=2, maxp=0.8))
+  expect_warning(kout <- knndm(tpoints, predpoints=predpoints, k=2, maxp=0.8),
+                 "Assuming projected CRS.")
 
   expect_identical(round(kout$W,6), 1.091896)
   expect_identical(kout$q, 3L)
-
-  expect_warning(knndm(tpoints, predpoints=predpoints, k=2, maxp=0.8),
-                 "Missing CRS in training or prediction points. Assuming projected CRS.")
-
 })
 
 
@@ -295,7 +292,7 @@ test_that("kNNDM works in feature space with categorical variables and predpoint
   knndm_folds <- knndm(tpoints=train_points, predpoints = prediction_points,
                        dist_space="feature", clustering = "hierarchical", dist_fun = "gower")
 
-  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),3), 0.057)
+  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),3), 0.114)
 
 })
 
