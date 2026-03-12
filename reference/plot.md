@@ -38,7 +38,7 @@ plot(x, type = "strict", stat = "ecdf", ...)
 plot(
   x,
   plotType = "all",
-  palette = rainbow,
+  palette = hcl.colors,
   reverse = FALSE,
   marker = "black",
   size = 1.5,
@@ -91,7 +91,7 @@ plot(x, ...)
 
 - palette:
 
-  A color palette
+  A color palette function
 
 - reverse:
 
