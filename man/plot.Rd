@@ -22,7 +22,7 @@
 \method{plot}{ffs}(
   x,
   plotType = "all",
-  palette = rainbow,
+  palette = hcl.colors,
   reverse = FALSE,
   marker = "black",
   size = 1.5,
@@ -51,7 +51,7 @@ Alternatively, set to "simple" to have more intuitive labels.}
 
 \item{plotType}{character. Either "all" or "selected"}
 
-\item{palette}{A color palette}
+\item{palette}{A color palette function}
 
 \item{reverse}{Character. Should the palette be reversed?}
 
