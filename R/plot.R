@@ -325,14 +325,13 @@ plot.knndm <- function(x, type="strict", stat = "ecdf", ...){
 #' @examples
 #' \dontrun{
 #' data(splotdata)
-#' splotdata <- st_drop_geometry(splotdata)
+#' splotdata <- sf::st_drop_geometry(splotdata)
 #' ffsmodel <- ffs(splotdata[,6:16], splotdata$Species_richness, ntree = 10)
 #' plot(ffsmodel)
 #' #plot performance of selected variables only:
 #' plot(ffsmodel,plotType="selected")
 #'}
 #' @name plot
-#' @importFrom forcats fct_rev fct_inorder
 #' @export
 
 
@@ -358,10 +357,9 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
                          perf = x$selectedvars_perf,
                          perfse = x$selectedvars_perf_SE)
 
-
     p <- ggplot(plot_df, aes(x = .data[["perf"]], y = .data[["labels"]]))+
       geom_point()+
-      geom_segment(aes(x = .data[["perf - perfse"]], xend = .data[["perf + perfse"]],
+      geom_segment(aes(x = .data[["perf"]] - .data[["perfse"]], xend = .data[["perf"]] + .data[["perfse"]],
                        y = .data[["labels"]], yend = .data[["labels"]]))+
       xlab(x$metric)+
       ylab(NULL)
