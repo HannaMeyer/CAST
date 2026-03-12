@@ -34,7 +34,6 @@
 #' @param parallel Logical. Parallelization the process. Only possible if LPD = TRUE. Can reduce computation time significantly.
 #' @param cores Integer or Character. Number of cores to use for the the parallelization. You can use "auto" to set your cores to \code{detectCores()/2} (see \code{\link[parallel]{detectCores}}).
 #' @param verbose Logical. Print progress or not?
-#' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
 #' @details The Dissimilarity Index (DI), the Local Data Point Density (LPD) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
 #'
@@ -225,7 +224,7 @@ aoa.data.frame <- function(newdata,
                 variables="all",
                 CVtest=NULL,
                 CVtrain=NULL,
-                method="L2",
+                method="euclidean",
                 useWeight=TRUE,
                 useCV=TRUE,
                 LPD = FALSE,
@@ -233,8 +232,7 @@ aoa.data.frame <- function(newdata,
                 indices = FALSE,
                 parallel = FALSE,
                 cores = 4,
-                verbose = TRUE,
-                algorithm = "brute") {
+                verbose = TRUE) {
 
   leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
 
@@ -279,7 +277,18 @@ aoa.data.frame <- function(newdata,
     if (verbose) {
       message("No trainDI provided.")
     }
-    trainDI <- trainDI(model, train, variables, weight, CVtest, CVtrain, method, useWeight, useCV, LPD, verbose, algorithm=algorithm)
+    trainDI <- trainDI(
+      model=model, 
+      train=train, 
+      variables=variables, 
+      weight=weight,
+      CVtest=CVtest, 
+      CVtrain=CVtrain, 
+      method=method, 
+      useWeight=useWeight, 
+      useCV=useCV, 
+      LPD=LPD, 
+      verbose=verbose)
   }
 
   if (calc_LPD == TRUE) {
@@ -372,7 +381,7 @@ aoa.data.frame <- function(newdata,
     }
     mindist <- rep(NA, nrow(newdata))
     mindist[okrows] <-
-      .knndistfun(train_scaled, newdataCC, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
+      .knndistfun(query=newdataCC, reference=train_scaled, k=1, dist_fun=method)
     DI_out <- mindist / trainDI$trainDist_avrgmean
   }
 
@@ -396,7 +405,7 @@ aoa.data.frame <- function(newdata,
       }
 
       for (i in seq(nrow(newdataCC))) {
-        knnDist  <- .knndistfun(train_scaled, newdataCC[i,],  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_inv)
+        knnDist  <- .knndistfun(query=newdataCC[i,], reference=train_scaled, k=maxLPD, dist_fun=method)
         knnDI <- knnDist / trainDI$trainDist_avrgmean
         knnDI <- c(knnDI)
 
@@ -405,7 +414,7 @@ aoa.data.frame <- function(newdata,
 
         if (indices) {
           if (LPD_out[okrows[i]] > 0) {
-            knnIndex  <- .knndistfun(train_scaled,newdataCC[i,], k = LPD_out[okrows[i]], method=method, algorithm=algorithm, S_inv=S_inv, distance = FALSE)
+            knnIndex  <- .knndistfun(query=newdataCC[i,], reference=train_scaled, k = LPD_out[okrows[i]], dist_fun=method, distance = FALSE)
             Indices_out[i,1:LPD_out[okrows[i]]] <- as.numeric(knnIndex)
           }
         }
@@ -443,7 +452,6 @@ aoa.data.frame <- function(newdata,
                           "trainDIdat",
                           "indices",
                           "maxLPD",
-                          "algorithm",
                           ".process_row",
                           ".knndistfun"), envir = environment())
 
@@ -517,7 +525,7 @@ aoa.data.frame <- function(newdata,
 }
 
 .process_row <- function(row) {
-  knnDist <- .knndistfun(train_scaled, row,  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_inv)
+  knnDist <- .knndistfun(query=row, reference=train_scaled, k=maxLPD, dist_fun=method)
   knnDI <- knnDist / trainDIdat$trainDist_avrgmean
   knnDI <- c(knnDI)
 
@@ -538,7 +546,6 @@ utils::globalVariables(
     "S_inv",
     "trainDIdat",
     "maxLPD",
-    "algorithm",
     "indices"
     )
   )

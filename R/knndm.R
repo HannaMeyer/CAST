@@ -557,7 +557,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
     if(isTRUE(dist_fun == "great_circle")){
       Gjstar <- distclust_distmat(distmat, clust)
     }else{
-      Gjstar <- cv_distances(tcoords, CVtest = clust, algorithm=algorithm, dist_fun = dist_fun)
+      Gjstar <- cv_distances(tcoords, CVtest = clust, dist_fun = dist_fun)
     }
     k_final <- "random CV"
     W_final <- twosamples::wass_stat(Gjstar, Gij)
@@ -659,7 +659,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
         if(isTRUE(dist_fun == "great_circle")){
           Gjstar_i <- distclust_distmat(distmat, clust_k)
         }else{
-          Gjstar_i <- cv_distances(tcoords, CVtest = clust_k,algorithm=algorithm, dist_fun = dist_fun)
+          Gjstar_i <- cv_distances(tcoords, CVtest = clust_k, dist_fun = dist_fun)
         }
         clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
         clustgroups[[paste0("nk", nk)]] <- clust_k
@@ -678,7 +678,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
     if(isTRUE(dist_fun == "great_circle")){
       Gjstar <- distclust_distmat(distmat, clust)
     }else{
-      Gjstar <- cv_distances(tcoords, CVtest = clust,algorithm=algorithm, dist_fun = dist_fun)
+      Gjstar <- cv_distances(tcoords, CVtest = clust, dist_fun = dist_fun)
     }
   }
 
@@ -817,7 +817,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
       if(isTRUE(dist_fun == "mahalanobis")) {
         Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
       } else {
-        Gjstar <- cv_distances(tpoints, clust,algorithm=algorithm, dist_fun = dist_fun)
+        Gjstar <- cv_distances(tpoints, clust, dist_fun = dist_fun)
       }
 
     } else {
@@ -961,7 +961,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
               if(isTRUE(dist_fun == "mahalanobis")){
                 Gjstar_i <- cv_distances(tpoints, CVtest = clust_k, dist_fun = dist_fun)
               } else {
-                Gjstar_i <- cv_distances(tpoints, CVtest = clust_k,algorithm = algorithm, dist_fun = dist_fun)
+                Gjstar_i <- cv_distances(tpoints, CVtest = clust_k, dist_fun = dist_fun)
               }
             } else {
               Gjstar_i <- cv_distances(tpoints, CVtest = clust_k, dist_fun = dist_fun)
@@ -991,7 +991,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
         if(isTRUE(dist_fun == "mahalanobis")) {
           Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
         } else {
-          Gjstar <- cv_distances(tpoints, CVtest = clust,algorithm=algorithm, dist_fun = dist_fun)
+          Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
         }
 
       } else {

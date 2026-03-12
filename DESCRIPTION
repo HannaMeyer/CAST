@@ -51,6 +51,7 @@ Imports:
     terra, 
     utils, 
     zoo
+    philentropy
 Suggests: 
     clustMixType,
     doParallel,

@@ -322,7 +322,7 @@ test_that("kNNDM works in feature space with clustered training points, categori
   knndm_folds_kproto <- knndm(tpoints=pts, modeldomain = predictor_stack, dist_space="feature", clustering = "kmeans", dist_fun = "gower")
   knndm_folds_hclust <- knndm(tpoints=pts, modeldomain = predictor_stack, dist_space="feature", clustering = "hierarchical", dist_fun = "gower")
 
-  expect_equal(round(as.numeric(knndm_folds_kproto$Gjstar[20]),3), 0.077)
+  expect_equal(round(as.numeric(knndm_folds_kproto$Gjstar[20]),3), 0.054)
   expect_equal(round(as.numeric(knndm_folds_hclust$Gjstar[20]),3), 0.078)
 
 })
@@ -342,7 +342,7 @@ test_that("kNNDM works in feature space with Mahalanobis distance", {
   knndm_folds <- knndm(trainDat[,predictors], modeldomain = predictors_sp, dist_space = "feature",
                        clustering="kmeans", k=4, maxp=0.8, dist_fun = "mahalanobis")
 
-  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 1.1258)
+  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 1.13)
 
 })
 

@@ -26,7 +26,6 @@
 #' @param useCV Logical. Only if a model is given. Use the CV folds to calculate the DI threshold?
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
 #' @param verbose Logical. Print progress or not?
-#' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
 #' @seealso \code{\link{aoa}}
 #' @importFrom graphics boxplot
 #' @import ggplot2
@@ -100,12 +99,11 @@ trainDI <- function(model = NA,
                     weight = NA,
                     CVtest = NULL,
                     CVtrain = NULL,
-                    method="L2",
+                    method="euclidean",
                     useWeight = TRUE,
                     useCV =TRUE,
                     LPD = FALSE,
-                    verbose = TRUE,
-                    algorithm = "brute"){
+                    verbose = TRUE){
 
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
@@ -171,15 +169,6 @@ trainDI <- function(model = NA,
   trainDist_avrg <- c()
   trainDist_min <- c()
 
-  if(method=="MD"){
-    if(dim(train)[2] == 1){
-      S <- matrix(stats::var(train), 1, 1)
-    } else {
-      S <- stats::cov(train)
-    }
-    S_inv <- MASS::ginv(S)
-  }
-
   if (verbose) {
     message("Computing DI of training data...")
     pb <- txtProgressBar(min = 0,
@@ -187,13 +176,13 @@ trainDI <- function(model = NA,
                          style = 3)
   }
 
+  is_cv <- !is.null(CVtrain)&!is.null(CVtest)
+
   for(i in seq(nrow(train))){
 
     # calculate  distance to other training data:
-    trainDist      <- .knndistfun(train[i, ], train, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
-    trainDist[i]   <- NA
+    trainDist      <- .knndistfun(query=train[i, ], reference=train[-i, ], k=1, dist_fun=method)
     trainDist_avrg <- append(trainDist_avrg, mean(trainDist, na.rm = TRUE))
-
 
     # mask of any data that are not used for training for the respective data point (using CV)
     whichfold <- NA
@@ -257,9 +246,8 @@ trainDI <- function(model = NA,
     for (j in  seq(nrow(train))) {
 
       # calculate  distance to other training data:
-      trainDist      <- .knndistfun(train[j, ], train, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
+      trainDist      <- .knndistfun(query=train[j, ], reference=train, k=1, dist_fun=method)
       DItrainDist <- trainDist/trainDist_avrgmean
-      DItrainDist[j]   <- NA
 
       # mask of any data that are not used for training for the respective data point (using CV)
       whichfold <- NA
@@ -508,35 +496,3 @@ aoa_get_variables <- function(variables, model, train){
 
 }
 
-.knndistfun <- function(
-  point, 
-  reference, 
-  k = 1, 
-  method = c("L2", "MD"), 
-  algorithm=c("kd_tree", "cover_tree", "brute"), 
-  S_inv = NULL,
-  distance = TRUE) {
-  
-  if (inherits(point, "numeric")) {
-    point <- matrix(point, nrow = 1)
-  }
-  if (inherits(reference, "numeric")) {
-    reference <- matrix(reference, nrow = 1)
-  }
-  
-  if (method == "L2"){ # Euclidean Distance
-    if (distance) {
-      return(c(FNN::knnx.dist(point, reference, k = k, algorithm = algorithm)))
-    } else {
-      return(FNN::knnx.index(reference, point, k = k, algorithm = algorithm))
-    }
-  } else if (method == "MD"){ # Mahalanobis Distance
-    if (distance) {
-    return(sapply(1:dim(point)[1],
-                  function(y) min(sapply(1:dim(reference)[1],
-                                         function(x) sqrt( t(point[y,] - reference[x,]) %*% S_inv %*% (point[y,] - reference[x,]) )))))
-    } else {
-      stop("KNN-index return not implemented for Mahalanobis distance")
-    }
-  }
-}  

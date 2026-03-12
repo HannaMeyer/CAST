@@ -319,7 +319,6 @@ geodist <- function(
     # Detect categorical variables
     catVars <- names(x)[vapply(x, function(z) inherits(z, c("factor", "character")), logical(1))]
     if (length(catVars) == 0) catVars <- NULL
-
     # Drop the geometry of the training and prediction (and test) points
     x <- sf::st_drop_geometry(x)
     pred_points <- sf::st_drop_geometry(pred_points)
@@ -327,7 +326,6 @@ geodist <- function(
 
     # Optionally scale the training, prediction and test points
     if(isTRUE(scale_vars)) {
-      if (is.null(catVars)) {
             scaleparam <- attributes(scale(x))
             x <- data.frame(scale(x))
             pred_points <- data.frame(scale(pred_points,
@@ -338,34 +336,6 @@ geodist <- function(
                                           center = scaleparam$`scaled:center`,
                                           scale = scaleparam$`scaled:scale`))
             }
-          } else {
-            x_cat <- x[,catVars,drop=FALSE]
-            pred_points_cat <- pred_points[,catVars,drop=FALSE]
-        
-            num_cols <- !(names(x) %in% catVars)
-            x_num <- x[,num_cols,drop=FALSE]
-            pred_points_num <- pred_points[,-which(names(pred_points)%in%catVars),drop=FALSE]
-
-            scale_attr <- attributes(scale(x_num))
-            x <- scale(x_num) |> as.data.frame()
-            pred_points <- scale(pred_points_num,center=scale_attr$`scaled:center`,
-                                scale=scale_attr$`scaled:scale`) |>
-              as.data.frame()
-        
-            x <- as.data.frame(cbind(x, lapply(x_cat, as.factor)))
-            pred_points <- as.data.frame(cbind(pred_points, lapply(pred_points_cat, as.factor)))
-          
-            if (!is.null(testdata)) {
-              testdata_cat <- testdata[,catVars,drop=FALSE]
-              testdata_num <- testdata[,num_cols]
-              testdata <- scale(testdata_num,center=scale_attr$`scaled:center`,
-                                scale=scale_attr$`scaled:scale`) |>
-               as.data.frame()
-        
-              testdata <- as.data.frame(cbind(testdata, lapply(testdata_cat, as.factor)))
-            }
-
-      }
     }
     
   }
@@ -443,7 +413,6 @@ geodist <- function(
 }
 
 
-
 ## Distance calculation based on space ----------
 compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","time"), 
                       dist_type_label = "sample-to-sample", 
@@ -456,12 +425,36 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
   # Stop when encountering invalid parameter combinations
   if(!is.null(y) && !is.null(CVtest)) stop("Currently, `CVtest` and `y` cannot be specified simultaniously.")
 
-  # Extract coordinates from x (and y)
-  coords_x <- if(dist_space == "geographical") sf::st_coordinates(x)[,1:2] else NULL
-  coords_y <- if(dist_space == "geographical" && !is.null(y)) sf::st_coordinates(y)[,1:2] else NULL
-
   # Calculate nearest neighbor distances in geographical space
-  if(dist_space == "geographical") {
+  if(dist_space == "feature"){
+    # Calculate nearest neighbor distances in feature space
+    reference <- sf::st_drop_geometry(x)
+    query <- if(!is.null(y)) sf::st_drop_geometry(y) else NULL
+
+    if(is.null(CVtest)) {
+      min_d <- .knndistfun(query = query, reference = reference, k = 1, dist_fun = dist_fun, distance = TRUE)
+      } else {
+      min_d <- cv_distances(reference, CVtest = CVtest, CVtrain = CVtrain, dist_fun = dist_fun)
+      }
+ 
+  } else if(dist_space == "geographical") {
+    islonglat <- if (is.na(sf::st_crs(x))) {
+      warning("Missing CRS of the modeldomain or prediction points. Assuming projected CRS.")
+      FALSE
+    } else {
+      sf::st_is_longlat(sf::st_crs(x))
+    }
+    if (islonglat) {
+      message("Calculating great-circle distances in geographic space (longlat coordinates).")
+      dist_fun <- "great_circle"
+    } else {
+      message("Calculating euclidean distances in geographic space (projected coordinates).")
+      dist_fun <- "euclidean"
+    }
+    # Extract coordinates from x (and y)
+    coords_x <- sf::st_coordinates(x)[,1:2]
+    coords_y <- if(!is.null(y)) sf::st_coordinates(y)[,1:2] else NULL
+
     if(dist_fun == "great_circle") {
       if(is.null(CVtest)) {
         distmat <- if(is.null(y)) sf::st_distance(x) else sf::st_distance(y, x)
@@ -471,68 +464,13 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
       } else {
         min_d <- cv_distances(x, CVtest = CVtest, CVtrain = CVtrain, dist_fun = dist_fun)
       }
-    } else {
-      if(is.null(y)) {
+    } else { # euclidean
         if(is.null(CVtest)) {
-          min_d <- FNN::knn.dist(coords_x, k = 1, algorithm=algorithm)
+          min_d <- .knndistfun(query = coords_y, reference = coords_x, k = 1, dist_fun = dist_fun, distance = TRUE)
         } else {
-          min_d <- cv_distances(coords_x, CVtest = CVtest, CVtrain = CVtrain, algorithm=algorithm, dist_fun = dist_fun)
+          min_d <- cv_distances(coords_x, CVtest = CVtest, CVtrain = CVtrain, dist_fun = dist_fun)
         }
-      } else {
-        min_d <- FNN::knnx.dist(query = coords_y, data = coords_x, k = 1, algorithm=algorithm)
-      }
     }
-    
-  } else if(dist_space == "feature"){
-    # Calculate nearest neighbor distances in feature space
-    df_x <- sf::st_drop_geometry(x)
-    df_y <- if(!is.null(y)) sf::st_drop_geometry(y) else df_x
-    mat_x <- as.matrix(df_x)
-    mat_y <- as.matrix(df_y)
-    
-    if(dist_fun == "mahalanobis"){
-      
-      if(is.null(CVtest)) {
-  
-        S <- if(ncol(mat_x) == 1) matrix(stats::var(mat_x),1,1) else stats::cov(mat_x)
-        S_inv <- MASS::ginv(S)
-        
-        min_d <- vapply(seq_len(nrow(mat_y)), function(i){
-          
-          idx <- if(is.null(y)) seq_len(nrow(mat_x))[-i] else seq_len(nrow(mat_x))
-          
-          min(vapply(idx, function(j){
-            diff <- mat_y[i,] - mat_x[j,]
-            as.numeric(sqrt(t(diff) %*% S_inv %*% diff))
-          }, numeric(1)))
-          
-        }, numeric(1))
-        
-      } else {
-        min_d <- cv_distances(mat_x, CVtest = CVtest, CVtrain = CVtrain, dist_fun = dist_fun)
-      }
-      
-    } else if(dist_fun == "euclidean"){
-      if(is.null(CVtest)) {
-        min_d <- if(is.null(y)) FNN::knn.dist(mat_x, k=1, algorithm=algorithm) else
-               FNN::knnx.dist(query = mat_y, data = mat_x, k=1, algorithm=algorithm)
-      } else {
-        min_d <- cv_distances(mat_x, CVtest = CVtest, CVtrain = CVtrain, algorithm=algorithm, dist_fun = dist_fun)
-      }
-      
-    } else if(dist_fun == "gower"){
-      if(is.null(CVtest)) {
-        min_d <- if(is.null(y)) {
-          vapply(1:nrow(df_x), function(i) gower::gower_topn(df_x[i,,drop=FALSE], df_x[-i,,drop=FALSE], n=1)$distance[[1]], numeric(1))
-        } else {
-          gower_res <- gower::gower_topn(df_y, df_x, n = 1)
-          vapply(gower_res$distance, function(x) x[1], numeric(1))
-        }
-      } else {
-        min_d <- cv_distances(df_x, CVtest = CVtest, CVtrain = CVtrain, dist_fun = dist_fun)
-      }      
-    }
-    
   } else if(dist_space == "time"){
     # Calculate nearest neighbor distances in temporal space
     if(dist_fun == "abs_time") {
@@ -545,19 +483,17 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
       } else {
         min_d <- cv_distances(time_x, CVtest = CVtest, time_unit = time_unit, CVtrain = CVtrain, dist_fun = dist_fun)
       }
-      
     }
-    
   }
   
-  data.frame(dist = min_d,
+  data.frame(dist = as.vector(min_d),
              what = factor(dist_type_label),
              dist_type = dist_space)
 }
 
 
 ## Helper function: Compute out-of-fold NN distance ----------
-cv_distances <- function(x, CVtest, CVtrain = NULL, dist_fun = "euclidean", algorithm = "brute", time_unit = "auto") {
+cv_distances <- function(x, CVtest, CVtrain = NULL, dist_fun = "euclidean", time_unit = "auto") {
 
   # define length of NND vector
   n <- if(inherits(x, c("Date","POSIXct","POSIXt"))) length(x) else nrow(x)
@@ -568,21 +504,7 @@ cv_distances <- function(x, CVtest, CVtrain = NULL, dist_fun = "euclidean", algo
     CVtest_v <- rep(NA_integer_, n)
     for(k in seq_along(CVtest)) CVtest_v[CVtest[[k]]] <- k
   } else CVtest_v <- CVtest
-
-  # Calculate distance matrix for great circle distances
-  if(dist_fun == "great_circle") {
-      distmat <- sf::st_distance(x)
-      units(distmat) <- NULL
-      diag(distmat) <- NA
-  }
-
-  # Prepare Mahalanobis distance
-  if(dist_fun == "mahalanobis") {
-    tr_mat <- as.matrix(x)
-    S_inv <- MASS::ginv(stats::cov(tr_mat))
-  }
-  
-  
+    
   # Calculate distances between CV folds
   for(f in unique(CVtest_v)){
     
@@ -602,25 +524,15 @@ cv_distances <- function(x, CVtest, CVtrain = NULL, dist_fun = "euclidean", algo
         tr_test  <- x[test_idx,, drop=FALSE]
       }
 
-    if(dist_fun == "euclidean") {
-      alldist[test_idx] <- FNN::knnx.dist(query = tr_test,
-                                  data = tr_train,
-                                  k = 1,
-                                  algorithm = algorithm)
-    } else if(dist_fun == "great_circle") {      
-      alldist[test_idx] <- apply(distmat[test_idx, train_idx, drop=FALSE], 1, min)
-    } else if(dist_fun == "gower") {
-        alldist[test_idx] <- c(gower::gower_topn(x[test_idx,,drop=FALSE],
-                                          x[train_idx,,drop=FALSE],
-                                          n = 1))$distance[[1]]
-    } else if(dist_fun == "mahalanobis") {
-      alldist[test_idx] <- apply(tr_mat[test_idx,,drop=FALSE], 1, function(y){
-      min(apply(tr_mat[train_idx,,drop=FALSE], 1, function(x){
-        sqrt(t(y - x) %*% S_inv %*% (y - x))
-      }))
-    })
+    if(dist_fun %in% c("euclidean", "mahalanobis", "gower")) {
+      alldist[test_idx] <- .knndistfun(query = tr_test, reference = tr_train, k = 1, dist_fun = dist_fun, distance = TRUE)
+    } else if(dist_fun == "great_circle") {
+        distmat <- sf::st_distance(x)
+        units(distmat) <- NULL
+        diag(distmat) <- NA 
+        alldist[test_idx] <- apply(distmat[test_idx, train_idx, drop=FALSE], 1, min)
     } else if(dist_fun == "abs_time") {
-      diffs <- outer(x[test_idx], x[train_idx], function(x,y) abs(as.numeric(difftime(x, y, units=time_unit))))
+      diffs <- outer(tr_test, tr_train, function(x,y) abs(as.numeric(difftime(x, y, units=time_unit))))
       alldist[test_idx] <- apply(diffs, 1, min)
     }    
   }
@@ -672,6 +584,100 @@ sampleFromArea <- function(modeldomain, samplesize, dist_space, variables, sampl
 
 }
 
+.knndistfun <- function(
+  reference, 
+  query = NULL,
+  k = 1, 
+  dist_fun = c("euclidean", "mahalanobis", "gower"), 
+  distance = TRUE) {
+  
+  dist_fun <- match.arg(dist_fun)
+
+  if (dist_fun == "gower") {
+    # requires scaling of the numerical variables, while categorical variables are not scaled.
+    num_vars <- vapply(reference, is.numeric, logical(1))
+    ref_num <- reference[, num_vars, drop = FALSE]
+    mins <- sapply(ref_num, min, na.rm = TRUE)
+    maxs <- sapply(ref_num, max, na.rm = TRUE)
+    range <- maxs - mins
+
+    reference[, num_vars] <- as.data.frame(
+        sweep(sweep(reference[, num_vars, drop = FALSE], 2, mins, "-"), 2, range, "/"),
+        stringsAsFactors = FALSE
+    )
+    
+    if (!is.null(query)) {
+      query[, num_vars] <- as.data.frame(
+        sweep(sweep(query[, num_vars, drop = FALSE], 2, mins, "-"), 2, range, "/"),
+        stringsAsFactors = FALSE
+      )
+    }
+    query <- .numeric_fct(query)
+    reference <- .numeric_fct(reference)
+  }
+  
+  if (inherits(query, "numeric")) {
+    query <- matrix(query, nrow = 1)
+  }
+  if (inherits(query, "data.frame")) {
+    query <- as.matrix(query)
+  }
+  if (inherits(reference, "numeric")) {
+    reference <- matrix(reference, nrow = 1)
+  }
+  if (inherits(reference, "data.frame")) {
+    reference <- as.matrix(reference)
+  }
+
+  if (dist_fun == "mahalanobis") {
+    # For Mahalanobis distance, we need to compute the inverse covariance matrix 
+    # we then transform that reference and query to calculate the L2 distance in 
+    # the transformed space, which is equivalent to the Mahalanobis distance in the original space.
+    S_inv <- MASS::ginv(stats::cov(reference))
+    eig <- eigen(S_inv, symmetric = TRUE)
+    W <- eig$vectors %*% diag(1/sqrt(eig$values)) %*% t(eig$vectors)
+    reference = reference %*% W
+    if (!is.null(query)) {
+      query = query %*% W
+    }
+    dist_fun = "euclidean"
+  }
 
 
+  # calculate the distance matrix
+  if (is.null(reference)) {
+    dists <- philentropy::distance(query, method = dist_fun)
+    if (length(dists) == 1) return(dists)
+    diag(dists) <- NA # Exclude self-distance
+    } else if (is.null(query)) {
+    dists <- philentropy::distance(reference, method = dist_fun)
+    if (length(dists) == 1) return(dists)
+    diag(dists) <- NA # Exclude self-distance
+    } else {
+    dists <- philentropy::dist_many_many(query, reference, method = dist_fun)
+  }
 
+  print(dists)
+
+  if (distance) {
+    get_dist <- function(x, k) sort(x)[1:k]
+    knn_dists <- t(apply(dists, 1, get_dist, k=k))
+    return(knn_dists)
+  } else {
+    get_index <- function(x, k) order(x)[1:k]
+    indices <- t(apply(dists, 1, get_index, k=k))
+    return(indices)
+  }
+}  
+
+
+.numeric_fct <- function(x) {
+  if (is.null(x)) return(NULL)
+  catVars <- names(x)[vapply(x, function(z) inherits(z, c("factor", "character")), logical(1))]
+  if (length(catVars) == 0) return(x)
+  # Convert categorical variables to factor then to numeric
+  for (var in catVars) {
+    x[[var]] <- as.integer(as.factor(x[[var]]))
+  }
+  return(x)
+}

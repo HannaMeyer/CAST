@@ -311,9 +311,9 @@ test_that("geodist works with categorical variables in feature space using Gower
   mean_CV_distance <- round(mean(dist[dist$what=="CV-distances","dist"]), 4)
 
   expect_equal(mean_sample2sample, 0.0459)
-  expect_equal(mean_prediction2sample, 0.0931)
-  expect_equal(mean_test2sample, 0.2128)
-  expect_equal(mean_CV_distance, 0.0271)
+  expect_equal(mean_prediction2sample, 0.1986)
+  expect_equal(mean_test2sample, 0.3525)
+  expect_equal(mean_CV_distance, 0.05830)
 })
 
 
