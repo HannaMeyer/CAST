@@ -24,13 +24,15 @@
 #' the object contains the vector "selectedvars" and "selectedvars_perf"
 #' that give the order of the best variables selected as well as their corresponding
 #' performance (starting from the first two variables). It also contains "perf_all"
-#' that gives the performance of all model runs.
+#' that gives the performance of all model runs and "best_models_table" that returns the
+#' summary of the best performing models per number of variables.
 #' @details Models with two predictors are first trained using all possible
 #' pairs of predictor variables. The best model of these initial models is kept.
 #' On the basis of this best model the predictor variables are iteratively
 #' increased and each of the remaining variables is tested for its improvement
-#' of the currently best model. The process stops if none of the remaining
+#' of the currently best model. If earlyStopping=TRUE (default), the process stops if none of the remaining
 #' variables increases the model performance when added to the current best model.
+#' Otherwise if earlyStopping==FALSE variables will iteratively be added and the model finally leading to the best performance is kept.
 #'
 #' The forward feature selection can be run in parallel with forking on Linux systems (mclapply).
 #' Each fork computes a model, which drastically speeds up the runtime -
@@ -59,8 +61,8 @@
 #' \code{\link[caret]{trainControl}},\code{\link{CreateSpacetimeFolds}},\code{\link{nndm}}
 #' @references
 #' \itemize{
-#' \item Gasch, C.K., Hengl, T., Gräler, B., Meyer, H., Magney, T., Brown, D.J. (2015): Spatio-temporal interpolation of soil water, temperature, and electrical conductivity in 3D+T: the Cook Agronomy Farm data set. Spatial Statistics 14: 70-90.
-#' \item Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.  \doi{10.1016/j.envsoft.2017.12.001}
+#' \item Gasch, C.K., Hengl, T., Gräler, B., Meyer, H., Magney, T., Brown, D.J. (2015): Spatio-temporal interpolation of soil water, temperature, and electrical conductivity in 3D+T: the Cook Agronomy Farm data set. Spatial Statistics 14: 70-90. \doi{10.1016/j.spasta.2015.04.001}.
+#' \item Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.  \doi{10.1016/j.envsoft.2017.12.001}.
 #' \item Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance of spatial predictor variable selection in machine learning applications - Moving from data reproduction to spatial prediction. Ecological Modelling. 411, 108815. \doi{10.1016/j.ecolmodel.2019.108815}.
 #' \item Ludwig, M., Moreno-Martinez, A., Hölzel, N., Pebesma, E., Meyer, H. (2023): Assessing and improving the transferability of current global spatial prediction models. Global Ecology and Biogeography. \doi{10.1111/geb.13635}.
 #' }
@@ -553,12 +555,21 @@ ffs <- function (predictors,
           #if (breakcondition){
           message(paste0("Note: No increase in performance found using more than ",
                          length(startvars), " variables"))
+
+          if(maximize){
+            best_models_table <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == max(x))), ]
+          }else{
+            best_models_table <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == min(x))), ]
+          }
+
+
           bestmodel$selectedvars <- best_predictors
           bestmodel$selectedvars_perf <- selectedvars_perf
           bestmodel$selectedvars_perf_SE <- selectedvars_SE
           bestmodel$perf_all <- perf_all
           bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
           bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
+          bestmodel$best_models_table <- best_models_table[!is.na(best_models_table$nvar),]
           bestmodel$minVar <- minVar
           bestmodel$type <- "ffs"
           class(bestmodel) <- c("ffs", "train")
@@ -602,11 +613,21 @@ ffs <- function (predictors,
           message(paste0("Note: No increase in performance found using more than ",
                          length(startvars), " variables"))
           bestmodel$selectedvars <- selectedvars
+
+
+          if(maximize){
+            best_models_table <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == max(x))), ]
+          }else{
+            best_models_table <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == min(x))), ]
+          }
+
+
           bestmodel$selectedvars_perf <- selectedvars_perf[-length(selectedvars_perf)]
           bestmodel$selectedvars_perf_SE <- selectedvars_SE[-length(selectedvars_SE)] #!!!
           bestmodel$perf_all <- perf_all
           bestmodel$perf_all <- bestmodel$perf_all[!apply(is.na(bestmodel$perf_all), 1, all),]
           bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
+          bestmodel$best_models_table <- best_models_table[!is.na(best_models_table$nvar),]
           bestmodel$minVar <- minVar
           bestmodel$type <- "ffs"
           class(bestmodel) <- c("ffs", "train")
@@ -708,12 +729,12 @@ ffs <- function (predictors,
   bestmodel$selectedvars <- names(bestmodel$trainingData)[-which(names(bestmodel$trainingData)==".outcome")]
 
   if(maximize){
-    best_models <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == max(x))), ]
+    best_models_table <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == max(x))), ]
   }else{
-    best_models <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == min(x))), ]
+    best_models_table <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == min(x))), ]
   }
-  bestmodel$selectedvars_perf <- best_models[1:(length(bestmodel$selectedvars)-1),metric]
-  bestmodel$selectedvars_perf_SE <- best_models$SE[1:(length(bestmodel$selectedvars)-1)]
+  bestmodel$selectedvars_perf <- best_models_table[1:(length(bestmodel$selectedvars)-1),metric]
+  bestmodel$selectedvars_perf_SE <- best_models_table$SE[1:(length(bestmodel$selectedvars)-1)]
   if(globalval){
     bestmodel$selectedvars_perf_SE <- NA
   }
@@ -722,6 +743,7 @@ ffs <- function (predictors,
   bestmodel$minVar <- minVar
   bestmodel$type <- "ffs"
   bestmodel$perf_all <- bestmodel$perf_all[colSums(!is.na(bestmodel$perf_all)) > 0]
+  bestmodel$best_models_table <- best_models_table
   class(bestmodel) <- c("ffs", "train")
   return(bestmodel)
 }

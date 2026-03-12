@@ -65,7 +65,8 @@ A list of class train. Beside of the usual train content
 the object contains the vector "selectedvars" and "selectedvars_perf"
 that give the order of the best variables selected as well as their corresponding
 performance (starting from the first two variables). It also contains "perf_all"
-that gives the performance of all model runs.
+that gives the performance of all model runs and "best_models_table" that returns the
+summary of the best performing models per number of variables.
 }
 \description{
 A simple forward feature selection algorithm
@@ -75,8 +76,9 @@ Models with two predictors are first trained using all possible
 pairs of predictor variables. The best model of these initial models is kept.
 On the basis of this best model the predictor variables are iteratively
 increased and each of the remaining variables is tested for its improvement
-of the currently best model. The process stops if none of the remaining
+of the currently best model. If earlyStopping=TRUE (default), the process stops if none of the remaining
 variables increases the model performance when added to the current best model.
+Otherwise if earlyStopping==FALSE variables will iteratively be added and the model finally leading to the best performance is kept.
 
 The forward feature selection can be run in parallel with forking on Linux systems (mclapply).
 Each fork computes a model, which drastically speeds up the runtime -
@@ -178,8 +180,8 @@ ffsmodel <- ffs(predictors = splotdata[,6:16],
 }
 \references{
 \itemize{
-\item Gasch, C.K., Hengl, T., Gräler, B., Meyer, H., Magney, T., Brown, D.J. (2015): Spatio-temporal interpolation of soil water, temperature, and electrical conductivity in 3D+T: the Cook Agronomy Farm data set. Spatial Statistics 14: 70-90.
-\item Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.  \doi{10.1016/j.envsoft.2017.12.001}
+\item Gasch, C.K., Hengl, T., Gräler, B., Meyer, H., Magney, T., Brown, D.J. (2015): Spatio-temporal interpolation of soil water, temperature, and electrical conductivity in 3D+T: the Cook Agronomy Farm data set. Spatial Statistics 14: 70-90. \doi{10.1016/j.spasta.2015.04.001}.
+\item Meyer, H., Reudenbach, C., Hengl, T., Katurji, M., Nauß, T. (2018): Improving performance of spatio-temporal machine learning models using forward feature selection and target-oriented validation. Environmental Modelling & Software 101: 1-9.  \doi{10.1016/j.envsoft.2017.12.001}.
 \item Meyer, H., Reudenbach, C., Wöllauer, S., Nauss, T. (2019): Importance of spatial predictor variable selection in machine learning applications - Moving from data reproduction to spatial prediction. Ecological Modelling. 411, 108815. \doi{10.1016/j.ecolmodel.2019.108815}.
 \item Ludwig, M., Moreno-Martinez, A., Hölzel, N., Pebesma, E., Meyer, H. (2023): Assessing and improving the transferability of current global spatial prediction models. Global Ecology and Biogeography. \doi{10.1111/geb.13635}.
 }
