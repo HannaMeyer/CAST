@@ -533,7 +533,7 @@ plot.ffs <- function(x,plotType="all",palette=hcl.colors,reverse=FALSE,
             by = ceiling(max(output_df$nvar) / 5)
           ),
           colours = cols,
-          name = "variables",
+          name = "Number of variables",
           guide = "colourbar"
         ) +
         ggplot2::theme_bw() +
