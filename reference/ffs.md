@@ -14,6 +14,7 @@ ffs(
   globalval = FALSE,
   withinSE = FALSE,
   minVar = 2,
+  earlyStopping = TRUE,
   trControl = caret::trainControl(),
   tuneLength = 3,
   tuneGrid = NULL,
@@ -60,6 +61,11 @@ ffs(
 
   Numeric. Number of variables to combine for the first selection. See
   Details.
+
+- earlyStopping:
+
+  Logical. Should the variable selection stop when none of the further
+  variables increases the performance. If FALSE selection is continued.
 
 - trControl:
 

@@ -55,6 +55,7 @@
 <span>  globalval <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  withinSE <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  minVar <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  earlyStopping <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  trControl <span class="op">=</span> <span class="fu">caret</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/trainControl.html" class="external-link">trainControl</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  tuneLength <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  tuneGrid <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -101,6 +102,11 @@ currently best models Standard error</p></dd>
 <dt id="arg-minvar">minVar<a class="anchor" aria-label="anchor" href="#arg-minvar"></a></dt>
 <dd><p>Numeric. Number of variables to combine for the first selection.
 See Details.</p></dd>
+
+
+<dt id="arg-earlystopping">earlyStopping<a class="anchor" aria-label="anchor" href="#arg-earlystopping"></a></dt>
+<dd><p>Logical. Should the variable selection stop when none of the further
+variables increases the performance. If FALSE selection is continued.</p></dd>
 
 
 <dt id="arg-trcontrol">trControl<a class="anchor" aria-label="anchor" href="#arg-trcontrol"></a></dt>
