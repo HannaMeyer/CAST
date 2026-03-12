@@ -50,7 +50,7 @@ Imports:
     twosamples, 
     terra, 
     utils, 
-    zoo
+    zoo,
     philentropy
 Suggests: 
     clustMixType,

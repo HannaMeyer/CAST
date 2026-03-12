@@ -657,8 +657,6 @@ sampleFromArea <- function(modeldomain, samplesize, dist_space, variables, sampl
     dists <- philentropy::dist_many_many(query, reference, method = dist_fun)
   }
 
-  print(dists)
-
   if (distance) {
     get_dist <- function(x, k) sort(x)[1:k]
     knn_dists <- t(apply(dists, 1, get_dist, k=k))
