@@ -14,9 +14,22 @@ number of similar training data points up to the DI threshold.
 ## Usage
 
 ``` r
+aoa(newdata, model = NA, ...)
+
+# S3 method for class 'stars'
+aoa(newdata, model = NA, ...)
+
+# S3 method for class 'Raster'
+aoa(newdata, model = NA, ...)
+
+# S3 method for class 'SpatRaster'
+aoa(newdata, model = NA, ...)
+
+# S3 method for class 'data.frame'
 aoa(
   newdata,
   model = NA,
+  ...,
   trainDI = NA,
   train = NULL,
   weight = NA,
@@ -49,6 +62,10 @@ aoa(
   on variable importance) as well as cross-validation folds. See
   examples for the case that no model is available or for models trained
   via e.g. mlr3.
+
+- ...:
+
+  ignored
 
 - trainDI:
 
