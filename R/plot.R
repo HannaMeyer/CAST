@@ -348,7 +348,7 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
     x$minVar <- 2
   }
   if(x$type=="bss"&plotType=="selected"){
-    type <- "all"
+    plotType <- "all"
     print("warning: type must be 'all' for a bss model")
   }
   if (plotType=="selected"){
