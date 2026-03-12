@@ -19,13 +19,6 @@ plot.trainDI = function(x, ...){
 
 }
 
-
-
-
-
-
-
-
 #' @name plot
 #'
 #' @param x aoa object
@@ -77,8 +70,6 @@ plot.aoa = function(x, samplesize = 1000, variable = "DI", ...){
     trainLPD = data.frame(LPD = x$parameters$trainLPD,
                           what = "trainLPD")
 
-
-
     if(inherits(x$AOA, "RasterLayer")){
       targetLPD = terra::spatSample(methods::as(x$LPD, "SpatRaster"),
                                     size = samplesize, method = "regular")
@@ -100,7 +91,6 @@ plot.aoa = function(x, samplesize = 1000, variable = "DI", ...){
 
     dfLPD = rbind(trainLPD, targetLPD)
 
-
     ggplot(dfLPD, aes(x = .data[["LPD"]], group = .data[["what"]], fill = .data[["what"]]))+
       geom_density(adjust=1.5, alpha=0.4)+
       scale_fill_discrete(name = "Set")+
@@ -111,8 +101,6 @@ plot.aoa = function(x, samplesize = 1000, variable = "DI", ...){
   } else
 	stop("argument 'variable' needs to be either 'DI' or 'LPD'")
 }
-
-
 
 #' @name plot
 #' @param x An object of type \emph{nndm}.
@@ -219,7 +207,6 @@ plot.nndm <- function(x, type="strict", stat = "ecdf", ...){
   p
 
 }
-
 
 #' @name plot
 #' @param x An object of type \emph{knndm}.
@@ -334,8 +321,6 @@ plot.knndm <- function(x, type="strict", stat = "ecdf", ...){
 #' @name plot
 #' @export
 
-
-
 plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
                      marker="black",size=1.5,lwd=0.5,
                      pch=21,...){
@@ -439,7 +424,6 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
   }
 }
 
-
 #' @name plot
 #' @description Density plot of nearest neighbor distances in geographic space or feature space between training data as well as between training data and
 #' prediction locations.
@@ -451,8 +435,6 @@ plot.ffs <- function(x,plotType="all",palette=rainbow,reverse=FALSE,
 #' @export
 #' @return a ggplot
 #'
-
-
 
 plot.geodist <- function(x, unit = "m", stat = "density", ...){
 
@@ -504,7 +486,6 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
   p
 }
 
-
 #' @name plot
 #' @description Plot the DI/LPD and errormetric from Cross-Validation with the modeled relationship
 #' @param x errorModel, see \code{\link{DItoErrormetric}}
@@ -512,7 +493,6 @@ plot.geodist <- function(x, unit = "m", stat = "density", ...){
 #' @export
 #' @return a ggplot
 #'
-
 
 plot.errorModel <- function(x, ...){
 
