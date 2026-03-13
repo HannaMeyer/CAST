@@ -1,6 +1,6 @@
 #' Nearest Neighbour Distance Matching (NNDM) algorithm
 #' @description
-#' This function implements the NNDM algorithm and returns the necessary indices to perform a NNDM LOO CV for map validation.
+#' This function implements the NNDM algorithm for prediction-domain adaptive resampling and returns the necessary indices to perform a NNDM LOO CV for map validation.
 #' @author Carles Milà
 #' @param tpoints sf or sfc point object, or data.frame if space = "feature". Contains the training points samples.
 #' @param modeldomain sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).

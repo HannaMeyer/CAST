@@ -1,7 +1,7 @@
 #' K-fold Nearest Neighbour Distance Matching
 #' @description
-#' This function implements the kNNDM algorithm and returns the necessary
-#' indices to perform a k-fold NNDM CV for map validation.
+#' This function implements the kNNDM algorithm for prediction-domain adaptive resampling
+#' and returns the necessary indices to perform train-test splits or k-fold NNDM CV.
 #'
 #' @author Carles Milà and Jan Linnenbrink
 #' @param tpoints sf or sfc point object, or data.frame if dist_space = "feature". Contains the training points samples.
@@ -18,16 +18,16 @@
 #' @param sampling character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
 #' Only required if modeldomain is used instead of predpoints.
 #' @param dist_fun character. Currently covers `euclidean` (default), `gower`, `mahalanobis` and `great_circle`.
-#' `gower` and `mahalanobis` only work with `dist_space`="feature", while `great_circle` only works with `dist_space`="geographical". 
-#' `mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables, 
+#' `gower` and `mahalanobis` only work with `dist_space`="feature", while `great_circle` only works with `dist_space`="geographical".
+#' `mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables,
 #' `gower` also works with mixed data including numerical and categorical variables.
 #' For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.
 #' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
-#' @param scale_vars boolean. Should variables be scaled? Only for `dist_space`="feature". 
-#' Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
+#' @param scale_vars boolean. Should variables be scaled? Only for `dist_space`="feature".
+#' Calculating Gower distances already includes scaling, and manually rescale the data is redundant.
 #' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.
 #' @param test_prop numeric. The proportion of test data. NULL by default (i.e., no train/test split).
-#' @param test_tolerance numeric. The allowed deviance from `test_prop`. The higher the tolerance, 
+#' @param test_tolerance numeric. The allowed deviance from `test_prop`. The higher the tolerance,
 #' the larger the possibility to obtain train/test splits that yield good approximations of the prediction situation.
 #' @param nk_len integer. The number of fold configurations to test. By default 100.
 #' Larger numbers increase computational times, but also might lead to better W statistics.
@@ -43,8 +43,10 @@
 #' W (Wasserstein statistic), and dist_space (stated by the user in the function call).
 #'
 #' @details
-#' knndm is a k-fold version of NNDM LOO CV for medium and large datasets. It can be used for cross-validation and train / test splits (the latter is experimental).
-#' Brielfy, the algorithm tries to find a configuration such that the integral of the absolute differences (Wasserstein W statistic)
+#' knndm is an implementation of prediction-domain adaptive validation.
+#' It is a k-fold version of NNDM LOO CV which makes it more suitable for medium and large datasets.
+#' It can be used for cross-validation and train / test splits (the latter is experimental).
+#' Briefly, the algorithm tries to find a configuration such that the integral of the absolute differences (Wasserstein W statistic)
 #' between the empirical nearest neighbour distance distribution function between the test and training data (Gj*),
 #' and the empirical nearest neighbour distance distribution function between the prediction and training points (Gij),
 #' is minimised. It does so by performing clustering of the training points' coordinates for different numbers of
@@ -53,7 +55,7 @@
 #'
 #' When using `knndm` to split the data into training and test sets (experimental), the proportion of points belonging to the test set (`test_prop`) replaces the number of folds `k`.
 #' Based on the `test_prop` , `minp` and `maxp` are calculated as the `test_prop` +/- `test_tolerance`.
-#' Compared to k-fold CV, using knndm for train/test splits is less flexible and often results in larger NNDs between test and train locations 
+#' Compared to k-fold CV, using knndm for train/test splits is less flexible and often results in larger NNDs between test and train locations
 #' than between prediction and train locations. Hence, it is essential to plot the results of `knndm` and check how well the split can resemble the prediction situation.
 #' Modifying the `test_prop` parameter, as well as increasing `test_prop` allow more flexible matching and can potentially improve the match.
 #'
@@ -89,7 +91,7 @@
 #' `predpoints` can also be missing, if `modeldomain` is of class SpatRaster. In this case, the values of of the SpatRaster will be extracted to the `predpoints`.
 #' In the case of any categorical features, Gower distances will be used to calculate the Nearest Neighbour distances [Experimental]. If categorical
 #' features are present, and `clustering` = "kmeans", K-Prototype clustering will be performed instead.
-#' 
+#'
 #' @note
 #' For spatial visualization of fold affiliation see examples.
 #' @references
@@ -214,13 +216,13 @@
 #' plot(train_points, add = TRUE, col = "red")
 #'
 #' # Use kNNDM to split the data into 30% +- 10% test and 70% train
-#' knndm_folds <- knndm(train_points, predpoints = pred_points, test_prop = 0.3, tolerance = 0.1)
+#' knndm_folds <- knndm(train_points, predpoints = pred_points, test_prop = 0.3, test_tolerance = 0.1)
 #' # How many samples have been used for testing:
 #' table(knndm_folds$clusters)
 #' plot(knndm_folds)
 #' # The train/test split could not represent the prediction situation well
 #' # Increase tolerance to increase number of configurations tried, and thus to find a suitable split
-#' knndm_folds <- knndm(train_points, predpoints = pred_points, test_prop = 0.3, tolerance = 0.2)
+#' knndm_folds <- knndm(train_points, predpoints = pred_points, test_prop = 0.3, test_tolerance = 0.2)
 #' plot(knndm_folds)
 #' table(knndm_folds$clusters)
 #' # This resulted in better match of the prediction situation, but a 50/50 split
@@ -229,7 +231,7 @@
 #'   geom_sf(data = simarea, alpha = 0) +
 #'   geom_sf(data = train_points, aes(col = folds))
 #'}
-#' 
+#'
 #' ########################################################################
 #' # Example 5: Real- world example; kNNDM in feature space
 #' ########################################################################
@@ -262,8 +264,8 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
                   k = 10, maxp = 0.5,
                   clustering = "hierarchical", linkf = "ward.D2",
                   samplesize = 1000, sampling = "regular", dist_fun="euclidean",
-                  algorithm="brute", scale_vars = TRUE, 
-                  space = NULL, useMD = NULL, 
+                  algorithm="brute", scale_vars = TRUE,
+                  space = NULL, useMD = NULL,
                   test_prop = NULL, test_tolerance = NULL,
                   nk_len = 100){
 
@@ -298,7 +300,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
   if(!is.null(test_prop)) {
     warning("A train/test split will be returned, which is currently experimental.")
   }
-  
+
   # Check that test_prop and test_tolerance are correctly specified and align parameters
   minp <- NULL
   if(!is.null(test_prop)) {
@@ -338,7 +340,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
   if(!nk_len%%1==0) {
     stop("nk_len must be an integer")
   }
-  
+
   # create sample points from modeldomain
   if(is.null(predpoints)&!is.null(modeldomain)){
 
@@ -469,7 +471,7 @@ check_knndm_geo <- function(tpoints, predpoints, dist_space, k, maxp, clustering
   if (!(clustering %in% c("kmeans", "hierarchical"))) {
     stop("clustering must be one of `kmeans` or `hierarchical`")
   }
-  
+
   if(is.null(test_prop)) {
     if (!(maxp < 1 & maxp > 1/k)) {
       stop("maxp must be strictly between 1/k and 1")
@@ -490,7 +492,7 @@ check_knndm_feature <- function(tpoints, predpoints, dist_space, k, maxp, cluste
 
   if (!is.null(catVars) && dist_fun != "gower") {
       stop("Only gower distances work with categorical features. Please use dist_fun = 'gower'")
-  } 
+  }
 
   if(is.null(test_prop)) {
     if (!(maxp < 1 & maxp > 1/k)) {
@@ -649,7 +651,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
         clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
         clustgroups[[paste0("nk", nk)]] <- clust_k
 
-      } 
+      }
 
       # Compute W statistic if not exceeding maxp
       if(!any(table(clust_k)/length(clust_k)>maxp)){
@@ -672,7 +674,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
     if(!is.null(test_prop) && is.null(clust)) {
       stop("No valid train/test configurations found in the range test_prop +/- tolerance. Increase tolerance.")
     }
-    
+
     if(isTRUE(dist_fun == "great_circle")){
       Gjstar <- distclust_distmat(distmat, clust)
     }else{
@@ -766,7 +768,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
           }, numeric(1))
         }, numeric(n_rows))
       diag(distmat) <- NA
-      
+
       Gj <- apply(distmat, 1, min, na.rm=TRUE)
 
       n_rows_p <- nrow(predpoints_mat)
@@ -809,7 +811,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
       clust <- sample(clusters, nrow(tpoints))
     } else {
       clust <- sample(rep(1:k, ceiling(nrow(tpoints)/k)), size = nrow(tpoints), replace=F)
-    }    
+    }
 
     if(is.null(catVars)) {
       if(isTRUE(dist_fun == "mahalanobis")) {
@@ -900,7 +902,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
             colnames(centrpca) <- colnames(tpoints)
             return(predict(pcacoords, centrpca))
           },numeric(1))
-          
+
         } else {
           centr_tpoints <- vapply(tabclust$clust_nk, function(x){
             centrpca_num <- matrix(apply(tpoints[clust_nk %in% x, !(names(tpoints) %in% catVars), drop=FALSE], 2, mean), nrow = 1)
@@ -950,7 +952,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
           # Keep only groups within range minp–maxp
           prop_valid <- props >= minp & props <= maxp
         }
-        
+
         # Compute W statistic if size of clust_k is valid
         if(any(prop_valid)){
 

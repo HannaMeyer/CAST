@@ -51,7 +51,7 @@ indx_train and indx_test can directly be used as "index" and "indexOut" in
 caret's \code{\link[caret]{trainControl}} function or used to initiate a custom validation strategy in mlr3.
 }
 \description{
-This function implements the NNDM algorithm and returns the necessary indices to perform a NNDM LOO CV for map validation.
+This function implements the NNDM algorithm for prediction-domain adaptive resampling and returns the necessary indices to perform a NNDM LOO CV for map validation.
 }
 \details{
 NNDM proposes a LOO CV scheme such that the nearest neighbour distance distribution function between the test and training data during the CV process is matched to the nearest neighbour
