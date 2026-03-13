@@ -445,7 +445,7 @@ aoa_chunked_dists <- function(train, CVtrain, CVtest, dist_fun, chunk_size = 100
   trainDist_min <- unlist(lapply(results, function(x) x[[1]]$trainDist_min))
   trainDist_indices <- unlist(lapply(results, function(x) x[[1]]$trainDist_indices))
 
-  return(list(trainDist_min = trainDist_min, trainDist_avrg = trainDist_avrg, trainDist_avrgmean=trainDist_avrgmean, rainDist_indices=trainDist_indices))
+  return(list(trainDist_min = trainDist_min, trainDist_avrg = trainDist_avrg, trainDist_avrgmean=trainDist_avrgmean, trainDist_indices=trainDist_indices))
 }
 
 

@@ -44,7 +44,6 @@ Imports:
     graphics,
     grDevices,
     methods,
-    parallel,
     sf, 
     stats, 
     twosamples, 

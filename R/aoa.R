@@ -31,8 +31,6 @@
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
 #' @param maxLPD numeric or integer. Only if \code{LPD = TRUE}. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso \code{\link{DItoErrormetric}})
 #' @param indices logical. Calculate indices of the training data points that are responsible for the LPD of a new prediction location? Output is a matrix with the dimensions num(raster_cells) x maxLPD. Each row holds the indices of the training data points that are relevant for the specific LPD value at that location. Can be used in combination with exploreAOA(aoa) function from the \href{https://github.com/fab-scm/CASTvis}{CASTvis package} for a better visual interpretation of the results. Note that the matrix can be quite big for examples with a high resolution and a larger number of training samples, which can cause memory issues.
-#' @param parallel Logical. Parallelization the process. Only possible if LPD = TRUE. Can reduce computation time significantly.
-#' @param cores Integer or Character. Number of cores to use for the the parallelization. You can use "auto" to set your cores to \code{detectCores()/2} (see \code{\link[parallel]{detectCores}}).
 #' @param verbose Logical. Print progress or not?
 #' @details The Dissimilarity Index (DI), the Local Data Point Density (LPD) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
@@ -51,7 +49,7 @@
 #'  \item{LPD}{SpatRaster, stars object or data frame. Local Point Density of newdata.}
 #'  \item{AOA}{SpatRaster, stars object or data frame. Area of Applicability of newdata. AOA has values 0 (outside AOA) and 1 (inside AOA)}
 #'
-#' @importFrom parallel detectCores makeForkCluster clusterExport parLapply stopCluster
+#' 
 #'
 #' @author
 #' Hanna Meyer, Fabian Schumacher
@@ -217,7 +215,7 @@ aoa.SpatRaster = function(newdata, model=NA, ...) {
 #' @name aoa
 aoa.data.frame <- function(newdata,
                 model=NA,
-				...,
+				        ...,
                 trainDI = NA,
                 train=NULL,
                 weight=NA,
@@ -230,8 +228,6 @@ aoa.data.frame <- function(newdata,
                 LPD = FALSE,
                 maxLPD = 1,
                 indices = FALSE,
-                parallel = FALSE,
-                cores = 4,
                 chunk_size = 1000L,
                 verbose = TRUE) {
 
@@ -239,7 +235,7 @@ aoa.data.frame <- function(newdata,
 
   calc_LPD <- LPD
   # validate maxLPD input
-  if (LPD == TRUE) {
+  if (LPD) {
     if (is.numeric(maxLPD)) {
       if (maxLPD <= 0) {
         stop("maxLPD cannot be negative or equal to 0. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
@@ -269,10 +265,6 @@ aoa.data.frame <- function(newdata,
     }
   }
 
-  if (parallel & Sys.info()["sysname"] != "Linux") {
-    stop("Paralellization only works for UNIX-alike systems. Please use single core computation.")
-  }
-
   # if not provided, compute train DI
   if(!inherits(trainDI, "trainDI")) {
     if (verbose) {
@@ -293,8 +285,7 @@ aoa.data.frame <- function(newdata,
       verbose=verbose)
   }
 
-  if (calc_LPD == TRUE) {
-    # maxLPD <- trainDI$avrgLPD
+  if (calc_LPD) {
     trainDI$maxLPD <- maxLPD
   }
 
