@@ -20,7 +20,7 @@
 #' @param offset Integer offset for neighbor ranking (default 0). The returned
 #'   neighbors are selected from the sorted distance vector using the range
 #'   \code{c(max(1, 1 + offset), max(k, offset + k))}. This can be used to skip the
-#'   immediate nearest neighbour(s) when desired, e.g. to exclude the observation itself when 
+#'   immediate nearest neighbour(s) when desired, e.g. to exclude the observation itself when
 #'   \code{query = NULL}.
 #' @param return_distmat Logical; if \code{TRUE} returns the full distance
 #'   matrix (matrix with rows = query, cols = reference). If \code{FALSE}
@@ -60,13 +60,13 @@
 #'   \code{\link[philentropy]{dist_many_many}}
 #' @keywords internal
 knndist <- function(
-  reference, 
+  reference,
   query = NULL,
-  k = 1, 
+  k = 1,
   dist_fun = c("euclidean", "mahalanobis", "gower"),
   offset = 0,
-  return_distmat = FALSE) {
-  
+  return_distmat = FALSE
+) {
   dist_fun <- match.arg(dist_fun)
 
   if (dist_fun == "gower") {
@@ -78,20 +78,30 @@ knndist <- function(
     range <- maxs - mins
 
     reference[, num_vars] <- as.data.frame(
-        sweep(sweep(reference[, num_vars, drop = FALSE], 2, mins, "-"), 2, range, "/"),
-        stringsAsFactors = FALSE
+      sweep(
+        sweep(reference[, num_vars, drop = FALSE], 2, mins, "-"),
+        2,
+        range,
+        "/"
+      ),
+      stringsAsFactors = FALSE
     )
-    
+
     if (!is.null(query)) {
       query[, num_vars] <- as.data.frame(
-        sweep(sweep(query[, num_vars, drop = FALSE], 2, mins, "-"), 2, range, "/"),
+        sweep(
+          sweep(query[, num_vars, drop = FALSE], 2, mins, "-"),
+          2,
+          range,
+          "/"
+        ),
         stringsAsFactors = FALSE
       )
     }
     query <- .numeric_fct(query)
     reference <- .numeric_fct(reference)
   }
-  
+
   if (inherits(query, "numeric")) {
     query <- matrix(query, nrow = 1)
   }
@@ -106,8 +116,8 @@ knndist <- function(
   }
 
   if (dist_fun == "mahalanobis") {
-    # For Mahalanobis distance, we need to compute the inverse covariance matrix 
-    # we then transform that reference and query to calculate the L2 distance in 
+    # For Mahalanobis distance, we need to compute the inverse covariance matrix
+    # we then transform that reference and query to calculate the L2 distance in
     # the transformed space, which is equivalent to the Mahalanobis distance in the original space.
     S_inv <- MASS::ginv(stats::cov(reference))
     chol_ok <- try(R <- chol(S_inv), silent = TRUE)
@@ -120,25 +130,38 @@ knndist <- function(
     }
 
     reference <- reference %*% A
-    if (!is.null(query)) query <- query %*% A
+    if (!is.null(query)) {
+      query <- query %*% A
+    }
     dist_fun = "euclidean"
   }
 
-
   # calculate the distance matrix
   if (is.null(query)) {
-    dists <- suppressMessages(philentropy::distance(reference, method = dist_fun))
-    if (length(dists) == 1) return(dists)
+    dists <- suppressMessages(philentropy::distance(
+      reference,
+      method = dist_fun
+    ))
+    if (length(dists) == 1) {
+      return(dists)
+    }
     diag(dists) <- NA # Exclude self-distance
-    } else {
-    dists <- suppressMessages(philentropy::dist_many_many(query, reference, method = dist_fun))
+  } else {
+    dists <- suppressMessages(philentropy::dist_many_many(
+      query,
+      reference,
+      method = dist_fun
+    ))
   }
 
-  if (return_distmat) return(dists)
+  if (return_distmat) {
+    return(dists)
+  }
 
   # compute range and sizes
   range <- c(max(1, 1 + offset), max(k, offset + k))
-  nc <- diff(range) + 1L; nr <- nrow(dists)
+  nc <- diff(range) + 1L
+  nr <- nrow(dists)
 
   # preallocate
   knn_dists <- matrix(NA_real_, nrow = nr, ncol = nc)
@@ -147,7 +170,7 @@ knndist <- function(
   # loop by row (order with NA last so NA self-distances are excluded)
   for (i in seq_len(nr)) {
     row <- dists[i, ]
-    o <- order(row, na.last = TRUE)
+    o <- order(row, seq_along(row), na.last = TRUE)
     idx <- o[range[1]:range[2]]
     knn_indices[i, ] <- as.integer(idx)
     knn_dists[i, ] <- row[idx]
@@ -155,8 +178,7 @@ knndist <- function(
 
   attr(knn_dists, "indices") <- knn_indices
   knn_dists
-
-}  
+}
 
 
 #' Convert character/factor columns to integer codes (internal)
@@ -171,9 +193,17 @@ knndist <- function(
 #' @keywords internal
 #' @noRd
 .numeric_fct <- function(x) {
-  if (is.null(x)) return(NULL)
-  catVars <- names(x)[vapply(x, function(z) inherits(z, c("factor", "character")), logical(1))]
-  if (length(catVars) == 0) return(x)
+  if (is.null(x)) {
+    return(NULL)
+  }
+  catVars <- names(x)[vapply(
+    x,
+    function(z) inherits(z, c("factor", "character")),
+    logical(1)
+  )]
+  if (length(catVars) == 0) {
+    return(x)
+  }
   # Convert categorical variables to factor then to numeric
   for (var in catVars) {
     x[[var]] <- as.integer(as.factor(x[[var]]))
