@@ -142,3 +142,17 @@ test_that("NNDM works in feature space", {
   expect_equal(round(as.numeric(mean(nndm_folds_g$Gjstar)),4), 70.7268)
 
 })
+
+test_that("print and plot for nndm run and return invisibly", {
+  set.seed(1234)
+  poly <- sf::st_polygon(list(matrix(c(0,0,0,10,10,10,10,0,0,0), ncol=2, byrow=TRUE)))
+  poly_sfc <- sf::st_sfc(poly)
+  tpoints_sfc <- sf::st_sample(poly_sfc, 10, type = "random")
+  predpoints_sfc <- sf::st_sample(poly_sfc, 10, type = "regular")
+
+  nndm_obj <- nndm(tpoints_sfc, predpoints = predpoints_sfc)
+  expect_no_error(print(nndm_obj))
+  expect_invisible(print(nndm_obj))
+  expect_s3_class(plot(nndm_obj), "ggplot")
+
+})

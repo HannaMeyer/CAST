@@ -67,3 +67,13 @@ test_that("trainDI (with LPD = TRUE) works in default for a trained model", {
   expect_equal(as.numeric(colMeans(DI$train)),
                c(795.4426351,4.0277978,0.2577245))
 })
+
+test_that("print and plot for trainDI run and return invisibly", {
+  skip_if_not_installed("randomForest")
+  dat <- loaddata()
+  DI <- trainDI(model = dat$model, verbose = FALSE)
+
+  expect_no_error(print(DI))
+  expect_invisible(print(DI))
+  expect_s3_class(plot(DI), "ggplot")
+})

@@ -374,3 +374,11 @@ test_that("geodist works with buffered CV", {
   expect_equal(geod_dist_cv_mean, nndm_dist_cv_mean)
 
 })
+
+test_that("plot for geodist runs and returns ggplot", {
+  raster <- terra::rast(res = 20, xmin = 0, xmax = 1000, ymin = 0, ymax = 1000, crs = "EPSG:3035", vals=1:2500)
+  pts <- terra::as.points(raster) |> sf::st_as_sf()
+  gd <- geodist(pts, raster)
+
+  expect_s3_class(plot(gd), "ggplot")
+})
