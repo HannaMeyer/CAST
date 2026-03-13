@@ -438,29 +438,5 @@ aoa.data.frame <- function(newdata,
   return(result)
 }
 
-.process_row <- function(row) {
-  knnDist <- .knndistfun(query=row, reference=train_scaled, k=maxLPD, dist_fun=method)
-  knnDI <- knnDist / trainDIdat$trainDist_avrgmean
-  knnDI <- c(knnDI)
-
-  DI_out_i <- knnDI[1]
-  LPD_out_i <- sum(knnDI < trainDIdat$threshold)
-
-  # return if indices not to be calculated
-  return(list(DI_out_i = DI_out_i,
-              LPD_out_i = LPD_out_i
-  ))
-}
-
-# Tell R CMD check these variables are fine
-utils::globalVariables(
-  c(
-    "train_scaled",
-    "method",
-    "trainDIdat",
-    "maxLPD",
-    "indices"
-    )
-  )
 
 
