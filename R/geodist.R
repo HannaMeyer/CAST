@@ -432,7 +432,7 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
     query <- if(!is.null(y)) sf::st_drop_geometry(y) else NULL
 
     if(is.null(CVtest)) {
-      min_d <- .knndistfun(query = query, reference = reference, k = 1, dist_fun = dist_fun, distance = TRUE)
+      min_d <- .knndistfun(query = query, reference = reference, k = 1, dist_fun = dist_fun)
       } else {
       min_d <- cv_distances(reference, CVtest = CVtest, CVtrain = CVtrain, dist_fun = dist_fun)
       }
@@ -465,7 +465,7 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
       }
     } else { # euclidean
         if(is.null(CVtest)) {
-          min_d <- .knndistfun(query = coords_y, reference = coords_x, k = 1, dist_fun = dist_fun, distance = TRUE)
+          min_d <- .knndistfun(query = coords_y, reference = coords_x, k = 1, dist_fun = dist_fun)
         } else {
           min_d <- cv_distances(coords_x, CVtest = CVtest, CVtrain = CVtrain, dist_fun = dist_fun)
         }
@@ -524,7 +524,7 @@ cv_distances <- function(x, CVtest, CVtrain = NULL, dist_fun = "euclidean", time
       }
 
     if(dist_fun %in% c("euclidean", "mahalanobis", "gower")) {
-      alldist[test_idx] <- .knndistfun(query = tr_test, reference = tr_train, k = 1, dist_fun = dist_fun, distance = TRUE)
+      alldist[test_idx] <- .knndistfun(query = tr_test, reference = tr_train, k = 1, dist_fun = dist_fun)
     } else if(dist_fun == "great_circle") {
         distmat <- sf::st_distance(x)
         units(distmat) <- NULL
