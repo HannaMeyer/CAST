@@ -441,25 +441,29 @@ mask_dist_mat <- function(dist_mat, ids, CVtest = NULL, CVtrain = NULL) {
   for (j in seq_along(ids)) {
     row_idx <- j
     col_idx <- ids[j]
-    if (row_idx <= nrow_q && col_idx <= ncol_r) {
-      dist_mat[row_idx, col_idx] <- NA
-    }
+    dist_mat[row_idx, col_idx] <- NA
   }
 
   # Mask within-fold distances when CV folds are provided
   if (!is.null(CVtrain) && !is.null(CVtest)) {
     for (j in seq_along(ids)) {
       sample_idx <- ids[j]
-      whichfold <- which(vapply(CVtest, function(x) any(x == sample_idx), logical(1)))
-      if (length(whichfold) == 1L) {
-        withinfold_ids <- CVtest[[whichfold]]
-        # keep only valid column indices
-        col_ids <- withinfold_ids[withinfold_ids <= ncol_r]
-        if (length(col_ids) > 0) dist_mat[j, col_ids] <- NA
+      # find the testing fold that contains the sample
+      whichfold <- which(vapply(CVtest, function(x) any(x == sample_idx), logical(1))) 
+      if(length(whichfold) > 1L) { # raise if a sample is used for testing more than once
+        stop("a datapoint is used for testing in more than one fold. currently this option is not implemented")
+      }
+      if (length(whichfold) == 0L) { # if never used in testing, we ignore the sample completely
+        dist_mat[j, ] <- NA
+      } else { # otherwise, we only consider its respective training samples
+        train_ids <- CVtrain[[whichfold]]
+        if (length(train_ids) > 0) {
+          not_train_ids <- setdiff(seq_len(ncol(dist_mat)), train_ids)
+          dist_mat[j, not_train_ids] <- NA
+        }
       }
     }
   }
-
   dist_mat
 }
 
