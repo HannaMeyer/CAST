@@ -1,11 +1,21 @@
-# `CAST` 1.0.5
+# `CAST` 1.1.0
 * new features:
-  * tests for bss
+  * knndm for train-test splits
+  * ffs allows for searching the whole range of predictors (earlyStopping=FALSE) 
 * bug fix: 
   * sampling of prediction points in geodist no longer requires reprojection and transformation of raster modeldomains by default (issue [#130](https://github.com/HannaMeyer/CAST/issues/130))
+  * now allows for tibble in AOA
 * modifications: 
   * geodist was re-structured, and some parameters have been re-named ('cvtrain' to 'CVtrain', 'cvfolds' to 'CVtest', 'type' to 'dist_space', 'timevar' to 'time_var') or newly introduced ('dist_fun', 'scale_vars')
   * knndm was re-structured to a lesser extent, the 'space' parameter has been re-named to 'dist_space', 'useMD' was dropped and replaced by 'dist_fun', 'scale_vars' was newly introduced
+  * AOA as a generic
+* other improvements:
+  * several new tests
+  * added code coverage
+  * improved documentation
+  * unify plotting style
+  * removed dependencies
+  * workflow figure improved
 
 # `CAST` 1.0.4
 * bug fix: formatting issues in tests
