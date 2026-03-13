@@ -587,8 +587,9 @@ sampleFromArea <- function(modeldomain, samplesize, dist_space, variables, sampl
   reference, 
   query = NULL,
   k = 1, 
-  dist_fun = c("euclidean", "mahalanobis", "gower"), 
-  distance = TRUE) {
+  dist_fun = c("euclidean", "mahalanobis", "gower"),
+  kpn = 0,
+  return_distmat = FALSE) {
   
   dist_fun <- match.arg(dist_fun)
 
@@ -657,17 +658,19 @@ sampleFromArea <- function(modeldomain, samplesize, dist_space, variables, sampl
     dists <- philentropy::dist_many_many(query, reference, method = dist_fun)
   }
 
-  if (distance) {
-    get_dist <- function(x, k) sort(x)[1:k]
-    knn_dists <- t(apply(dists, 1, get_dist, k=k))
-    if (k == 1) knn_dists <- as.vector(knn_dists)
-    return(knn_dists)
-  } else {
-    get_index <- function(x, k) order(x)[1:k]
-    indices <- t(apply(dists, 1, get_index, k=k))
-    if (k == 1) knn_dists <- as.vector(knn_dists)
-    return(indices)
-  }
+  if (return_distmat) return(dists)
+
+  # calculate the nearest neighbor distances
+  range <- c(max(1, 1+kpn), max(k, kpn+k))
+  get_dist <- function(x, range) sort(x)[range[1]:range[2]]
+  knn_dists <- t(apply(dists, 1, get_dist, range=range))
+  #if (k == 1) knn_dists <- as.vector(knn_dists)
+  # attacg the indices of the nearest neighbors as an attribute
+  get_index <- function(x, range) order(x)[range[1]:range[2]]
+  knn_indices <- t(apply(dists, 1, get_index, range=range))
+  #if (k == 1) knn_indices <- as.vector(knn_indices)
+  attr(knn_dists, "indices") <- knn_indices
+  return(knn_dists)
 }  
 
 

@@ -163,19 +163,13 @@ trainDI <- function(model = NA,
   }
 
   # calculate average mean distance between training data
-  is_cv <- !is.null(CVtrain)&!is.null(CVtest)
-  # Compute all pairwise distances once; used for normalization and optionally LPD.
-  all_pairs <- .knndistfun(reference=train, k=nrow(train)-1, dist_fun = method, distance = TRUE)
-  trainDist_avrgmean <- mean(all_pairs, na.rm = TRUE)
-
-  if (!is_cv) {
-    trainDist_min <- if (is.matrix(all_pairs)) all_pairs[, 1] else all_pairs
-  } else {
-    trainDist_min <- cv_distances(train, CVtrain = CVtrain, CVtest = CVtest, dist_fun=method)
-  }
+  # we chunk based on chunk_size
+  chunk_size <- 1000
+  train_dists <- aoa_chunked_dists(train=train, CVtrain=CVtrain, CVtest=CVtest, 
+    dist_fun=method, chunk_size = chunk_size, verbose = verbose)
 
   # Dissimilarity Index of training data -----
-  TrainDI <- trainDist_min / trainDist_avrgmean
+  TrainDI <- train_dists$trainDist_min / train_dists$trainDist_avrgmean
 
   # AOA Threshold ----
   threshold_quantile <- stats::quantile(TrainDI, 0.75, na.rm=TRUE)
@@ -186,8 +180,9 @@ trainDI <- function(model = NA,
 
   # calculate trainLPD and avrgLPD according to the CV folds
   if (LPD) {
-      dist_mat <- all_pairs / trainDist_avrgmean
-      trainLPD <- as.integer(rowSums(dist_mat < thres, na.rm = TRUE))
+      trainLPD <- aoa_chunked_lpd(train=train, CVtrain=CVtrain, CVtest=CVtest, 
+        dist_fun=method, train_mean = train_dists$trainDist_avrgmean, 
+        threshold = thres, chunk_size = chunk_size, verbose = verbose)
       avrgLPD <- round(mean(trainLPD))
   }
 
@@ -199,8 +194,8 @@ trainDI <- function(model = NA,
     variables = variables,
     catvars = catupdate$catvars,
     scaleparam = scaleparam,
-    trainDist_avrg = trainDist_min,
-    trainDist_avrgmean = trainDist_avrgmean,
+    trainDist_avrg = train_dists$trainDist_avrg,
+    trainDist_avrgmean = train_dists$trainDist_avrgmean,
     trainDI = TrainDI,
     threshold = thres,
     method = method
@@ -404,3 +399,96 @@ aoa_get_variables <- function(variables, model, train){
 
 }
 
+aoa_calc_dists <- function(reference, query = NULL, CVtrain, CVtest, dist_fun, ids){
+   # Compute all pairwise distances once; used for normalization and optionally LPD.
+  dist_mat <- .knndistfun(query=query, reference=reference, k=nrow(reference)-1, dist_fun = dist_fun, return_distmat = TRUE)
+  
+  if (nrow(dist_mat) > 1){
+    diag(dist_mat[ids,ids]) <- NA # set self-distances to NA
+  } else {
+    dist_mat[, ids] <- NA
+  }
+
+  if (!is.null(CVtrain)&!is.null(CVtest)) {
+    for (i in ids) {
+      # set withinfold samples to NA to exclude them from distance calculations for the current fold
+      whichfold = as.numeric(which(lapply(CVtest,function(x){any(x==i)}) == TRUE))
+      withinfold_ids <- CVtest[[whichfold]]
+      dist_mat[i, withinfold_ids] <- NA
+    }
+  }
+
+  trainDist_avrg <- apply(dist_mat, 1, mean, na.rm = TRUE)
+  trainDist_min <- apply(dist_mat, 1, min, na.rm = TRUE)
+  trainDist_indices <- apply(dist_mat, 1, function(x){which(x==min(x, na.rm = TRUE))[1]})
+
+  return(list(trainDist_min = trainDist_min, trainDist_avrg = trainDist_avrg, trainDist_indices=trainDist_indices))
+}
+
+
+aoa_chunked_dists <- function(train, CVtrain, CVtest, dist_fun, chunk_size = 1000, verbose = TRUE) {
+  n_chunks <- ceiling(nrow(train) / chunk_size)
+  chunk_ids <- split(1:nrow(train), ceiling(seq_along(1:nrow(train)) / chunk_size))
+  results <- vector("list", n_chunks)
+  for (i in 1:n_chunks) {
+    if (verbose) {
+      message(paste0("Calculating distances for chunk ", i, " of ", n_chunks))
+    }
+    dist_results <- aoa_calc_dists(reference=train, query=train[chunk_ids[[i]],], CVtrain=CVtrain, CVtest=CVtest, dist_fun = dist_fun, ids=chunk_ids[[i]])
+    results[[i]] <- list(dist_results)
+  }
+
+  trainDist_avrg <- unlist(lapply(results, function(x) x[[1]]$trainDist_avrg))
+  trainDist_avrgmean <- mean(trainDist_avrg, na.rm = TRUE)
+  trainDist_min <- unlist(lapply(results, function(x) x[[1]]$trainDist_min))
+  trainDist_indices <- unlist(lapply(results, function(x) x[[1]]$trainDist_indices))
+
+  return(list(trainDist_min = trainDist_min, trainDist_avrg = trainDist_avrg, trainDist_avrgmean=trainDist_avrgmean, rainDist_indices=trainDist_indices))
+}
+
+
+aoa_calc_lpd <- function(reference, query = NULL, CVtrain, CVtest, dist_fun, train_mean, threshold, ids){
+  dist_mat <- .knndistfun(query=query, reference=reference, k=nrow(reference)-1, dist_fun = dist_fun, return_distmat = TRUE)
+  if (nrow(dist_mat) > 1){
+    diag(dist_mat[ids,ids]) <- NA # set self-distances to NA
+  } else {
+    dist_mat[, ids] <- NA
+  }
+
+  if (!is.null(CVtrain)&!is.null(CVtest)) {
+    for (i in ids) {
+      # set withinfold samples to NA to exclude them from distance calculations for the current fold
+      whichfold = as.numeric(which(lapply(CVtest,function(x){any(x==i)}) == TRUE))
+      withinfold_ids <- CVtest[[whichfold]]
+      dist_mat[i, withinfold_ids] <- NA
+    }
+  }
+
+  di_mat <- dist_mat / train_mean
+  trainLPD <- as.integer(rowSums(di_mat < threshold, na.rm = TRUE))
+  return(trainLPD)
+}
+
+aoa_chunked_lpd <- function(train, CVtrain, CVtest, dist_fun, train_mean, threshold, chunk_size = 1000, verbose = TRUE) {
+  n_chunks <- ceiling(nrow(train) / chunk_size)
+  chunk_ids <- split(1:nrow(train), ceiling(seq_along(1:nrow(train)) / chunk_size))
+  results <- vector("list", n_chunks)
+  for (i in 1:n_chunks) {
+    if (verbose) {
+      message(paste0("Calculating LPD for chunk ", i, " of ", n_chunks))
+    }
+    lpd_results <- aoa_calc_lpd(
+      reference=train, 
+      query=train[chunk_ids[[i]],], 
+      CVtrain=CVtrain, 
+      CVtest=CVtest, 
+      dist_fun = dist_fun, 
+      train_mean = train_mean, 
+      threshold = threshold, 
+      ids=chunk_ids[[i]])
+    results[[i]] <- list(lpd_results)
+  }
+
+  trainLPD <- unlist(lapply(results, function(x) x[[1]]))
+  return(trainLPD)
+}
