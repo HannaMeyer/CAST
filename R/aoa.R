@@ -386,8 +386,8 @@ aoa.data.frame <- function(newdata,
 
     knnDist  <- .knndistfun(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=method)
     knnDI <- knnDist / trainDI$trainDist_avrgmean
-    DI_out[okrows] <- knnDI[1]
-    LPD_out[okrows] <- sum(knnDI < trainDI$threshold)
+    DI_out[okrows] <- knnDI[ ,1]
+    LPD_out[okrows] <- rowSums(knnDI < trainDI$threshold)
     if (indices) {
       if (LPD_out[okrows] > 0) {
         knnIndex  <- .knndistfun(query=newdataCC, reference=train_scaled, k = LPD_out[okrows[i]], dist_fun=method, distance = FALSE)
@@ -420,7 +420,7 @@ aoa.data.frame <- function(newdata,
   result <- list(
     parameters = trainDI,
     DI = DI_out,
-    AOA = ifelse(DI_out > trainDI$thres, 0L, 1L)
+    AOA = ifelse(DI_out > trainDI$threshold, 0L, 1L)
   )
 
   if (calc_LPD == TRUE) {

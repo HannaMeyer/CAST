@@ -92,7 +92,7 @@ errorProfiles <- function(model,
                           length.out = 10,
                           window.size = 5,
                           calib = "scam",
-                          method= "L2",
+                          method= "euclidean",
                           useWeight=TRUE,
                           k = 6,
                           m = 2){

@@ -660,10 +660,12 @@ sampleFromArea <- function(modeldomain, samplesize, dist_space, variables, sampl
   if (distance) {
     get_dist <- function(x, k) sort(x)[1:k]
     knn_dists <- t(apply(dists, 1, get_dist, k=k))
+    if (k == 1) knn_dists <- as.vector(knn_dists)
     return(knn_dists)
   } else {
     get_index <- function(x, k) order(x)[1:k]
     indices <- t(apply(dists, 1, get_index, k=k))
+    if (k == 1) knn_dists <- as.vector(knn_dists)
     return(indices)
   }
 }  
