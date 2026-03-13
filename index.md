@@ -1,13 +1,5 @@
 # CAST: Caret Applications for Spatio-Temporal models
 
-[![R-CMD-check](https://github.com/HannaMeyer/CAST/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/HannaMeyer/CAST/actions/workflows/R-CMD-check.yaml)
-[![CRAN
-status](https://www.r-pkg.org/badges/version/CAST)](https://cran.r-project.org/package=CAST)
-[![CRAN RStudio mirror downloads
-total](http://cranlogs.r-pkg.org/badges/grand-total/CAST)](https://cran.r-project.org/package=CAST)
-[![CRAN RStudio mirror
-downloads](http://cranlogs.r-pkg.org/badges/CAST)](https://cran.r-project.org/package=CAST)
-
 Supporting functionality to run ‘caret’ with spatial or spatial-temporal
 data. ‘caret’ is a frequently used package for model training and
 prediction using machine learning. CAST includes functions to improve
