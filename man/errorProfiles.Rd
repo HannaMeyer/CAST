@@ -27,7 +27,7 @@ errorProfiles(
 
 \item{locations}{Optional. sf object for the training data used in model. Only used if variable=="geodist". Note that they must be in the same order as model$trainingData.}
 
-\item{variable}{Character. Which dissimilarity or distance measure to use for the error metric. Current options are "DI" or "LPD"}
+\item{variable}{Character. Which dissimilarity or distance measure to use for the error metric. Current options are "DI" or "LPD", "geodist"}
 
 \item{multiCV}{Logical. Re-run model fitting and validation with different CV strategies. See details.}
 
