@@ -368,8 +368,7 @@ aoa.data.frame <- function(newdata,
       message("Computing DI of new data...")
     }
     mindist <- rep(NA, nrow(newdata))
-    mindist[okrows] <-
-      .knndistfun(query=newdataCC, reference=train_scaled, k=1, dist_fun=method)
+    mindist[okrows] <- .knndistfun(query=newdataCC, reference=train_scaled, k=1, dist_fun=method)
     DI_out <- mindist / trainDI$trainDist_avrgmean
   }
 
@@ -380,20 +379,11 @@ aoa.data.frame <- function(newdata,
 
     DI_out <- rep(NA, nrow(newdata))
     LPD_out <- rep(NA, nrow(newdata))
-    if (indices) {
-        Indices_out <- matrix(NA, nrow = nrow(newdataCC), ncol = maxLPD)
-    }
 
     knnDist  <- .knndistfun(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=method)
     knnDI <- knnDist / trainDI$trainDist_avrgmean
     DI_out[okrows] <- knnDI[ ,1]
     LPD_out[okrows] <- rowSums(knnDI < trainDI$threshold)
-    if (indices) {
-      if (LPD_out[okrows] > 0) {
-        knnIndex  <- .knndistfun(query=newdataCC, reference=train_scaled, k = LPD_out[okrows[i]], dist_fun=method, distance = FALSE)
-        Indices_out[i,1:LPD_out[okrows]] <- as.numeric(knnIndex)
-      }
-    }
 
     # set maxLPD to max of LPD_out if
     realMaxLPD <- max(LPD_out, na.rm = T)
@@ -405,11 +395,6 @@ aoa.data.frame <- function(newdata,
         message(paste("maxLPD is set to", realMaxLPD))
       }
       trainDI$maxLPD <- realMaxLPD
-    }
-
-    if (indices) {
-      Indices_out <- Indices_out[,1:trainDI$maxLPD]
-      rownames(Indices_out) <- okrows
     }
   }
 
@@ -423,9 +408,12 @@ aoa.data.frame <- function(newdata,
     AOA = ifelse(DI_out > trainDI$threshold, 0L, 1L)
   )
 
-  if (calc_LPD == TRUE) {
+  if (calc_LPD) {
     result$LPD <- LPD_out
     if (indices) {
+      Indices_out <- attr(knnDist, "indices")
+      Indices_out <- Indices_out[,1:trainDI$maxLPD]
+      rownames(Indices_out) <- okrows
       result$indices <- Indices_out
     }
   }
