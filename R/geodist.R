@@ -432,7 +432,7 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
     query <- if(!is.null(y)) sf::st_drop_geometry(y) else NULL
 
     if(is.null(CVtest)) {
-      min_d <- .knndistfun(query = query, reference = reference, k = 1, dist_fun = dist_fun)
+      min_d <- knndist(query = query, reference = reference, k = 1, dist_fun = dist_fun)
       } else {
       min_d <- cv_distances(reference, CVtest = CVtest, CVtrain = CVtrain, dist_fun = dist_fun)
       }
@@ -465,7 +465,7 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
       }
     } else { # euclidean
         if(is.null(CVtest)) {
-          min_d <- .knndistfun(query = coords_y, reference = coords_x, k = 1, dist_fun = dist_fun)
+          min_d <- knndist(query = coords_y, reference = coords_x, k = 1, dist_fun = dist_fun)
         } else {
           min_d <- cv_distances(coords_x, CVtest = CVtest, CVtrain = CVtrain, dist_fun = dist_fun)
         }
@@ -524,7 +524,7 @@ cv_distances <- function(x, CVtest, CVtrain = NULL, dist_fun = "euclidean", time
       }
 
     if(dist_fun %in% c("euclidean", "mahalanobis", "gower")) {
-      alldist[test_idx] <- .knndistfun(query = tr_test, reference = tr_train, k = 1, dist_fun = dist_fun)
+      alldist[test_idx] <- knndist(query = tr_test, reference = tr_train, k = 1, dist_fun = dist_fun)
     } else if(dist_fun == "great_circle") {
         distmat <- sf::st_distance(x)
         units(distmat) <- NULL
@@ -581,106 +581,4 @@ sampleFromArea <- function(modeldomain, samplesize, dist_space, variables, sampl
   }
   return(predictionloc)
 
-}
-
-.knndistfun <- function(
-  reference, 
-  query = NULL,
-  k = 1, 
-  dist_fun = c("euclidean", "mahalanobis", "gower"),
-  kpn = 0,
-  return_distmat = FALSE) {
-  
-  dist_fun <- match.arg(dist_fun)
-
-  if (dist_fun == "gower") {
-    # requires scaling of the numerical variables, while categorical variables are not scaled.
-    num_vars <- vapply(reference, is.numeric, logical(1))
-    ref_num <- reference[, num_vars, drop = FALSE]
-    mins <- sapply(ref_num, min, na.rm = TRUE)
-    maxs <- sapply(ref_num, max, na.rm = TRUE)
-    range <- maxs - mins
-
-    reference[, num_vars] <- as.data.frame(
-        sweep(sweep(reference[, num_vars, drop = FALSE], 2, mins, "-"), 2, range, "/"),
-        stringsAsFactors = FALSE
-    )
-    
-    if (!is.null(query)) {
-      query[, num_vars] <- as.data.frame(
-        sweep(sweep(query[, num_vars, drop = FALSE], 2, mins, "-"), 2, range, "/"),
-        stringsAsFactors = FALSE
-      )
-    }
-    query <- .numeric_fct(query)
-    reference <- .numeric_fct(reference)
-  }
-  
-  if (inherits(query, "numeric")) {
-    query <- matrix(query, nrow = 1)
-  }
-  if (inherits(query, "data.frame")) {
-    query <- as.matrix(query)
-  }
-  if (inherits(reference, "numeric")) {
-    reference <- matrix(reference, nrow = 1)
-  }
-  if (inherits(reference, "data.frame")) {
-    reference <- as.matrix(reference)
-  }
-
-  if (dist_fun == "mahalanobis") {
-    # For Mahalanobis distance, we need to compute the inverse covariance matrix 
-    # we then transform that reference and query to calculate the L2 distance in 
-    # the transformed space, which is equivalent to the Mahalanobis distance in the original space.
-    S_inv <- MASS::ginv(stats::cov(reference))
-    chol_ok <- try(R <- chol(S_inv), silent = TRUE)
-    if (!inherits(chol_ok, "try-error")) {
-      A <- t(R)
-    } else {
-      eig <- eigen(S_inv, symmetric = TRUE)
-      vals <- pmax(eig$values, 0) # guard against tiny negative values
-      A <- eig$vectors %*% diag(sqrt(vals)) %*% t(eig$vectors)
-    }
-
-    reference <- reference %*% A
-    if (!is.null(query)) query <- query %*% A
-    dist_fun = "euclidean"
-  }
-
-
-  # calculate the distance matrix
-  if (is.null(query)) {
-    dists <- philentropy::distance(reference, method = dist_fun)
-    if (length(dists) == 1) return(dists)
-    diag(dists) <- NA # Exclude self-distance
-    } else {
-    dists <- philentropy::dist_many_many(query, reference, method = dist_fun)
-  }
-
-  if (return_distmat) return(dists)
-
-  # calculate the nearest neighbor distances
-  range <- c(max(1, 1+kpn), max(k, kpn+k))
-  get_dist <- function(x, range) sort(x)[range[1]:range[2]]
-  knn_dists <- t(apply(dists, 1, get_dist, range=range))
-  #if (k == 1) knn_dists <- as.vector(knn_dists)
-  # attacg the indices of the nearest neighbors as an attribute
-  get_index <- function(x, range) order(x)[range[1]:range[2]]
-  knn_indices <- t(apply(dists, 1, get_index, range=range))
-  #if (k == 1) knn_indices <- as.vector(knn_indices)
-  attr(knn_dists, "indices") <- knn_indices
-  return(knn_dists)
-}  
-
-
-.numeric_fct <- function(x) {
-  if (is.null(x)) return(NULL)
-  catVars <- names(x)[vapply(x, function(z) inherits(z, c("factor", "character")), logical(1))]
-  if (length(catVars) == 0) return(x)
-  # Convert categorical variables to factor then to numeric
-  for (var in catVars) {
-    x[[var]] <- as.integer(as.factor(x[[var]]))
-  }
-  return(x)
 }

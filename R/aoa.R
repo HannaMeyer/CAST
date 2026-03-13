@@ -370,7 +370,7 @@ aoa.data.frame <- function(newdata,
       message("Computing DI of new data...")
     }
     mindist <- rep(NA, nrow(newdata))
-    mindist[okrows] <- .knndistfun(query=newdataCC, reference=train_scaled, k=1, dist_fun=dist_fun)
+    mindist[okrows] <- knndist(query=newdataCC, reference=train_scaled, k=1, dist_fun=dist_fun)
     DI_out <- mindist / trainDI$trainDist_avrgmean
   }
 
@@ -382,7 +382,7 @@ aoa.data.frame <- function(newdata,
     DI_out <- rep(NA, nrow(newdata))
     LPD_out <- rep(NA, nrow(newdata))
 
-    knnDist  <- .knndistfun(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=dist_fun)
+    knnDist  <- knndist(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=dist_fun)
     knnDI <- knnDist / trainDI$trainDist_avrgmean
     DI_out[okrows] <- knnDI[ ,1]
     LPD_out[okrows] <- rowSums(knnDI < trainDI$threshold)

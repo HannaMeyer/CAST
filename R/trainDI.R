@@ -403,7 +403,7 @@ aoa_get_variables <- function(variables, model, train){
 
 aoa_calc_dists <- function(reference, query = NULL, CVtrain, CVtest, dist_fun, ids){
    # Compute all pairwise distances once; used for normalization and optionally LPD.
-  dist_mat <- .knndistfun(query=query, reference=reference, k=nrow(reference)-1, dist_fun = dist_fun, return_distmat = TRUE)
+  dist_mat <- knndist(query=query, reference=reference, k=nrow(reference)-1, dist_fun = dist_fun, return_distmat = TRUE)
   
   if (nrow(dist_mat) > 1){
     diag(dist_mat[ids,ids]) <- NA # set self-distances to NA
@@ -450,7 +450,7 @@ aoa_chunked_dists <- function(train, CVtrain, CVtest, dist_fun, chunk_size = 100
 
 
 aoa_calc_lpd <- function(reference, query = NULL, CVtrain, CVtest, dist_fun, train_mean, threshold, ids){
-  dist_mat <- .knndistfun(query=query, reference=reference, k=nrow(reference)-1, dist_fun = dist_fun, return_distmat = TRUE)
+  dist_mat <- knndist(query=query, reference=reference, k=nrow(reference)-1, dist_fun = dist_fun, return_distmat = TRUE)
   if (nrow(dist_mat) > 1){
     diag(dist_mat[ids,ids]) <- NA # set self-distances to NA
   } else {
