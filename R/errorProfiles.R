@@ -3,7 +3,7 @@
 #' @param model the model used to get the AOA
 #' @param trainDI the result of \code{\link{trainDI}} or aoa object \code{\link{aoa}}
 #' @param locations Optional. sf object for the training data used in model. Only used if variable=="geodist". Note that they must be in the same order as model$trainingData.
-#' @param variable Character. Which dissimilarity or distance measure to use for the error metric. Current options are "DI" or "LPD"
+#' @param variable Character. Which dissimilarity or distance measure to use for the error metric. Current options are "DI" or "LPD", "geodist"
 #' @param multiCV Logical. Re-run model fitting and validation with different CV strategies. See details.
 #' @param window.size Numeric. Size of the moving window. See \code{\link[zoo]{rollapply}}.
 #' @param calib Character. Function to model the DI/LPD~performance relationship. Currently lm and scam are supported
@@ -264,7 +264,15 @@ multiCV <- function(model, locations, length.out, method, useWeight, variable,..
     } else if (variable == "LPD") {
       trainDI_new <- trainDI(model_new, method=method, useWeight=useWeight, LPD = TRUE, verbose =FALSE)
     } else if (variable=="geodist"){
-      tmp_gd_new <- CAST::geodist(locations,modeldomain=locations,cvfolds = model$control$indexOut)
+      ssize <- 2000 # default in geodist
+      if(nrow(locations)<2000){
+        ssize <- nrow(locations)
+      }
+      dist_fun = "euclidean"
+      if(sf::st_is_longlat(locations)){
+        dist_fun = "great_circle"
+      }
+      tmp_gd_new <- CAST::geodist(locations,modeldomain=locations,CVtest = model_new$control$indexOut, samplesize=ssize, dist_fun=dist_fun)
       geodist_new <- tmp_gd_new[tmp_gd_new$what=="CV-distances","dist"]
 
     }
@@ -326,7 +334,12 @@ get_preds_all <- function(model, trainDI, locations, variable){
     ## only take predictions from inside the AOA:
     preds_all <-  preds_all[preds_all$LPD>0,]
   } else if(variable=="geodist"){
-    tmp_gd <- CAST::geodist(locations,modeldomain=locations,cvfolds = model$control$indexOut)
+    dist_fun = "euclidean"
+    if(sf::st_is_longlat(locations)){
+      dist_fun = "great_circle"
+    }
+    tmp_gd <- CAST::geodist(locations,modeldomain=locations,CVtest = model$control$indexOut,
+                            samplesize = nrow(locations),dist_fun=dist_fun)
     preds_all$geodist <- tmp_gd[tmp_gd$what=="CV-distances","dist"]
   }
 

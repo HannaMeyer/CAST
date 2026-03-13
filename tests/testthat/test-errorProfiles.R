@@ -115,3 +115,32 @@ test_that("plot for errorModel runs and returns ggplot", {
 
   expect_s3_class(plot(errormodel_DI), "ggplot")
 })
+
+
+test_that("errorProfiles works with geodist", {
+  skip_on_cran()
+  skip_on_os("mac", arch = "aarch64")
+  skip_if_not_installed("randomForest")
+  skip_if_not_installed("scam")
+  data(splotdata)
+  predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
+
+  set.seed(100)
+  knndm_folds <- knndm(splotdata, modeldomain = predictors,dist_fun = "great_circle",dist_space="geographical")
+  ctrl <- caret::trainControl(method="cv",
+                       index=knndm_folds$indx_train,
+                       savePredictions=TRUE)
+  model <- caret::train(sf::st_drop_geometry(splotdata[,6:16]), sf::st_drop_geometry(splotdata$Species_richness), ntree = 10,
+                        trControl = ctrl)
+
+  AOA <- CAST::aoa(predictors, model,verbose=F)
+
+  # geodist ~ error
+  errormodel_geodist <- errorProfiles(model, AOA, locations=splotdata, variable = "geodist")
+
+
+  #test model fit:
+  expect_equal(round(as.numeric(summary(errormodel_geodist$fitted.values)),2),
+               c(24.65, 25.97, 27.11, 28.11, 30.07, 33.93))
+
+})
