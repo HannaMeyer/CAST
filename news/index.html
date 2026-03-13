@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CAST</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,17 +40,28 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.0.5" id="cast-105">
-<code>CAST</code> 1.0.5<a class="anchor" aria-label="anchor" href="#cast-105"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.1.0" id="cast-110">
+<code>CAST</code> 1.1.0<a class="anchor" aria-label="anchor" href="#cast-110"></a></h2>
 <ul><li>new features:
-<ul><li>tests for bss</li>
+<ul><li>knndm for train-test splits</li>
+<li>ffs allows for searching the whole range of predictors (earlyStopping=FALSE)</li>
 </ul></li>
 <li>bug fix:
 <ul><li>sampling of prediction points in geodist no longer requires reprojection and transformation of raster modeldomains by default (issue <a href="https://github.com/HannaMeyer/CAST/issues/130" class="external-link">#130</a>)</li>
+<li>now allows for tibble in AOA</li>
 </ul></li>
 <li>modifications:
 <ul><li>geodist was re-structured, and some parameters have been re-named (‘cvtrain’ to ‘CVtrain’, ‘cvfolds’ to ‘CVtest’, ‘type’ to ‘dist_space’, ‘timevar’ to ‘time_var’) or newly introduced (‘dist_fun’, ‘scale_vars’)</li>
 <li>knndm was re-structured to a lesser extent, the ‘space’ parameter has been re-named to ‘dist_space’, ‘useMD’ was dropped and replaced by ‘dist_fun’, ‘scale_vars’ was newly introduced</li>
+<li>AOA as a generic</li>
+</ul></li>
+<li>other improvements:
+<ul><li>several new tests</li>
+<li>added code coverage</li>
+<li>improved documentation</li>
+<li>unify plotting style</li>
+<li>removed dependencies</li>
+<li>workflow figure improved</li>
 </ul></li>
 </ul></div>
     <div class="section level2">
