@@ -10,7 +10,7 @@ print.trainDI = function(x, ...){
 
   cat("AOA Threshold: ")
   cat(x$threshold)
-
+  invisible(x)
 }
 
 #' @export
@@ -25,7 +25,7 @@ show.trainDI = function(x, ...){
 #' @param x aoa object
 #' @param ... other params
 #' @export
-print.aoa = function(x, ...){
+print.aoa = function(x, ...) {
   cat("DI:\n")
   print(x$DI)
 
@@ -43,7 +43,7 @@ print.aoa = function(x, ...){
 
   cat("\n\nAOA Threshold: ")
   cat(x$parameters$threshold)
-
+  invisible(x)
 }
 
 #' @export
@@ -65,6 +65,7 @@ print.nndm <- function(x, ...){
              "Total number of points: ", length(x$Gj), "\n",
              "Mean number of training points: ", mean_train, "\n",
              "Minimum number of training points: ", min_train, "\n"))
+  invisible(x)
 }
 
 #' @export
@@ -89,6 +90,7 @@ print.knndm <- function(x, ...){
              "Number of folds: ", length(unique(x$clusters)),  "\n",
              "Observations in each fold: "),
       table(x$clusters), "\n")
+  invisible(x)
 }
 
 #' @export
@@ -109,11 +111,11 @@ print.ffs = function(x, ...){
   cat("\n")
   cat("---\n")
   print.train(x)
+  invisible(x)
 }
 
 #' @export
 #' @rdname print.ffs
 show.ffs = function(x, ...){
   print.ffs(x)
-
 }
