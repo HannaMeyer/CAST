@@ -43,7 +43,7 @@ errorProfiles(
 - variable:
 
   Character. Which dissimilarity or distance measure to use for the
-  error metric. Current options are "DI" or "LPD"
+  error metric. Current options are "DI" or "LPD", "geodist"
 
 - multiCV:
 
