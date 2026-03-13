@@ -1,7 +1,8 @@
 # Nearest Neighbour Distance Matching (NNDM) algorithm
 
-This function implements the NNDM algorithm and returns the necessary
-indices to perform a NNDM LOO CV for map validation.
+This function implements the NNDM algorithm for prediction-domain
+adaptive resampling and returns the necessary indices to perform a NNDM
+LOO CV for map validation.
 
 ## Usage
 

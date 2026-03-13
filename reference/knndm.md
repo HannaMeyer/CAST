@@ -1,7 +1,8 @@
 # K-fold Nearest Neighbour Distance Matching
 
-This function implements the kNNDM algorithm and returns the necessary
-indices to perform a k-fold NNDM CV for map validation.
+This function implements the kNNDM algorithm for prediction-domain
+adaptive resampling and returns the necessary indices to perform
+train-test splits or k-fold NNDM CV.
 
 ## Usage
 
@@ -147,17 +148,19 @@ the function call).
 
 ## Details
 
-knndm is a k-fold version of NNDM LOO CV for medium and large datasets.
-It can be used for cross-validation and train / test splits (the latter
-is experimental). Brielfy, the algorithm tries to find a configuration
-such that the integral of the absolute differences (Wasserstein W
-statistic) between the empirical nearest neighbour distance distribution
-function between the test and training data (Gj\*), and the empirical
-nearest neighbour distance distribution function between the prediction
-and training points (Gij), is minimised. It does so by performing
-clustering of the training points' coordinates for different numbers of
-clusters that range from k to N (number of observations), merging them
-into k final folds, and selecting the configuration with the lowest W.
+knndm is an implementation of prediction-domain adaptive validation. It
+is a k-fold version of NNDM LOO CV which makes it more suitable for
+medium and large datasets. It can be used for cross-validation and train
+/ test splits (the latter is experimental). Briefly, the algorithm tries
+to find a configuration such that the integral of the absolute
+differences (Wasserstein W statistic) between the empirical nearest
+neighbour distance distribution function between the test and training
+data (Gj\*), and the empirical nearest neighbour distance distribution
+function between the prediction and training points (Gij), is minimised.
+It does so by performing clustering of the training points' coordinates
+for different numbers of clusters that range from k to N (number of
+observations), merging them into k final folds, and selecting the
+configuration with the lowest W.
 
 When using \`knndm\` to split the data into training and test sets
 (experimental), the proportion of points belonging to the test set
@@ -383,13 +386,13 @@ plot(pred_points, add = TRUE, col = "blue")
 plot(train_points, add = TRUE, col = "red")
 
 # Use kNNDM to split the data into 30% +- 10% test and 70% train
-knndm_folds <- knndm(train_points, predpoints = pred_points, test_prop = 0.3, tolerance = 0.1)
+knndm_folds <- knndm(train_points, predpoints = pred_points, test_prop = 0.3, test_tolerance = 0.1)
 # How many samples have been used for testing:
 table(knndm_folds$clusters)
 plot(knndm_folds)
 # The train/test split could not represent the prediction situation well
 # Increase tolerance to increase number of configurations tried, and thus to find a suitable split
-knndm_folds <- knndm(train_points, predpoints = pred_points, test_prop = 0.3, tolerance = 0.2)
+knndm_folds <- knndm(train_points, predpoints = pred_points, test_prop = 0.3, test_tolerance = 0.2)
 plot(knndm_folds)
 table(knndm_folds$clusters)
 # This resulted in better match of the prediction situation, but a 50/50 split
