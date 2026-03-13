@@ -25,7 +25,7 @@
 #' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
-#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
+#' @param dist_fun Character. Method used for distance calculation. Currently "uclidean" distance, "mahalanobis" distance are implemented but only "euclidean" is tested.
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param useCV Logical. Only if a model is given. Use the CV folds to calculate the DI threshold?
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
@@ -224,7 +224,7 @@ aoa.data.frame <- function(newdata,
                 variables="all",
                 CVtest=NULL,
                 CVtrain=NULL,
-                method="euclidean",
+                dist_fun="euclidean",
                 useWeight=TRUE,
                 useCV=TRUE,
                 LPD = FALSE,
@@ -232,6 +232,7 @@ aoa.data.frame <- function(newdata,
                 indices = FALSE,
                 parallel = FALSE,
                 cores = 4,
+                chunk_size = 1000L,
                 verbose = TRUE) {
 
   leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
@@ -284,10 +285,11 @@ aoa.data.frame <- function(newdata,
       weight=weight,
       CVtest=CVtest, 
       CVtrain=CVtrain, 
-      method=method, 
+      dist_fun=dist_fun, 
       useWeight=useWeight, 
       useCV=useCV, 
       LPD=LPD, 
+      chunk_size=chunk_size,
       verbose=verbose)
   }
 
@@ -368,7 +370,7 @@ aoa.data.frame <- function(newdata,
       message("Computing DI of new data...")
     }
     mindist <- rep(NA, nrow(newdata))
-    mindist[okrows] <- .knndistfun(query=newdataCC, reference=train_scaled, k=1, dist_fun=method)
+    mindist[okrows] <- .knndistfun(query=newdataCC, reference=train_scaled, k=1, dist_fun=dist_fun)
     DI_out <- mindist / trainDI$trainDist_avrgmean
   }
 
@@ -380,7 +382,7 @@ aoa.data.frame <- function(newdata,
     DI_out <- rep(NA, nrow(newdata))
     LPD_out <- rep(NA, nrow(newdata))
 
-    knnDist  <- .knndistfun(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=method)
+    knnDist  <- .knndistfun(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=dist_fun)
     knnDI <- knnDist / trainDI$trainDist_avrgmean
     DI_out[okrows] <- knnDI[ ,1]
     LPD_out[okrows] <- rowSums(knnDI < trainDI$threshold)

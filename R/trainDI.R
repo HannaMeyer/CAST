@@ -21,10 +21,11 @@
 #' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
-#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
+#' @param dist_fun Character. Method used for distance calculation. Currently "uclidean" distance, "mahalanobis" distance are implemented but only "euclidean" is tested.
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param useCV Logical. Only if a model is given. Use the CV folds to calculate the DI threshold?
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
+#' @param chunk_size Integer. Number of training points to be processed in each chunk when calculating distances. Decreasing this number can help to reduce memory usage but increases runtime.
 #' @param verbose Logical. Print progress or not?
 #' @seealso \code{\link{aoa}}
 #' @importFrom graphics boxplot
@@ -99,12 +100,14 @@ trainDI <- function(model = NA,
                     weight = NA,
                     CVtest = NULL,
                     CVtrain = NULL,
-                    method="euclidean",
+                    dist_fun=c("euclidean", "mahalanobis", "gower"),
                     useWeight = TRUE,
                     useCV =TRUE,
                     LPD = FALSE,
+                    chunk_size = 1000L,
                     verbose = TRUE){
 
+  dist_fin <- match.arg(dist_fun)
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
   if(length(variables) == 1){
@@ -164,9 +167,8 @@ trainDI <- function(model = NA,
 
   # calculate average mean distance between training data
   # we chunk based on chunk_size
-  chunk_size <- 1000
   train_dists <- aoa_chunked_dists(train=train, CVtrain=CVtrain, CVtest=CVtest, 
-    dist_fun=method, chunk_size = chunk_size, verbose = verbose)
+    dist_fun=dist_fun, chunk_size = chunk_size, verbose = verbose)
 
   # Dissimilarity Index of training data -----
   TrainDI <- train_dists$trainDist_min / train_dists$trainDist_avrgmean
@@ -181,7 +183,7 @@ trainDI <- function(model = NA,
   # calculate trainLPD and avrgLPD according to the CV folds
   if (LPD) {
       trainLPD <- aoa_chunked_lpd(train=train, CVtrain=CVtrain, CVtest=CVtest, 
-        dist_fun=method, train_mean = train_dists$trainDist_avrgmean, 
+        dist_fun=dist_fun, train_mean = train_dists$trainDist_avrgmean, 
         threshold = thres, chunk_size = chunk_size, verbose = verbose)
       avrgLPD <- round(mean(trainLPD))
   }
@@ -198,7 +200,7 @@ trainDI <- function(model = NA,
     trainDist_avrgmean = train_dists$trainDist_avrgmean,
     trainDI = TrainDI,
     threshold = thres,
-    method = method
+    method = dist_fun
   )
 
   if (LPD == TRUE) {
