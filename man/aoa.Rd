@@ -26,7 +26,7 @@ aoa(newdata, model = NA, ...)
   variables = "all",
   CVtest = NULL,
   CVtrain = NULL,
-  method = "L2",
+  dist_fun = "euclidean",
   useWeight = TRUE,
   useCV = TRUE,
   LPD = FALSE,
@@ -34,8 +34,8 @@ aoa(newdata, model = NA, ...)
   indices = FALSE,
   parallel = FALSE,
   cores = 4,
-  verbose = TRUE,
-  algorithm = "brute"
+  chunk_size = 1000L,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -64,7 +64,7 @@ Only required if no model is given.}
 Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
-\item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.}
+\item{dist_fun}{Character. Method used for distance calculation. Currently "uclidean" distance, "mahalanobis" distance are implemented but only "euclidean" is tested.}
 
 \item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
 
@@ -81,8 +81,6 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 \item{cores}{Integer or Character. Number of cores to use for the the parallelization. You can use "auto" to set your cores to \code{detectCores()/2} (see \code{\link[parallel]{detectCores}}).}
 
 \item{verbose}{Logical. Print progress or not?}
-
-\item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
 }
 \value{
 An object of class \code{aoa} containing:
