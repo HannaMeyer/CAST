@@ -123,3 +123,16 @@ test_that("NNDM yields the expected results with SpatRast modeldomain", {
   expect_equal(as.numeric(nndm(pts, modeldomain = studyArea, phi = 150)$Gjstar[5]), 63.828663)
 
 })
+
+test_that("print and plot for nndm run and return invisibly", {
+  set.seed(1234)
+  poly <- sf::st_polygon(list(matrix(c(0,0,0,10,10,10,10,0,0,0), ncol=2, byrow=TRUE)))
+  poly_sfc <- sf::st_sfc(poly)
+  tpoints_sfc <- sf::st_sample(poly_sfc, 10, type = "random")
+  predpoints_sfc <- sf::st_sample(poly_sfc, 10, type = "regular")
+
+  nndm_obj <- nndm(tpoints_sfc, predpoints = predpoints_sfc)
+  expect_no_error(print(nndm_obj))
+  expect_invisible(print(nndm_obj))
+  expect_s3_class(plot(nndm_obj), "ggplot")
+})

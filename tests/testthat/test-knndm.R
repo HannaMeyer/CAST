@@ -408,3 +408,17 @@ test_that("kNNDM works with train/test splits in feature space", {
   expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 0.8287)
   expect_equal(round(as.numeric(knndm_folds$W),1), 1.8)
 })
+
+test_that("print and plot for knndm run and return invisibly", {
+  aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:25832")
+  tpoints <- sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))", crs="epsg:25832") |>
+    sf::st_cast("POINT")
+  set.seed(1)
+  predpoints <- sf::st_sample(aoi, 10, type="regular") |>
+    sf::st_set_crs("epsg:25832")
+
+  knndm_obj <- knndm(tpoints, predpoints=predpoints, k=2, maxp=0.8, clustering = "kmeans")
+  expect_no_error(print(knndm_obj))
+  expect_invisible(print(knndm_obj))
+  expect_s3_class(plot(knndm_obj), "ggplot")
+})

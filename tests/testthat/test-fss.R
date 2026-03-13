@@ -228,4 +228,22 @@ test_that("ffs works for withinSE = TRUE",{
 
   })
 
+test_that("print and plot for ffs run and return invisibly", {
+  skip_on_cran()
+  skip_if_not_installed("randomForest")
+  data(iris)
+  set.seed(1)
+  selection <- ffs(
+    predictors = iris[, 1:4],
+    response = iris$Species,
+    seed = 1,
+    verbose = FALSE,
+    ntree = 5,
+    tuneLength = 1
+  )
+
+  expect_no_error(print(selection))
+  expect_invisible(print(selection))
+  expect_s3_class(plot(selection, plotType = "selected"), "ggplot")
+})
 

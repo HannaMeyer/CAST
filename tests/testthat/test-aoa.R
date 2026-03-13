@@ -169,3 +169,39 @@ test_that("AOA (inluding LPD) works in parallel without a trained model", {
                  "Mean   :0.3109  ", "3rd Qu.:0.4051  ",
                  "Max.   :2.6631  "))
 })
+
+test_that("print and plot for aoa run and return invisibly", {
+  skip_if_not_installed("randomForest")
+  dat <- loaddata()
+  AOA <- aoa(dat$studyArea, dat$model, verbose = FALSE)
+
+  expect_no_error(print(AOA))
+  expect_invisible(print(AOA))
+  expect_s3_class(plot(AOA, samplesize = 10), "ggplot")
+})
+
+test_that("errorProfiles works for aoa objects (DI)", {
+  skip_on_cran()
+  skip_on_os("mac", arch = "aarch64")
+  skip_if_not_installed("randomForest")
+  skip_if_not_installed("scam")
+  dat <- loaddata()
+  AOA <- aoa(dat$studyArea, dat$model, verbose = FALSE)
+
+  err_model <- errorProfiles(dat$model, AOA, variable = "DI")
+  expect_s3_class(err_model, "errorModel")
+  expect_true(is.numeric(attr(err_model, "AOA_threshold")))
+})
+
+test_that("errorProfiles works for aoa objects (LPD)", {
+  skip_on_cran()
+  skip_on_os("mac", arch = "aarch64")
+  skip_if_not_installed("randomForest")
+  skip_if_not_installed("scam")
+  dat <- loaddata()
+  AOA <- aoa(dat$studyArea, dat$model, LPD = TRUE, maxLPD = 1, verbose = FALSE)
+
+  err_model <- errorProfiles(dat$model, AOA, variable = "LPD")
+  expect_s3_class(err_model, "errorModel")
+  expect_true(is.numeric(attr(err_model, "AOA_threshold")))
+})

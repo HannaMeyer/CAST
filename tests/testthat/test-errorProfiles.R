@@ -92,3 +92,26 @@ test_that("errorProfiles works for multiCV", {
 
 
 })
+
+test_that("plot for errorModel runs and returns ggplot", {
+  skip_on_cran()
+  skip_on_os("mac", arch = "aarch64")
+  skip_if_not_installed("randomForest")
+  skip_if_not_installed("scam")
+  data(splotdata)
+  splotdata <- sf::st_drop_geometry(splotdata)
+  predictors <- terra::rast(system.file("extdata","predictors_chile.tif", package="CAST"))
+
+  set.seed(100)
+  model <- caret::train(
+    splotdata[,6:16],
+    splotdata$Species_richness,
+    ntree = 10,
+    trControl = caret::trainControl(method = "cv", savePredictions = TRUE)
+  )
+
+  AOA <- CAST::aoa(predictors, model, verbose = FALSE)
+  errormodel_DI <- CAST::errorProfiles(model, AOA, variable = "DI")
+
+  expect_s3_class(plot(errormodel_DI), "ggplot")
+})
