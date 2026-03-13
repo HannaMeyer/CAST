@@ -1,7 +1,5 @@
 
 test_that("bss works with default arguments",{
-  skip_on_cran()
-  skip_on_os("mac", arch = "aarch64")
   skip_if_not_installed("randomForest")
   data("splotdata")
   splotdata = splotdata |> sf::st_drop_geometry()
