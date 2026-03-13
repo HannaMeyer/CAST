@@ -9,3 +9,4 @@ vignettes/CAST-intro_files
 ^pkgdown$
 ^\.github$
 data-raw/
+^codecov\.yml$

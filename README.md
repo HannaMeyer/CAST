@@ -1,13 +1,14 @@
 # CAST: Caret Applications for Spatio-Temporal models  <img src="man/figures/logo.png" align="right" alt="" width="150" />
 
-<!-- Start Badges -->
+<!-- badges: start -->
 
 [![R-CMD-check](https://github.com/HannaMeyer/CAST/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/HannaMeyer/CAST/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/HannaMeyer/CAST/graph/badge.svg)](https://app.codecov.io/gh/HannaMeyer/CAST)
 [![CRAN status](https://www.r-pkg.org/badges/version/CAST)](https://cran.r-project.org/package=CAST)
 [![CRAN RStudio mirror downloads total](http://cranlogs.r-pkg.org/badges/grand-total/CAST)](https://cran.r-project.org/package=CAST)
 [![CRAN RStudio mirror downloads](http://cranlogs.r-pkg.org/badges/CAST)](https://cran.r-project.org/package=CAST)
 
-<!-- End Badges -->
+<!-- badges: end -->
 
 Supporting functionality to run 'caret' with spatial or spatial-temporal data. 'caret' is a frequently used package for model training and prediction using machine learning. CAST includes functions to improve spatial or spatial-temporal modelling tasks using 'caret'. To decrease spatial overfitting and to improve model performances, the package implements a forward feature selection that selects suitable predictor variables in view to their contribution to spatial or spatio-temporal model performance. CAST further includes functionality to estimate the (spatial) area of applicability of prediction models.
 
