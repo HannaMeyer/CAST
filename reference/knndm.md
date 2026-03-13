@@ -292,8 +292,6 @@ plot(knndm_folds)
 plot(knndm_folds, type = "simple") # For more accessible legend labels
 
 plot(knndm_folds, type = "simple", stat = "density") # To visualize densities rather than ECDFs
-#> Ignoring unknown labels:
-#> • colour : "Distance function"
 
 folds <- as.character(knndm_folds$clusters)
 ggplot() +
