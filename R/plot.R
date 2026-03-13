@@ -222,7 +222,7 @@ plot.nndm <- function(x, type = "strict", stat = "ecdf", ...) {
       ggplot2::stat_ecdf(geom = "step", lwd = 0.8) +
       ggplot2::theme_bw() +
       ggplot2::ylab("ECDF") +
-      ggplot2::labs(group = "Distance function", col = "Distance function") +
+      ggplot2::labs(group = "Distance function") +
       ggplot2::theme(
         legend.position = "bottom",
         legend.text = ggplot2::element_text(size = 10)
@@ -231,6 +231,7 @@ plot.nndm <- function(x, type = "strict", stat = "ecdf", ...) {
     if (type == "strict") {
       p <- p +
         ggplot2::scale_colour_manual(
+          name = "Distance function",
           values = c(myColors[2], myColors[3], myColors[1]),
           labels = c(
             expression(hat(G)[ij](r)),
@@ -258,7 +259,7 @@ plot.nndm <- function(x, type = "strict", stat = "ecdf", ...) {
       ggplot2::geom_density(adjust = 1.5, alpha = .5, stat = stat, lwd = 0.3) +
       ggplot2::theme_bw() +
       ggplot2::ylab("Density") +
-      ggplot2::labs(group = "Distance function", col = "Distance function") +
+      ggplot2::labs(group = "Distance function") +
       ggplot2::theme(
         legend.position = "bottom",
         legend.text = ggplot2::element_text(size = 10)
@@ -267,6 +268,7 @@ plot.nndm <- function(x, type = "strict", stat = "ecdf", ...) {
     if (type == "strict") {
       p <- p +
         ggplot2::scale_fill_manual(
+          name = "Distance function",
           values = c(myColors[2], myColors[3], myColors[1]),
           labels = c(
             expression(hat(G)[ij](r)),
@@ -331,7 +333,7 @@ plot.knndm <- function(x, type = "strict", stat = "ecdf", ...) {
       ggplot2::stat_ecdf(geom = "step", lwd = 0.8) +
       ggplot2::theme_bw() +
       ggplot2::ylab("ECDF") +
-      ggplot2::labs(group = "Distance function", col = "Distance function") +
+      ggplot2::labs(group = "Distance function") +
       ggplot2::theme(
         legend.position = "bottom",
         legend.text = ggplot2::element_text(size = 10)
@@ -340,6 +342,7 @@ plot.knndm <- function(x, type = "strict", stat = "ecdf", ...) {
     if (type == "strict") {
       p <- p +
         ggplot2::scale_colour_manual(
+          name = "Distance function",
           values = c(myColors[2], myColors[3], myColors[1]),
           labels = c(
             expression(hat(G)[ij](r)),
@@ -367,7 +370,7 @@ plot.knndm <- function(x, type = "strict", stat = "ecdf", ...) {
       ggplot2::geom_density(adjust = 1.5, alpha = .5, stat = stat, lwd = 0.3) +
       ggplot2::theme_bw() +
       ggplot2::ylab("Density") +
-      ggplot2::labs(group = "Distance function", col = "Distance function") +
+      ggplot2::labs(group = "Distance function") +
       ggplot2::theme(
         legend.position = "bottom",
         legend.text = ggplot2::element_text(size = 10)
@@ -376,6 +379,7 @@ plot.knndm <- function(x, type = "strict", stat = "ecdf", ...) {
     if (type == "strict") {
       p <- p +
         ggplot2::scale_fill_manual(
+          name = "Distance function",
           values = c(myColors[2], myColors[3], myColors[1]),
           labels = c(
             expression(hat(G)[ij](r)),

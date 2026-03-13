@@ -124,6 +124,25 @@ test_that("NNDM yields the expected results with SpatRast modeldomain", {
 
 })
 
+test_that("NNDM works in feature space", {
+  set.seed(1234)
+  data(cookfarm)
+  dat <- terra::aggregate(cookfarm[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+                          by=list(as.character(cookfarm$SOURCEID)),mean)
+  pts <- dat[,-1]
+  pts <- sf::st_as_sf(pts,coords=c("Easting","Northing"))
+  sf::st_crs(pts) <- 26911
+  studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
+  pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
+  studyArea <- studyArea[[names(studyArea) %in% names(pts)]]
+  train_points <- pts[,names(pts) %in% names(studyArea)]
+  nndm_folds_f <- nndm(train_points, modeldomain = studyArea, space="feature")
+  nndm_folds_g <- nndm(train_points, modeldomain = studyArea, space="geographical")
+  expect_equal(round(as.numeric(mean(nndm_folds_f$Gjstar)),4), 0.6335)
+  expect_equal(round(as.numeric(mean(nndm_folds_g$Gjstar)),4), 70.7268)
+
+})
+
 test_that("print and plot for nndm run and return invisibly", {
   set.seed(1234)
   poly <- sf::st_polygon(list(matrix(c(0,0,0,10,10,10,10,0,0,0), ncol=2, byrow=TRUE)))
@@ -135,4 +154,5 @@ test_that("print and plot for nndm run and return invisibly", {
   expect_no_error(print(nndm_obj))
   expect_invisible(print(nndm_obj))
   expect_s3_class(plot(nndm_obj), "ggplot")
+
 })
