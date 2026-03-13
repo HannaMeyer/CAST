@@ -123,3 +123,22 @@ test_that("NNDM yields the expected results with SpatRast modeldomain", {
   expect_equal(as.numeric(nndm(pts, modeldomain = studyArea, phi = 150)$Gjstar[5]), 63.828663)
 
 })
+
+test_that("NNDM works in feature space", {
+  set.seed(1234)
+  data(cookfarm)
+  dat <- terra::aggregate(cookfarm[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+                          by=list(as.character(cookfarm$SOURCEID)),mean)
+  pts <- dat[,-1]
+  pts <- sf::st_as_sf(pts,coords=c("Easting","Northing"))
+  sf::st_crs(pts) <- 26911
+  studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
+  pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
+  studyArea <- studyArea[[names(studyArea) %in% names(pts)]]
+  train_points <- pts[,names(pts) %in% names(studyArea)]
+  nndm_folds_f <- nndm(train_points, modeldomain = studyArea, space="feature")
+  nndm_folds_g <- nndm(train_points, modeldomain = studyArea, space="geographical")
+  expect_equal(round(as.numeric(mean(nndm_folds_f$Gjstar)),4), 0.6335)
+  expect_equal(round(as.numeric(mean(nndm_folds_g$Gjstar)),4), 70.7268)
+
+})
