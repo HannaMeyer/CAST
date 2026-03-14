@@ -396,7 +396,7 @@ aoa.data.frame <- function(newdata,
       }
 
       for (i in seq(nrow(newdataCC))) {
-        knnDist  <- .knndistfun(train_scaled, newdataCC[i,],  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_in)
+        knnDist  <- .knndistfun(train_scaled, newdataCC[i,],  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_inv)
         knnDI <- knnDist / trainDI$trainDist_avrgmean
         knnDI <- c(knnDI)
 
@@ -405,7 +405,7 @@ aoa.data.frame <- function(newdata,
 
         if (indices) {
           if (LPD_out[okrows[i]] > 0) {
-            knnIndex  <- .knndistfun(train_scaled,newdataCC[i,], k = LPD_out[okrows[i]], method=method, algorithm=algorithm, S_inv=S_in, distance = FALSE)
+            knnIndex  <- .knndistfun(train_scaled,newdataCC[i,], k = LPD_out[okrows[i]], method=method, algorithm=algorithm, S_inv=S_inv, distance = FALSE)
             Indices_out[i,1:LPD_out[okrows[i]]] <- as.numeric(knnIndex)
           }
         }
@@ -517,7 +517,7 @@ aoa.data.frame <- function(newdata,
 }
 
 .process_row <- function(row) {
-  knnDist <- .knndistfun(train_scaled, row,  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_in)
+  knnDist <- .knndistfun(train_scaled, row,  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_inv)
   knnDI <- knnDist / trainDIdat$trainDist_avrgmean
   knnDI <- c(knnDI)
 
