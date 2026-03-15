@@ -77,3 +77,116 @@ test_that("print and plot for trainDI run and return invisibly", {
   expect_invisible(print(DI))
   expect_s3_class(plot(DI), "ggplot")
 })
+
+test_that("aoa_get_train returns model training data", {
+  skip_if_not_installed("randomForest")
+  dat <- loaddata()
+  tr <- aoa_get_train(dat$model)
+  expect_equal(as.data.frame(dat$model$trainingData), as.data.frame(tr))
+})
+
+test_that("aoa_get_weights returns sensible weights for a caret model", {
+  skip_if_not_installed("randomForest")
+  dat <- loaddata()
+  w <- aoa_get_weights(dat$model, dat$variables)
+  expect_s3_class(w, "data.frame")
+  expect_true(all(dat$variables %in% names(w)))
+  expect_true(sum(unlist(w)) > 0)
+})
+
+test_that("aoa_get_weights falls back to default when varImp extraction fails", {
+  skip_if_not_installed("randomForest")
+  dat <- loaddata()
+
+  # corrupt the trained model so varImp/importance will fail
+  bad_model <- dat$model
+  bad_model$finalModel <- NULL
+
+  w <- aoa_get_weights(bad_model, dat$variables)
+
+  expect_s3_class(w, "data.frame")
+  expect_true(all(dat$variables %in% names(w)))
+  expect_equal(as.numeric(w[1, ]), rep(1, length(dat$variables)))
+})
+
+test_that("user_weights accepts correct input and falls back on defaults for bad input", {
+  vars <- c("a","b")
+  good <- data.frame(a = 0.2, b = 0.8)
+  res_good <- user_weights(good, vars)
+  expect_equal(as.numeric(res_good[1,]), c(0.2, 0.8))
+
+  bad <- data.frame(x = 1, y = 2)
+  expect_message(res_bad <- user_weights(bad, vars), "variable weights are not correctly specified")
+  expect_equal(as.numeric(res_bad[1,]), c(1,1))
+
+  neg <- data.frame(a = -1, b = 0.5)
+  expect_message(res_neg <- user_weights(neg, vars), "negative weights were set to 0")
+  expect_equal(as.numeric(res_neg[1,]), c(0, 0.5))
+})
+
+test_that("aoa_categorial_train expands factor variables and adjusts weights", {
+  train <- data.frame(Cat = factor(c("a","b","a")), Num = c(1,2,3))
+  vars <- c("Cat","Num")
+  weight <- data.frame(Cat = 0.5, Num = 1)
+  expect_message(res <- aoa_categorial_train(train, vars, weight), "warning: predictors contain categorical variables")
+  # categorical var reported
+  expect_equal(res$catvars, "Cat")
+  # original categorical column removed
+  expect_false("Cat" %in% names(res$train))
+  # numeric column preserved and dummy columns added (ncol = original -1 + nlevels)
+  expect_equal(ncol(res$train), ncol(train) - 1 + length(levels(train$Cat)))
+  # weight names match train column names
+  expect_equal(names(res$weight), names(res$train))
+
+  # when no categorical variables, returns unchanged structure
+  train2 <- data.frame(Num = c(1,2,3))
+  vars2 <- c("Num")
+  weight2 <- data.frame(Num = 1)
+  res2 <- aoa_categorial_train(train2, vars2, weight2)
+  expect_equal(res2$catvars, character(0))
+  expect_equal(res2$train, train2)
+  expect_equal(res2$weight, weight2)
+})
+
+test_that("aoa_get_folds extracts folds from caret model and respects useCV flag", {
+  skip_if_not_installed("randomForest")
+  dat <- loaddata()
+  # when using model and default useCV = TRUE, folds are extracted from model
+  folds <- aoa_get_folds(dat$model, CVtrain = NULL, CVtest = NULL, useCV = TRUE)
+  expect_true(is.list(folds))
+  expect_true(length(folds) == 2)
+  # CVtrain and CVtest should match model control index structures
+  expect_identical(folds[[1]], dat$model$control$index)
+  expect_identical(folds[[2]], dat$model$control$indexOut)
+
+  # when useCV is FALSE, folds should be NULL and a message is emitted
+  expect_message(folds2 <- aoa_get_folds(dat$model, CVtrain = NULL, CVtest = NULL, useCV = FALSE),
+                 "useCV is set to FALSE")
+  expect_equal(folds2[[1]], NULL)
+  expect_equal(folds2[[2]], NULL)
+})
+
+
+test_that("aoa_get_folds restructures CVtest vector into lists and derives complements", {
+  # when model is NA and CVtest is a vector of fold ids it should be restructured
+  CVtest_vec <- c(1,1,2,2,3,3)
+  folds <- aoa_get_folds(NA, CVtrain = NULL, CVtest = CVtest_vec, useCV = TRUE)
+  expect_type(folds, "list")
+  CVtest_list <- folds[[2]]
+  CVtrain_list <- folds[[1]]
+  expect_true(is.list(CVtest_list))
+  expect_true(is.list(CVtrain_list))
+  expect_equal(CVtest_list[[1]], which(CVtest_vec == 1))
+  # complements: none of the indices in the train list element should be in the corresponding test element
+  expect_true(all(!CVtrain_list[[1]] %in% CVtest_list[[1]]))
+})
+
+
+test_that("aoa_get_variables returns all model variables when 'all' is requested", {
+  skip_if_not_installed("randomForest")
+  dat <- loaddata()
+  vars <- aoa_get_variables("all", dat$model, dat$trainDat)
+  # should equal the variables we passed when training (order may differ)
+  expect_equal(sort(vars), sort(dat$variables))
+})
+

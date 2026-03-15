@@ -118,7 +118,7 @@ trainDI <- function(model = NA,
       weight = aoa_get_weights(model, variables = variables)
     }else{
       message("variable are not weighted. see ?aoa")
-      weight <- t(data.frame(rep(1,length(variables))))
+      weight <- as.data.frame(matrix(1, nrow = 1, ncol = length(variables)))
       names(weight) <- variables
     }
   }else{
@@ -252,7 +252,7 @@ aoa_get_weights = function(model, variables){
     names(weight)<- rownames(caret::varImp(model,scale=F)$importance)
   }else{
     # set all weights to 1
-    weight <- as.data.frame(t(rep(1, length(variables))))
+    weight <- as.data.frame(matrix(1, nrow = 1, ncol = length(variables)))
     names(weight) = variables
     message("note: variables were not weighted either because no weights or model were given,
     no variable importance could be retrieved from the given model, or the model has a single feature.
@@ -292,7 +292,7 @@ user_weights = function(weight, variables){
   #check if manually given weights are correct. otherwise ignore (set to 1):
   if(nrow(weight)!=1  || !all(variables %in% names(weight))){
     message("variable weights are not correctly specified and will be ignored. See ?aoa")
-    weight <- t(data.frame(rep(1,length(variables))))
+    weight <- as.data.frame(matrix(1, nrow = 1, ncol = length(variables)))
     names(weight) <- variables
   }
   weight <- weight[,na.omit(match(variables, names(weight)))]
