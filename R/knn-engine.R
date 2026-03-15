@@ -44,16 +44,16 @@
 #'
 #' @examples
 #' # nearest 2 neighbours within iris (euclidean)
-#' res <- knndist(iris[,1:4], k = 2)
+#' res <- CAST:::knndist(iris[,1:4], k = 2)
 #' str(res)
 #' # access neighbour indices
 #' attr(res, "indices")[1, ]
 #'
 #' # distances from first 5 rows of iris to the full reference
-#' knndist(iris[,1:4], iris[1:5,1:4], k = 3)
+#' CAST:::knndist(iris[,1:4], iris[1:5,1:4], k = 3)
 #'
 #' # return full distance matrix
-#' dm <- knndist(iris[,1:4], return_distmat = TRUE)
+#' dm <- CAST:::knndist(iris[,1:4], return_distmat = TRUE)
 #' dim(dm)
 #'
 #' @seealso \code{\link[philentropy]{distance}},

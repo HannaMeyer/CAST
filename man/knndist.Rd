@@ -35,7 +35,7 @@ of \code{reference}.}
 \item{offset}{Integer offset for neighbor ranking (default 0). The returned
 neighbors are selected from the sorted distance vector using the range
 \code{c(max(1, 1 + offset), max(k, offset + k))}. This can be used to skip the
-immediate nearest neighbour(s) when desired, e.g. to exclude the observation itself when 
+immediate nearest neighbour(s) when desired, e.g. to exclude the observation itself when
 \code{query = NULL}.}
 
 \item{return_distmat}{Logical; if \code{TRUE} returns the full distance
@@ -65,16 +65,16 @@ dataset and return the k-nearest neighbor distances (with neighbor indices).
 }
 \examples{
 # nearest 2 neighbours within iris (euclidean)
-res <- knndist(iris[,1:4], k = 2)
+res <- CAST:::knndist(iris[,1:4], k = 2)
 str(res)
 # access neighbour indices
 attr(res, "indices")[1, ]
 
 # distances from first 5 rows of iris to the full reference
-knndist(iris[,1:4], iris[1:5,1:4], k = 3)
+CAST:::knndist(iris[,1:4], iris[1:5,1:4], k = 3)
 
 # return full distance matrix
-dm <- knndist(iris[,1:4], return_distmat = TRUE)
+dm <- CAST:::knndist(iris[,1:4], return_distmat = TRUE)
 dim(dm)
 
 }

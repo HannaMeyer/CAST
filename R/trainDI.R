@@ -632,7 +632,8 @@ chunked_apply <- function(
 
   # If each chunk returns a named list -> combine by name
   if (is.list(first) && !is.null(names(first))) {
-    out <- setNames(vector("list", length(first)), names(first))
+    out <-vector("list", length(first))
+    names(out) <- names(first)
     for (nm in names(first)) {
       out[[nm]] <- unlist(lapply(results, function(x) x[[nm]]))
     }
