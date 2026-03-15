@@ -110,10 +110,8 @@ trainDI <- function(model = NA,
   dist_fun <- match.arg(dist_fun)
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
-  if(length(variables) == 1){
-    if(variables == "all"){
+  if(length(variables) == 1 && variables == "all"){
       variables = aoa_get_variables(variables, model, train)
-    }
   }
   if(is.na(weight)[1]){
     if(useWeight){
@@ -124,10 +122,7 @@ trainDI <- function(model = NA,
       names(weight) <- variables
     }
   }else{
-
-
     weight <- user_weights(weight, variables)
-
   }
 
   # get CV folds from model or from parameters
@@ -140,7 +135,6 @@ trainDI <- function(model = NA,
 
   # reduce train to specified variables
   train <- train[,na.omit(match(variables, names(train)))]
-
   train_backup <- train
 
   # convert categorial variables
@@ -151,14 +145,12 @@ trainDI <- function(model = NA,
 
   # scale train
   train <- scale(train)
+  scaleparam <- attributes(train)
 
   # make sure all variables have variance
   if (any(apply(train, 2, FUN=function(x){all(is.na(x))}))){
     stop("some variables in train seem to have no variance")
   }
-
-  # save scale param for later
-  scaleparam <- attributes(train)
 
   # multiply train data with variable weights (from variable importance)
   if(!inherits(weight, "error")&!is.null(unlist(weight))){
@@ -166,30 +158,16 @@ trainDI <- function(model = NA,
   }
 
   # calculate average mean distance between training data
-  # we chunk based on chunk_size
-  train_dists <- chunked_di(train=train, CVtrain=CVtrain, CVtest=CVtest, 
+  train_dists <- chunked_dist(train=train, CVtrain=CVtrain, CVtest=CVtest, 
     dist_fun=dist_fun, chunk_size = chunk_size, verbose = verbose)
 
-  # Dissimilarity Index of training data -----
-  TrainDI <- train_dists$trainDist_min / train_dists$trainDist_avrgmean
+  # Dissimilarity Index defined as the minimum distance to the nearest neighbour 
+  # divided by the average distance to all other points
+  trainDist_avrgmean =  mean(train_dists$trainDist_avrg, na.rm = TRUE)
+  TrainDI <- train_dists$trainDist_min / trainDist_avrgmean
+  thres <- aoa_threshold(TrainDI)
 
-  # AOA Threshold ----
-  threshold_quantile <- stats::quantile(TrainDI, 0.75, na.rm=TRUE)
-  threshold_iqr <- (1.5 * stats::IQR(TrainDI, na.rm=T))
-  thres <- threshold_quantile + threshold_iqr
-  # make sure that the threshold is not larger than the maximum DI in the training data
-  thres <- min(thres, max(TrainDI, na.rm=T)) 
-
-  # calculate trainLPD and avrgLPD according to the CV folds
-  if (LPD) {
-      trainLPD <- chunked_lpd(train=train, CVtrain=CVtrain, CVtest=CVtest, 
-        dist_fun=dist_fun, train_mean = train_dists$trainDist_avrgmean, 
-        threshold = thres, chunk_size = chunk_size, verbose = verbose)
-      avrgLPD <- round(mean(trainLPD))
-  }
-
-  # Return: trainDI Object -------
-
+  # prepare aoa return object
   aoa_results = list(
     train = train_backup,
     weight = weight,
@@ -197,15 +175,19 @@ trainDI <- function(model = NA,
     catvars = catupdate$catvars,
     scaleparam = scaleparam,
     trainDist_avrg = train_dists$trainDist_avrg,
-    trainDist_avrgmean = train_dists$trainDist_avrgmean,
+    trainDist_avrgmean = trainDist_avrgmean,
     trainDI = TrainDI,
     threshold = thres,
     method = dist_fun
   )
 
-  if (LPD == TRUE) {
+  # calculate trainLPD and avrgLPD according to the CV folds of specified
+  if (LPD) {
+    trainLPD <- chunked_lpd(train=train, CVtrain=CVtrain, CVtest=CVtest, 
+        dist_fun=dist_fun, train_mean = trainDist_avrgmean, 
+        threshold = thres, chunk_size = chunk_size, verbose = verbose) 
     aoa_results$trainLPD <- trainLPD
-    aoa_results$avrgLPD <- avrgLPD
+    aoa_results$avrgLPD <- round(mean(trainLPD))
   }
 
   class(aoa_results) = "trainDI"
@@ -401,32 +383,151 @@ aoa_get_variables <- function(variables, model, train){
 
 }
 
-calc_di <- function(reference, query = NULL, CVtrain, CVtest, dist_fun, ids){
+# helper to derive DI threshold based on the distribution of DI in the training data
+aoa_threshold <- function(trainDI){
+  threshold_quantile <- stats::quantile(trainDI, 0.75, na.rm=TRUE)
+  threshold_iqr <- (1.5 * stats::IQR(trainDI, na.rm=T))
+  thres <- threshold_quantile + threshold_iqr
+  # make sure that the threshold is not larger than the maximum DI in the training data
+  thres <- min(thres, max(trainDI, na.rm=T)) 
+  return(thres)
+}
+
+# small helper for distances and lpd calculation in chunks to reduce memory usage
+chunked_dist <- function(
+  train, 
+  CVtrain, 
+  CVtest, 
+  dist_fun, 
+  chunk_size = 1000L, 
+  verbose = TRUE) {
+  res <- chunked_apply(
+    train = train,
+    CVtrain = CVtrain,
+    CVtest = CVtest,
+    dist_fun = dist_fun,
+    chunk_size = chunk_size,
+    verbose = verbose,
+    calc_fun = calc_dist
+  )
+  # list with min distance, average distance, index of nearest neighbour for each observation
+  return(res)
+}
+
+chunked_lpd <- function(
+  train, 
+  CVtrain, 
+  CVtest, 
+  dist_fun, 
+  train_mean, 
+  threshold, 
+  chunk_size = 1000L, 
+  verbose = TRUE) {
+  lpd <- chunked_apply(
+    train = train,
+    CVtrain = CVtrain,
+    CVtest = CVtest,
+    dist_fun = dist_fun,
+    chunk_size = chunk_size,
+    verbose = verbose,
+    calc_fun = calc_lpd,
+    train_mean = train_mean,
+    threshold = threshold
+  )
+  # vector of local point density (counts of neighbours below DI threshold) per observation
+  return(lpd)
+}
+
+
+#' Calculate chunked KNN distances for training data
+#'
+#' Internal helper that computes per-query-row average distance to all reference
+#' points and the minimum distance to the nearest allowed training neighbour.
+#' Distances are computed with knndist and masked via mask_dist_mat to remove
+#' self- and within-fold neighbours.
+#'
+#' @param reference numeric matrix or data.frame of reference (scaled & weighted) rows.
+#' @param query numeric matrix or data.frame of query rows (subset of reference).
+#' @param CVtrain list of training indices per CV fold or NULL.
+#' @param CVtest list of testing indices per CV fold or NULL.
+#' @param dist_fun character; distance method forwarded to knndist.
+#' @param ids integer vector mapping rows of query to row indices in reference.
+#'
+#' @return A named list with
+#'   \item{trainDist_min}{numeric vector of minimum distances (per query row).}
+#'   \item{trainDist_avrg}{numeric vector of average distances (per query row).}
+#'   \item{trainDist_indices}{integer vector of index of nearest neighbour (per query row).}
+#'
+#' @keywords internal
+#' @noRd
+calc_dist <- function(
+  reference, 
+  query = NULL, 
+  CVtrain, 
+  CVtest, 
+  dist_fun, 
+  ids){
+  
   dist_mat <- knndist(query = query, reference = reference,
                       k = nrow(reference) - 1, dist_fun = dist_fun,
                       return_distmat = TRUE)
 
   # first, we only mask the observations themselves and retrieve the average distance to all other points
   dist_mat <- mask_dist_mat(dist_mat = dist_mat, ids = ids)
-  trainDist_avrg <- apply(dist_mat, 1, mean, na.rm = TRUE)
+  avg <- apply(dist_mat, 1, mean, na.rm = TRUE)
   # now we mask within-fold observations and retrieve the minimum distance to the closest point
   dist_mat <- mask_dist_mat(dist_mat = dist_mat, ids = ids, CVtest = CVtest, CVtrain = CVtrain)
-  trainDist_min <- apply(dist_mat, 1, min, na.rm = TRUE)
-  trainDist_indices <- apply(dist_mat, 1, function(x) { which(x == min(x, na.rm = TRUE))[1] })
+  # TODO: consider retrieving th K-th nearest neighbour and its distance
+  dist <- apply(dist_mat, 1, min, na.rm = TRUE)
+  idx <- apply(dist_mat, 1, function(x) { which(x == min(x, na.rm = TRUE))[1] })
 
-  list(trainDist_min = trainDist_min,
-       trainDist_avrg = trainDist_avrg,
-       trainDist_indices = trainDist_indices)
+  list(
+    # vector of minimum distances to nearest neighbour (per training point)
+    trainDist_min = dist,
+    # vector of average distances to all other points (per training point)
+    trainDist_avrg = avg,
+    # vector of indices of nearest neighbour (per training point)
+    trainDist_indices = idx)
 }
 
-calc_lpd <- function(reference, query = NULL, CVtrain, CVtest, dist_fun, train_mean, threshold, ids){
+
+#' Calculate local point density (LPD) for a chunk
+#'
+#' Internal helper that computes, for each query row, the number of reference
+#' points whose (masked) DI = distance / train_mean is below a given threshold.
+#' Distances are computed with knndist and masked via mask_dist_mat.
+#'
+#' @param reference numeric matrix or data.frame of reference (scaled & weighted) rows.
+#' @param query numeric matrix or data.frame of query rows (subset of reference).
+#' @param CVtrain list of training indices per CV fold or NULL.
+#' @param CVtest list of testing indices per CV fold or NULL.
+#' @param dist_fun character; distance method forwarded to knndist.
+#' @param train_mean numeric scalar; normalization factor (mean training distance).
+#' @param threshold numeric scalar; DI threshold used to count neighbours.
+#' @param ids integer vector mapping rows of query to row indices in reference.
+#'
+#' @return Integer vector with the local point density (counts) for each query row.
+#'
+#' @keywords internal
+#' @noRd
+calc_lpd <- function(
+  reference, 
+  query = NULL, 
+  CVtrain, 
+  CVtest, 
+  dist_fun, 
+  train_mean, 
+  threshold, 
+  ids){
+  
   dist_mat <- knndist(query = query, reference = reference,
                       k = nrow(reference) - 1, dist_fun = dist_fun,
                       return_distmat = TRUE)
-
+  # mask within-fold observations and self-distances to get the local point density
   dist_mat <- mask_dist_mat(dist_mat = dist_mat, ids = ids, 
     CVtest = CVtest, CVtrain = CVtrain)
-
+  # convert distances to DI by normalizing with the global mean distance, 
+  # then count how many neighbours are below the DI threshold
   di_mat <- dist_mat / train_mean
   trainLPD <- as.integer(rowSums(di_mat < threshold, na.rm = TRUE))
   trainLPD
@@ -434,9 +535,7 @@ calc_lpd <- function(reference, query = NULL, CVtrain, CVtest, dist_fun, train_m
 
 mask_dist_mat <- function(dist_mat, ids, CVtest = NULL, CVtrain = NULL) {
   if (is.null(dim(dist_mat))) return(dist_mat) # nothing to do for vectors
-
-  nrow_q <- nrow(dist_mat)
-  ncol_r <- ncol(dist_mat)
+  # dist_mat here is an NxM matrix of distances from N query points (rows) to M reference points (columns)
 
   # Set self-distances to NA: each row corresponds to ids[j] in the reference
   for (j in seq_along(ids)) {
@@ -446,6 +545,9 @@ mask_dist_mat <- function(dist_mat, ids, CVtest = NULL, CVtrain = NULL) {
   }
 
   # Mask within-fold distances when CV folds are provided
+  # first -> retrieve the testing fold for each observation
+  # second -> keep only the training samples of the respective observation 
+  # and set everything else to NA
   if (!is.null(CVtrain) && !is.null(CVtest)) {
     for (j in seq_along(ids)) {
       sample_idx <- ids[j]
@@ -456,7 +558,7 @@ mask_dist_mat <- function(dist_mat, ids, CVtest = NULL, CVtrain = NULL) {
       }
       if (length(whichfold) == 0L) { # if never used in testing, we ignore the sample completely
         dist_mat[j, ] <- NA
-      } else { # otherwise, we only consider its respective training samples
+      } else { # otherwise, we set all non-training samples to NA
         train_ids <- CVtrain[[whichfold]]
         if (length(train_ids) > 0) {
           not_train_ids <- setdiff(seq_len(ncol(dist_mat)), train_ids)
@@ -468,6 +570,31 @@ mask_dist_mat <- function(dist_mat, ids, CVtest = NULL, CVtrain = NULL) {
   dist_mat
 }
 
+
+#' Apply a calculation function over training data in row-wise chunks
+#'
+#' Internal utility that splits `train` into chunks of size `chunk_size`,
+#' calls `calc_fun(reference = train, query = chunk, ..., ids = chunk_ids)`,
+#' and combines results. If `calc_fun` returns a named list for each chunk,
+#' results are concatenated per name and returned as a named list; otherwise
+#' chunk outputs are concatenated into a single vector.
+#'
+#' @param train data.frame or matrix of training data (rows = samples).
+#' @param CVtrain list of training indices per CV fold or NULL.
+#' @param CVtest list of testing indices per CV fold or NULL.
+#' @param dist_fun character; distance method passed through to calc_fun.
+#' @param chunk_size integer; number of rows per chunk.
+#' @param verbose logical; print progress messages.
+#' @param calc_fun function to call for each chunk. Must accept at least
+#'   arguments (reference, query, CVtrain, CVtest, dist_fun, ids, ...).
+#' @param ... additional arguments forwarded to calc_fun.
+#'
+#' @return Either a named list (if calc_fun returns named lists per chunk)
+#'   with each element concatenated across chunks, or a concatenated vector
+#'   of chunk results.
+#'
+#' @keywords internal
+#' @noRd
 chunked_apply <- function(
   train,
   CVtrain,
@@ -478,12 +605,15 @@ chunked_apply <- function(
   calc_fun,
   ...
 ) {
+  # split train into chunks of size chunk_size and apply calc_fun to each chunk
   n <- nrow(train)
   if (n == 0) return(list())
   n_chunks <- ceiling(n / chunk_size)
   chunk_ids <- split(seq_len(n), ceiling(seq_len(n) / chunk_size))
   results <- vector("list", n_chunks)
 
+  # TODO: consider parallelization of the chunk processing,
+  # e.g. with future.apply::future_lapply or furry::future_map
   for (i in seq_len(n_chunks)) {
     if (verbose) message(sprintf("Processing chunk %d of %d", i, n_chunks))
     # ensure row-subset keeps columns; pass ids for masking inside calc_fun
@@ -511,37 +641,4 @@ chunked_apply <- function(
 
   # Otherwise assume each chunk returned a vector -> concatenate
   unlist(results)
-}
-
-chunked_di <- function(train, CVtrain, CVtest, dist_fun, chunk_size = 1000L, verbose = TRUE) {
-  res <- chunked_apply(
-    train = train,
-    CVtrain = CVtrain,
-    CVtest = CVtest,
-    dist_fun = dist_fun,
-    chunk_size = chunk_size,
-    verbose = verbose,
-    calc_fun = calc_di
-  )
-
-  list(
-    trainDist_min = res$trainDist_min,
-    trainDist_avrg = res$trainDist_avrg,
-    trainDist_avrgmean =  mean(res$trainDist_avrg, na.rm = TRUE),
-    trainDist_indices = res$trainDist_indices
-  )
-}
-
-chunked_lpd <- function(train, CVtrain, CVtest, dist_fun, train_mean, threshold, chunk_size = 1000L, verbose = TRUE) {
-  chunked_apply(
-    train = train,
-    CVtrain = CVtrain,
-    CVtest = CVtest,
-    dist_fun = dist_fun,
-    chunk_size = chunk_size,
-    verbose = verbose,
-    calc_fun = calc_lpd,
-    train_mean = train_mean,
-    threshold = threshold
-  )
 }
