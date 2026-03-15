@@ -54,6 +54,18 @@ test_that("AOA works in default: used with raster data and a trained model", {
                 "Max.   :4.4485  "))
 })
 
+test_that("AOA works with a stars object", {
+  skip_if_not_installed("randomForest")
+  skip_if_not_installed("stars")
+  dat <- loaddata()
+  studyArea_stars <- stars::st_as_stars(dat$studyArea)
+  AOA <- aoa(studyArea_stars, dat$model, LPD = TRUE, verbose = F)
+  expect_true(inherits(AOA, "aoa"))
+  expect_true(inherits(AOA$DI, "stars"))
+  expect_true(inherits(AOA$AOA, "stars"))
+  expect_true(inherits(AOA$LPD, "stars"))
+})
+
 
 test_that("AOA works without a trained model", {
   skip_if_not_installed("randomForest")
@@ -204,4 +216,83 @@ test_that("errorProfiles works for aoa objects (LPD)", {
   err_model <- errorProfiles(dat$model, AOA, variable = "LPD")
   expect_s3_class(err_model, "errorModel")
   expect_true(is.numeric(attr(err_model, "AOA_threshold")))
+})
+
+test_that("AOA masks unknown factor levels in newdata (catvars) as NA", {
+  # create simple training data with a factor predictor
+  set.seed(42)
+  train <- data.frame(x = rnorm(20), y = rnorm(20))
+  train$fac <- factor(sample(c("a", "b"), nrow(train), replace = TRUE))
+
+  # newdata contains an unseen level "c" which should be masked as NA
+  newdata <- data.frame(x = c(0, 1, -1), y = c(0, 1, -1), fac = factor(c("a", "c", "b")))
+
+  AOA <- aoa(newdata, train = train, variables = c("x", "y", "fac"), verbose = FALSE)
+  
+  expect_s3_class(AOA, "aoa")
+  expect_equal(length(AOA$DI), nrow(newdata))
+  expect_all_true(AOA$DI > 0) # DI should be > 0 for all rows
+})
+
+test_that("AOA works when newdata is a SpatRaster with unseen factor levels", {
+  # training data with factor levels a,b
+  train <- data.frame(x = c(0, 1, -1), y = c(0, 1, -1))
+  train$fac <- factor(c("a", "b", "a"))
+
+  # create a small SpatRaster with three cells and three layers: x, y, fac
+  r_x <- terra::rast(nrows = 1, ncols = 3)
+  terra::values(r_x) <- c(0, 1, -1)
+  names(r_x) <- "x"
+
+  r_y <- terra::rast(nrows = 1, ncols = 3)
+  terra::values(r_y) <- c(0, 1, -1)
+  names(r_y) <- "y"
+
+  fac <- terra::rast(nrows = 1, ncols = 3)
+  # values 1,2,3 correspond to levels a,b,c where c is unseen in train
+  terra::values(fac) <- c(1, 3, 2)
+  fac <- terra::as.factor(fac)
+  levels(fac) <- data.frame(ID = 1:3, fac = c("a", "b", "c"))
+  names(fac) <- "fac"
+
+  new_r <- c(r_x, r_y, fac)
+
+  AOA <- aoa(new_r, train = train, variables = c("x", "y", "fac"), verbose = FALSE)
+
+  expect_s3_class(AOA, "aoa")
+  expect_true(inherits(AOA$DI, "SpatRaster"))
+  vals <- terra::values(AOA$DI)
+  expect_equal(length(vals), terra::ncell(new_r))
+  # ensure DI was computed (no NA / NaN values)
+  expect_all_true(is.finite(vals[ ,1]))
+})
+
+test_that("LPD maxLPD specification handles integers, proportions and errors", {
+  # simple training set (4 distinct points)
+  train <- data.frame(x = c(0, 0, 10, 10), y = c(0, 10, 0, 10))
+  newdata <- data.frame(x = c(0, 1, 9, 10), y = c(0, 1, 9, 10))
+
+  # integer specification
+  res_int <- aoa(newdata, train = train, variables = c("x","y"), LPD = TRUE, maxLPD = 2, indices = TRUE, verbose = FALSE)
+  # proportion specification (0.5 * 4 == 2) should behave the same
+  res_frac <- aoa(newdata, train = train, variables = c("x","y"), LPD = TRUE, maxLPD = 0.5, indices = TRUE, verbose = FALSE)
+
+  expect_equal(res_int$parameters$maxLPD, res_frac$parameters$maxLPD)
+  expect_equal(res_int$LPD, res_frac$LPD)
+  expect_equal(res_int$indices, res_frac$indices)
+
+  # non-numeric
+  expect_error(aoa(newdata, train = train, variables = c("x", "y"), LPD = TRUE, maxLPD = "a", verbose = FALSE), "maxLPD must be a number")
+
+  # non-integer > 1 should error
+  expect_error(aoa(newdata, train = train, variables = c("x","y"), LPD = TRUE, maxLPD = 2.5, verbose = FALSE), "whole number")
+
+  # zero or negative should error
+  expect_error(aoa(newdata, train = train, variables = c("x","y"), LPD = TRUE, maxLPD = 0, verbose = FALSE), "maxLPD cannot be negative or equal to 0")
+
+  # bigger than number of training samples should error
+  expect_error(aoa(newdata, train = train, variables = c("x","y"), LPD = TRUE, maxLPD = 5, verbose = FALSE), "maxLPD cannot be bigger")
+  
+  # percentage too small (rounds to <= 1)
+  expect_error(aoa(newdata, train = train, variables = c("x", "y"), LPD = TRUE, maxLPD = 0.1, verbose = FALSE), "percentage .*. provided .*. is too small")
 })
