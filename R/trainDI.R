@@ -107,7 +107,7 @@ trainDI <- function(model = NA,
                     chunk_size = 1000L,
                     verbose = TRUE){
 
-  dist_fin <- match.arg(dist_fun)
+  dist_fun <- match.arg(dist_fun)
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
   if(length(variables) == 1){
@@ -406,10 +406,11 @@ calc_di <- function(reference, query = NULL, CVtrain, CVtest, dist_fun, ids){
                       k = nrow(reference) - 1, dist_fun = dist_fun,
                       return_distmat = TRUE)
 
-  dist_mat <- mask_dist_mat(dist_mat = dist_mat, ids = ids,
-    CVtest = CVtest, CVtrain = CVtrain)
-
+  # first, we only mask the observations themselves and retrieve the average distance to all other points
+  dist_mat <- mask_dist_mat(dist_mat = dist_mat, ids = ids)
   trainDist_avrg <- apply(dist_mat, 1, mean, na.rm = TRUE)
+  # now we mask within-fold observations and retrieve the minimum distance to the closest point
+  dist_mat <- mask_dist_mat(dist_mat = dist_mat, ids = ids, CVtest = CVtest, CVtrain = CVtrain)
   trainDist_min <- apply(dist_mat, 1, min, na.rm = TRUE)
   trainDist_indices <- apply(dist_mat, 1, function(x) { which(x == min(x, na.rm = TRUE))[1] })
 
