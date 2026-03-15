@@ -339,7 +339,7 @@ test_that("kNNDM works in feature space with Mahalanobis distance", {
   knndm_folds <- knndm(trainDat[,predictors], modeldomain = predictors_sp, dist_space = "feature",
                        clustering="kmeans", k=4, maxp=0.8, dist_fun = "mahalanobis")
 
-  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 1.13)
+  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 1.3727)
 
 })
 

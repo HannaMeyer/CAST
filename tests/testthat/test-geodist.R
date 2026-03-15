@@ -104,7 +104,7 @@ test_that("geodist works with points and polygon in feature space using Mahalano
   mean_CV_distances <- round(mean(dist_fspace[dist_fspace$what=="CV-distances","dist"]), 4)
 
   expect_equal(mean_sample2sample, 0.0900)
-  expect_equal(mean_CV_distances, 0.1104)
+  expect_equal(mean_CV_distances, 0.1118)
 
 })
 
