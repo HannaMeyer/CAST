@@ -234,13 +234,9 @@ aoa.data.frame <- function(newdata,
 
   leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
   stopifnot(is.logical(LPD))
-
   if (LPD) {
-    if (inherits(model, "train")) {
-      n_samples <- as.integer(length(model$trainingData[[1]]))
-    } else if (!is.null(train)) {
-      n_samples <- as.integer(length(train[[1]]))
-    }
+    if(is.null(train) && !is.null(model)){train = aoa_get_train(model)}
+    n_samples <- as.integer(length(train[[1]]))
     maxLPD <- validate_LPD(maxLPD, n_samples)
   }
 
