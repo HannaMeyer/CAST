@@ -21,12 +21,14 @@
 #' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
-#' @param dist_fun Character. Method used for distance calculation. Currently "uclidean" distance, "mahalanobis" distance are implemented but only "euclidean" is tested.
+#' @param dist_fun Character. Method used for distance calculation. Currently, euclidean and mahalanobis distance are implemented but only euclidean is tested.
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param useCV Logical. Only if a model is given. Use the CV folds to calculate the DI threshold?
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
 #' @param chunk_size Integer. Number of training points to be processed in each chunk when calculating distances. Decreasing this number can help to reduce memory usage but increases runtime.
 #' @param verbose Logical. Print progress or not?
+#' @param method Deprecated. Use dist_fun instead.
+#' @param algorithm Deprecated. Use dist_fun instead.
 #' @seealso \code{\link{aoa}}
 #' @importFrom graphics boxplot
 #' @import ggplot2
@@ -105,7 +107,13 @@ trainDI <- function(model = NA,
                     useCV =TRUE,
                     LPD = FALSE,
                     chunk_size = 1000L,
-                    verbose = TRUE){
+                    verbose = TRUE,
+                    method,
+                    algorithm) {
+  
+  if (!missing(method) || !missing(algorithm)) {
+    warning("The 'method' and 'algorithm' parameters are deprecated. Please use 'dist_fun' instead.")
+  }
 
   dist_fun <- match.arg(dist_fun)
   # get parameters if they are not provided in function call-----

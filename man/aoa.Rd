@@ -26,14 +26,18 @@ aoa(newdata, model = NA, ...)
   variables = "all",
   CVtest = NULL,
   CVtrain = NULL,
-  dist_fun = "euclidean",
+  dist_fun = c("euclidean", "mahalanobis"),
   useWeight = TRUE,
   useCV = TRUE,
   LPD = FALSE,
   maxLPD = 1,
   indices = FALSE,
   chunk_size = 1000L,
-  verbose = TRUE
+  verbose = TRUE,
+  method,
+  algorithm,
+  parallel,
+  cores
 )
 }
 \arguments{
@@ -62,7 +66,7 @@ Only required if no model is given.}
 Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
-\item{dist_fun}{Character. Method used for distance calculation. Currently "uclidean" distance, "mahalanobis" distance are implemented but only "euclidean" is tested.}
+\item{dist_fun}{Character. Method used for distance calculation. Currently, euclidean and mahalanobis distance are implemented but only euclidean is tested.}
 
 \item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
 
@@ -77,6 +81,14 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 \item{chunk_size}{integer. Only if \code{trainDI = NULL}. Number of training points to be processed in each chunk when calculating distances.}
 
 \item{verbose}{Logical. Print progress or not?}
+
+\item{method}{Deprecated. Use dist_fun instead.}
+
+\item{algorithm}{Deprecated. Use dist_fun instead.}
+
+\item{parallel}{Deprecated. Parallelization is currently not implemented. Will be added in the future.}
+
+\item{cores}{Deprecated. Parallelization is currently not implemented. Will be added in the future.}
 }
 \value{
 An object of class \code{aoa} containing:

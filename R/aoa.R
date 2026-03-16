@@ -25,7 +25,7 @@
 #' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
-#' @param dist_fun Character. Method used for distance calculation. Currently "uclidean" distance, "mahalanobis" distance are implemented but only "euclidean" is tested.
+#' @param dist_fun Character. Method used for distance calculation. Currently, euclidean and mahalanobis distance are implemented but only euclidean is tested.
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param useCV Logical. Only if a model is given. Use the CV folds to calculate the DI threshold?
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
@@ -33,6 +33,10 @@
 #' @param indices logical. Calculate indices of the training data points that are responsible for the LPD of a new prediction location? Output is a matrix with the dimensions num(raster_cells) x maxLPD. Each row holds the indices of the training data points that are relevant for the specific LPD value at that location. Can be used in combination with exploreAOA(aoa) function from the \href{https://github.com/fab-scm/CASTvis}{CASTvis package} for a better visual interpretation of the results. Note that the matrix can be quite big for examples with a high resolution and a larger number of training samples, which can cause memory issues.
 #' @param chunk_size integer. Only if \code{trainDI = NULL}. Number of training points to be processed in each chunk when calculating distances.
 #' @param verbose Logical. Print progress or not?
+#' @param method Deprecated. Use dist_fun instead.
+#' @param algorithm Deprecated. Use dist_fun instead.
+#' @param parallel Deprecated. Parallelization is currently not implemented. Will be added in the future.
+#' @param cores Deprecated. Parallelization is currently not implemented. Will be added in the future.
 #' @details The Dissimilarity Index (DI), the Local Data Point Density (LPD) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
 #'
@@ -223,16 +227,31 @@ aoa.data.frame <- function(newdata,
                 variables="all",
                 CVtest=NULL,
                 CVtrain=NULL,
-                dist_fun="euclidean",
+                dist_fun=c("euclidean", "mahalanobis"),
                 useWeight=TRUE,
                 useCV=TRUE,
                 LPD = FALSE,
                 maxLPD = 1,
                 indices = FALSE,
                 chunk_size = 1000L,
-                verbose = TRUE) {
+                verbose = TRUE,
+                method,
+                algorithm,
+                parallel,
+                cores) {
+  
+  if (!missing(method) || !missing(algorithm)) {
+    warning("The 'method' and 'algorithm' parameters are deprecated. Please use 'dist_fun' instead.")
+    if (!missing(method)) {
+      dist_fun <- method
+    }
+  }
+  if (!missing(parallel) || !missing(cores)) {
+    warning("The 'parallel' and 'cores' parameters are deprecated. Parallelization is currently not implemented. Will be added in the future.")
+  }
 
   leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
+  dist_fun <- match.arg(dist_fun)
   stopifnot(is.logical(LPD))
   if (LPD) {
     if(is.null(train) && !is.null(model)){train = aoa_get_train(model)}

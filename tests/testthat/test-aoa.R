@@ -132,55 +132,22 @@ test_that("AOA (inluding LPD) works without a trained model", {
 })
 
 
-test_that("AOA (including LPD) works in parallel with raster data and a trained model", {
+test_that("AOA raises warnings with deprecated parameters in verbose mode", {
   skip_on_cran()
   skip_if_not_installed("randomForest")
   dat <- loaddata()
   # calculate the AOA of the trained model for the study area:
-  AOA <- aoa(dat$studyArea, dat$model, LPD = TRUE, maxLPD = 1, verbose = F, parallel = TRUE, cores = 2) # limit to 2 cores
-
-  #test threshold:
-  expect_equal(as.numeric(round(AOA$parameters$threshold,5)), 0.38986)
-  #test number of pixels within AOA:
-  expect_equal(sum(terra::values(AOA$AOA)==1,na.rm=TRUE), 2936)
-  #test trainLPD
-  expect_equal(AOA$parameters$trainLPD, c(3, 4, 6, 0, 7,
-                                          6, 2, 1, 5, 3,
-                                          4, 0, 1, 2, 6,
-                                          5, 4, 4, 5, 7,
-                                          3, 4, 0, 2, 3,
-                                          6, 1, 7, 3, 2))
-  # test summary statistics of the DI
-  expect_equal(as.vector(summary(terra::values(AOA$DI)))[1:6],
-               c("Min.   :0.0000  ", "1st Qu.:0.1329  ", "Median :0.2052  ",
-                 "Mean   :0.2858  ", "3rd Qu.:0.3815  ",
-                 "Max.   :4.4485  "))
+  expect_warning(
+    AOA <- aoa(dat$studyArea, dat$model, LPD = TRUE, maxLPD = 1, verbose = T, parallel = TRUE, cores = 2),
+    "The 'parallel' and 'cores' parameters are deprecated.")
+  expect_true(inherits(AOA, "aoa"))
+  expect_warning(
+    AOA <- aoa(dat$studyArea, dat$model, LPD = TRUE, maxLPD = 1, verbose = T, method = "euclidean", algorithm = "brute"),
+    "The 'method' and 'algorithm' parameters are deprecated.")
+  expect_true(inherits(AOA, "aoa"))
 })
 
 
-test_that("AOA (inluding LPD) works in parallel without a trained model", {
-  skip_on_cran()
-  skip_if_not_installed("randomForest")
-  dat <- loaddata()
-  AOA <- aoa(dat$studyArea,train=dat$trainDat,variables=dat$variables, LPD = TRUE, maxLPD = 1, verbose = F, parallel = TRUE, cores = 2) # limit to 2 cores
-
-  #test threshold:
-  expect_equal(as.numeric(round(AOA$parameters$threshold,5)), 0.52872)
-  #test number of pixels within AOA:
-  expect_equal(sum(terra::values(AOA$AOA)==1,na.rm=TRUE), 3377)
-  # test trainLPD
-  expect_equal(AOA$parameters$trainLPD, c(7, 9, 12, 1, 12,
-                                          12, 4, 2, 8, 10,
-                                          6, 1, 3,4, 11,
-                                          9, 9, 7, 5, 5,
-                                          6, 5, 0, 5, 9,
-                                          8, 4, 11, 3,2))
-  # test summary statistics of the DI
-  expect_equal(as.vector(summary(terra::values(AOA$DI)))[1:6],
-               c("Min.   :0.0000  ", "1st Qu.:0.1759  ", "Median :0.2642  ",
-                 "Mean   :0.3109  ", "3rd Qu.:0.4051  ",
-                 "Max.   :2.6631  "))
-})
 
 test_that("print and plot for aoa run and return invisibly", {
   skip_if_not_installed("randomForest")
