@@ -331,38 +331,33 @@ aoa.data.frame <- function(newdata,
   okrows <- which(rowSums(is.na(newdata)) == 0)
   newdataCC <- newdata[okrows, ,drop=F]
 
-  if (!calc_LPD) {
-    if (verbose) {
-      message("Computing DI of new data...")
-    }
-    mindist <- rep(NA, nrow(newdata))
-    mindist[okrows] <- knndist(query=newdataCC, reference=train_scaled, k=1, dist_fun=dist_fun)
-    DI_out <- mindist / trainDI$trainDist_avrgmean
+  if (verbose) {
+    msg <- if (!calc_LPD) "Computing DI of new data..." else "Computing DI and LPD of new data..."
+    message(msg)
   }
 
+  DI_out <- rep(NA, nrow(newdata))
+  knnDist  <- knndist(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=dist_fun)
+  knnDI <- knnDist / trainDI$trainDist_avrgmean
+  DI_out[okrows] <- knnDI[ ,1] # distance to the closest training data point
+
   if (calc_LPD) {
-    if (verbose) {
-      message("Computing DI and LPD of new data...")
-    }
-
-    DI_out <- rep(NA, nrow(newdata))
     LPD_out <- rep(NA, nrow(newdata))
+    knnLPD <- rowSums(knnDI < trainDI$threshold)
+    LPD_out[okrows] <- knnLPD
 
-    knnDist  <- knndist(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=dist_fun)
-    knnDI <- knnDist / trainDI$trainDist_avrgmean
-    DI_out[okrows] <- knnDI[ ,1]
-    LPD_out[okrows] <- rowSums(knnDI < trainDI$threshold)
-
-    # set maxLPD to max of LPD_out if
-    realMaxLPD <- max(LPD_out, na.rm = T)
+    realMaxLPD <- max(knnLPD, na.rm = T)
     if (maxLPD > realMaxLPD) {
-      if (inherits(maxLPD, c("numeric", "integer")) && verbose) {
-        message("Your specified maxLPD is bigger than the real maxLPD of you predictor data.")
-      }
       if (verbose) {
-        message(paste("maxLPD is set to", realMaxLPD))
+          message("Your specified maxLPD is bigger than the real maxLPD of you predictor data.")
+          message(paste("maxLPD is set to", realMaxLPD))
       }
       trainDI$maxLPD <- realMaxLPD
+    }
+    if (indices) {
+      indicesLPD <- attr(knnDist, "indices")
+      indicesLPD <- indicesLPD[ ,1:trainDI$maxLPD]
+      rownames(indicesLPD) <- okrows
     }
   }
 
@@ -379,10 +374,7 @@ aoa.data.frame <- function(newdata,
   if (calc_LPD) {
     result$LPD <- LPD_out
     if (indices) {
-      Indices_out <- attr(knnDist, "indices")
-      Indices_out <- Indices_out[,1:trainDI$maxLPD]
-      rownames(Indices_out) <- okrows
-      result$indices <- Indices_out
+      result$indices <- indicesLPD
     }
   }
 
