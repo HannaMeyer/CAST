@@ -233,38 +233,13 @@ aoa.data.frame <- function(newdata,
                 verbose = TRUE) {
 
   leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
-
   calc_LPD <- LPD
-  # validate maxLPD input
-  if (LPD) {
-    if (is.numeric(maxLPD)) {
-      if (maxLPD <= 0) {
-        stop("maxLPD cannot be negative or equal to 0. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
-      }
-      if (maxLPD <= 1) {
-        if (inherits(model, "train")) {
-          maxLPD <- round(maxLPD * as.integer(length(model$trainingData[[1]])))
-        } else if (!is.null(train)) {
-          maxLPD <- round(maxLPD * as.integer(length(train[[1]])))
-        }
-        if (maxLPD <= 1) {
-          stop("The percentage you provided for maxLPD is too small.")
-        }
-      }
-      if (maxLPD > 1) {
-        if (maxLPD %% 1 == 0) {
-          maxLPD <- as.integer(maxLPD)
-        } else if (maxLPD %% 1 != 0) {
-          stop("If maxLPD is bigger than 0, it should be a whole number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
-        }
-      }
-      if ((maxLPD > length(if (inherits(model, "train")) { model$trainingData[[1]] } else if (!is.null(train)) { train[[1]] })) || maxLPD %% 1 != 0) {
-        stop("maxLPD cannot be bigger than the number of training samples. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
-      }
-    } else {
-      stop("maxLPD must be a number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
-    }
+  if (inherits(model, "train")) {
+    n_samples <- as.integer(length(model$trainingData[[1]]))
+  } else if (!is.null(train)) {
+    n_samples <- as.integer(length(train[[1]]))
   }
+  maxLPD <- validate_LPD(maxLPD, n_samples)
 
   # if not provided, compute train DI
   if(!inherits(trainDI, "trainDI")) {
@@ -297,7 +272,6 @@ aoa.data.frame <- function(newdata,
     }
     stop("names of newdata don't match names of train data in the model")
   }
-
 
   # TODO:
   # Prepare output as either as RasterLayer or vector:
@@ -420,5 +394,34 @@ aoa.data.frame <- function(newdata,
   return(result)
 }
 
+
+validate_LPD <- function(maxLPD, n_samples) {
+  if (!inherits(maxLPD, "numeric")) {
+    stop("maxLPD must be a number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+  }
+  if (maxLPD <= 0) {
+    stop("maxLPD cannot be negative or equal to 0. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+  }
+
+  is_percentage <- maxLPD <= 1
+
+  if (is_percentage) {
+    maxLPD <- round(maxLPD * n_samples)
+    if (maxLPD <= 1) {
+      stop("The percentage you provided for maxLPD is too small.")
+    }
+  }
+
+  if (!is_percentage) {
+    if (maxLPD %% 1 != 0) {
+      stop("If maxLPD is bigger than 0, it should be a whole number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+    }
+    maxLPD <- as.integer(maxLPD)
+    if (maxLPD > n_samples) {
+      stop("maxLPD cannot be bigger than the number of training samples. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+    }
+  }
+  maxLPD
+}
 
 
