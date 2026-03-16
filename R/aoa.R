@@ -233,13 +233,16 @@ aoa.data.frame <- function(newdata,
                 verbose = TRUE) {
 
   leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
-  calc_LPD <- LPD
-  if (inherits(model, "train")) {
-    n_samples <- as.integer(length(model$trainingData[[1]]))
-  } else if (!is.null(train)) {
-    n_samples <- as.integer(length(train[[1]]))
+  stopifnot(is.logical(LPD))
+
+  if (LPD) {
+    if (inherits(model, "train")) {
+      n_samples <- as.integer(length(model$trainingData[[1]]))
+    } else if (!is.null(train)) {
+      n_samples <- as.integer(length(train[[1]]))
+    }
+    maxLPD <- validate_LPD(maxLPD, n_samples)
   }
-  maxLPD <- validate_LPD(maxLPD, n_samples)
 
   # if not provided, compute train DI
   if(!inherits(trainDI, "trainDI")) {
@@ -261,7 +264,7 @@ aoa.data.frame <- function(newdata,
       verbose=verbose)
   }
 
-  if (calc_LPD) {
+  if (LPD) {
     trainDI$maxLPD <- maxLPD
   }
 
@@ -332,7 +335,7 @@ aoa.data.frame <- function(newdata,
   newdataCC <- newdata[okrows, ,drop=F]
 
   if (verbose) {
-    msg <- if (!calc_LPD) "Computing DI of new data..." else "Computing DI and LPD of new data..."
+    msg <- if (!LPD) "Computing DI of new data..." else "Computing DI and LPD of new data..."
     message(msg)
   }
 
@@ -341,7 +344,7 @@ aoa.data.frame <- function(newdata,
   knnDI <- knnDist / trainDI$trainDist_avrgmean
   DI_out[okrows] <- knnDI[ ,1] # distance to the closest training data point
 
-  if (calc_LPD) {
+  if (LPD) {
     LPD_out <- rep(NA, nrow(newdata))
     knnLPD <- rowSums(knnDI < trainDI$threshold)
     LPD_out[okrows] <- knnLPD
@@ -371,7 +374,7 @@ aoa.data.frame <- function(newdata,
     AOA = ifelse(DI_out > trainDI$threshold, 0L, 1L)
   )
 
-  if (calc_LPD) {
+  if (LPD) {
     result$LPD <- LPD_out
     if (indices) {
       result$indices <- indicesLPD
