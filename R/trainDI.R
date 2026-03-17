@@ -96,10 +96,10 @@
 #'
 
 
-trainDI <- function(model = NA,
+trainDI <- function(model = NULL,
                     train = NULL,
                     variables = "all",
-                    weight = NA,
+                    weight = NULL,
                     CVtest = NULL,
                     CVtrain = NULL,
                     dist_fun=c("euclidean", "mahalanobis", "gower"),
@@ -114,6 +114,9 @@ trainDI <- function(model = NA,
   if (!missing(method) || !missing(algorithm)) {
     warning("The 'method' and 'algorithm' parameters are deprecated. Please use 'dist_fun' instead.")
   }
+  # backwards compatibility if user code specifies model or weight as NA instead of NULL
+  if (!is.null(model) && is.na(model)[1]) model <- NULL
+  if (!is.null(weight) && is.na(weight)[1]) weight <- NULL
 
   dist_fun <- match.arg(dist_fun)
   # get parameters if they are not provided in function call-----
@@ -121,7 +124,7 @@ trainDI <- function(model = NA,
   if(length(variables) == 1 && variables == "all"){
       variables = aoa_get_variables(variables, model, train)
   }
-  if(is.na(weight)[1]){
+  if(is.null(weight)){
     if(useWeight){
       weight = aoa_get_weights(model, variables = variables)
     }else{
@@ -332,7 +335,7 @@ aoa_get_train <- function(model){
 
 aoa_get_folds <- function(model, CVtrain, CVtest, useCV){
   ### if folds are to be extracted from the model:
-  if (useCV&!is.na(model)[1]){
+  if (useCV&!is.null(model)){
     if(tolower(model$control$method)!="cv"){
       message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
     }else{
@@ -341,7 +344,7 @@ aoa_get_folds <- function(model, CVtrain, CVtest, useCV){
     }
   }
   ### if folds are specified manually:
-  if(is.na(model)[1]){
+  if(is.null(model)){
 
     if(!is.null(CVtest)&!is.list(CVtest)){ # restructure input if CVtest only contains the fold ID
       tmp <- list()
@@ -364,7 +367,7 @@ aoa_get_folds <- function(model, CVtrain, CVtest, useCV){
     }
 
   }
-  if(!is.na(model)[1]&useCV==FALSE){
+  if(!is.null(model)&useCV==FALSE){
     message("note: useCV is set to FALSE. The DI threshold is therefore based on all training data")
     CVtrain <- NULL
     CVtest <- NULL
@@ -376,19 +379,17 @@ aoa_get_folds <- function(model, CVtrain, CVtest, useCV){
 # Get variables from train object
 
 aoa_get_variables <- function(variables, model, train){
-
-  if(length(variables) == 1){
-    if(variables == "all"){
-      if(!is.na(model)[1]){
-        variables <- names(model$trainingData)[-which(names(model$trainingData)==".outcome")]
-      }else{
-        variables <- names(train)
-      }
+  if (length(variables) > 1) {
+    return(variables)
+  }
+  if(variables == "all"){
+    if(is.null(model)[1]){
+      variables <- names(train)
+    }else{
+      variables <- names(model$trainingData)[-which(names(model$trainingData)==".outcome")]
     }
   }
   return(variables)
-
-
 }
 
 # helper to derive DI threshold based on the distribution of DI in the training data

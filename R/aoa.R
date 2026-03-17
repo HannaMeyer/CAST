@@ -219,11 +219,11 @@ aoa.SpatRaster = function(newdata, model=NA, ...) {
 #' @export
 #' @name aoa
 aoa.data.frame <- function(newdata,
-                model=NA,
+                model=NULL,
 				        ...,
-                trainDI = NA,
+                trainDI = NULL,
                 train=NULL,
-                weight=NA,
+                weight=NULL,
                 variables="all",
                 CVtest=NULL,
                 CVtrain=NULL,
