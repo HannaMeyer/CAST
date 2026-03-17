@@ -406,7 +406,7 @@ aoa.data.frame <- function(newdata,
 
 
 validate_LPD <- function(maxLPD, n_samples) {
-  if (!inherits(maxLPD, "numeric")) {
+  if (!inherits(maxLPD, "numeric") && !inherits(maxLPD, "integer")) {
     stop("maxLPD must be a number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
   }
   if (maxLPD <= 0) {
