@@ -170,7 +170,7 @@ test_that("aoa_get_folds extracts folds from caret model and respects useCV flag
 test_that("aoa_get_folds restructures CVtest vector into lists and derives complements", {
   # when model is NA and CVtest is a vector of fold ids it should be restructured
   CVtest_vec <- c(1,1,2,2,3,3)
-  folds <- aoa_get_folds(NA, CVtrain = NULL, CVtest = CVtest_vec, useCV = TRUE)
+  folds <- aoa_get_folds(NULL, CVtrain = NULL, CVtest = CVtest_vec, useCV = TRUE)
   expect_type(folds, "list")
   CVtest_list <- folds[[2]]
   CVtrain_list <- folds[[1]]
