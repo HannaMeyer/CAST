@@ -5,10 +5,10 @@
 \title{Calculate Dissimilarity Index of training data}
 \usage{
 trainDI(
-  model = NA,
+  model = NULL,
   train = NULL,
   variables = "all",
-  weight = NA,
+  weight = NULL,
   CVtest = NULL,
   CVtrain = NULL,
   dist_fun = c("euclidean", "mahalanobis", "gower"),
