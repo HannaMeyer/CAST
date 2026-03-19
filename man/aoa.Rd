@@ -8,13 +8,13 @@
 \alias{aoa.data.frame}
 \title{Area of Applicability}
 \usage{
-aoa(newdata, model = NA, ...)
+aoa(newdata, model = NULL, ...)
 
-\method{aoa}{stars}(newdata, model = NA, ...)
+\method{aoa}{stars}(newdata, model = NULL, ...)
 
-\method{aoa}{Raster}(newdata, model = NA, ...)
+\method{aoa}{Raster}(newdata, model = NULL, ...)
 
-\method{aoa}{SpatRaster}(newdata, model = NA, ...)
+\method{aoa}{SpatRaster}(newdata, model = NULL, ...)
 
 \method{aoa}{data.frame}(
   newdata,
