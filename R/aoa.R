@@ -287,7 +287,7 @@ aoa.data.frame <- function(newdata,
   }
 
   newdata <- newdata[, na.omit(match(trainDI$variables, names(newdata))), drop = FALSE]
-  processed <- process_categorical_variables(trainDI$train, newdata, trainDI$catvars)
+  processed <- convert_factors_to_dummy(trainDI$train, newdata, trainDI$catvars)
   trainDI$train <- processed$train
   newdata <- processed$newdata
 
@@ -387,11 +387,8 @@ validate_LPD <- function(maxLPD, n_samples) {
 
 drop_unknown_levels <- function(train, newdata, catvar) {
   train[[catvar]] <- factor(droplevels(train[[catvar]]))
-  train_levels <- levels(train[[catvar]])
-  newdata[[catvar]] <- factor(droplevels(newdata[[catvar]]))
-  new_levels <- levels(newdata[[catvar]])
-  newdata[[catvar]] <- factor(newdata[[catvar]], levels = train_levels) # will set unknown levels to NA
-  return(newdata)
+  newdata[[catvar]] <- factor(newdata[[catvar]], levels = levels(train[[catvar]])) # will set unknown levels to NA
+  return(list(train=train, newdata=newdata))
 }
 
 create_dummy_variables <- function(train, newdata, catvar) {
@@ -406,13 +403,13 @@ create_dummy_variables <- function(train, newdata, catvar) {
   return(list(train = train, newdata = newdata))
 }
 
-process_categorical_variables <- function(train, newdata, catvars) {
+convert_factors_to_dummy <- function(train, newdata, catvars) {
   if (is.null(catvars) || length(catvars) == 0) {
     return(list(train = train, newdata = newdata))
   }
   for (catvar in catvars) {
-    newdata <- drop_unknown_levels(train, newdata, catvar)
-    res <- create_dummy_variables(train, newdata, catvar)
+    res <- drop_unknown_levels(train, newdata, catvar)
+    res <- create_dummy_variables(res$train, res$newdata, catvar)
     train <- res$train
     newdata <- res$newdata
   }

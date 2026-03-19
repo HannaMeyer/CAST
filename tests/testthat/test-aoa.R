@@ -277,9 +277,9 @@ test_that("drop_unknown_levels, create_dummy_variables and process_categorical_v
 
   res_dd <- CAST:::drop_unknown_levels(train, newdata, c("fac"))
   # unseen level 'c' should become NA after dropping unknown levels
-  expect_true(is.na(res_dd$fac[2]))
+  expect_true(is.na(res_dd$newdata$fac[2]))
   # original NA should remain NA
-  expect_true(is.na(res_dd$fac[3]))
+  expect_true(is.na(res_dd$newdata$fac[3]))
 
   # create_dummy_variables: creates dummy cols, drops original factor, and handles NA rows
   train2 <- data.frame(id = 1:4, val = rnorm(4))
@@ -304,7 +304,7 @@ test_that("drop_unknown_levels, create_dummy_variables and process_categorical_v
   train3$f2 <- factor(c("m", "n", "m", "n"))
   new3 <- data.frame(a = c(10, 20), f1 = factor(c("y", "z"), levels = c("x","y","z")), f2 = factor(c("n","m")))
 
-  res_proc <- CAST:::process_categorical_variables(train3, new3, c("f1","f2"))
+  res_proc <- CAST:::convert_factors_to_dummy(train3, new3, c("f1","f2"))
   # resulting data.frames should no longer contain original factor columns
   expect_false("f1" %in% names(res_proc$train))
   expect_false("f2" %in% names(res_proc$train))
