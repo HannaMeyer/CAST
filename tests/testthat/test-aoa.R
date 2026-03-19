@@ -263,3 +263,54 @@ test_that("LPD maxLPD specification handles integers, proportions and errors", {
   # percentage too small (rounds to <= 1)
   expect_error(aoa(newdata, train = train, variables = c("x", "y"), LPD = TRUE, maxLPD = 0.1, verbose = FALSE), "percentage .*. provided .*. is too small")
 })
+
+
+test_that("drop_unknown_levels, create_dummy_variables and process_categorical_variables behave correctly", {
+  skip_if_not_installed("caret")
+
+  # drop_unknown_levels: unknown levels should be warned about and set to NA
+  train <- data.frame(x = 1:3)
+  train$fac <- factor(c("a", "b", "a"))
+  newdata <- data.frame(x = c(10, 20, 30))
+  # include an unseen level 'c' and a NA
+  newdata$fac <- factor(c("a", "c", NA), levels = c("a", "b", "c"))
+
+  res_dd <- CAST:::drop_unknown_levels(train, newdata, c("fac"))
+  # unseen level 'c' should become NA after dropping unknown levels
+  expect_true(is.na(res_dd$fac[2]))
+  # original NA should remain NA
+  expect_true(is.na(res_dd$fac[3]))
+
+  # create_dummy_variables: creates dummy cols, drops original factor, and handles NA rows
+  train2 <- data.frame(id = 1:4, val = rnorm(4))
+  train2$fac <- factor(c("a", "b", "a", "b"))
+  new2 <- data.frame(id = 1:3, val = c(0, 1, 2))
+  new2$fac <- factor(c("b", NA, "a"), levels = c("a", "b", "c"))
+
+  res_cd <- CAST:::create_dummy_variables(train2, new2, "fac")
+  # original categorical variables removed
+  expect_false("fac" %in% names(res_cd$train))
+  expect_false("fac" %in% names(res_cd$newdata))
+  # dummy columns for levels a and b should exist
+  expect_true(any(grepl("fac\\.a", names(res_cd$newdata))))
+  expect_true(any(grepl("fac\\.b", names(res_cd$newdata))))
+  # NA row in newdata should have zeros in dummy columns
+  dcols <- grep("^fac\\.", names(res_cd$newdata))
+  expect_true(all(res_cd$newdata[2, dcols] == 0))
+
+  # process_categorical_variables: applies create_dummy_variables for multiple factors
+  train3 <- data.frame(a = 1:4)
+  train3$f1 <- factor(c("x", "y", "x", "y"))
+  train3$f2 <- factor(c("m", "n", "m", "n"))
+  new3 <- data.frame(a = c(10, 20), f1 = factor(c("y", "z"), levels = c("x","y","z")), f2 = factor(c("n","m")))
+
+  res_proc <- CAST:::process_categorical_variables(train3, new3, c("f1","f2"))
+  # resulting data.frames should no longer contain original factor columns
+  expect_false("f1" %in% names(res_proc$train))
+  expect_false("f2" %in% names(res_proc$train))
+  expect_false("f1" %in% names(res_proc$newdata))
+  expect_false("f2" %in% names(res_proc$newdata))
+  # dummy columns should be present for both factors in newdata
+  expect_true(any(grepl("^f1\\.", names(res_proc$newdata))))
+  expect_true(any(grepl("^f2\\.", names(res_proc$newdata))))
+})

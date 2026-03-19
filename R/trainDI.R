@@ -164,9 +164,7 @@ trainDI <- function(model = NULL,
   }
 
   # multiply train data with variable weights (from variable importance)
-  if(!inherits(weight, "error")&!is.null(unlist(weight))){
-    train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
-  }
+  train <- apply_weights(train, weight)
 
   # calculate average mean distance between training data
   train_dists <- chunked_dist(train=train, CVtrain=CVtrain, CVtest=CVtest, 
@@ -244,7 +242,13 @@ aoa_categorial_train <- function(train, variables, weight){
   }
   return(list(train = train, weight = weight, catvars = catvars))
 
+}
 
+apply_weights <- function(train, weight){
+  if(!inherits(weight, "error")&!is.null(unlist(weight))){
+    train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
+  }
+  return(train)
 }
 
 

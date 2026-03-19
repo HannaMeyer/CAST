@@ -250,7 +250,6 @@ aoa.data.frame <- function(newdata,
     warning("The 'parallel' and 'cores' parameters are deprecated. Parallelization is currently not implemented. Will be added in the future.")
   }
 
-  leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
   dist_fun <- match.arg(dist_fun)
   stopifnot(is.logical(LPD))
   if (LPD) {
@@ -283,8 +282,10 @@ aoa.data.frame <- function(newdata,
     trainDI$maxLPD <- maxLPD
   }
 
-  # check if variables are in newdata
-  if(any(trainDI$variables %in% names(newdata)==FALSE)){
+  # check if all variables are present in newdata
+  has_all_cols <- all(trainDI$variables %in% names(newdata))
+  if(!has_all_cols){
+    leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
     if(leading_digit){
       stop("names of newdata start with leading digits, automatically added 'X' results in mismatching names of train data in the model")
     }
@@ -299,51 +300,18 @@ aoa.data.frame <- function(newdata,
     names(out) <- "DI"
   }
 
-  newdata <- newdata[,na.omit(match(trainDI$variables, names(newdata))),drop = FALSE]
+  newdata <- newdata[ ,na.omit(match(trainDI$variables, names(newdata))) ,drop = FALSE]
+  result <- process_categorical_variables(trainDI$train, newdata, trainDI$catvars)
+  trainDI$train <- result$train
+  newdata <- result$newdata
 
-  ## Handling of categorical predictors:
-  catvars <- trainDI$catvars
-  if (!inherits(catvars,"error")&length(catvars)>0){
-    for (catvar in catvars){
-      # mask all unknown levels in newdata as NA (even technically no predictions can be made)
-	  # x[,catvar] is a vector if x is a data.frame, but a tibble if x is a tibble
-	  # x[[catvar]] extracts the catvar variable for both data.frame and tibble
-      trainDI$train[[catvar]]<-droplevels(trainDI$train[[catvar]])
-      newdata[[catvar]] <- factor(newdata[[catvar]])
-      newdata[!newdata[[catvar]]%in%unique(trainDI$train[[catvar]]),catvar] <- NA
-      newdata[[catvar]] <- droplevels(newdata[[catvar]])
-      # then create dummy variables for the remaining levels in train:
-      dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = trainDI$train),trainDI$train)
-      dvi_newdata <- predict(caret::dummyVars(paste0("~",catvar), data=trainDI$train),newdata)
-      dvi_newdata[is.na(newdata[,catvar]),] <- 0
-      trainDI$train <- data.frame(trainDI$train,dvi_train)
-      newdata <- data.frame(newdata,dvi_newdata)
-
-    }
-    newdata <- newdata[,-which(names(newdata)%in%catvars)]
-    trainDI$train <- trainDI$train[,-which(names(trainDI$train)%in%catvars)]
-  }
-
-  # scale and weight new data
-  newdata <- scale(newdata,center=trainDI$scaleparam$`scaled:center`,
-                   scale=trainDI$scaleparam$`scaled:scale`)
-
-  if(!inherits(trainDI$weight, "error")){
-    tmpnames <- names(newdata)#!!!!!
-    newdata <- sapply(1:ncol(newdata),function(x){
-      newdata[,x]*unlist(trainDI$weight[x])
-    })
-    names(newdata)<-tmpnames#!!!!
-  }
-
-
-  # rescale and reweight train data
-  train_scaled <- scale(trainDI$train,
-                        center = trainDI$scaleparam$`scaled:center`,
-                        scale = trainDI$scaleparam$`scaled:scale`)
-
-  train_scaled <- sapply(1:ncol(train_scaled),function(x){train_scaled[,x]*unlist(trainDI$weight[x])})
-
+  # apply scaling and weighting:
+  center <- trainDI$scaleparam$`scaled:center`
+  scale <- trainDI$scaleparam$`scaled:scale`
+  newdata <- scale(newdata,center=center, scale=scale)
+  train_scaled <- scale(trainDI$train, center = center, scale = scale) 
+  newdata <- apply_weights(newdata, trainDI$weight)
+  train_scaled <- apply_weights(train_scaled, trainDI$weight)
 
   # Distance Calculation ---------
   okrows <- which(rowSums(is.na(newdata)) == 0)
@@ -433,5 +401,42 @@ validate_LPD <- function(maxLPD, n_samples) {
   }
   maxLPD
 }
+
+
+drop_unknown_levels <- function(train, newdata, catvar) {
+  train[[catvar]] <- factor(droplevels(train[[catvar]]))
+  train_levels <- levels(train[[catvar]])
+  newdata[[catvar]] <- factor(droplevels(newdata[[catvar]]))
+  new_levels <- levels(newdata[[catvar]])
+  newdata[[catvar]] <- factor(newdata[[catvar]], levels = train_levels) # will set unknown levels to NA
+  newdata
+}
+
+
+create_dummy_variables <- function(train, newdata, catvar) {
+  dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = train), train)
+  dvi_newdata <- predict(caret::dummyVars(paste0("~",catvar), data = train), newdata)
+  dvi_newdata[is.na(newdata[ ,catvar]),] <- 0
+  train <- data.frame(train, dvi_train)
+  newdata <- data.frame(newdata, dvi_newdata)
+  # drop original categorical variable:
+  newdata <- newdata[  ,-which(names(newdata) == catvar)]
+  train <- train[ ,-which(names(train) == catvar)]
+  list(train = train, newdata = newdata)
+}
+
+process_categorical_variables <- function(train, newdata, catvars) {
+  if (is.null(catvars) || length(catvars) == 0) {
+    return(list(train = train, newdata = newdata))
+  }
+  for (catvar in catvars) {
+    newdata <- drop_unknown_levels(train, newdata, catvar)
+    res <- create_dummy_variables(train, newdata, catvar)
+    train <- res$train
+    newdata <- res$newdata
+  }
+  list(train = train, newdata = newdata)
+}
+
 
 
