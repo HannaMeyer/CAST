@@ -360,26 +360,26 @@ aoa.data.frame <- function(newdata,
 
 validate_LPD <- function(maxLPD, n_samples) {
   if (!inherits(maxLPD, "numeric") && !inherits(maxLPD, "integer")) {
-    stop("maxLPD must be a number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+    stop("maxLPD must be a number. Either define a number between 0 and 1 to use a proportion of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
   }
   if (maxLPD <= 0) {
-    stop("maxLPD cannot be negative or equal to 0. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+    stop("maxLPD cannot be negative or equal to 0. Either define a number between 0 and 1 to use a proportion of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
   }
 
-  is_percentage <- maxLPD <= 1
+  is_proportion <- maxLPD <= 1
 
-  if (is_percentage) {
+  if (is_proportion) {
     maxLPD <- round(maxLPD * n_samples)
     if (maxLPD <= 1) {
-      stop("The percentage you provided for maxLPD is too small.")
+      stop("The proportion you provided for maxLPD is too small.")
     }
   } else {
     if (maxLPD %% 1 != 0) {
-      stop("If maxLPD is bigger than 0, it should be a whole number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+      stop("If maxLPD is bigger than 0, it should be a whole number. Either define a number between 0 and 1 to use a proportion of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
     }
     maxLPD <- as.integer(maxLPD)
     if (maxLPD > n_samples) {
-      stop("maxLPD cannot be bigger than the number of training samples. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+      stop("maxLPD cannot be bigger than the number of training samples. Either define a number between 0 and 1 to use a proportion of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
     }
   }
   return(maxLPD)

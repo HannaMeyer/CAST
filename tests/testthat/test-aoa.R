@@ -261,7 +261,7 @@ test_that("LPD maxLPD specification handles integers, proportions and errors", {
   expect_error(aoa(newdata, train = train, variables = c("x","y"), LPD = TRUE, maxLPD = 5, verbose = FALSE), "maxLPD cannot be bigger")
   
   # percentage too small (rounds to <= 1)
-  expect_error(aoa(newdata, train = train, variables = c("x", "y"), LPD = TRUE, maxLPD = 0.1, verbose = FALSE), "percentage .*. provided .*. is too small")
+  expect_error(aoa(newdata, train = train, variables = c("x", "y"), LPD = TRUE, maxLPD = 0.1, verbose = FALSE), "proportion .*. provided .*. is too small")
 })
 
 
