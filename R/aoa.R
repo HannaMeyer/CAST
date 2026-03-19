@@ -292,18 +292,10 @@ aoa.data.frame <- function(newdata,
     stop("names of newdata don't match names of train data in the model")
   }
 
-  # TODO:
-  # Prepare output as either as RasterLayer or vector:
-  out <- NA
-  if (inherits(newdata, "SpatRaster")){
-    out <- newdata[[1]]
-    names(out) <- "DI"
-  }
-
   newdata <- newdata[ ,na.omit(match(trainDI$variables, names(newdata))) ,drop = FALSE]
-  result <- process_categorical_variables(trainDI$train, newdata, trainDI$catvars)
-  trainDI$train <- result$train
-  newdata <- result$newdata
+  processed <- process_categorical_variables(trainDI$train, newdata, trainDI$catvars)
+  trainDI$train <- processed$train
+  newdata <- processed$newdata
 
   # apply scaling and weighting:
   center <- trainDI$scaleparam$`scaled:center`
