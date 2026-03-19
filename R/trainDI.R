@@ -46,8 +46,6 @@
 #'  \item{trainLPD}{LPD of the training data}
 #'  \item{avrgLPD}{Average LPD of the training data}
 #'
-#'
-#'
 #' @export trainDI
 #'
 #' @author
@@ -56,7 +54,6 @@
 #' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
 #' Estimating the area of applicability of spatial prediction models.
 #' \doi{10.1111/2041-210X.13650}
-#'
 #'
 #' @examples
 #' \dontrun{
@@ -94,8 +91,6 @@
 #' plot(AOA$LPD)
 #' }
 #'
-
-
 trainDI <- function(model = NULL,
                     train = NULL,
                     variables = "all",
@@ -113,6 +108,9 @@ trainDI <- function(model = NULL,
   
   if (!missing(method) || !missing(algorithm)) {
     warning("The 'method' and 'algorithm' parameters are deprecated. Please use 'dist_fun' instead.")
+    if (!missing(method)) {
+      dist_fun <- method
+    }
   }
   # backwards compatibility if user code specifies model or weight as NA instead of NULL
   if (!is.null(model) && is.na(model)[1]) model <- NULL
@@ -121,6 +119,8 @@ trainDI <- function(model = NULL,
   dist_fun <- match.arg(dist_fun)
   # get parameters if they are not provided in function call-----
   if(is.null(train)){train = aoa_get_train(model)}
+  if(nrow(train)<=1){stop("At least two training points need to be specified")}
+
   if(length(variables) == 1 && variables == "all"){
       variables = aoa_get_variables(variables, model, train)
   }
@@ -141,11 +141,8 @@ trainDI <- function(model = NULL,
   CVtest <- folds[[2]]
   CVtrain <- folds[[1]]
 
-  # check for input errors -----
-  if(nrow(train)<=1){stop("at least two training points need to be specified")}
-
   # reduce train to specified variables
-  train <- train[,na.omit(match(variables, names(train)))]
+  train <- train[, na.omit(match(variables, names(train)))]
   train_backup <- train
 
   # convert categorial variables
@@ -168,7 +165,7 @@ trainDI <- function(model = NULL,
 
   # calculate average mean distance between training data
   train_dists <- chunked_dist(train=train, CVtrain=CVtrain, CVtest=CVtest, 
-    dist_fun=dist_fun, chunk_size = chunk_size, verbose = verbose)
+                              dist_fun=dist_fun, chunk_size = chunk_size, verbose = verbose)
 
   # Dissimilarity Index defined as the minimum distance to the nearest neighbour 
   # divided by the average distance to all other points
@@ -191,10 +188,10 @@ trainDI <- function(model = NULL,
   )
 
   # calculate trainLPD and avrgLPD according to the CV folds of specified
-  if (LPD) {
+  if (isTRUE(LPD)) {
     trainLPD <- chunked_lpd(train=train, CVtrain=CVtrain, CVtest=CVtest, 
-        dist_fun=dist_fun, train_mean = trainDist_avrgmean, 
-        threshold = thres, chunk_size = chunk_size, verbose = verbose) 
+                            dist_fun=dist_fun, train_mean = trainDist_avrgmean, 
+                            threshold = thres, chunk_size = chunk_size, verbose = verbose) 
     aoa_results$trainLPD <- trainLPD
     aoa_results$avrgLPD <- round(mean(trainLPD))
   }
@@ -213,58 +210,51 @@ trainDI <- function(model = NULL,
 aoa_categorial_train <- function(train, variables, weight){
 
   # get all categorial variables
-  catvars <- tryCatch(names(train)[which(sapply(train[,variables], class)%in%c("factor","character"))],
-                      error=function(e) e)
+  catvars <- tryCatch(names(train)[which(sapply(train[,variables], class)%in%c("factor","character"))], error=function(e) e)
 
   if (!inherits(catvars,"error")&length(catvars)>0){
     message("warning: predictors contain categorical variables. The integration is currently still under development. Please check results carefully!")
 
     for (catvar in catvars){
       # mask all unknown levels in newdata as NA (even technically no predictions can be made)
-      train[,catvar]<-droplevels(train[,catvar])
+      train[, catvar] <- droplevels(train[, catvar])
 
       # then create dummy variables for the remaining levels in train:
-      dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = train),
-                           train)
-      train <- data.frame(train,dvi_train)
+      dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = train), train)
+      train <- data.frame(train, dvi_train)
 
       if(!inherits(weight, "error")){
-        addweights <- data.frame(t(rep(weight[,which(names(weight)==catvar)],
-                                       ncol(dvi_train))))
-        names(addweights)<- colnames(dvi_train)
-        weight <- data.frame(weight,addweights)
+        addweights <- data.frame(t(rep(weight[, which(names(weight)==catvar)], ncol(dvi_train))))
+        names(addweights) <- colnames(dvi_train)
+        weight <- data.frame(weight, addweights)
       }
     }
     if(!inherits(weight, "error")){
-      weight <- weight[,-which(names(weight)%in%catvars)]
+      weight <- weight[, -which(names(weight) %in% catvars)]
     }
-    train <- train[,-which(names(train)%in%catvars)]
+    train <- train[, -which(names(train) %in% catvars)]
   }
   return(list(train = train, weight = weight, catvars = catvars))
 
 }
 
 apply_weights <- function(train, weight){
-  if(!inherits(weight, "error")&!is.null(unlist(weight))){
-    train <- sapply(1:ncol(train),function(x){train[,x]*unlist(weight[x])})
+  if(!inherits(weight, "error") && !is.null(unlist(weight))){
+    train <- sapply(1:ncol(train), function(x){train[, x] * unlist(weight[x])})
   }
   return(train)
 }
 
-
-
 # Get weights from train object
-
-
 aoa_get_weights = function(model, variables){
 
   weight <- tryCatch(if(model$modelType=="Classification"){
-    as.data.frame(t(apply(caret::varImp(model,scale=F)$importance,1,mean)))
+    as.data.frame(t(apply(caret::varImp(model, scale=FALSE)$importance, 1, mean)))
   }else{
-    as.data.frame(t(caret::varImp(model,scale=F)$importance[,"Overall"]))
+    as.data.frame(t(caret::varImp(model, scale=FALSE)$importance[, "Overall"]))
   }, error=function(e) e)
   if(!inherits(weight, "error") & length(variables)>1){
-    names(weight)<- rownames(caret::varImp(model,scale=F)$importance)
+    names(weight)<- rownames(caret::varImp(model, scale=FALSE)$importance)
   }else{
     # set all weights to 1
     weight <- as.data.frame(matrix(1, nrow = 1, ncol = length(variables)))
@@ -276,9 +266,9 @@ aoa_get_weights = function(model, variables){
 
   #set negative weights to 0
   if(!inherits(weight, "error")){
-    weight <- weight[,na.omit(match(variables, names(weight)))]
+    weight <- weight[, na.omit(match(variables, names(weight)))]
     if (any(weight<0)){
-      weight[weight<0]<-0
+      weight[weight<0] <- 0
       message("negative weights were set to 0")
     }
   }
@@ -286,15 +276,11 @@ aoa_get_weights = function(model, variables){
     stop("all weights are <=0, hence no variable is used. Check variable importance of the model, define weights manually or set useWeight=FALSE")
   }
   return(weight)
-
 }
-
-
 
 # check user weight input
 # make sure this function outputs a data.frame with
 # one row and columns named after the variables
-
 user_weights = function(weight, variables){
 
   # list input support
@@ -303,43 +289,31 @@ user_weights = function(weight, variables){
     weight = as.data.frame(weight)
   }
 
-
   #check if manually given weights are correct. otherwise ignore (set to 1):
   if(nrow(weight)!=1  || !all(variables %in% names(weight))){
     message("variable weights are not correctly specified and will be ignored. See ?aoa")
     weight <- as.data.frame(matrix(1, nrow = 1, ncol = length(variables)))
     names(weight) <- variables
   }
-  weight <- weight[,na.omit(match(variables, names(weight)))]
+  weight <- weight[, na.omit(match(variables, names(weight)))]
   if (any(weight<0)){
-    weight[weight<0]<-0
+    weight[weight<0] <- 0
     message("negative weights were set to 0")
   }
-
   return(weight)
-
 }
-
-
 
 
 # Get trainingdata from train object
-
 aoa_get_train <- function(model){
-
   train <- as.data.frame(model$trainingData)
   return(train)
-
-
 }
 
-
 # Get folds from train object
-
-
 aoa_get_folds <- function(model, CVtrain, CVtest, useCV){
   ### if folds are to be extracted from the model:
-  if (useCV&!is.null(model)){
+  if (useCV && !is.null(model)){
     if(tolower(model$control$method)!="cv"){
       message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
     }else{
@@ -371,17 +345,15 @@ aoa_get_folds <- function(model, CVtrain, CVtest, useCV){
     }
 
   }
-  if(!is.null(model)&useCV==FALSE){
+  if(!is.null(model) && !isTRUE(useCV)){
     message("note: useCV is set to FALSE. The DI threshold is therefore based on all training data")
     CVtrain <- NULL
     CVtest <- NULL
   }
-  return(list(CVtrain,CVtest))
+  return(list(CVtrain, CVtest))
 }
 
-
 # Get variables from train object
-
 aoa_get_variables <- function(variables, model, train){
   if (length(variables) > 1) {
     return(variables)
@@ -398,11 +370,11 @@ aoa_get_variables <- function(variables, model, train){
 
 # helper to derive DI threshold based on the distribution of DI in the training data
 aoa_threshold <- function(trainDI){
-  threshold_quantile <- stats::quantile(trainDI, 0.75, na.rm=TRUE)
-  threshold_iqr <- (1.5 * stats::IQR(trainDI, na.rm=T))
+  threshold_quantile <- stats::quantile(trainDI, 0.75, na.rm = TRUE)
+  threshold_iqr <- (1.5 * stats::IQR(trainDI, na.rm = TRUE))
   thres <- threshold_quantile + threshold_iqr
   # make sure that the threshold is not larger than the maximum DI in the training data
-  thres <- min(thres, max(trainDI, na.rm=T)) 
+  thres <- min(thres, max(trainDI, na.rm = TRUE)) 
   return(thres)
 }
 
@@ -502,7 +474,6 @@ calc_dist <- function(
     # vector of indices of nearest neighbour (per training point)
     trainDist_indices = idx)
 }
-
 
 #' Calculate local point density (LPD) for a chunk
 #'
@@ -645,7 +616,7 @@ chunked_apply <- function(
 
   # If each chunk returns a named list -> combine by name
   if (is.list(first) && !is.null(names(first))) {
-    out <-vector("list", length(first))
+    out <- vector("list", length(first))
     names(out) <- names(first)
     for (nm in names(first)) {
       out[[nm]] <- unlist(lapply(results, function(x) x[[nm]]))
@@ -654,5 +625,5 @@ chunked_apply <- function(
   }
 
   # Otherwise assume each chunk returned a vector -> concatenate
-  unlist(results)
+  return(unlist(results))
 }

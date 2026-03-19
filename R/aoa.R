@@ -54,8 +54,6 @@
 #'  \item{LPD}{SpatRaster, stars object or data frame. Local Point Density of newdata.}
 #'  \item{AOA}{SpatRaster, stars object or data frame. Area of Applicability of newdata. AOA has values 0 (outside AOA) and 1 (inside AOA)}
 #'
-#' 
-#'
 #' @author
 #' Hanna Meyer, Fabian Schumacher
 #' @references Meyer, H., Pebesma, E. (2021): Predicting into unknown space?
@@ -157,64 +155,58 @@
 
 #' @export
 #' @name aoa
-aoa = function(newdata, model=NA, ...) UseMethod("aoa") # the generic
+aoa = function(newdata, model=NULL, ...) UseMethod("aoa") # the generic
 
 #' @export
 #' @name aoa
-aoa.stars = function(newdata, model=NA, ...) {
-    if (!requireNamespace("stars", quietly = TRUE))
-      stop("package stars required: install that first")
-    res = aoa(methods::as(newdata, "SpatRaster"), model=model, ...)
+aoa.stars = function(newdata, model=NULL, ...) {
+  if (!requireNamespace("stars", quietly = TRUE))
+    stop("package stars required: install that first")
+  res = aoa(methods::as(newdata, "SpatRaster"), model=model, ...)
 	# convert back to stars...
-    res$DI <- stars::st_as_stars(res$DI)
-    res$AOA <- stars::st_as_stars(res$AOA)
-    if (!is.null(res$LPD)) {
-        res$LPD <- stars::st_as_stars(res$LPD)
-    }
-	res
+  res$DI <- stars::st_as_stars(res$DI)
+  res$AOA <- stars::st_as_stars(res$AOA)
+  if (!is.null(res$LPD)) {
+    res$LPD <- stars::st_as_stars(res$LPD)
+  }
+	return(res)
 }
 
 #' @export
 #' @name aoa
-aoa.Raster = function(newdata, model=NA, ...) {
-    stop("Raster will soon not longer be supported. Use terra or stars instead")
+aoa.Raster = function(newdata, model=NULL, ...) {
+    warning("Raster will soon not longer be supported. Use terra or stars instead")
     aoa(methods::as(newdata, "SpatRaster"), model=model, ...)
 }
 
 #' @export
 #' @name aoa
-aoa.SpatRaster = function(newdata, model=NA, ...) {
-  #### order data:
-  out_template = newdata[[1]]
-  if (any(is.factor(newdata)))
-    newdata[[which(is.factor(newdata))]] <- as.numeric(newdata[[which(is.factor(newdata))]])
+aoa.SpatRaster = function(newdata, model=NULL, ...) {
+  #### prep data
+  out_template <- newdata[[1]]
+  if (any(is.factor(newdata))){
+    which_are_factors <- which(is.factor(newdata))
+    newdata[[which_are_factors]] <- as.numeric(newdata[[which_are_factors]])
+  }
+
   # call the data.frame method:
   res = aoa(terra::as.data.frame(newdata, na.rm = FALSE), model=model, ...)
 
   # convert DI:
-  DI = out_template
-  terra::values(DI) <- res$DI
-  DI <- terra::mask(DI, out_template)
-  names(DI) = "DI"
-  res$DI = DI
+  res$DI <- terra::mask(terra::setValues(out_template, res$DI), out_template)
+  names(res$DI) <- "DI"
 
   # convert AOA:
-  AOA = out_template
-  terra::values(AOA) <- res$AOA
-  AOA <- terra::mask(AOA, out_template)
-  names(AOA) = "AOA"
-  res$AOA = AOA
-
+  res$AOA <- terra::mask(terra::setValues(out_template, res$AOA), out_template)
+  names(res$AOA) <- "AOA"
+  
+  # convert LPD:
   if (!is.null(res$LPD)) {
-    # convert LPD:
-    LPD <- out_template
-    terra::values(LPD) <- res$LPD
-    names(LPD) = "LPD"
-	res$LPD = LPD
+    res$LPD <- terra::mask(terra::setValues(out_template, res$LPD), out_template)
+    names(res$LPD) <- "LPD"
   }
-  res
+  return(res)
 }
-
 
 #' @export
 #' @name aoa
@@ -251,10 +243,12 @@ aoa.data.frame <- function(newdata,
   }
 
   dist_fun <- match.arg(dist_fun)
-  stopifnot(is.logical(LPD))
-  if (LPD) {
-    if(is.null(train) && !is.null(model)){train = aoa_get_train(model)}
-    n_samples <- as.integer(length(train[[1]]))
+  if (isTRUE(LPD)) {
+    if (is.null(train)) {
+      if (is.null(model)) stop("Provide either 'train' or 'model'")
+      train <- aoa_get_train(model)
+    }
+    n_samples <- length(train[[1]])
     maxLPD <- validate_LPD(maxLPD, n_samples)
   }
 
@@ -278,7 +272,7 @@ aoa.data.frame <- function(newdata,
       verbose=verbose)
   }
 
-  if (LPD) {
+  if (isTRUE(LPD)) {
     trainDI$maxLPD <- maxLPD
   }
 
@@ -292,22 +286,22 @@ aoa.data.frame <- function(newdata,
     stop("names of newdata don't match names of train data in the model")
   }
 
-  newdata <- newdata[ ,na.omit(match(trainDI$variables, names(newdata))) ,drop = FALSE]
+  newdata <- newdata[, na.omit(match(trainDI$variables, names(newdata))), drop = FALSE]
   processed <- process_categorical_variables(trainDI$train, newdata, trainDI$catvars)
   trainDI$train <- processed$train
   newdata <- processed$newdata
 
-  # apply scaling and weighting:
+  # apply scaling and weighting
   center <- trainDI$scaleparam$`scaled:center`
   scale <- trainDI$scaleparam$`scaled:scale`
-  newdata <- scale(newdata,center=center, scale=scale)
+  newdata <- scale(newdata, center=center, scale=scale)
   train_scaled <- scale(trainDI$train, center = center, scale = scale) 
   newdata <- apply_weights(newdata, trainDI$weight)
   train_scaled <- apply_weights(train_scaled, trainDI$weight)
 
-  # Distance Calculation ---------
+  # distance calculations
   okrows <- which(rowSums(is.na(newdata)) == 0)
-  newdataCC <- newdata[okrows, ,drop=F]
+  newdataCC <- newdata[okrows, , drop=FALSE]
 
   if (verbose) {
     msg <- if (!LPD) "Computing DI of new data..." else "Computing DI and LPD of new data..."
@@ -317,24 +311,24 @@ aoa.data.frame <- function(newdata,
   DI_out <- rep(NA, nrow(newdata))
   knnDist  <- knndist(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=dist_fun)
   knnDI <- knnDist / trainDI$trainDist_avrgmean
-  DI_out[okrows] <- knnDI[ ,1] # distance to the closest training data point
+  DI_out[okrows] <- knnDI[, 1] # distance to the closest training data point
 
-  if (LPD) {
+  if (isTRUE(LPD)) {
     LPD_out <- rep(NA, nrow(newdata))
     knnLPD <- rowSums(knnDI < trainDI$threshold)
     LPD_out[okrows] <- knnLPD
 
-    realMaxLPD <- max(knnLPD, na.rm = T)
+    realMaxLPD <- max(knnLPD, na.rm = TRUE)
     if (maxLPD > realMaxLPD) {
       if (verbose) {
-          message("Your specified maxLPD is bigger than the real maxLPD of you predictor data.")
+          message("Your specified maxLPD is bigger than the actual maxLPD of you predictor data.")
           message(paste("maxLPD is set to", realMaxLPD))
       }
       trainDI$maxLPD <- realMaxLPD
     }
-    if (indices) {
+    if (isTRUE(indices)) {
       indicesLPD <- attr(knnDist, "indices")
-      indicesLPD <- indicesLPD[ ,1:trainDI$maxLPD]
+      indicesLPD <- indicesLPD[, 1:trainDI$maxLPD]
       rownames(indicesLPD) <- okrows
     }
   }
@@ -349,9 +343,9 @@ aoa.data.frame <- function(newdata,
     AOA = ifelse(DI_out > trainDI$threshold, 0L, 1L)
   )
 
-  if (LPD) {
+  if (isTRUE(LPD)) {
     result$LPD <- LPD_out
-    if (indices) {
+    if (isTRUE(indices)) {
       result$indices <- indicesLPD
     }
   }
@@ -363,7 +357,6 @@ aoa.data.frame <- function(newdata,
   class(result) <- "aoa"
   return(result)
 }
-
 
 validate_LPD <- function(maxLPD, n_samples) {
   if (!inherits(maxLPD, "numeric") && !inherits(maxLPD, "integer")) {
@@ -380,9 +373,7 @@ validate_LPD <- function(maxLPD, n_samples) {
     if (maxLPD <= 1) {
       stop("The percentage you provided for maxLPD is too small.")
     }
-  }
-
-  if (!is_percentage) {
+  } else {
     if (maxLPD %% 1 != 0) {
       stop("If maxLPD is bigger than 0, it should be a whole number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
     }
@@ -391,9 +382,8 @@ validate_LPD <- function(maxLPD, n_samples) {
       stop("maxLPD cannot be bigger than the number of training samples. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
     }
   }
-  maxLPD
+  return(maxLPD)
 }
-
 
 drop_unknown_levels <- function(train, newdata, catvar) {
   train[[catvar]] <- factor(droplevels(train[[catvar]]))
@@ -401,20 +391,19 @@ drop_unknown_levels <- function(train, newdata, catvar) {
   newdata[[catvar]] <- factor(droplevels(newdata[[catvar]]))
   new_levels <- levels(newdata[[catvar]])
   newdata[[catvar]] <- factor(newdata[[catvar]], levels = train_levels) # will set unknown levels to NA
-  newdata
+  return(newdata)
 }
 
-
 create_dummy_variables <- function(train, newdata, catvar) {
-  dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = train), train)
-  dvi_newdata <- predict(caret::dummyVars(paste0("~",catvar), data = train), newdata)
-  dvi_newdata[is.na(newdata[ ,catvar]),] <- 0
+  dvi_train <- predict(caret::dummyVars(paste0("~", catvar), data = train), train)
+  dvi_newdata <- predict(caret::dummyVars(paste0("~", catvar), data = train), newdata)
+  dvi_newdata[is.na(newdata[ ,catvar]), ] <- 0
   train <- data.frame(train, dvi_train)
   newdata <- data.frame(newdata, dvi_newdata)
-  # drop original categorical variable:
-  newdata <- newdata[  ,-which(names(newdata) == catvar)]
-  train <- train[ ,-which(names(train) == catvar)]
-  list(train = train, newdata = newdata)
+  # drop original categorical variables
+  newdata <- newdata[ , -which(names(newdata) == catvar)]
+  train <- train[ , -which(names(train) == catvar)]
+  return(list(train = train, newdata = newdata))
 }
 
 process_categorical_variables <- function(train, newdata, catvars) {
@@ -427,8 +416,6 @@ process_categorical_variables <- function(train, newdata, catvars) {
     train <- res$train
     newdata <- res$newdata
   }
-  list(train = train, newdata = newdata)
+  return(list(train = train, newdata = newdata))
 }
-
-
 
