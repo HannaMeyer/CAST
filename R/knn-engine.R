@@ -70,143 +70,112 @@ knndist <- function(
   dist_fun <- match.arg(dist_fun)
 
   if (dist_fun == "gower") {
-    # requires scaling of the numerical variables, while categorical variables are not scaled.
-    num_vars <- vapply(reference, is.numeric, logical(1))
-    ref_num <- reference[, num_vars, drop = FALSE]
-    mins <- sapply(ref_num, min, na.rm = TRUE)
-    maxs <- sapply(ref_num, max, na.rm = TRUE)
-    range <- maxs - mins
-
-    reference[, num_vars] <- as.data.frame(
-      sweep(
-        sweep(reference[, num_vars, drop = FALSE], 2, mins, "-"),
-        2,
-        range,
-        "/"
-      ),
-      stringsAsFactors = FALSE
-    )
-
-    if (!is.null(query)) {
-      query[, num_vars] <- as.data.frame(
-        sweep(
-          sweep(query[, num_vars, drop = FALSE], 2, mins, "-"),
-          2,
-          range,
-          "/"
-        ),
-        stringsAsFactors = FALSE
-      )
-    }
-    query <- .numeric_fct(query)
-    reference <- .numeric_fct(reference)
+    gower_res <- .preprocess_gower(reference, query)
+    reference <- gower_res$reference
+    query <- gower_res$query
   }
 
-  if (inherits(query, "numeric")) {
-    query <- matrix(query, nrow = 1)
-  }
-  if (inherits(query, "data.frame")) {
-    query <- as.matrix(query)
-  }
+  # normalize input to matrices (handle numeric vectors and data.frames)
   if (inherits(reference, "numeric")) {
     reference <- matrix(reference, nrow = 1)
   }
   if (inherits(reference, "data.frame")) {
     reference <- as.matrix(reference)
   }
+  if (inherits(query, "numeric")) {
+    query <- matrix(query, nrow = 1)
+  }
+  if (inherits(query, "data.frame")) {
+    query <- as.matrix(query)
+  }
 
   if (dist_fun == "mahalanobis") {
-    # For Mahalanobis distance, we need to compute the inverse covariance matrix
-    # we then transform that reference and query to calculate the L2 distance in
-    # the transformed space, which is equivalent to the Mahalanobis distance in the original space.
-    S_inv <- MASS::ginv(stats::cov(reference))
-    chol_ok <- try(R <- chol(S_inv), silent = TRUE)
-    if (!inherits(chol_ok, "try-error")) {
-      A <- t(R)
-    } else {
-      eig <- eigen(S_inv, symmetric = TRUE)
-      vals <- pmax(eig$values, 0) # guard against tiny negative values
-      A <- eig$vectors %*% diag(sqrt(vals)) %*% t(eig$vectors)
-    }
-
-    reference <- reference %*% A
-    if (!is.null(query)) {
-      query <- query %*% A
-    }
-    dist_fun = "euclidean"
+    maha_res <- .preprocess_maha(reference, query)
+    reference <- maha_res$reference
+    query <- maha_res$query
+    dist_fun <- "euclidean"
   }
 
-  # calculate the distance matrix
-  if (is.null(query)) {
-    dists <- suppressMessages(philentropy::distance(
-      reference,
-      method = dist_fun
-    ))
-    if (length(dists) == 1) {
-      return(dists)
-    }
-    diag(dists) <- NA # Exclude self-distance
-  } else {
-    dists <- suppressMessages(philentropy::dist_many_many(
-      query,
-      reference,
-      method = dist_fun
-    ))
-  }
+  dist_mat <- .dist_mat(reference, query, dist_fun)
 
   if (return_distmat) {
-    return(dists)
+    return(dist_mat)
   }
 
-  # compute range and sizes
+  knn_dists <- .knn_dist(dist_mat, k, offset)
+  return(knn_dists)
+
+}
+
+.dist_mat <- function(reference, query = NULL, dist_fun) {
+  diag_to_na <- if(is.null(query)) TRUE else FALSE
+  if (is.null(query)) query <- reference
+  dist_mat <- philentropy::dist_many_many(dists1 = query, dists2 = reference, method = dist_fun)
+  if (diag_to_na) diag(dist_mat) <- NA_real_
+  return(dist_mat)
+}
+
+.knn_dist <- function(dist_mat, k, offset) {
   range <- c(max(1, 1 + offset), max(k, offset + k))
   nc <- diff(range) + 1L
-  nr <- nrow(dists)
-
+  nr <- nrow(dist_mat)
   # preallocate
   knn_dists <- matrix(NA_real_, nrow = nr, ncol = nc)
   knn_indices <- matrix(NA_integer_, nrow = nr, ncol = nc)
-
   # loop by row (order with NA last so NA self-distances are excluded)
   for (i in seq_len(nr)) {
-    row <- dists[i, ]
+    row <- dist_mat[i, ]
     o <- order(row, seq_along(row), na.last = TRUE)
     idx <- o[range[1]:range[2]]
     knn_indices[i, ] <- as.integer(idx)
     knn_dists[i, ] <- row[idx]
   }
-
   attr(knn_dists, "indices") <- knn_indices
-  knn_dists
+  return(knn_dists)
 }
 
+.preprocess_maha <- function(reference, query = NULL) {
+  # For Mahalanobis distance, we need to compute the inverse covariance matrix
+  # we then transform that reference and query to calculate the L2 distance in
+  # the transformed space, which is equivalent to the Mahalanobis distance in the original space.
+  S_inv <- MASS::ginv(stats::cov(reference))
+  chol_ok <- try(R <- chol(S_inv), silent = TRUE)
+  if (!inherits(chol_ok, "try-error")) {
+    A <- t(R)
+  } else {
+    eig <- eigen(S_inv, symmetric = TRUE)
+    vals <- pmax(eig$values, 0) # guard against tiny negative values
+    A <- eig$vectors %*% diag(sqrt(vals)) %*% t(eig$vectors)
+  }
+  reference <- reference %*% A
+  if (!is.null(query)) {
+    query <- query %*% A
+  }
+  return(list(reference = reference, query = query))
+}
 
-#' Convert character/factor columns to integer codes (internal)
-#'
-#' Helper to convert factor/character columns of a data.frame to integer codes
-#' (as.integer(as.factor(.))). Returns the input unchanged if there are no
-#' character/factor columns. Used when computing Gower distances.
-#'
-#' @param x A data.frame (or \code{NULL}).
-#' @return The input data.frame with any factor/character columns replaced by
-#'   integer codes, or \code{NULL} if \code{x} is \code{NULL}.
-#' @keywords internal
-#' @noRd
-.numeric_fct <- function(x) {
-  if (is.null(x)) {
-    return(NULL)
+.preprocess_gower <- function(reference, query = NULL) {
+  # For Gower distance, we need to scale numeric columns to [0,1] and convert
+  # categorical columns to integer codes. We use the reference for scaling and
+  # encoding to ensure consistency between reference and query.
+  is_cat <- sapply(reference, function(col) is.character(col) || is.factor(col))
+  if (any(is_cat)) {
+    reference[is_cat] <- lapply(reference[is_cat], function(col) as.integer(as.factor(col)))
+    if (!is.null(query)) {
+      query[is_cat] <- lapply(query[is_cat], function(col) as.integer(as.factor(col)))
+    }
   }
-  catVars <- names(x)[vapply(
-    x,
-    function(z) inherits(z, c("factor", "character")),
-    logical(1)
-  )]
-  if (length(catVars) == 0) {
-    return(x)
+  is_num <- !is_cat
+  if (any(is_num)) {
+    mins <- apply(reference[is_num], 2, min)
+    maxs <- apply(reference[is_num], 2, max)
+    ranges <- maxs - mins
+    # avoid division by zero for constant columns
+    ranges[ranges == 0] <- 1
+    reference[is_num] <- sweep(sweep(reference[is_num], 2, mins), 2, ranges, FUN = "/")
+    if (!is.null(query)) {
+      query[is_num] <- sweep(sweep(query[is_num], 2, mins), 2, ranges, FUN = "/")
+    }
   }
-  # Convert categorical variables to factor then to numeric
-  for (var in catVars) {
-    x[[var]] <- as.integer(as.factor(x[[var]]))
-  }
-  return(x)
+  return(list(reference = reference, query = query))
 }
