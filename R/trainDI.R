@@ -118,42 +118,29 @@ trainDI <- function(model = NULL,
 
   dist_fun <- match.arg(dist_fun)
   # get parameters if they are not provided in function call-----
-  if(is.null(train)){train = aoa_get_train(model)}
+  if(is.null(train)){train <- .caret_get_data(model)}
   if(nrow(train)<=1){stop("At least two training points need to be specified")}
 
-  if(length(variables) == 1 && variables == "all"){
-      variables = aoa_get_variables(variables, model, train)
-  }
-  if(is.null(weight)){
-    if(useWeight){
-      weight = aoa_get_weights(model, variables = variables)
-    }else{
-      message("variable are not weighted. see ?aoa")
-      weight <- as.data.frame(matrix(1, nrow = 1, ncol = length(variables)))
-      names(weight) <- variables
-    }
-  }else{
-    weight <- user_weights(weight, variables)
-  }
+  # uses userspecified variables or extract them from model/train
+  variables = .prepare_variables(variables, model, train)
+  train <- train[, variables, drop = FALSE] # all variables are present in train
+  train_org <- train
 
-  # get CV folds from model or from parameters
-  folds <-  aoa_get_folds(model,CVtrain,CVtest,useCV)
-  CVtest <- folds[[2]]
-  CVtrain <- folds[[1]]
+  # get variable weights from model or from parameters
+  weight <- .prepare_weights(weight, model, variables, useWeight)
 
-  # reduce train to specified variables
-  train <- train[, na.omit(match(variables, names(train)))]
-  train_backup <- train
+  # get cv folds from model or from parameters
+  folds <-  .prepare_folds(model,CVtrain,CVtest,useCV)
 
-  # convert categorial variables
-  catupdate <- aoa_categorial_train(train, variables, weight)
-
+  # convert categorial variables to dummy variables and add weights for the dummy variables
+  catupdate <- .prepare_categorical_variables(train = train, weight = weight, variables = variables)
   train <- catupdate$train
   weight <- catupdate$weight
 
   # scale train
-  train <- scale(train)
+  train <- scale(train) # return matrix
   scaleparam <- attributes(train)
+  train <- data.frame(train) # back to data.frame for distance calculations
 
   # make sure all variables have variance
   if (any(apply(train, 2, FUN=function(x){all(is.na(x))}))){
@@ -161,21 +148,21 @@ trainDI <- function(model = NULL,
   }
 
   # multiply train data with variable weights (from variable importance)
-  train <- apply_weights(train, weight)
+  train <- .apply_weights(train, weight)
 
   # calculate average mean distance between training data
-  train_dists <- chunked_dist(train=train, CVtrain=CVtrain, CVtest=CVtest, 
+  train_dists <- .chunked_dist(train=train, folds=folds, 
                               dist_fun=dist_fun, chunk_size = chunk_size, verbose = verbose)
 
   # Dissimilarity Index defined as the minimum distance to the nearest neighbour 
   # divided by the average distance to all other points
   trainDist_avrgmean =  mean(train_dists$trainDist_avrg, na.rm = TRUE)
   TrainDI <- train_dists$trainDist_min / trainDist_avrgmean
-  thres <- aoa_threshold(TrainDI)
+  thres <- .di_threshold(TrainDI)
 
   # prepare aoa return object
   aoa_results = list(
-    train = train_backup,
+    train = train_org,
     weight = weight,
     variables = variables,
     catvars = catupdate$catvars,
@@ -189,7 +176,7 @@ trainDI <- function(model = NULL,
 
   # calculate trainLPD and avrgLPD according to the CV folds of specified
   if (isTRUE(LPD)) {
-    trainLPD <- chunked_lpd(train=train, CVtrain=CVtrain, CVtest=CVtest, 
+    trainLPD <- .chunked_lpd(train=train, folds=folds, 
                             dist_fun=dist_fun, train_mean = trainDist_avrgmean, 
                             threshold = thres, chunk_size = chunk_size, verbose = verbose) 
     aoa_results$trainLPD <- trainLPD
@@ -203,226 +190,48 @@ trainDI <- function(model = NULL,
 
 
 ################################################################################
-# Helper functions
+# Chunked approach for dissimilarity index calculation
 ################################################################################
-# Encode categorial variables
-
-aoa_categorial_train <- function(train, variables, weight){
-
-  # get all categorial variables
-  catvars <- tryCatch(names(train)[which(sapply(train[,variables], class)%in%c("factor","character"))], error=function(e) e)
-
-  if (!inherits(catvars,"error")&length(catvars)>0){
-    message("warning: predictors contain categorical variables. The integration is currently still under development. Please check results carefully!")
-
-    for (catvar in catvars){
-      # mask all unknown levels in newdata as NA (even technically no predictions can be made)
-      train[, catvar] <- droplevels(train[, catvar])
-
-      # then create dummy variables for the remaining levels in train:
-      dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = train), train)
-      train <- data.frame(train, dvi_train)
-
-      if(!inherits(weight, "error")){
-        addweights <- data.frame(t(rep(weight[, which(names(weight)==catvar)], ncol(dvi_train))))
-        names(addweights) <- colnames(dvi_train)
-        weight <- data.frame(weight, addweights)
-      }
-    }
-    if(!inherits(weight, "error")){
-      weight <- weight[, -which(names(weight) %in% catvars)]
-    }
-    train <- train[, -which(names(train) %in% catvars)]
-  }
-  return(list(train = train, weight = weight, catvars = catvars))
-
-}
-
-apply_weights <- function(train, weight){
-  if(!inherits(weight, "error") && !is.null(unlist(weight))){
-    train <- sapply(1:ncol(train), function(x){train[, x] * unlist(weight[x])})
-  }
-  return(train)
-}
-
-# Get weights from train object
-aoa_get_weights = function(model, variables){
-
-  weight <- tryCatch(if(model$modelType=="Classification"){
-    as.data.frame(t(apply(caret::varImp(model, scale=FALSE)$importance, 1, mean)))
-  }else{
-    as.data.frame(t(caret::varImp(model, scale=FALSE)$importance[, "Overall"]))
-  }, error=function(e) e)
-  if(!inherits(weight, "error") & length(variables)>1){
-    names(weight)<- rownames(caret::varImp(model, scale=FALSE)$importance)
-  }else{
-    # set all weights to 1
-    weight <- as.data.frame(matrix(1, nrow = 1, ncol = length(variables)))
-    names(weight) = variables
-    message("note: variables were not weighted either because no weights or model were given,
-    no variable importance could be retrieved from the given model, or the model has a single feature.
-    Check caret::varImp(model)")
-  }
-
-  #set negative weights to 0
-  if(!inherits(weight, "error")){
-    weight <- weight[, na.omit(match(variables, names(weight)))]
-    if (any(weight<0)){
-      weight[weight<0] <- 0
-      message("negative weights were set to 0")
-    }
-  }
-  if(sum(weight)==0){
-    stop("all weights are <=0, hence no variable is used. Check variable importance of the model, define weights manually or set useWeight=FALSE")
-  }
-  return(weight)
-}
-
-# check user weight input
-# make sure this function outputs a data.frame with
-# one row and columns named after the variables
-user_weights = function(weight, variables){
-
-  # list input support
-  if(inherits(weight, "list")){
-    # check if all list entries are in variables
-    weight = as.data.frame(weight)
-  }
-
-  #check if manually given weights are correct. otherwise ignore (set to 1):
-  if(nrow(weight)!=1  || !all(variables %in% names(weight))){
-    message("variable weights are not correctly specified and will be ignored. See ?aoa")
-    weight <- as.data.frame(matrix(1, nrow = 1, ncol = length(variables)))
-    names(weight) <- variables
-  }
-  weight <- weight[, na.omit(match(variables, names(weight)))]
-  if (any(weight<0)){
-    weight[weight<0] <- 0
-    message("negative weights were set to 0")
-  }
-  return(weight)
-}
-
-
-# Get trainingdata from train object
-aoa_get_train <- function(model){
-  train <- as.data.frame(model$trainingData)
-  return(train)
-}
-
-# Get folds from train object
-aoa_get_folds <- function(model, CVtrain, CVtest, useCV){
-  ### if folds are to be extracted from the model:
-  if (useCV && !is.null(model)){
-    if(tolower(model$control$method)!="cv"){
-      message("note: Either no model was given or no CV was used for model training. The DI threshold is therefore based on all training data")
-    }else{
-      CVtest <- model$control$indexOut
-      CVtrain <- model$control$index
-    }
-  }
-  ### if folds are specified manually:
-  if(is.null(model)){
-
-    if(!is.null(CVtest)&!is.list(CVtest)){ # restructure input if CVtest only contains the fold ID
-      tmp <- list()
-      for (i in unique(CVtest)){
-        tmp[[i]] <- which(CVtest==i)
-      }
-      CVtest <- tmp
-    }
-
-    if(is.null(CVtest)&is.null(CVtrain)){
-      message("note: No model and no CV folds were given. The DI threshold is therefore based on all training data")
-    }else{
-      if(is.null(CVtest)){ # if CVtest is not given, then use the opposite of CVtrain
-        CVtest <- lapply(CVtrain,function(x){which(!sort(unique(unlist(CVtrain)))%in%x)})
-      }else{
-        if(is.null(CVtrain)){ # if CVtrain is not given, then use the opposite of CVtest
-          CVtrain <- lapply(CVtest,function(x){which(!sort(unique(unlist(CVtest)))%in%x)})
-        }
-      }
-    }
-
-  }
-  if(!is.null(model) && !isTRUE(useCV)){
-    message("note: useCV is set to FALSE. The DI threshold is therefore based on all training data")
-    CVtrain <- NULL
-    CVtest <- NULL
-  }
-  return(list(CVtrain, CVtest))
-}
-
-# Get variables from train object
-aoa_get_variables <- function(variables, model, train){
-  if (length(variables) > 1) {
-    return(variables)
-  }
-  if(variables == "all"){
-    if(is.null(model)[1]){
-      variables <- names(train)
-    }else{
-      variables <- names(model$trainingData)[-which(names(model$trainingData)==".outcome")]
-    }
-  }
-  return(variables)
-}
-
-# helper to derive DI threshold based on the distribution of DI in the training data
-aoa_threshold <- function(trainDI){
-  threshold_quantile <- stats::quantile(trainDI, 0.75, na.rm = TRUE)
-  threshold_iqr <- (1.5 * stats::IQR(trainDI, na.rm = TRUE))
-  thres <- threshold_quantile + threshold_iqr
-  # make sure that the threshold is not larger than the maximum DI in the training data
-  thres <- min(thres, max(trainDI, na.rm = TRUE)) 
-  return(thres)
-}
-
-# small helper for distances and lpd calculation in chunks to reduce memory usage
-chunked_dist <- function(
+# thin wrappers over chunked_apply
+.chunked_dist <- function(
   train, 
-  CVtrain, 
-  CVtest, 
+  folds, 
   dist_fun, 
   chunk_size = 1000L, 
   verbose = TRUE) {
-  res <- chunked_apply(
+  res <- .chunked_apply(
     train = train,
-    CVtrain = CVtrain,
-    CVtest = CVtest,
+    folds=folds,
     dist_fun = dist_fun,
     chunk_size = chunk_size,
     verbose = verbose,
-    calc_fun = calc_dist
+    calc_fun = .calc_dist
   )
   # list with min distance, average distance, index of nearest neighbour for each observation
   return(res)
 }
 
-chunked_lpd <- function(
+.chunked_lpd <- function(
   train, 
-  CVtrain, 
-  CVtest, 
+  folds=folds, 
   dist_fun, 
   train_mean, 
   threshold, 
   chunk_size = 1000L, 
   verbose = TRUE) {
-  lpd <- chunked_apply(
+  lpd <- .chunked_apply(
     train = train,
-    CVtrain = CVtrain,
-    CVtest = CVtest,
+    folds=folds,
     dist_fun = dist_fun,
     chunk_size = chunk_size,
     verbose = verbose,
-    calc_fun = calc_lpd,
+    calc_fun = .calc_lpd,
     train_mean = train_mean,
     threshold = threshold
   )
   # vector of local point density (counts of neighbours below DI threshold) per observation
   return(lpd)
 }
-
 
 #' Calculate chunked KNN distances for training data
 #'
@@ -433,8 +242,8 @@ chunked_lpd <- function(
 #'
 #' @param reference numeric matrix or data.frame of reference (scaled & weighted) rows.
 #' @param query numeric matrix or data.frame of query rows (subset of reference).
-#' @param CVtrain list of training indices per CV fold or NULL.
-#' @param CVtest list of testing indices per CV fold or NULL.
+#' @param folds Null or list with CVtrain and CVtest folds to mask within-fold neighbours. 
+#'   If NULL, no masking is applied.
 #' @param dist_fun character; distance method forwarded to knndist.
 #' @param ids integer vector mapping rows of query to row indices in reference.
 #'
@@ -445,11 +254,10 @@ chunked_lpd <- function(
 #'
 #' @keywords internal
 #' @noRd
-calc_dist <- function(
+.calc_dist <- function(
   reference, 
   query = NULL, 
-  CVtrain, 
-  CVtest, 
+  folds = NULL, 
   dist_fun, 
   ids){
   
@@ -458,10 +266,10 @@ calc_dist <- function(
                       return_distmat = TRUE)
 
   # first, we only mask the observations themselves and retrieve the average distance to all other points
-  dist_mat <- mask_dist_mat(dist_mat = dist_mat, ids = ids)
+  dist_mat <- .mask_dist_mat(dist_mat = dist_mat, ids = ids)
   avg <- apply(dist_mat, 1, mean, na.rm = TRUE)
   # now we mask within-fold observations and retrieve the minimum distance to the closest point
-  dist_mat <- mask_dist_mat(dist_mat = dist_mat, ids = ids, CVtest = CVtest, CVtrain = CVtrain)
+  dist_mat <- .mask_dist_mat(dist_mat = dist_mat, ids = ids, folds = folds)
   # TODO: consider retrieving th K-th nearest neighbour and its distance
   dist <- apply(dist_mat, 1, min, na.rm = TRUE)
   idx <- apply(dist_mat, 1, function(x) { which(x == min(x, na.rm = TRUE))[1] })
@@ -483,8 +291,8 @@ calc_dist <- function(
 #'
 #' @param reference numeric matrix or data.frame of reference (scaled & weighted) rows.
 #' @param query numeric matrix or data.frame of query rows (subset of reference).
-#' @param CVtrain list of training indices per CV fold or NULL.
-#' @param CVtest list of testing indices per CV fold or NULL.
+#' @param folds Null or list with CVtrain and CVtest folds to mask within-fold neighbours. 
+#'   If NULL, no masking is applied.
 #' @param dist_fun character; distance method forwarded to knndist.
 #' @param train_mean numeric scalar; normalization factor (mean training distance).
 #' @param threshold numeric scalar; DI threshold used to count neighbours.
@@ -494,11 +302,10 @@ calc_dist <- function(
 #'
 #' @keywords internal
 #' @noRd
-calc_lpd <- function(
+.calc_lpd <- function(
   reference, 
   query = NULL, 
-  CVtrain, 
-  CVtest, 
+  folds = NULL,
   dist_fun, 
   train_mean, 
   threshold, 
@@ -508,8 +315,7 @@ calc_lpd <- function(
                       k = nrow(reference) - 1, dist_fun = dist_fun,
                       return_distmat = TRUE)
   # mask within-fold observations and self-distances to get the local point density
-  dist_mat <- mask_dist_mat(dist_mat = dist_mat, ids = ids, 
-    CVtest = CVtest, CVtrain = CVtrain)
+  dist_mat <- .mask_dist_mat(dist_mat = dist_mat, ids = ids, folds = folds)
   # convert distances to DI by normalizing with the global mean distance, 
   # then count how many neighbours are below the DI threshold
   di_mat <- dist_mat / train_mean
@@ -517,7 +323,7 @@ calc_lpd <- function(
   trainLPD
 }
 
-mask_dist_mat <- function(dist_mat, ids, CVtest = NULL, CVtrain = NULL) {
+.mask_dist_mat <- function(dist_mat, ids, folds = NULL) {
   if (is.null(dim(dist_mat))) return(dist_mat) # nothing to do for vectors
   # dist_mat here is an NxM matrix of distances from N query points (rows) to M reference points (columns)
 
@@ -532,18 +338,18 @@ mask_dist_mat <- function(dist_mat, ids, CVtest = NULL, CVtrain = NULL) {
   # first -> retrieve the testing fold for each observation
   # second -> keep only the training samples of the respective observation 
   # and set everything else to NA
-  if (!is.null(CVtrain) && !is.null(CVtest)) {
+  if (!is.null(folds)) {
     for (j in seq_along(ids)) {
       sample_idx <- ids[j]
       # find the testing fold that contains the sample
-      whichfold <- which(vapply(CVtest, function(x) any(x == sample_idx), logical(1))) 
+      whichfold <- which(vapply(folds$CVtest, function(x) any(x == sample_idx), logical(1))) 
       if(length(whichfold) > 1L) { # raise if a sample is used for testing more than once
         stop("a datapoint is used for testing in more than one fold. currently this option is not implemented")
       }
       if (length(whichfold) == 0L) { # if never used in testing, we ignore the sample completely
         dist_mat[j, ] <- NA
       } else { # otherwise, we set all non-training samples to NA
-        train_ids <- CVtrain[[whichfold]]
+        train_ids <- folds$CVtrain[[whichfold]]
         if (length(train_ids) > 0) {
           not_train_ids <- setdiff(seq_len(ncol(dist_mat)), train_ids)
           dist_mat[j, not_train_ids] <- NA
@@ -564,8 +370,8 @@ mask_dist_mat <- function(dist_mat, ids, CVtest = NULL, CVtrain = NULL) {
 #' chunk outputs are concatenated into a single vector.
 #'
 #' @param train data.frame or matrix of training data (rows = samples).
-#' @param CVtrain list of training indices per CV fold or NULL.
-#' @param CVtest list of testing indices per CV fold or NULL.
+#' @param folds Null or list with CVtrain and CVtest folds to mask within-fold neighbours. 
+#'   If NULL, no masking is applied.
 #' @param dist_fun character; distance method passed through to calc_fun.
 #' @param chunk_size integer; number of rows per chunk.
 #' @param verbose logical; print progress messages.
@@ -579,10 +385,9 @@ mask_dist_mat <- function(dist_mat, ids, CVtest = NULL, CVtrain = NULL) {
 #'
 #' @keywords internal
 #' @noRd
-chunked_apply <- function(
+.chunked_apply <- function(
   train,
-  CVtrain,
-  CVtest,
+  folds = NULL,
   dist_fun,
   chunk_size = 1000L,
   verbose = TRUE,
@@ -604,8 +409,7 @@ chunked_apply <- function(
     results[[i]] <- calc_fun(
       reference = train,
       query     = train[chunk_ids[[i]], , drop = FALSE],
-      CVtrain   = CVtrain,
-      CVtest    = CVtest,
+      folds = folds,
       dist_fun  = dist_fun,
       ids       = chunk_ids[[i]],
       ...

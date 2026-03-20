@@ -246,10 +246,10 @@ aoa.data.frame <- function(newdata,
   if (isTRUE(LPD)) {
     if (is.null(train)) {
       if (is.null(model)) stop("Provide either 'train' or 'model'")
-      train <- aoa_get_train(model)
+      train <- .caret_get_data(model)
     }
     n_samples <- length(train[[1]])
-    maxLPD <- validate_LPD(maxLPD, n_samples)
+    maxLPD <- .validate_LPD(maxLPD, n_samples)
   }
 
   # if not provided, compute train DI
@@ -284,22 +284,25 @@ aoa.data.frame <- function(newdata,
       stop("names of newdata start with leading digits, automatically added 'X' results in mismatching names of train data in the model")
     }
     stop("names of newdata don't match names of train data in the model")
-  }
-
-  newdata <- newdata[, na.omit(match(trainDI$variables, names(newdata))), drop = FALSE]
-  processed <- convert_factors_to_dummy(trainDI$train, newdata, trainDI$catvars)
+  } 
+  newdata <- newdata[, trainDI$variables, drop = FALSE] # has_all_cols is TRUE
+  
+  # categorical variable handling
+  processed <- .convert_factors_to_dummy(trainDI$train, newdata, catvars = trainDI$catvars)
   trainDI$train <- processed$train
   newdata <- processed$newdata
 
-  # apply scaling and weighting
+  # apply scaling
   center <- trainDI$scaleparam$`scaled:center`
   scale <- trainDI$scaleparam$`scaled:scale`
   newdata <- scale(newdata, center=center, scale=scale)
   train_scaled <- scale(trainDI$train, center = center, scale = scale) 
-  newdata <- apply_weights(newdata, trainDI$weight)
-  train_scaled <- apply_weights(train_scaled, trainDI$weight)
 
-  # distance calculations
+  # apply weights
+  newdata <- .apply_weights(data.frame(newdata), trainDI$weight)
+  train_scaled <- .apply_weights(data.frame(train_scaled), trainDI$weight)
+
+  # distance calculations only for complete cases in newdata
   okrows <- which(rowSums(is.na(newdata)) == 0)
   newdataCC <- newdata[okrows, , drop=FALSE]
 
@@ -358,61 +361,4 @@ aoa.data.frame <- function(newdata,
   return(result)
 }
 
-validate_LPD <- function(maxLPD, n_samples) {
-  if (!inherits(maxLPD, "numeric") && !inherits(maxLPD, "integer")) {
-    stop("maxLPD must be a number. Either define a number between 0 and 1 to use a proportion of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
-  }
-  if (maxLPD <= 0) {
-    stop("maxLPD cannot be negative or equal to 0. Either define a number between 0 and 1 to use a proportion of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
-  }
-
-  is_proportion <- maxLPD <= 1
-
-  if (is_proportion) {
-    maxLPD <- round(maxLPD * n_samples)
-    if (maxLPD <= 1) {
-      stop("The proportion you provided for maxLPD is too small.")
-    }
-  } else {
-    if (maxLPD %% 1 != 0) {
-      stop("If maxLPD is bigger than 0, it should be a whole number. Either define a number between 0 and 1 to use a proportion of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
-    }
-    maxLPD <- as.integer(maxLPD)
-    if (maxLPD > n_samples) {
-      stop("maxLPD cannot be bigger than the number of training samples. Either define a number between 0 and 1 to use a proportion of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
-    }
-  }
-  return(maxLPD)
-}
-
-drop_unknown_levels <- function(train, newdata, catvar) {
-  train[[catvar]] <- factor(droplevels(train[[catvar]]))
-  newdata[[catvar]] <- factor(newdata[[catvar]], levels = levels(train[[catvar]])) # will set unknown levels to NA
-  return(list(train=train, newdata=newdata))
-}
-
-create_dummy_variables <- function(train, newdata, catvar) {
-  dvi_train <- predict(caret::dummyVars(paste0("~", catvar), data = train), train)
-  dvi_newdata <- predict(caret::dummyVars(paste0("~", catvar), data = train), newdata)
-  dvi_newdata[is.na(newdata[ ,catvar]), ] <- 0
-  train <- data.frame(train, dvi_train)
-  newdata <- data.frame(newdata, dvi_newdata)
-  # drop original categorical variables
-  newdata <- newdata[ , -which(names(newdata) == catvar)]
-  train <- train[ , -which(names(train) == catvar)]
-  return(list(train = train, newdata = newdata))
-}
-
-convert_factors_to_dummy <- function(train, newdata, catvars) {
-  if (is.null(catvars) || length(catvars) == 0) {
-    return(list(train = train, newdata = newdata))
-  }
-  for (catvar in catvars) {
-    res <- drop_unknown_levels(train, newdata, catvar)
-    res <- create_dummy_variables(res$train, res$newdata, catvar)
-    train <- res$train
-    newdata <- res$newdata
-  }
-  return(list(train = train, newdata = newdata))
-}
 
