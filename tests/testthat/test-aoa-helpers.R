@@ -28,6 +28,7 @@ test_that(".drop_unknown_levels drops unused factor levels and maps unknowns to 
 
 test_that(".create_dummy_variables applies dummies correctly to newdata and weight", {
   skip_if_not_installed("caret")
+  library(caret) # to avoid running into https://github.com/topepo/caret/issues/380
 
   train <- data.frame(cat = factor(c("a", "b", "a")), v = 1:3, stringsAsFactors = FALSE)
   newd  <- data.frame(cat = c("a", "b", NA), v = 4:6, stringsAsFactors = FALSE)
@@ -56,6 +57,7 @@ test_that(".create_dummy_variables applies dummies correctly to newdata and weig
 
 test_that(".convert_factors_to_dummy and .prepare_categorical_variables work together", {
   skip_if_not_installed("caret")
+  library(caret) # to avoid running into https://github.com/topepo/caret/issues/380
   
   train <- data.frame(a = factor(c("x","y")), b = 1:2)
   newd <- data.frame(a = c("x","z"), b = 3:4)

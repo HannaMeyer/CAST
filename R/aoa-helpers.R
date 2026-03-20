@@ -44,20 +44,16 @@
   return(list(train=train, newdata=newdata))
 }
 
-
-# importing from caret here avoids https://github.com/topepo/caret/issues/380
-#' @noRd
-#' @importFrom caret dummyVars contr.ltfr
 .create_dummy_variables <- function(train, newdata = NULL, weight = NULL, catvar) {
   # drop unknown levels and set unused levels to NA in train and newdata
   result <- .drop_unknown_levels(train, newdata, catvar)
   train <- result$train
   newdata <- result$newdata
 
-  dvi_train <- predict(dummyVars(paste0("~", catvar), data = train), train)
+  dvi_train <- predict(caret::dummyVars(paste0("~", catvar), data = train), train)
 
   if (!is.null(newdata)) {
-    dvi_newdata <- predict(dummyVars(paste0("~", catvar), data = train), newdata)
+    dvi_newdata <- predict(caret::dummyVars(paste0("~", catvar), data = train), newdata)
     dvi_newdata[is.na(newdata[ ,catvar]), ] <- 0
     newdata <- data.frame(newdata, dvi_newdata)
     newdata <- newdata[ , -which(names(newdata) == catvar)]
@@ -81,10 +77,8 @@
   }
   res <- list(train = train, newdata = newdata, weight = weight)
   for (catvar in catvars) {
-    res$catvar <- catvar
-    res <- do.call(.create_dummy_variables, res)
+    res <- .create_dummy_variables(train = res$train, newdata = res$newdata, weight = res$weight, catvar = catvar)
   }
-  res$catvar <- NULL
   return(res)
 }
 
