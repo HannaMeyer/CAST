@@ -72,6 +72,16 @@ test_that("gower: handles numeric + factor, identical rows -> zero distance to d
   expect_true(any(res[, 1] == 0, na.rm = TRUE))
 })
 
+test_that("gower with query specified returns n_query x n_ref dist matrix with values in [0,1]", {
+  df <- data.frame(num = c(1, 2, 3, 4), fac = factor(c("a", "b", "a", "c")))
+  qry <- df[1:2, , drop = FALSE]
+  dm <- knndist(df, qry, return_distmat = TRUE, dist_fun = "gower")
+  expect_true(is.matrix(dm))
+  expect_equal(dim(dm), c(nrow(qry), nrow(df)))
+  expect_true(all(diag(dm) == 0, na.rm = TRUE)) # self-distances should be 0
+  expect_false(any(is.na(dm)))
+})
+
 test_that("k > n_ref yields NA columns and indices contain NA", {
   ref <- as.matrix(iris[1:5, 1:4])
   qry <- as.matrix(iris[6:7, 1:4])

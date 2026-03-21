@@ -69,34 +69,15 @@ knndist <- function(
 ) {
   dist_fun <- match.arg(dist_fun)
 
-  if (dist_fun == "gower") {
-    gower_res <- .preprocess_gower(reference, query)
-    reference <- gower_res$reference
-    query <- gower_res$query
-  }
+  preprocess <- switch(
+    dist_fun,
+    "mahalanobis" = .preprocess_maha,
+    "gower" = .preprocess_gower,
+    .preprocess_default # for "euclidean" and other metrics
+  )
 
-  # normalize input to matrices (handle numeric vectors and data.frames)
-  if (inherits(reference, "numeric")) {
-    reference <- matrix(reference, nrow = 1)
-  }
-  if (inherits(reference, "data.frame")) {
-    reference <- as.matrix(reference)
-  }
-  if (inherits(query, "numeric")) {
-    query <- matrix(query, nrow = 1)
-  }
-  if (inherits(query, "data.frame")) {
-    query <- as.matrix(query)
-  }
-
-  if (dist_fun == "mahalanobis") {
-    maha_res <- .preprocess_maha(reference, query)
-    reference <- maha_res$reference
-    query <- maha_res$query
-    dist_fun <- "euclidean"
-  }
-
-  dist_mat <- .dist_mat(reference, query, dist_fun)
+  pre_res <- preprocess(reference, query, dist_fun)
+  dist_mat <- do.call(.dist_mat, pre_res)
 
   if (return_distmat) {
     return(dist_mat)
@@ -104,14 +85,35 @@ knndist <- function(
 
   knn_dists <- .knn_dist(dist_mat, k, offset)
   return(knn_dists)
+}
 
+.normalize_to_matrix <- function(x) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  # normalize input to matrices (handle numeric vectors and data.frames)
+  if (inherits(x, "numeric")) {
+    x <- matrix(x, nrow = 1)
+  }
+  if (inherits(x, "data.frame")) {
+    x <- as.matrix(x)
+  }
+  return(x)
 }
 
 .dist_mat <- function(reference, query = NULL, dist_fun) {
-  diag_to_na <- if(is.null(query)) TRUE else FALSE
-  if (is.null(query)) query <- reference
-  dist_mat <- philentropy::dist_many_many(dists1 = query, dists2 = reference, method = dist_fun)
-  if (diag_to_na) diag(dist_mat) <- NA_real_
+  diag_to_na <- if (is.null(query)) TRUE else FALSE
+  if (is.null(query)) {
+    query <- reference
+  }
+  dist_mat <- philentropy::dist_many_many(
+    dists1 = query,
+    dists2 = reference,
+    method = dist_fun
+  )
+  if (diag_to_na) {
+    diag(dist_mat) <- NA_real_
+  }
   return(dist_mat)
 }
 
@@ -134,10 +136,22 @@ knndist <- function(
   return(knn_dists)
 }
 
-.preprocess_maha <- function(reference, query = NULL) {
-  # For Mahalanobis distance, we need to compute the inverse covariance matrix
-  # we then transform that reference and query to calculate the L2 distance in
-  # the transformed space, which is equivalent to the Mahalanobis distance in the original space.
+
+# preprocessing is expected to return a list with elements "reference", "query", and "dist_fun"
+# and handle matrix normalization (e.g. from data.frame to matrix) as needed
+.preprocess_default <- function(ref, qry, fun = "euclidean") {
+  ref <- .normalize_to_matrix(ref)
+  query <- .normalize_to_matrix(qry)
+  return(list(reference = ref, query = query, dist_fun = fun))
+}
+
+# For Mahalanobis distance, we need to compute the inverse covariance matrix
+# we then transform that reference and query to calculate the L2 distance in
+# the transformed space, which is equivalent to the Mahalanobis distance in the original space.
+.preprocess_maha <- function(reference, query = NULL, dist_fun = "mahalanobis") {
+  reference <- .normalize_to_matrix(reference)
+  query <- .normalize_to_matrix(query)
+
   S_inv <- MASS::ginv(stats::cov(reference))
   chol_ok <- try(R <- chol(S_inv), silent = TRUE)
   if (!inherits(chol_ok, "try-error")) {
@@ -151,18 +165,24 @@ knndist <- function(
   if (!is.null(query)) {
     query <- query %*% A
   }
-  return(list(reference = reference, query = query))
+  reference <- .normalize_to_matrix(reference)
+  query <- .normalize_to_matrix(query)
+  return(list(reference = reference, query = query, dist_fun = "euclidean"))
 }
 
-.preprocess_gower <- function(reference, query = NULL) {
+.preprocess_gower <- function(reference, query = NULL, dist_fun = "gower") {
   # For Gower distance, we need to scale numeric columns to [0,1] and convert
   # categorical columns to integer codes. We use the reference for scaling and
   # encoding to ensure consistency between reference and query.
   is_cat <- sapply(reference, function(col) is.character(col) || is.factor(col))
   if (any(is_cat)) {
-    reference[is_cat] <- lapply(reference[is_cat], function(col) as.integer(as.factor(col)))
+    reference[is_cat] <- lapply(reference[is_cat], function(col) {
+      as.integer(as.factor(col))
+    })
     if (!is.null(query)) {
-      query[is_cat] <- lapply(query[is_cat], function(col) as.integer(as.factor(col)))
+      query[is_cat] <- lapply(query[is_cat], function(col) {
+        as.integer(as.factor(col))
+      })
     }
   }
   is_num <- !is_cat
@@ -172,10 +192,22 @@ knndist <- function(
     ranges <- maxs - mins
     # avoid division by zero for constant columns
     ranges[ranges == 0] <- 1
-    reference[is_num] <- sweep(sweep(reference[is_num], 2, mins), 2, ranges, FUN = "/")
+    reference[is_num] <- sweep(
+      sweep(reference[is_num], 2, mins),
+      2,
+      ranges,
+      FUN = "/"
+    )
     if (!is.null(query)) {
-      query[is_num] <- sweep(sweep(query[is_num], 2, mins), 2, ranges, FUN = "/")
+      query[is_num] <- sweep(
+        sweep(query[is_num], 2, mins),
+        2,
+        ranges,
+        FUN = "/"
+      )
     }
   }
-  return(list(reference = reference, query = query))
+  reference <- .normalize_to_matrix(reference)
+  query <- .normalize_to_matrix(query)
+  return(list(reference = reference, query = query, dist_fun = dist_fun))
 }
