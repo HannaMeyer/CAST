@@ -159,3 +159,12 @@ test_that(".di_threshold returns a sensible robust threshold capped at max", {
   expected <- min(as.numeric(stats::quantile(trainDI, 0.75) + 1.5 * stats::IQR(trainDI)), max(trainDI))
   expect_equal(th, expected)
 })
+
+test_that(".prepare_weights accepts user-specified one-row data.frame", {
+  vars <- c("a","b","c")
+  user_w <- data.frame(a = 2, b = 0.5, c = 1)
+  res <- CAST:::.prepare_weights(weight = user_w, variables = vars, useWeight = TRUE)
+  expect_s3_class(res, "data.frame")
+  expect_equal(as.numeric(res[1, ]), c(2, 0.5, 1))
+  expect_equal(names(res), vars)
+})

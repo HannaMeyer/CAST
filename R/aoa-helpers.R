@@ -92,19 +92,26 @@
 ################################################################################
 # Weights handling
 ################################################################################
-.prepare_weights <- function(weight, model, variables, useWeight) {
-  # default weights 
-  weight <- as.data.frame(matrix(1, nrow = 1, ncol = length(variables)))
-  names(weight) <- variables
+.prepare_weights <- function(weight = NULL, model = NULL, variables, useWeight = TRUE) {
+  # default weights
+  default_w <- as.data.frame(matrix(1, nrow = 1, ncol = length(variables)))
+  names(default_w) <- variables
 
   if (!useWeight) {
     message("variable are not weighted. see ?aoa")
-    return(weight)
+    return(default_w)
   }
-  if (!is.null(model)) { # takes precedence over user defined weights
-    weight = .caret_get_weights(model, variables = variables)
+
+  # fall back to defaults if weights are not provided
+  if (is.null(weight)) {
+     weight <- default_w
+   }
+
+  # model-based weights take precedence
+  if (!is.null(model)) {
+    weight <- .caret_get_weights(model, variables = variables)
   }
-  
+
   weight <- .check_weights(weight, variables)
   return(weight)
 }
