@@ -237,14 +237,14 @@ trainDI <- function(model = NULL,
 #'
 #' Internal helper that computes per-query-row average distance to all reference
 #' points and the minimum distance to the nearest allowed training neighbour.
-#' Distances are computed with knndist and masked via mask_dist_mat to remove
+#' Distances are computed with \code{\link{.distance}} and masked to remove
 #' self- and within-fold neighbours.
 #'
 #' @param reference numeric matrix or data.frame of reference (scaled & weighted) rows.
 #' @param query numeric matrix or data.frame of query rows (subset of reference).
 #' @param folds Null or list with CVtrain and CVtest folds to mask within-fold neighbours. 
 #'   If NULL, no masking is applied.
-#' @param dist_fun character; distance method forwarded to knndist.
+#' @param dist_fun character; distance method forwarded to \code{\link{.distance}}.
 #' @param ids integer vector mapping rows of query to row indices in reference.
 #'
 #' @return A named list with
@@ -261,9 +261,7 @@ trainDI <- function(model = NULL,
   dist_fun, 
   ids){
   
-  dist_mat <- knndist(query = query, reference = reference,
-                      k = nrow(reference) - 1, dist_fun = dist_fun,
-                      return_distmat = TRUE)
+  dist_mat <- .distance(query = query, reference = reference, dist_fun = dist_fun)
 
   # first, we only mask the observations themselves and retrieve the average distance to all other points
   dist_mat <- .mask_dist_mat(dist_mat = dist_mat, ids = ids)
@@ -287,13 +285,13 @@ trainDI <- function(model = NULL,
 #'
 #' Internal helper that computes, for each query row, the number of reference
 #' points whose (masked) DI = distance / train_mean is below a given threshold.
-#' Distances are computed with knndist and masked via mask_dist_mat.
+#' Distances are computed with \code{\link{.distance}}.
 #'
 #' @param reference numeric matrix or data.frame of reference (scaled & weighted) rows.
 #' @param query numeric matrix or data.frame of query rows (subset of reference).
 #' @param folds Null or list with CVtrain and CVtest folds to mask within-fold neighbours. 
 #'   If NULL, no masking is applied.
-#' @param dist_fun character; distance method forwarded to knndist.
+#' @param dist_fun character; distance method forwarded to \code{\link{.distance}}.
 #' @param train_mean numeric scalar; normalization factor (mean training distance).
 #' @param threshold numeric scalar; DI threshold used to count neighbours.
 #' @param ids integer vector mapping rows of query to row indices in reference.
@@ -311,9 +309,7 @@ trainDI <- function(model = NULL,
   threshold, 
   ids){
   
-  dist_mat <- knndist(query = query, reference = reference,
-                      k = nrow(reference) - 1, dist_fun = dist_fun,
-                      return_distmat = TRUE)
+  dist_mat <- .distance(query = query, reference = reference, dist_fun = dist_fun)
   # mask within-fold observations and self-distances to get the local point density
   dist_mat <- .mask_dist_mat(dist_mat = dist_mat, ids = ids, folds = folds)
   # convert distances to DI by normalizing with the global mean distance, 

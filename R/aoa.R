@@ -312,7 +312,7 @@ aoa.data.frame <- function(newdata,
   }
 
   DI_out <- rep(NA, nrow(newdata))
-  knnDist  <- knndist(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=dist_fun)
+  knnDist  <- .knndist(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=dist_fun)
   knnDI <- knnDist / trainDI$trainDist_avrgmean
   DI_out[okrows] <- knnDI[, 1] # distance to the closest training data point
 

@@ -1,71 +1,42 @@
-#' Compute k-nearest neighbor distances
+#' Compute pairwise distances between reference and query
 #'
-#' Compute distances between rows of a reference dataset and (optionally) a query
-#' dataset and return the k-nearest neighbor distances (with neighbor indices).
+#' Compute a pairwise distance matrix between rows of reference and (optionally)
+#' query using the selected metric. This function performs necessary
+#' preprocessing for some metrics (Gower scaling, Mahalanobis transformation)
+#' and then calls philentropy::dist_many_many to compute distances.
 #'
 #' @param reference A numeric matrix, numeric vector, or data.frame of reference
-#'   observations (rows = observations, columns = features).
+#'   observations (rows = observations, columns = features). For Gower and
+#'   Mahalanobis preprocessing the reference is used to compute scaling/transform
+#'   parameters applied to query (if provided).
 #' @param query A numeric matrix, numeric vector, data.frame of query
 #'   observations, or NULL. If NULL (default) distances are computed among rows
-#'   of \code{reference}.
-#' @param k Integer; number of neighbours to return (default 1).
-#' @param dist_fun Character; distance metric. One of \code{"euclidean"},
-#'   \code{"mahalanobis"} or \code{"gower"} (default \code{"euclidean"}).
-#'   - \code{"gower"}: numeric columns of \code{reference} are scaled to [0,1]
-#'     using the reference min/max; categorical columns (character/factor)
-#'     are converted to integer codes before distance calculation.
-#'   - \code{"mahalanobis"}: uses a pseudo-inverse covariance (MASS::ginv) and
-#'     transforms data so that Euclidean distance in transformed space equals
-#'     Mahalanobis distance in the original space.
-#' @param offset Integer offset for neighbor ranking (default 0). The returned
-#'   neighbors are selected from the sorted distance vector using the range
-#'   \code{c(max(1, 1 + offset), max(k, offset + k))}. This can be used to skip the
-#'   immediate nearest neighbour(s) when desired, e.g. to exclude the observation itself when
-#'   \code{query = NULL}.
-#' @param return_distmat Logical; if \code{TRUE} returns the full distance
-#'   matrix (matrix with rows = query, cols = reference). If \code{FALSE}
-#'   (default) returns the k-nearest distances matrix with an \code{"indices"}
-#'   attribute (see Value).
+#'   of reference and the self-distance is set to NA so an observation does not
+#'   return itself as a nearest neighbour.
+#' @param dist_fun Character; distance metric to use. One of
+#'   "euclidean", "mahalanobis" or "gower" (default "euclidean"). See
+#'   Details for preprocessing performed for non-euclidean metrics.
 #'
-#' @return If \code{return_distmat = TRUE} a numeric distance matrix is
-#'   returned. If \code{return_distmat = FALSE} a numeric matrix of nearest
-#'   neighbor distances is returned (rows correspond to query observations,
-#'   columns correspond to the requested neighbour ranks). The returned object
-#'   has an attribute \code{"indices"} containing an integer matrix of the
-#'   corresponding neighbour row indices in \code{reference}.
+#' @return A numeric distance matrix with rows = query and cols = reference. If
+#'   query is NULL the distance matrix is computed among reference rows and the
+#'   diagonal is set to NA so self-distances are excluded.
 #'
 #' @details
-#' - When \code{query = NULL} self-distances are set to \code{NA} so that the
-#'   nearest neighbour search excludes the observation itself.
-#' - Categorical variables are converted to integer factor codes only when
-#'   \code{dist_fun = "gower"} (via an internal helper).
-#' - For \code{"mahalanobis"} a numerical linear-algebra fallback using eigen
-#'   decomposition is used if Cholesky fails.
+#' - For "gower" numeric reference columns are scaled to [0,1] using reference
+#'   min/max and categorical columns are converted to integer factor codes. The
+#'   same scaling/encoding is applied to query (when provided) using the
+#'   reference-derived parameters.
+#' - For "mahalanobis" the reference covariance is pseudo-inverted (MASS::ginv)
+#'   and a linear transform is applied so that Euclidean distance in transformed
+#'   space equals Mahalanobis distance in the original space. A numerical
+#'   eigenvalue fallback is used if Cholesky fails.
 #'
-#' @examples
-#' # nearest 2 neighbours within iris (euclidean)
-#' res <- CAST:::knndist(iris[,1:4], k = 2)
-#' str(res)
-#' # access neighbour indices
-#' attr(res, "indices")[1, ]
-#'
-#' # distances from first 5 rows of iris to the full reference
-#' CAST:::knndist(iris[,1:4], iris[1:5,1:4], k = 3)
-#'
-#' # return full distance matrix
-#' dm <- CAST:::knndist(iris[,1:4], return_distmat = TRUE)
-#' dim(dm)
-#'
-#' @seealso \code{\link[philentropy]{distance}},
-#'   \code{\link[philentropy]{dist_many_many}}
+#' @seealso \code{\link{.knndist}}, \code{\link[philentropy]{dist_many_many}}
 #' @keywords internal
-knndist <- function(
+.distance <- function(
   reference,
   query = NULL,
-  k = 1,
-  dist_fun = c("euclidean", "mahalanobis", "gower"),
-  offset = 0,
-  return_distmat = FALSE
+  dist_fun = c("euclidean", "mahalanobis", "gower")
 ) {
   dist_fun <- match.arg(dist_fun)
 
@@ -78,11 +49,46 @@ knndist <- function(
 
   pre_res <- preprocess(reference, query, dist_fun)
   dist_mat <- do.call(.dist_mat, pre_res)
+  return(dist_mat)
+}
 
-  if (return_distmat) {
-    return(dist_mat)
-  }
-
+#' Compute k-nearest neighbor distances
+#'
+#' Compute distances between rows of a reference dataset and (optionally) a query
+#' dataset and return the k-nearest neighbor distances (with neighbour indices).
+#'
+#' This function delegates pairwise distance computation to \code{\link{.distance}} and then
+#' selects the k nearest neighbours per query row.
+#'
+#' @inheritParams .distance
+#' @param k Integer; number of neighbours to return (default 1).
+#' @param offset Integer offset for neighbor ranking (default 0). The returned
+#'   neighbours are selected from the sorted distance vector using the range
+#'   c(max(1, 1 + offset), max(k, offset + k)). This can be used to skip the
+#'   immediate nearest neighbour(s) when desired, e.g. to exclude the
+#'   observation itself when query = NULL.
+#'
+#' @return A numeric matrix of nearest neighbour distances (rows correspond to
+#'   query observations, columns correspond to neighbour ranks). The returned
+#'   object has an attribute "indices" containing an integer matrix of the
+#'   corresponding neighbour row indices in reference.
+#'
+#' @details
+#' knndist delegates distance computation to \code{\link{.distance}} and then performs the
+#' neighbour ranking. For behaviour of the individual distance metrics and any
+#' preprocessing (e.g. scaling for Gower or Mahalanobis transformation) see
+#' \code{\link{.distance}}.
+#'
+#' @seealso \code{\link{.distance}}, \code{\link[philentropy]{dist_many_many}}
+#' @keywords internal
+.knndist <- function(
+  reference,
+  query = NULL,
+  k = 1,
+  dist_fun = c("euclidean", "mahalanobis", "gower"),
+  offset = 0
+) {
+  dist_mat <- .distance(reference, query, dist_fun)
   knn_dists <- .knn_dist(dist_mat, k, offset)
   return(knn_dists)
 }
