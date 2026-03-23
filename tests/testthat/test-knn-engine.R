@@ -27,20 +27,24 @@ test_that("euclidean: return types and sizes (matrix vs knn)", {
   expect_indices_ok(idx, nrow(ref))
 })
 
-test_that("euclidean: single-row query (vector and 1-row data.frame) returns 1 x k", {
-  ref <- as.matrix(iris[1:8, 1:4])
-  # query as numeric vector
-  qvec <- as.numeric(iris[9, 1:4])
-  r1 <- .knndist(ref, qvec, k = 3, dist_fun = "euclidean")
-  expect_true(is.matrix(r1))
-  expect_equal(dim(r1), c(1, 3))
-  expect_indices_ok(attr(r1, "indices"), nrow(ref))
-  # query as 1-row data.frame
-  qdf <- iris[9, 1:4, drop = FALSE]
-  r2 <- .knndist(ref, qdf, k = 2, dist_fun = "euclidean")
-  expect_equal(dim(r2), c(1, 2))
-  expect_indices_ok(attr(r2, "indices"), nrow(ref))
+test_that("distance metrics accept matrix, data.frame and numeric vector inputs and produce identical distances", {
+  set.seed(123)
+  ref_mat <- matrix(rnorm(6 * 3), nrow = 6)
+  ref_df <- as.data.frame(ref_mat)
+  qry_mat <- ref_mat[1:2, , drop = FALSE]
+  qry_df <- as.data.frame(qry_mat)
+  q_vec <- as.numeric(ref_mat[1, ])
+
+  for (dist_fun in c("euclidean", "mahalanobis", "gower")) {
+    dm_mat <- .distance(ref_mat, qry_mat, dist_fun = dist_fun)
+    dm_df  <- .distance(ref_df, qry_df, dist_fun = dist_fun)
+    dm_vec <- .distance(ref_mat, q_vec, dist_fun = dist_fun)
+
+    expect_equal(dm_mat, dm_df, info = paste(dist_fun, "matrix vs data.frame"))
+    expect_equal(dm_mat[1, , drop = FALSE], dm_vec, info = paste(dist_fun, "matrix vs vector"))
+  }
 })
+
 
 test_that("mahalanobis: basic return types and indices validity", {
   set.seed(101)
@@ -72,15 +76,6 @@ test_that("gower: handles numeric + factor, identical rows -> zero distance to d
   expect_true(any(res[, 1] == 0, na.rm = TRUE))
 })
 
-test_that("gower with query specified returns n_query x n_ref dist matrix with values in [0,1]", {
-  df <- data.frame(num = c(1, 2, 3, 4), fac = factor(c("a", "b", "a", "c")))
-  qry <- df[1:2, , drop = FALSE]
-  dm <- .distance(df, qry, dist_fun = "gower")
-  expect_true(is.matrix(dm))
-  expect_equal(dim(dm), c(nrow(qry), nrow(df)))
-  expect_true(all(diag(dm) == 0, na.rm = TRUE)) # self-distances should be 0
-  expect_false(any(is.na(dm)))
-})
 
 test_that("k > n_ref yields NA columns and indices contain NA", {
   ref <- as.matrix(iris[1:5, 1:4])

@@ -93,19 +93,9 @@
   return(knn_dists)
 }
 
-.normalize_to_matrix <- function(x) {
-  if (is.null(x)) {
-    return(NULL)
-  }
-  # normalize input to matrices (handle numeric vectors and data.frames)
-  if (inherits(x, "numeric")) {
-    x <- matrix(x, nrow = 1)
-  }
-  if (inherits(x, "data.frame")) {
-    x <- as.matrix(x)
-  }
-  return(x)
-}
+################################################################################
+# Core distance matrix computation and k-nearest neighbor selection
+################################################################################
 
 .dist_mat <- function(reference, query = NULL, dist_fun) {
   diag_to_na <- if (is.null(query)) TRUE else FALSE
@@ -142,6 +132,24 @@
   return(knn_dists)
 }
 
+################################################################################
+# Data normalization and preprocessing
+################################################################################
+
+.normalize_to_matrix <- function(x) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  # normalize input to matrices (handle numeric vectors and data.frames)
+  if (inherits(x, "numeric")) {
+    x <- matrix(x, nrow = 1)
+  }
+  if (inherits(x, "data.frame")) {
+    x <- as.matrix(x)
+  }
+  return(x)
+}
+
 
 # preprocessing is expected to return a list with elements "reference", "query", and "dist_fun"
 # and handle matrix normalization (e.g. from data.frame to matrix) as needed
@@ -176,44 +184,68 @@
   return(list(reference = reference, query = query, dist_fun = "euclidean"))
 }
 
-.preprocess_gower <- function(reference, query = NULL, dist_fun = "gower") {
   # For Gower distance, we need to scale numeric columns to [0,1] and convert
-  # categorical columns to integer codes. We use the reference for scaling and
-  # encoding to ensure consistency between reference and query.
-  is_cat <- sapply(reference, function(col) is.character(col) || is.factor(col))
-  if (any(is_cat)) {
-    reference[is_cat] <- lapply(reference[is_cat], function(col) {
-      as.integer(as.factor(col))
-    })
-    if (!is.null(query)) {
-      query[is_cat] <- lapply(query[is_cat], function(col) {
-        as.integer(as.factor(col))
-      })
+# categorical columns to integer codes. We use the reference for scaling and
+# encoding to ensure consistency between reference and query.
+
+.preprocess_gower <- function(reference, query = NULL, dist_fun = "gower") {
+  reference <- .normalize_to_df(reference)
+  query <- .normalize_to_df(query)
+  has_query <- !is.null(query)
+
+  # drop unknown levels and set unused levels to NA in reference and query for each categorical variable
+  catvars <- .get_categorical_variables(reference)
+
+  if (length(catvars) > 0) {
+    for (catvar in catvars) {
+      res <- .drop_unknown_levels(reference, query, catvar)
+      # TODO: rename outputs of drop_unknown_levels to be more intuitive (e.g. reference and query instead of train and newdata)
+      reference <- res$train
+      reference[[catvar]] <- as.integer(as.factor(reference[[catvar]]))
+      query <- res$newdata
+      if (has_query) {
+        query[[catvar]] <- as.integer(as.factor(query[[catvar]]))
+      }
     }
   }
-  is_num <- !is_cat
-  if (any(is_num)) {
-    mins <- apply(reference[is_num], 2, min)
-    maxs <- apply(reference[is_num], 2, max)
-    ranges <- maxs - mins
-    # avoid division by zero for constant columns
-    ranges[ranges == 0] <- 1
-    reference[is_num] <- sweep(
-      sweep(reference[is_num], 2, mins),
-      2,
-      ranges,
-      FUN = "/"
-    )
-    if (!is.null(query)) {
-      query[is_num] <- sweep(
-        sweep(query[is_num], 2, mins),
-        2,
-        ranges,
-        FUN = "/"
-      )
+
+  # numeric variable scaling to [0,1] using reference min/max
+  numvars <- setdiff(names(reference), catvars)
+
+  if (length(numvars) > 0) {
+    mins <- apply(reference[numvars], 2, min)
+    maxs <- apply(reference[numvars], 2, max)
+
+    reference[numvars] <- .minmax_normalize(reference, numvars, maxs, mins)
+    if (has_query) {
+      query[numvars] <- .minmax_normalize(query, numvars, maxs, mins)
     }
   }
+
+  # convert back to matrices for distance computation
   reference <- .normalize_to_matrix(reference)
   query <- .normalize_to_matrix(query)
-  return(list(reference = reference, query = query, dist_fun = dist_fun))
+
+  return(list(reference = reference, query = query, dist_fun = "gower"))
+}
+
+# matrix -> df; vector -> df with one row; df -> df (no change)
+.normalize_to_df <- function(x) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  if (is.matrix(x)) {
+    x <- as.data.frame(x)
+  } else if (inherits(x, "numeric")) {
+    x <- as.data.frame(t(x))
+  }
+  return(x)
+}
+
+# helper for Gower scaling numeric columns to [0,1] using reference min/max
+.minmax_normalize <- function(df, vars, maxs, mins) {
+  ranges <- maxs - mins
+  # avoid division by zero for constant columns
+  ranges[ranges == 0] <- 1
+  return(sweep(sweep(df[vars], 2, mins), 2, ranges, FUN = "/"))
 }
