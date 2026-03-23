@@ -32,61 +32,61 @@
 # Categorial variable handling
 ################################################################################
 .get_categorical_variables <- function(df, variables) {
-  catvars <- names(df)[which(sapply(df[, variables], class) %in% c("factor","character"))]
-  return(catvars)
+  vars <- names(df)[which(sapply(df[, variables], class) %in% c("factor","character"))]
+  return(vars)
 }
 
-.drop_unknown_levels <- function(train, newdata = NULL, catvar) {
-  train[[catvar]] <- factor(droplevels(train[[catvar]]))
-  if (!is.null(newdata)) {
-    newdata[[catvar]] <- factor(newdata[[catvar]], levels = levels(train[[catvar]])) # will set unknown levels to NA
+.drop_unknown_levels <- function(reference, query = NULL, var) {
+  reference[[var]] <- factor(droplevels(reference[[var]]))
+  if (!is.null(query)) {
+    query[[var]] <- factor(query[[var]], levels = levels(reference[[var]])) # will set unknown levels to NA
   }
-  return(list(train=train, newdata=newdata))
+  return(list(reference=reference, query=query))
 }
 
-.create_dummy_variables <- function(train, newdata = NULL, weight = NULL, catvar) {
-  # drop unknown levels and set unused levels to NA in train and newdata
-  result <- .drop_unknown_levels(train, newdata, catvar)
-  train <- result$train
-  newdata <- result$newdata
+.create_dummy_variables <- function(reference, query = NULL, weight = NULL, var) {
+  # drop unknown levels and set unused levels to NA in reference and query
+  result <- .drop_unknown_levels(reference, query, var)
+  reference <- result$reference
+  query <- result$query
 
-  dvi_train <- predict(caret::dummyVars(paste0("~", catvar), data = train), train)
+  dvi_reference <- predict(caret::dummyVars(paste0("~", var), data = reference), reference)
 
-  if (!is.null(newdata)) {
-    dvi_newdata <- predict(caret::dummyVars(paste0("~", catvar), data = train), newdata)
-    dvi_newdata[is.na(newdata[ ,catvar]), ] <- 0
-    newdata <- data.frame(newdata, dvi_newdata)
-    newdata <- newdata[ , -which(names(newdata) == catvar)]
+  if (!is.null(query)) {
+    dvi_query <- predict(caret::dummyVars(paste0("~", var), data = reference), query)
+    dvi_query[is.na(query[ ,var]), ] <- 0
+    query <- data.frame(query, dvi_query)
+    query <- query[ , -which(names(query) == var)]
   }
 
   if (!is.null(weight)) {
-    addweights <- data.frame(t(rep(weight[, which(names(weight)==catvar)], ncol(dvi_train))))
-    names(addweights) <- colnames(dvi_train)
+    addweights <- data.frame(t(rep(weight[, which(names(weight)==var)], ncol(dvi_reference))))
+    names(addweights) <- colnames(dvi_reference)
     weight <- data.frame(weight, addweights)
-    weight <- weight[, -which(names(weight) == catvar)]
+    weight <- weight[, -which(names(weight) == var)]
   }
 
-  train <- data.frame(train, dvi_train)
-  train <- train[ , -which(names(train) == catvar)]
-  return(list(train = train, newdata = newdata, weight = weight))
+  reference <- data.frame(reference, dvi_reference)
+  reference <- reference[ , -which(names(reference) == var)]
+  return(list(reference = reference, query = query, weight = weight))
 }
 
-.convert_factors_to_dummy <- function(train, newdata = NULL, weight = NULL, catvars = NULL) {
-  if (is.null(catvars) || length(catvars) == 0) {
-    return(list(train = train, newdata = newdata, weight = weight))
+.convert_factors_to_dummy <- function(reference, query = NULL, weight = NULL, variables = NULL) {
+  if (is.null(variables) || length(variables) == 0) {
+    return(list(reference = reference, query = query, weight = weight))
   }
-  res <- list(train = train, newdata = newdata, weight = weight)
-  for (catvar in catvars) {
-    res <- .create_dummy_variables(train = res$train, newdata = res$newdata, weight = res$weight, catvar = catvar)
+  res <- list(reference = reference, query = query, weight = weight)
+  for (var in variables) {
+    res <- .create_dummy_variables(reference = res$reference, query = res$query, weight = res$weight, var = var)
   }
   return(res)
 }
 
-.prepare_categorical_variables <- function(train, newdata = NULL, weight= NULL, variables) {
-  catvars <- .get_categorical_variables(train, variables)
-  res <- .convert_factors_to_dummy(train, newdata, weight, catvars)
+.prepare_categorical_variables <- function(reference, query = NULL, weight= NULL, variables) {
+  vars <- .get_categorical_variables(reference, variables)
+  res <- .convert_factors_to_dummy(reference, query, weight, vars)
   # we need to add new weights for the dummy variables
-  return(list(train = res$train, newdata = res$newdata, weight = res$weight, catvars = catvars))
+  return(list(reference = res$reference, query = res$query, weight = res$weight, catvars = vars))
 }
 
 ################################################################################

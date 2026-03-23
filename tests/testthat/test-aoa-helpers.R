@@ -17,39 +17,39 @@ test_that(".get_categorical_variables finds factor and character columns", {
 })
 
 test_that(".drop_unknown_levels drops unused factor levels and maps unknowns to NA", {
-  train <- data.frame(cat = factor(c("a","b","a")), x = 1:3)
-  newd <- data.frame(cat = c("a","c","b"), x = 4:6)
-  out <- CAST:::.drop_unknown_levels(train, newd, "cat")
-  expect_true(is.factor(out$train$cat))
-  expect_equal(levels(out$train$cat), c("a","b"))
-  expect_true(is.factor(out$newdata$cat))
-  expect_true(is.na(out$newdata$cat[2]))
+  ref <- data.frame(cat = factor(c("a","b","a")), x = 1:3)
+  qry <- data.frame(cat = c("a","c","b"), x = 4:6)
+  out <- CAST:::.drop_unknown_levels(ref, qry, "cat")
+  expect_true(is.factor(out$reference$cat))
+  expect_equal(levels(out$reference$cat), c("a","b"))
+  expect_true(is.factor(out$query$cat))
+  expect_true(is.na(out$query$cat[2]))
 })
 
-test_that(".create_dummy_variables applies dummies correctly to newdata and weight", {
+test_that(".create_dummy_variables applies dummies correctly to query and weight", {
   skip_if_not_installed("caret")
   library(caret) # to avoid running into https://github.com/topepo/caret/issues/380
 
-  train <- data.frame(cat = factor(c("a", "b", "a")), v = 1:3, stringsAsFactors = FALSE)
-  newd  <- data.frame(cat = c("a", "b", NA), v = 4:6, stringsAsFactors = FALSE)
+  ref <- data.frame(cat = factor(c("a", "b", "a")), v = 1:3, stringsAsFactors = FALSE)
+  qry  <- data.frame(cat = c("a", "b", NA), v = 4:6, stringsAsFactors = FALSE)
   weight <- data.frame(v=1, cat = 5) # single-row weight for the categorical variable
 
-  out <- CAST:::.create_dummy_variables(train, newd, weight, "cat")
+  out <- CAST:::.create_dummy_variables(ref, qry, weight, "cat")
 
   # original categorical column removed
-  expect_false("cat" %in% names(out$train))
-  expect_false("cat" %in% names(out$newdata))
+  expect_false("cat" %in% names(out$reference))
+  expect_false("cat" %in% names(out$query))
   expect_false("cat" %in% names(out$weight))
 
   # dummy cols created and match the dummyVars columns
-  dummy_cols <- setdiff(names(out$train), names(train))
+  dummy_cols <- setdiff(names(out$reference), names(ref))
   cols <- c("v", dummy_cols)
-  expect_setequal(cols, names(out$train))
-  expect_setequal(cols, names(out$newdata))
+  expect_setequal(cols, names(out$reference))
+  expect_setequal(cols, names(out$query))
   expect_setequal(cols, names(out$weight))
 
-  # NA in newdata should have 0s in dummy columns
-  expect_true(all(out$newdata[3, dummy_cols] == 0))
+  # NA in query should have 0s in dummy columns
+  expect_true(all(out$query[3, dummy_cols] == 0))
 
   # weight should have been expanded to the dummy columns
   expect_equal(as.numeric(out$weight[1, dummy_cols]), rep(as.numeric(weight$cat), length(dummy_cols)))
@@ -59,13 +59,13 @@ test_that(".convert_factors_to_dummy and .prepare_categorical_variables work tog
   skip_if_not_installed("caret")
   library(caret) # to avoid running into https://github.com/topepo/caret/issues/380
   
-  train <- data.frame(a = factor(c("x","y")), b = 1:2)
-  newd <- data.frame(a = c("x","z"), b = 3:4)
-  res <- CAST:::.convert_factors_to_dummy(train, newd, NULL, c("a"))
-  expect_false("a" %in% names(res$train))
-  expect_false("a" %in% names(res$newdata))
+  ref <- data.frame(a = factor(c("x","y")), b = 1:2)
+  qry <- data.frame(a = c("x","z"), b = 3:4)
+  res <- CAST:::.convert_factors_to_dummy(ref, qry, NULL, c("a"))
+  expect_false("a" %in% names(res$reference))
+  expect_false("a" %in% names(res$query))
 
-  res2 <- CAST:::.prepare_categorical_variables(train, newd, NULL, variables = c("a","b"))
+  res2 <- CAST:::.prepare_categorical_variables(ref, qry, NULL, variables = c("a","b"))
   expect_true(is.list(res2))
   expect_true("catvars" %in% names(res2))
   expect_true("a" %in% res2$catvars)

@@ -288,9 +288,13 @@ aoa.data.frame <- function(newdata,
   newdata <- newdata[, trainDI$variables, drop = FALSE] # has_all_cols is TRUE
   
   # categorical variable handling
-  processed <- .convert_factors_to_dummy(trainDI$train, newdata, catvars = trainDI$catvars)
-  trainDI$train <- processed$train
-  newdata <- processed$newdata
+  processed <- .convert_factors_to_dummy(
+    reference = trainDI$train,
+    query = newdata,
+    variables = trainDI$catvars
+  )
+  trainDI$train <- processed$reference
+  newdata <- processed$query
 
   # apply scaling
   center <- trainDI$scaleparam$`scaled:center`

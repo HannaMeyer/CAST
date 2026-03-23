@@ -200,9 +200,9 @@
     for (catvar in catvars) {
       res <- .drop_unknown_levels(reference, query, catvar)
       # TODO: rename outputs of drop_unknown_levels to be more intuitive (e.g. reference and query instead of train and newdata)
-      reference <- res$train
+      reference <- res$reference
       reference[[catvar]] <- as.integer(as.factor(reference[[catvar]]))
-      query <- res$newdata
+      query <- res$query
       if (has_query) {
         query[[catvar]] <- as.integer(as.factor(query[[catvar]]))
       }

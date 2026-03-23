@@ -133,8 +133,12 @@ trainDI <- function(model = NULL,
   folds <-  .prepare_folds(model,CVtrain,CVtest,useCV)
 
   # convert categorial variables to dummy variables and add weights for the dummy variables
-  catupdate <- .prepare_categorical_variables(train = train, weight = weight, variables = variables)
-  train <- catupdate$train
+  catupdate <- .prepare_categorical_variables(
+    reference = train,
+    weight = weight,
+    variables = variables
+  )
+  train <- catupdate$reference
   weight <- catupdate$weight
 
   # scale train
