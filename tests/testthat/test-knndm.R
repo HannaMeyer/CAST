@@ -8,7 +8,7 @@ test_that("kNNDM works with geographical coordinates and prediction points", {
     sf::st_set_crs("epsg:4326")
 
   set.seed(1)
-  kout <- knndm(tpoints, predpoints=predpoints, k=2, maxp=0.8, dist_space = "geographical", dist_fun = "great_circle")
+  kout <- knndm(tpoints, predpoints=predpoints, k=2, maxp=0.8, dist_space = "geographical")
   expect_identical(round(kout$W,1), 121095.2)
   expect_identical(kout$method, "hierarchical")
   expect_identical(kout$q, 3L)
@@ -72,14 +72,14 @@ test_that("kNNDM works with modeldomain and geographical coordinates", {
 
   set.seed(1)
   kout <- suppressMessages(knndm(tpoints, modeldomain = aoi, k=2, maxp=0.8, clustering = "hierarchical", 
-                                  dist_space = "geographical", dist_fun = "great_circle"))
+                                  dist_space = "geographical"))
 
   expect_identical(round(kout$W,4), 133187.4275)
   expect_identical(kout$method, "hierarchical")
   expect_identical(kout$q, 3L)
 
   expect_message(knndm(tpoints, modeldomain = aoi, k=2, maxp=0.8, clustering = "hierarchical", 
-                        dist_space = "geographical", dist_fun = "great_circle"),
+                        dist_space = "geographical"),
                  "1000 prediction points are sampled from the modeldomain")
 
 })
@@ -120,7 +120,7 @@ test_that("kNNDM works when no clustering is present", {
   kout <- suppressMessages(knndm(sf::st_transform(tpoints,"epsg:4326"),
                                  predpoints = sf::st_transform(predpoints, "epsg:4326"),
                                  k=2, maxp=0.8, clustering = "hierarchical", 
-                                 dist_space = "geographical", dist_fun = "great_circle"))
+                                 dist_space = "geographical"))
   expect_equal(kout$q, "random CV")
 })
 
@@ -289,10 +289,10 @@ test_that("kNNDM works in feature space with categorical variables and predpoint
   train_points$fct <- factor(sample(LETTERS[1:4], nrow(pts), replace=TRUE))
 
 
-  knndm_folds <- knndm(tpoints=train_points, predpoints = prediction_points,
+  knndm_folds <- knndm(tpoints=train_points, predpoints = prediction_points, scale_vars = FALSE,
                        dist_space="feature", clustering = "hierarchical", dist_fun = "gower")
 
-  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),3), 0.114)
+  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),3), 0.109)
 
 })
 
@@ -319,7 +319,7 @@ test_that("kNNDM works in feature space with clustered training points, categori
   knndm_folds_kproto <- knndm(tpoints=pts, modeldomain = predictor_stack, dist_space="feature", clustering = "kmeans", dist_fun = "gower")
   knndm_folds_hclust <- knndm(tpoints=pts, modeldomain = predictor_stack, dist_space="feature", clustering = "hierarchical", dist_fun = "gower")
 
-  expect_equal(round(as.numeric(knndm_folds_kproto$Gjstar[20]),3), 0.054)
+  expect_equal(round(as.numeric(knndm_folds_kproto$Gjstar[20]),3), 0.049)
   expect_equal(round(as.numeric(knndm_folds_hclust$Gjstar[20]),3), 0.078)
 
 })

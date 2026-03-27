@@ -30,7 +30,7 @@ test_that("geodist supports Fibonacci sampling", {
   data(splotdata)
   studyArea <- rnaturalearth::ne_countries(continent = "South America", returnclass = "sf")
   expect_message(
-    geodist(splotdata, studyArea, sampling = "Fibonacci", dist_space = "geographical", dist_fun = "great_circle"),
+    geodist(splotdata, studyArea, sampling = "Fibonacci", dist_space = "geographical"),
     "Sampling 2000 prediction locations from the modeldomain vector."
   )
 })
@@ -47,8 +47,7 @@ test_that("geodist works with points and polygon in geographic space", {
   dist_geo <- geodist(x=splotdata,
                       modeldomain=studyArea,
                       CVtest=folds$indexOut,
-                      dist_space = "geographical",
-                      dist_fun = "great_circle")
+                      dist_space = "geographical")
 
   mean_sample2sample <- round(mean(dist_geo[dist_geo$what=="sample-to-sample","dist"]))
   mean_CV_distances <- round(mean(dist_geo[dist_geo$what=="CV-distances","dist"]))

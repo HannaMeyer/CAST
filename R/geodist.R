@@ -19,13 +19,12 @@
 #' @param variables character vector defining the predictor variables used if dist_space="feature". If not provided all variables included in modeldomain are used.
 #' @param time_var optional. character. Column that indicates the date. Only used if dist_space="time".
 #' @param time_unit optional. Character. Unit for temporal distances See ?difftime.Only used if dist_space="time".
-#' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
-#' @param dist_fun character. Currently covers `euclidean` (default), `gower`, `mahalanobis`, `great_circle` and `abs_time`.
-#' `gower` and `mahalanobis` only work with `dist_space`="feature", while `great_circle` only works with `dist_space`="geographical". 
-#' `mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables, 
+#' @param dist_fun character. Automatically detected if `dist_space`="geographical". For geographical (long/lat) coordinates,
+#' `dist_fun` is set to "great_circle", while "euclidean" distances are used for projected coordinats.
+#' For `dist_space`="feature", `dist_fun` currently covers `euclidean` (default), `gower` and `mahalanobis`.
+#' `mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables,
 #' `gower` also works with mixed data including numerical and categorical variables.
 #' For `dist_space`="time", currently only the absolute difference (`abs_time`) is implemented.
-#' For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.
 #' @param scale_vars boolean. Should variables be scaled? Only for `dist_space`="feature". 
 #' Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
 #' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.
@@ -147,7 +146,6 @@ geodist <- function(
   variables = NULL,
   time_var = NULL,
   time_unit = "auto",
-  algorithm = "brute",
   dist_fun = "euclidean",
   scale_vars = TRUE,
   cvtrain = NULL,
@@ -264,14 +262,6 @@ geodist <- function(
     testdata <- sf::st_transform(testdata, sf::st_crs(x))
   }
 
-  # Check if coordinates are longitutude/latitude
-  islonglat <- if (is.na(ref_crs)) {
-    warning("Missing CRS of the modeldomain or prediction points. Assuming projected CRS.")
-    FALSE
-  } else {
-    sf::st_is_longlat(ref_crs)
-  }
-
   # 3. Prediction point generation ----------
 
   # Sample prediction points from the study area (only if no preddata are supplied)
@@ -347,23 +337,18 @@ geodist <- function(
     if (!is.null(catVars) && dist_fun != "gower") {
         stop("Only 'gower' distances are allowed for categorical variables.")
     }
-  } else if(dist_space == "geographical") {
-    if(isTRUE(islonglat) && dist_fun != "great_circle")  {
-      stop("Only 'great_circle' distances are allowed for lon/lat coordinates.")
-    }
   }
-
 
   # Calculate NNDs between training points
   s2s <- compute_NND(
     x=x, y=NULL, dist_space = dist_space, dist_type_label = "sample-to-sample",  dist_fun = dist_fun,
-    CVtest = NULL, CVtrain = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
+    CVtest = NULL, CVtrain = NULL, time_var = time_var, time_unit = time_unit
   )
 
   # Calculate NNDs between prediction and training points
   p2s <- compute_NND(
     x=x, y=pred_points, dist_space = dist_space, dist_type_label = "prediction-to-sample",  dist_fun = dist_fun,
-    CVtest = NULL, CVtrain = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
+    CVtest = NULL, CVtrain = NULL, time_var = time_var, time_unit = time_unit
   )
   dists <- rbind(s2s, p2s)
 
@@ -371,7 +356,7 @@ geodist <- function(
   if (!is.null(testdata)) {
     t2s <- compute_NND(
       x=x, y=testdata, dist_space = dist_space, dist_type_label = "test-to-sample",  dist_fun = dist_fun,
-      CVtest = NULL, CVtrain = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
+      CVtest = NULL, CVtrain = NULL, time_var = time_var, time_unit = time_unit
     )
     dists <- rbind(dists, t2s)
   }
@@ -379,7 +364,7 @@ geodist <- function(
   if (!is.null(CVtest)) {
     cvdist <- compute_NND(
       x=x, y=NULL, dist_space = dist_space, dist_type_label = "CV-distances",  dist_fun = dist_fun,
-      CVtest = CVtest, CVtrain = CVtrain, time_var = time_var, time_unit = time_unit, algorithm = algorithm
+      CVtest = CVtest, CVtrain = CVtrain, time_var = time_var, time_unit = time_unit
     )
     dists <- rbind(dists, cvdist)
   }
@@ -417,7 +402,7 @@ geodist <- function(
 compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","time"), 
                       dist_type_label = "sample-to-sample", 
                       dist_fun = c("euclidean","mahalanobis","gower","great_circle", "abs_time"), 
-                      CVtest = NULL, CVtrain = NULL, time_var = NULL, time_unit = "auto", algorithm = "brute") {
+                      CVtest = NULL, CVtrain = NULL, time_var = NULL, time_unit = "auto") {
   
   dist_space <- match.arg(dist_space)
   dist_fun <- match.arg(dist_fun)
@@ -439,6 +424,7 @@ compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","ti
  
   } else if(dist_space == "geographical") {
     islonglat <- if (is.na(sf::st_crs(x))) {
+      warning("Missing CRS of the modeldomain or prediction points. Assuming projected CRS.")
       FALSE
     } else {
       sf::st_is_longlat(sf::st_crs(x))
@@ -526,10 +512,14 @@ cv_distances <- function(x, CVtest, CVtrain = NULL, dist_fun = "euclidean", time
     if(dist_fun %in% c("euclidean", "mahalanobis", "gower")) {
       alldist[test_idx] <- .knndist(query = tr_test, reference = tr_train, k = 1, dist_fun = dist_fun)
     } else if(dist_fun == "great_circle") {
+      if(inherits(x, c("sf", "sfc"))) {
         distmat <- sf::st_distance(x)
         units(distmat) <- NULL
         diag(distmat) <- NA 
-        alldist[test_idx] <- apply(distmat[test_idx, train_idx, drop=FALSE], 1, min)
+      } else {
+        distmat <- x
+      }
+      alldist[test_idx] <- apply(distmat[test_idx, train_idx, drop=FALSE], 1, min)
     } else if(dist_fun == "abs_time") {
       diffs <- outer(tr_test, tr_train, function(x,y) abs(as.numeric(difftime(x, y, units=time_unit))))
       alldist[test_idx] <- apply(diffs, 1, min)
