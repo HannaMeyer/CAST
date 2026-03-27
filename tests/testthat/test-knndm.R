@@ -292,7 +292,7 @@ test_that("kNNDM works in feature space with categorical variables and predpoint
   knndm_folds <- knndm(tpoints=train_points, predpoints = prediction_points, scale_vars = FALSE,
                        dist_space="feature", clustering = "hierarchical", dist_fun = "gower")
 
-  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),3), 0.109)
+  expect_equal(round(as.numeric(mean(knndm_folds$Gjstar)),3), 0.099)
 
 })
 

@@ -102,7 +102,7 @@ than between prediction and train locations. Hence, it is essential to plot the 
 Modifying the `test_prop` parameter, as well as increasing `test_prop` allow more flexible matching and can potentially improve the match.
 
 Using a projected CRS in `knndm` has large computational advantages since fast nearest neighbour search can be
-done via the `FNN` package, while working with geographic coordinates requires computing the full
+done via the `philentropy` package, while working with geographic coordinates requires computing the full
 spherical distance matrices. As a clustering algorithm, `kmeans` can only be used for
 projected CRS while `hierarchical` can work with both projected and geographical coordinates, though it requires
 calculating the full distance matrix of the training points even for a projected CRS.

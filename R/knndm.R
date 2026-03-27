@@ -59,7 +59,7 @@
 #' Modifying the `test_prop` parameter, as well as increasing `test_prop` allow more flexible matching and can potentially improve the match.
 #'
 #' Using a projected CRS in `knndm` has large computational advantages since fast nearest neighbour search can be
-#' done via the `FNN` package, while working with geographic coordinates requires computing the full
+#' done via the `philentropy` package, while working with geographic coordinates requires computing the full
 #' spherical distance matrices. As a clustering algorithm, `kmeans` can only be used for
 #' projected CRS while `hierarchical` can work with both projected and geographical coordinates, though it requires
 #' calculating the full distance matrix of the training points even for a projected CRS.
@@ -291,7 +291,6 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     stop("dist_fun must be one of 'euclidean', 'mahalanobis', 'gower' or 'great_circle'")
   }
 
-  if(dist_space == "time" && dist_fun != "euclidean") stop("Temporal space only supports euclidean distances.")
   if(dist_space == "feature" && dist_fun == "great_circle") stop("Great-circle distances only work with in geographical space.")
   if(dist_space == "geographical" && dist_fun %in% c("mahalanobis", "gower")) stop("Mahalanobis and Gower distances only work in feature space.")
 
@@ -491,7 +490,7 @@ check_knndm_geo <- function(tpoints, predpoints, dist_space, k, maxp, clustering
 check_knndm_feature <- function(tpoints, predpoints, dist_space, k, maxp, clustering, catVars, dist_fun, test_prop){
 
   if (!is.null(catVars) && dist_fun != "gower") {
-      stop("Only gower distances work with categorical features. Please use dist_fun = 'gower'")
+    stop("Only gower distances work with categorical features. Please use dist_fun = 'gower'")
   }
 
   if(is.null(test_prop)) {
@@ -526,7 +525,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
   tcoords <- sf::st_coordinates(tpoints)[,1:2]
   pred_coords <- sf::st_coordinates(predpoints)[,1:2]
   if(isTRUE(dist_fun == "great_circle")){
-    # For great-circle distance, we calculate the distance matrix here once and then re-use it for distance calculations
+    # For great-circle distance, we calculate the distance matrix here once and then re-use it for NND calculations
     distmat <- sf::st_distance(tpoints)
     units(distmat) <- NULL
     diag(distmat) <- NA
@@ -646,7 +645,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
 
         # Compute W statistic if not exceeding maxp
         if(isTRUE(dist_fun == "great_circle")){
-          Gjstar_i <- cv_distances(distmat, CVtest = clust_k, dist_fun = dist_fun) # !
+          Gjstar_i <- cv_distances(distmat, CVtest = clust_k, dist_fun = dist_fun)
         }else{
           Gjstar_i <- cv_distances(tcoords, CVtest = clust_k, dist_fun = dist_fun)
         }
