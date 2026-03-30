@@ -6,7 +6,7 @@
 #' @param modeldomain sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).
 #' @param predpoints sf or sfc point object, or data.frame if dist_space = "feature". Contains the target prediction points. Optional; alternative to modeldomain (see Details).
 #' @param dist_space character. Either "geographical" or "feature". Feature dist_space is still experimental, so use with caution.
-#' @param dist_fun character. Only used if `dist_space`="feature", `dist_fun` currently covers `euclidean` (default), `gower` and `mahalanobis`.
+#' @param dist_fun character. Only used for `dist_space`="feature". `dist_fun` currently covers `euclidean` (default), `gower` and `mahalanobis`.
 #' `mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables,
 #' `gower` also works with mixed data including numerical and categorical variables.
 #' @param scale_vars boolean. Only used if `dist_space`="feature". Should variables be scaled?
@@ -437,7 +437,7 @@ nndm_checks_feature <- function(tpoints, predpoints, phi, min_train, catVars, di
     stop("min_train must be a numeric between 0 and 1.")
   }
 
-  if(length(setdiff(names(tpoints), names(predpoints)))>0) {
+  if(!setequal(names(tpoints), names(predpoints))) {
     stop("tpoints and predpoints need to contain the predictor data and have the same colnames.")
   }
 

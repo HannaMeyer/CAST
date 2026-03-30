@@ -294,6 +294,11 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
   if(dist_space == "feature" && dist_fun == "great_circle") stop("Great-circle distances only work with in geographical space.")
   if(dist_space == "geographical" && dist_fun %in% c("mahalanobis", "gower")) stop("Mahalanobis and Gower distances only work in feature space.")
 
+  # Check if clustering was correctly defined
+  if (!(clustering %in% c("kmeans", "hierarchical"))) {
+    stop("clustering must be one of `kmeans` or `hierarchical`")
+  }
+
   # Issue a warning if train/test split is used
   if(!is.null(test_prop)) {
     warning("A train/test split will be returned, which is currently experimental.")
@@ -313,16 +318,8 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     maxp <- test_prop + test_tolerance
     minp <- test_prop - test_tolerance
 
-    if(maxp <= 0 || minp >= 1 || minp > maxp) {
+    if(maxp <= 0 || maxp >= 1 || minp <= 0 || minp >= 1 || minp > maxp) {
       stop("Misspecified tolerance. Resulted in infeasible minp/maxp values")
-    }
-
-    if(minp <= 0) {
-      warning("minp was set to 0.1")
-      minp <- 0.1
-    } else if(maxp >= 1) {
-      warning("maxp was set to 0.9")
-      maxp <- 0.9
     }
 
     if(maxp == 1/k) {
@@ -446,7 +443,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
 
     # prior checks
     check_knndm_geo(tpoints = tpoints, predpoints = predpoints, dist_space = dist_space,
-      k = k, maxp = maxp, clustering = clustering, dist_fun = dist_fun, test_prop = test_prop)
+      k = k, maxp = maxp, clustering = clustering, dist_fun = dist_fun, test_prop = test_prop, islonglat = islonglat)
     # kNNDM in geographical space
     knndm_res <- knndm_geo(tpoints = tpoints, predpoints = predpoints, k = k, maxp = maxp, minp = minp,
       test_prop = test_prop, clustering = clustering, linkf = linkf, nk_len = nk_len,
@@ -470,14 +467,14 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
 
 
 # kNNDM checks
-check_knndm_geo <- function(tpoints, predpoints, dist_space, k, maxp, clustering, dist_fun, test_prop){
+check_knndm_geo <- function(tpoints, predpoints, dist_space, k, maxp, clustering, dist_fun, test_prop, islonglat){
 
   if(!identical(sf::st_crs(tpoints), sf::st_crs(predpoints))){
     stop("tpoints and predpoints must have the same CRS")
   }
 
-  if (!(clustering %in% c("kmeans", "hierarchical"))) {
-    stop("clustering must be one of `kmeans` or `hierarchical`")
+  if(isTRUE(islonglat) && clustering == "kmeans") {
+    stop("kmeans clustering only works with projected coordinates")
   }
 
   if(is.null(test_prop)) {
@@ -503,7 +500,7 @@ check_knndm_feature <- function(tpoints, predpoints, dist_space, k, maxp, cluste
     stop("predpoints with predictor data missing")
   }
 
-  if(length(setdiff(names(tpoints), names(predpoints)))>0) {
+  if(!setequal(names(tpoints), names(predpoints))) {
     stop("tpoints and predpoints need to contain the predictor data and have the same colnames.")
   }
 
@@ -750,16 +747,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
       clust <- sample(rep(1:k, ceiling(nrow(tpoints)/k)), size = nrow(tpoints), replace=F)
     }
 
-    if(is.null(catVars)) {
-      if(isTRUE(dist_fun == "mahalanobis")) {
-        Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
-      } else {
-        Gjstar <- cv_distances(tpoints, clust, dist_fun = dist_fun)
-      }
-
-    } else {
-      Gjstar <- cv_distances(tpoints, clust, dist_fun = dist_fun)
-    }
+    Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
 
     k_final <- "random CV"
     W_final <- twosamples::wass_stat(Gjstar, Gij)

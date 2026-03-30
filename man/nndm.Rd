@@ -26,7 +26,7 @@ nndm(
 
 \item{dist_space}{character. Either "geographical" or "feature". Feature dist_space is still experimental, so use with caution.}
 
-\item{dist_fun}{character. Only used if `dist_space`="feature", `dist_fun` currently covers `euclidean` (default), `gower` and `mahalanobis`.
+\item{dist_fun}{character. Only used for `dist_space`="feature". `dist_fun` currently covers `euclidean` (default), `gower` and `mahalanobis`.
 `mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables,
 `gower` also works with mixed data including numerical and categorical variables.}
 

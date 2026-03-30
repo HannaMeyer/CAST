@@ -1,3 +1,39 @@
+test_that("kNNDM recognizes erroneous input", {
+  sf::sf_use_s2(TRUE)
+  aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:25832")
+  tpoints <- sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))", crs="epsg:25832") |>
+    sf::st_cast("POINT") |>
+    sf::st_as_sf()
+  tpoints$fct <- factor(sample(LETTERS[1:4], nrow(tpoints), replace=TRUE))
+
+  set.seed(1)
+  predpoints <- sf::st_as_sf(sf::st_sample(aoi, 20))
+
+  predpoints$fct <- factor(sample(LETTERS[1:4], nrow(predpoints), replace=TRUE))
+
+  # maxp to small
+  expect_error(knndm(tpoints, predpoints=predpoints, k=2, maxp=0.4), "maxp must be strictly between 1/k and 1")
+  # k larger than number of tpoints
+  expect_error(knndm(tpoints, predpoints=predpoints, k=30, maxp=0.8), "elements of 'k' must be between 1 and 6")
+  # different crs of tpoints and predpoints
+  expect_error(knndm(tpoints, predpoints=sf::st_transform(predpoints, "epsg:25833"), k=2, maxp=0.8), 
+    "tpoints and predpoints must have the same CRS")
+  # different crs of tpoints and modeldomain
+  expect_error(knndm(tpoints, modeldomain=sf::st_transform(aoi, "epsg:25833"), k=2, maxp=0.8),
+    "tpoints and modeldomain must have the same CRS")
+  # using kmeans with geographical coordinates
+  expect_error(knndm(sf::st_transform(tpoints,"epsg:4326"), predpoints=sf::st_transform(predpoints, "epsg:4326"),
+                     clustering="kmeans"), "kmeans clustering only works with projected coordinates")
+  # not using gower distances with categorical variables
+  expect_error(knndm(tpoints, predpoints=predpoints, k=2, maxp=0.8, dist_space = "feature"),
+    "Only gower distances work with categorical features. Please use dist_fun = 'gower'")
+  # different predictors in predpoints and tpoints
+  predpoints$y <- 1:nrow(predpoints)
+  expect_error(knndm(tpoints, predpoints=predpoints, k=2, maxp=0.8, dist_space = "feature", dist_fun = "gower"),
+    "tpoints and predpoints need to contain the predictor data and have the same colnames.")
+})
+
+
 test_that("kNNDM works with geographical coordinates and prediction points", {
   sf::sf_use_s2(TRUE)
   aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:4326")
@@ -158,28 +194,6 @@ test_that("kNNDM works with many points and different configurations", {
 
 })
 
-
-test_that("kNNDM recognizes erroneous input", {
-  sf::sf_use_s2(TRUE)
-  aoi <- sf::st_as_sfc("POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))", crs="epsg:25832")
-  tpoints <- sf::st_as_sfc("MULTIPOINT ((1 1), (1 2), (2 2), (2 3), (1 4), (5 4))", crs="epsg:25832") |>
-    sf::st_cast("POINT")
-
-  set.seed(1)
-  predpoints <- sf::st_sample(aoi, 20)
-
-  # maxp to small
-  expect_error(knndm(tpoints, predpoints=predpoints, k=2, maxp=0.4))
-  # k larger than number of tpoints
-  expect_error(knndm(tpoints, predpoints=predpoints, k=20, maxp=0.8))
-  # different crs of tpoints and predpoints
-  expect_error(knndm(tpoints, predpoints=sf::st_transform(predpoints, "epsg:25833"), k=2, maxp=0.8))
-  # different crs of tpoints and modeldomain
-  expect_error(knndm(tpoints, modeldomain=sf::st_transform(aoi, "epsg:25833"), k=2, maxp=0.8))
-  # using kmeans with geographical coordinates
-  expect_error(knndm(sf::st_transform(tpoints,"epsg:4326"), predpoints=sf::st_transform(predpoints, "epsg:4326"),
-                     clustering="kmeans"))
-})
 
 test_that("kNNDM yields the expected results with SpatRast modeldomain", {
   set.seed(1234)
@@ -376,13 +390,18 @@ test_that("kNNDM works with train/test splits in geographical space", {
 
   set.seed(1)
   tpoints <- sf::st_sample(sample_area, 100)
+  tpoints_random <- sf::st_sample(aoi, 100)
   predpoints <- sf::st_sample(aoi, 1000)
 
+  # clustered:
   kout <- suppressWarnings(knndm(tpoints, predpoints = predpoints, test_prop = 0.3, test_tolerance = 0.1, dist_space = "geographical"))
   expect_identical(round(kout$W,1), 2.4)
   expect_identical(kout$method, "hierarchical")
   expect_identical(kout$q, 4L)
-
+  # random:
+  kout_random <- suppressWarnings(knndm(tpoints_random, predpoints = predpoints, test_prop = 0.3, test_tolerance = 0.1, dist_space = "geographical"))
+  expect_identical(round(kout_random$W,1), 0.3)
+  expect_identical(kout_random$q, "random CV")
 })
 
 test_that("kNNDM works with train/test splits in feature space", {
