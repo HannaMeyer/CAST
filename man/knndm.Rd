@@ -16,7 +16,6 @@ knndm(
   samplesize = 1000,
   sampling = "regular",
   dist_fun = "euclidean",
-  algorithm = "brute",
   scale_vars = TRUE,
   space = NULL,
   useMD = NULL,
@@ -49,13 +48,11 @@ Only required if modeldomain is used instead of predpoints.}
 \item{sampling}{character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
 Only required if modeldomain is used instead of predpoints.}
 
-\item{dist_fun}{character. Currently covers `euclidean` (default), `gower`, `mahalanobis` and `great_circle`.
-`gower` and `mahalanobis` only work with `dist_space`="feature", while `great_circle` only works with `dist_space`="geographical".
+\item{dist_fun}{character. Automatically detected if `dist_space`="geographical". For geographical (long/lat) coordinates,
+`dist_fun` is set to "great_circle", while "euclidean" distances are used for projected coordinats.
+For `dist_space`="feature", `dist_fun` currently covers `euclidean` (default), `gower` and `mahalanobis`.
 `mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables,
-`gower` also works with mixed data including numerical and categorical variables.
-For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.}
-
-\item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
+`gower` also works with mixed data including numerical and categorical variables.}
 
 \item{scale_vars}{boolean. Should variables be scaled? Only for `dist_space`="feature".
 Calculating Gower distances already includes scaling, and manually rescale the data is redundant.
@@ -105,7 +102,7 @@ than between prediction and train locations. Hence, it is essential to plot the 
 Modifying the `test_prop` parameter, as well as increasing `test_prop` allow more flexible matching and can potentially improve the match.
 
 Using a projected CRS in `knndm` has large computational advantages since fast nearest neighbour search can be
-done via the `FNN` package, while working with geographic coordinates requires computing the full
+done via the `philentropy` package, while working with geographic coordinates requires computing the full
 spherical distance matrices. As a clustering algorithm, `kmeans` can only be used for
 projected CRS while `hierarchical` can work with both projected and geographical coordinates, though it requires
 calculating the full distance matrix of the training points even for a projected CRS.

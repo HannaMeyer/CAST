@@ -39,7 +39,6 @@ BugReports: https://github.com/HannaMeyer/CAST/issues/
 Imports: 
     caret,
     data.table,
-    FNN, 
     ggplot2, 
     graphics,
     grDevices,

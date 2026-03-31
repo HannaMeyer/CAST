@@ -157,7 +157,7 @@ indices_LLO <- CreateSpacetimeFolds(splotdata,spacevar = "Country",
 Example for knndm:
 ```{r, message = FALSE, warning=FALSE}
 set.seed(10)
-indices_knndm <- knndm(splotdata,predictors_sp,k=3, dist_fun = "great_circle")
+indices_knndm <- knndm(splotdata,predictors_sp,k=3)
 ```
 
 Let's compare how well these strategies fit the prediction task, especially in comparison to a random cross-validation. We will use CAST's geodist function for that. Geodist calculates nearest neighbor distances in geographic space or feature space between training data as well as between training data and prediction locations. Optional, an that is what we want to focus on here, the nearest neighbor distances between training data and CV folds is computed.
@@ -166,11 +166,11 @@ See tutorial on geodistance visualizations in this package for more information.
 
 
 ```{r, message = FALSE, warning=FALSE}
-plot(geodist(splotdata,predictors_sp,CVtest=model_default$control$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=model_default$control$indexOut, dist_space = "geographical"))+ 
   scale_x_log10(labels=round)
-plot(geodist(splotdata,predictors_sp,CVtest=indices_LLO$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=indices_LLO$indexOut, dist_space = "geographical"))+ 
   scale_x_log10(labels=round)
-plot(geodist(splotdata,predictors_sp,CVtest=indices_knndm$indx_test, dist_space = "geographical", dist_fun = "great_circle"))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=indices_knndm$indx_test, dist_space = "geographical"))+ 
   scale_x_log10(labels=round)
 ```
 
