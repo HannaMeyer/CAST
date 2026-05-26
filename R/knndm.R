@@ -513,6 +513,53 @@ check_knndm_feature <- function(tpoints, predpoints, dist_space, k, maxp, cluste
 
 }
 
+# TODO: this local adapater is required as long as KNNDM is not properly aligned
+# with geodist and knndist.
+.cv_distances <- function(x, CVtest, dist_fun = "euclidean") {
+  # Get total length
+  n <- if (is.matrix(x)) nrow(x) else nrow(as.data.frame(x))
+  
+  # Initialize result vector to preserve position ordering
+  alldist <- rep(NA_real_, n)
+
+  # Normalize CVtest to a vector of fold IDs
+  if (is.list(CVtest)) {
+    CVtest_v <- rep(NA_integer_, n)
+    for (k in seq_along(CVtest)) {
+      CVtest_v[CVtest[[k]]] <- k
+    }
+  } else {
+    CVtest_v <- CVtest
+  }
+
+  # Helper: compute distances for a single fold
+  compute_fold <- function(train_idx, test_idx) {
+    if (is.matrix(x) && nrow(x) == ncol(x)) {
+      # x is a distance matrix (square)
+      sapply(test_idx, function(j) min(x[train_idx, j], na.rm = TRUE))
+    } else if (inherits(x, c("sf", "sfc"))) {
+      # x is sf: use .geo_dist which accepts sf objects
+      .geo_dist(x = x[train_idx, , drop = FALSE], y = x[test_idx, , drop = FALSE], dist_fun = dist_fun)
+    } else {
+      # x is numeric matrix/data.frame with coordinates or features
+      .knndist(reference = x[train_idx, , drop = FALSE], query = x[test_idx, , drop = FALSE], k = 1, dist_fun = dist_fun)
+    }
+  }
+
+  # Process each fold and assign distances to correct positions
+  for (fold_id in unique(CVtest_v)) {
+    test_idx <- which(CVtest_v == fold_id)
+    train_idx <- setdiff(seq_len(n), test_idx)
+    
+    # Compute distances only for this fold's test indices
+    fold_dists <- compute_fold(train_idx, test_idx)
+    
+    # Assign to correct positions in result vector
+    alldist[test_idx] <- fold_dists
+  }
+  
+  alldist
+}
 
 # kNNDM in the geographical space
 knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
@@ -551,9 +598,9 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
     }
 
     if(isTRUE(dist_fun == "great_circle")){
-      Gjstar <- cv_distances(distmat, CVtest = clust, dist_fun = dist_fun)
+      Gjstar <- .cv_distances(x = distmat, CVtest = clust, dist_fun = dist_fun)
     }else{
-      Gjstar <- cv_distances(tcoords, CVtest = clust, dist_fun = dist_fun)
+      Gjstar <- .cv_distances(x = tcoords, CVtest = clust, dist_fun = dist_fun)
     }
     k_final <- "random CV"
     W_final <- twosamples::wass_stat(Gjstar, Gij)
@@ -642,9 +689,9 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
 
         # Compute W statistic if not exceeding maxp
         if(isTRUE(dist_fun == "great_circle")){
-          Gjstar_i <- cv_distances(distmat, CVtest = clust_k, dist_fun = dist_fun)
+          Gjstar_i <- .cv_distances(x = distmat, CVtest = clust_k, dist_fun = dist_fun)
         }else{
-          Gjstar_i <- cv_distances(tcoords, CVtest = clust_k, dist_fun = dist_fun)
+          Gjstar_i <- .cv_distances(x = tcoords, CVtest = clust_k, dist_fun = dist_fun)
         }
         clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
         clustgroups[[paste0("nk", nk)]] <- clust_k
@@ -662,9 +709,9 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
     }
 
     if(isTRUE(dist_fun == "great_circle")){
-      Gjstar <- cv_distances(distmat, CVtest = clust, dist_fun = dist_fun)
+      Gjstar <- .cv_distances(x = distmat, CVtest = clust, dist_fun = dist_fun)
     }else{
-      Gjstar <- cv_distances(tcoords, CVtest = clust, dist_fun = dist_fun)
+      Gjstar <- .cv_distances(x = tcoords, CVtest = clust, dist_fun = dist_fun)
     }
   }
 
@@ -747,7 +794,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
       clust <- sample(rep(1:k, ceiling(nrow(tpoints)/k)), size = nrow(tpoints), replace=F)
     }
 
-    Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
+    Gjstar <- .cv_distances(x = tpoints, CVtest = clust, dist_fun = dist_fun)
 
     k_final <- "random CV"
     W_final <- twosamples::wass_stat(Gjstar, Gij)
@@ -859,7 +906,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
         # Compute W statistic if size of clust_k is valid
         if(any(prop_valid)){
 
-          Gjstar_i <- cv_distances(tpoints, CVtest = clust_k, dist_fun = dist_fun)
+          Gjstar_i <- .cv_distances(x = tpoints, CVtest = clust_k, dist_fun = dist_fun)
 
           clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
           clustgroups[[paste0("nk", nk)]] <- clust_k
@@ -876,7 +923,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
       stop("No valid train/test configurations found in the range test_prop +/- tolerance. Increase tolerance.")
     }
 
-    Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
+    Gjstar <- .cv_distances(x = tpoints, CVtest = clust, dist_fun = dist_fun)
 
   }
 
