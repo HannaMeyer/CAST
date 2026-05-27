@@ -88,8 +88,23 @@
   dist_fun = c("euclidean", "mahalanobis", "gower"),
   offset = 0
 ) {
-  dist_mat <- .distance(reference, query, dist_fun)
-  knn_dists <- .knn_dist(dist_mat, k, offset)
+
+  if (dist_fun == "euclidean" && k == 1 && offset == 0) {
+    stopifnot(requireNamespace("FNN", quietly = TRUE))
+    pre_res <- .preprocess_default(reference, query, dist_fun)
+    reference <- pre_res$reference
+    query <- pre_res$query
+    if (is.null(query)){
+      res <- FNN::get.knn(reference, k=1, algorithm="brute")
+    } else {
+      res <- FNN::get.knnx(query = query, data = reference, k=1, algorithm="brute")
+    }
+    knn_dists <- res$nn.dist
+    attributes(knn_dists)$indices <- res$nn.index
+  } else {
+    dist_mat <- .distance(reference, query, dist_fun)
+    knn_dists <- .knn_dist(dist_mat, k, offset)
+  }
   return(knn_dists)
 }
 
