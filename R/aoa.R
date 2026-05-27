@@ -25,16 +25,18 @@
 #' @param CVtrain list. Each element contains the data points used for training during the cross validation iteration (i.e. held back data).
 #' Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 #' Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.
-#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.
+#' @param dist_fun Character. Method used for distance calculation. Currently, euclidean and mahalanobis distance are implemented but only euclidean is tested.
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param useCV Logical. Only if a model is given. Use the CV folds to calculate the DI threshold?
 #' @param LPD Logical. Indicates whether the local point density should be calculated or not.
 #' @param maxLPD numeric or integer. Only if \code{LPD = TRUE}. Number of nearest neighbors to be considered for the calculation of the LPD. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples. CAUTION! If not all training samples are considered, a fitted relationship between LPD and error metric will not make sense (@seealso \code{\link{DItoErrormetric}})
 #' @param indices logical. Calculate indices of the training data points that are responsible for the LPD of a new prediction location? Output is a matrix with the dimensions num(raster_cells) x maxLPD. Each row holds the indices of the training data points that are relevant for the specific LPD value at that location. Can be used in combination with exploreAOA(aoa) function from the \href{https://github.com/fab-scm/CASTvis}{CASTvis package} for a better visual interpretation of the results. Note that the matrix can be quite big for examples with a high resolution and a larger number of training samples, which can cause memory issues.
-#' @param parallel Logical. Parallelization the process. Only possible if LPD = TRUE. Can reduce computation time significantly.
-#' @param cores Integer or Character. Number of cores to use for the the parallelization. You can use "auto" to set your cores to \code{detectCores()/2} (see \code{\link[parallel]{detectCores}}).
+#' @param chunk_size integer. Only if \code{trainDI = NULL}. Number of training points to be processed in each chunk when calculating distances.
 #' @param verbose Logical. Print progress or not?
-#' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
+#' @param method Deprecated. Use dist_fun instead.
+#' @param algorithm Deprecated. Use dist_fun instead.
+#' @param parallel Deprecated. Parallelization is currently not implemented. Will be added in the future.
+#' @param cores Deprecated. Parallelization is currently not implemented. Will be added in the future.
 #' @details The Dissimilarity Index (DI), the Local Data Point Density (LPD) and the corresponding Area of Applicability (AOA) are calculated.
 #' If variables are factors, dummy variables are created prior to weighting and distance calculation.
 #'
@@ -51,8 +53,6 @@
 #'  \item{DI}{SpatRaster, stars object or data frame. Dissimilarity index of newdata}
 #'  \item{LPD}{SpatRaster, stars object or data frame. Local Point Density of newdata.}
 #'  \item{AOA}{SpatRaster, stars object or data frame. Area of Applicability of newdata. AOA has values 0 (outside AOA) and 1 (inside AOA)}
-#'
-#' @importFrom parallel detectCores makeForkCluster clusterExport parLapply stopCluster
 #'
 #' @author
 #' Hanna Meyer, Fabian Schumacher
@@ -155,123 +155,101 @@
 
 #' @export
 #' @name aoa
-aoa = function(newdata, model=NA, ...) UseMethod("aoa") # the generic
+aoa = function(newdata, model=NULL, ...) UseMethod("aoa") # the generic
 
 #' @export
 #' @name aoa
-aoa.stars = function(newdata, model=NA, ...) {
-    if (!requireNamespace("stars", quietly = TRUE))
-      stop("package stars required: install that first")
-    res = aoa(methods::as(newdata, "SpatRaster"), model=model, ...)
+aoa.stars = function(newdata, model=NULL, ...) {
+  if (!requireNamespace("stars", quietly = TRUE))
+    stop("package stars required: install that first")
+  res = aoa(methods::as(newdata, "SpatRaster"), model=model, ...)
 	# convert back to stars...
-    res$DI <- stars::st_as_stars(res$DI)
-    res$AOA <- stars::st_as_stars(res$AOA)
-    if (!is.null(res$LPD)) {
-        res$LPD <- stars::st_as_stars(res$LPD)
-    }
-	res
+  res$DI <- stars::st_as_stars(res$DI)
+  res$AOA <- stars::st_as_stars(res$AOA)
+  if (!is.null(res$LPD)) {
+    res$LPD <- stars::st_as_stars(res$LPD)
+  }
+	return(res)
 }
 
 #' @export
 #' @name aoa
-aoa.Raster = function(newdata, model=NA, ...) {
-    stop("Raster will soon not longer be supported. Use terra or stars instead")
+aoa.Raster = function(newdata, model=NULL, ...) {
+    warning("Raster will soon not longer be supported. Use terra or stars instead")
     aoa(methods::as(newdata, "SpatRaster"), model=model, ...)
 }
 
 #' @export
 #' @name aoa
-aoa.SpatRaster = function(newdata, model=NA, ...) {
-  #### order data:
-  out_template = newdata[[1]]
-  if (any(is.factor(newdata)))
-    newdata[[which(is.factor(newdata))]] <- as.numeric(newdata[[which(is.factor(newdata))]])
+aoa.SpatRaster = function(newdata, model=NULL, ...) {
+  #### prep data
+  out_template <- newdata[[1]]
+  if (any(is.factor(newdata))){
+    which_are_factors <- which(is.factor(newdata))
+    newdata[[which_are_factors]] <- as.numeric(newdata[[which_are_factors]])
+  }
+
   # call the data.frame method:
   res = aoa(terra::as.data.frame(newdata, na.rm = FALSE), model=model, ...)
 
   # convert DI:
-  DI = out_template
-  terra::values(DI) <- res$DI
-  DI <- terra::mask(DI, out_template)
-  names(DI) = "DI"
-  res$DI = DI
+  res$DI <- terra::mask(terra::setValues(out_template, res$DI), out_template)
+  names(res$DI) <- "DI"
 
   # convert AOA:
-  AOA = out_template
-  terra::values(AOA) <- res$AOA
-  AOA <- terra::mask(AOA, out_template)
-  names(AOA) = "AOA"
-  res$AOA = AOA
-
+  res$AOA <- terra::mask(terra::setValues(out_template, res$AOA), out_template)
+  names(res$AOA) <- "AOA"
+  
+  # convert LPD:
   if (!is.null(res$LPD)) {
-    # convert LPD:
-    LPD <- out_template
-    terra::values(LPD) <- res$LPD
-    names(LPD) = "LPD"
-	res$LPD = LPD
+    res$LPD <- terra::mask(terra::setValues(out_template, res$LPD), out_template)
+    names(res$LPD) <- "LPD"
   }
-  res
+  return(res)
 }
-
 
 #' @export
 #' @name aoa
 aoa.data.frame <- function(newdata,
-                model=NA,
-				...,
-                trainDI = NA,
+                model=NULL,
+				        ...,
+                trainDI = NULL,
                 train=NULL,
-                weight=NA,
+                weight=NULL,
                 variables="all",
                 CVtest=NULL,
                 CVtrain=NULL,
-                method="L2",
+                dist_fun=c("euclidean", "mahalanobis"),
                 useWeight=TRUE,
                 useCV=TRUE,
                 LPD = FALSE,
                 maxLPD = 1,
                 indices = FALSE,
-                parallel = FALSE,
-                cores = 4,
+                chunk_size = 1000L,
                 verbose = TRUE,
-                algorithm = "brute") {
-
-  leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
-
-  calc_LPD <- LPD
-  # validate maxLPD input
-  if (LPD == TRUE) {
-    if (is.numeric(maxLPD)) {
-      if (maxLPD <= 0) {
-        stop("maxLPD cannot be negative or equal to 0. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
-      }
-      if (maxLPD <= 1) {
-        if (inherits(model, "train")) {
-          maxLPD <- round(maxLPD * as.integer(length(model$trainingData[[1]])))
-        } else if (!is.null(train)) {
-          maxLPD <- round(maxLPD * as.integer(length(train[[1]])))
-        }
-        if (maxLPD <= 1) {
-          stop("The percentage you provided for maxLPD is too small.")
-        }
-      }
-      if (maxLPD > 1) {
-        if (maxLPD %% 1 == 0) {
-          maxLPD <- as.integer(maxLPD)
-        } else if (maxLPD %% 1 != 0) {
-          stop("If maxLPD is bigger than 0, it should be a whole number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
-        }
-      }
-      if ((maxLPD > length(if (inherits(model, "train")) { model$trainingData[[1]] } else if (!is.null(train)) { train[[1]] })) || maxLPD %% 1 != 0) {
-        stop("maxLPD cannot be bigger than the number of training samples. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
-      }
-    } else {
-      stop("maxLPD must be a number. Either define a number between 0 and 1 to use a percentage of the number of training samples for the LPD calculation or a whole number larger than 1 and smaller than the number of training samples.")
+                method,
+                algorithm,
+                parallel,
+                cores) {
+  
+  if (!missing(method) || !missing(algorithm)) {
+    warning("The 'method' and 'algorithm' parameters are deprecated. Please use 'dist_fun' instead.")
+    if (!missing(method)) {
+      dist_fun <- method
     }
   }
+  if (!missing(parallel) || !missing(cores)) {
+    warning("The 'parallel' and 'cores' parameters are deprecated. Parallelization is currently not implemented. Will be added in the future.")
+  }
 
-  if (parallel & Sys.info()["sysname"] != "Linux") {
-    stop("Paralellization only works for UNIX-alike systems. Please use single core computation.")
+  dist_fun <- match.arg(dist_fun)
+  if (isTRUE(LPD)) {
+    if (is.null(train)) {
+      if (is.null(model)) stop("Provide either 'train' or 'model'")
+      train <- .caret_get_data(model)
+    }
+    n_samples <- length(train[[1]])
+    maxLPD <- .validate_LPD(maxLPD, n_samples)
   }
 
   # if not provided, compute train DI
@@ -279,215 +257,86 @@ aoa.data.frame <- function(newdata,
     if (verbose) {
       message("No trainDI provided.")
     }
-    trainDI <- trainDI(model, train, variables, weight, CVtest, CVtrain, method, useWeight, useCV, LPD, verbose, algorithm=algorithm)
+    trainDI <- trainDI(
+      model=model, 
+      train=train, 
+      variables=variables, 
+      weight=weight,
+      CVtest=CVtest, 
+      CVtrain=CVtrain, 
+      dist_fun=dist_fun, 
+      useWeight=useWeight, 
+      useCV=useCV, 
+      LPD=LPD, 
+      chunk_size=chunk_size,
+      verbose=verbose)
   }
 
-  if (calc_LPD == TRUE) {
-    # maxLPD <- trainDI$avrgLPD
+  if (isTRUE(LPD)) {
     trainDI$maxLPD <- maxLPD
   }
 
-  # check if variables are in newdata
-  if(any(trainDI$variables %in% names(newdata)==FALSE)){
+  # check if all variables are present in newdata
+  has_all_cols <- all(trainDI$variables %in% names(newdata))
+  if(!has_all_cols){
+    leading_digit <- any(grepl("^{1}[0-9]",names(newdata)))
     if(leading_digit){
       stop("names of newdata start with leading digits, automatically added 'X' results in mismatching names of train data in the model")
     }
     stop("names of newdata don't match names of train data in the model")
-  }
+  } 
+  newdata <- newdata[, trainDI$variables, drop = FALSE] # has_all_cols is TRUE
+  
+  # categorical variable handling
+  processed <- .convert_factors_to_dummy(
+    reference = trainDI$train,
+    query = newdata,
+    variables = trainDI$catvars
+  )
+  trainDI$train <- processed$reference
+  newdata <- processed$query
 
+  # apply scaling
+  center <- trainDI$scaleparam$`scaled:center`
+  scale <- trainDI$scaleparam$`scaled:scale`
+  newdata <- scale(newdata, center=center, scale=scale)
+  train_scaled <- scale(trainDI$train, center = center, scale = scale) 
 
-  # TODO:
-  # Prepare output as either as RasterLayer or vector:
-  out <- NA
-  if (inherits(newdata, "SpatRaster")){
-    out <- newdata[[1]]
-    names(out) <- "DI"
-  }
+  # apply weights
+  newdata <- .apply_weights(data.frame(newdata), trainDI$weight)
+  train_scaled <- .apply_weights(data.frame(train_scaled), trainDI$weight)
 
-  newdata <- newdata[,na.omit(match(trainDI$variables, names(newdata))),drop = FALSE]
-
-  ## Handling of categorical predictors:
-  catvars <- trainDI$catvars
-  if (!inherits(catvars,"error")&length(catvars)>0){
-    for (catvar in catvars){
-      # mask all unknown levels in newdata as NA (even technically no predictions can be made)
-	  # x[,catvar] is a vector if x is a data.frame, but a tibble if x is a tibble
-	  # x[[catvar]] extracts the catvar variable for both data.frame and tibble
-      trainDI$train[[catvar]]<-droplevels(trainDI$train[[catvar]])
-      newdata[[catvar]] <- factor(newdata[[catvar]])
-      newdata[!newdata[[catvar]]%in%unique(trainDI$train[[catvar]]),catvar] <- NA
-      newdata[[catvar]] <- droplevels(newdata[[catvar]])
-      # then create dummy variables for the remaining levels in train:
-      dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = trainDI$train),trainDI$train)
-      dvi_newdata <- predict(caret::dummyVars(paste0("~",catvar), data=trainDI$train),newdata)
-      dvi_newdata[is.na(newdata[,catvar]),] <- 0
-      trainDI$train <- data.frame(trainDI$train,dvi_train)
-      newdata <- data.frame(newdata,dvi_newdata)
-
-    }
-    newdata <- newdata[,-which(names(newdata)%in%catvars)]
-    trainDI$train <- trainDI$train[,-which(names(trainDI$train)%in%catvars)]
-  }
-
-  # scale and weight new data
-  newdata <- scale(newdata,center=trainDI$scaleparam$`scaled:center`,
-                   scale=trainDI$scaleparam$`scaled:scale`)
-
-  if(!inherits(trainDI$weight, "error")){
-    tmpnames <- names(newdata)#!!!!!
-    newdata <- sapply(1:ncol(newdata),function(x){
-      newdata[,x]*unlist(trainDI$weight[x])
-    })
-    names(newdata)<-tmpnames#!!!!
-  }
-
-
-  # rescale and reweight train data
-  train_scaled <- scale(trainDI$train,
-                        center = trainDI$scaleparam$`scaled:center`,
-                        scale = trainDI$scaleparam$`scaled:scale`)
-
-  train_scaled <- sapply(1:ncol(train_scaled),function(x){train_scaled[,x]*unlist(trainDI$weight[x])})
-
-
-  # Distance Calculation ---------
+  # distance calculations only for complete cases in newdata
   okrows <- which(rowSums(is.na(newdata)) == 0)
-  newdataCC <- newdata[okrows, ,drop=F]
+  newdataCC <- newdata[okrows, , drop=FALSE]
 
-  if (method == "MD") {
-    if (dim(train_scaled)[2] == 1) {
-      S <- matrix(stats::var(train_scaled), 1, 1)
-      newdataCC <- as.matrix(newdataCC, ncol = 1)
-    } else {
-      S <- stats::cov(train_scaled)
-    }
-    S_inv <- MASS::ginv(S)
-  } else {
-    S_inv <- NULL # S_inv dummy variable to not crash on parallization
+  if (verbose) {
+    msg <- if (!LPD) "Computing DI of new data..." else "Computing DI and LPD of new data..."
+    message(msg)
   }
 
-  if (calc_LPD == FALSE) {
-    if (verbose) {
-      message("Computing DI of new data...")
-    }
-    mindist <- rep(NA, nrow(newdata))
-    mindist[okrows] <-
-      .knndistfun(train_scaled, newdataCC, k=1, method=method, algorithm=algorithm, S_inv=S_inv)
-    DI_out <- mindist / trainDI$trainDist_avrgmean
-  }
+  DI_out <- rep(NA, nrow(newdata))
+  knnDist  <- .knndist(query=newdataCC, reference=train_scaled, k=maxLPD, dist_fun=dist_fun)
+  knnDI <- knnDist / trainDI$trainDist_avrgmean
+  DI_out[okrows] <- knnDI[, 1] # distance to the closest training data point
 
-  if (calc_LPD == TRUE) {
-    if (verbose) {
-      message("Computing DI and LPD of new data...")
-    }
-
-    DI_out <- rep(NA, nrow(newdata))
+  if (isTRUE(LPD)) {
     LPD_out <- rep(NA, nrow(newdata))
-    if (indices) {
-        Indices_out <- matrix(NA, nrow = nrow(newdataCC), ncol = maxLPD)
-    }
+    knnLPD <- rowSums(knnDI < trainDI$threshold)
+    LPD_out[okrows] <- knnLPD
 
-    if (!parallel) {
-
-      if (verbose) {
-        pb <- txtProgressBar(min = 0,
-                             max = nrow(newdataCC),
-                             style = 3)
-      }
-
-      for (i in seq(nrow(newdataCC))) {
-        knnDist  <- .knndistfun(train_scaled, newdataCC[i,],  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_inv)
-        knnDI <- knnDist / trainDI$trainDist_avrgmean
-        knnDI <- c(knnDI)
-
-        DI_out[okrows[i]] <- knnDI[1]
-        LPD_out[okrows[i]] <- sum(knnDI < trainDI$threshold)
-
-        if (indices) {
-          if (LPD_out[okrows[i]] > 0) {
-            knnIndex  <- .knndistfun(train_scaled,newdataCC[i,], k = LPD_out[okrows[i]], method=method, algorithm=algorithm, S_inv=S_inv, distance = FALSE)
-            Indices_out[i,1:LPD_out[okrows[i]]] <- as.numeric(knnIndex)
-          }
-        }
-
-        if (verbose) {
-          setTxtProgressBar(pb, i)
-        }
-      }
-
-      # end progress bar
-      if (verbose) {
-        close(pb)
-      }
-    }
-
-    # parallelized computatio using parLapply
-    if (parallel) {
-      message("Progress cannot be visualized for parallel computation.")
-
-      trainDIdat <- trainDI # store trainDI in different variable to avoid environment conflict with function trainDI()
-
-      if (cores == "auto") {
-        cores <- floor(detectCores()/2)
-      }
-
-
-
-      # Create a cluster
-      cl <- makeForkCluster(cores, useXDR = FALSE, methods = FALSE)
-
-      # Export the necessary data and functions to the cluster
-      clusterExport(cl, c("train_scaled",
-                          "method",
-                          "S_inv",
-                          "trainDIdat",
-                          "indices",
-                          "maxLPD",
-                          "algorithm",
-                          ".process_row",
-                          ".knndistfun"), envir = environment())
-
-      # # Split newdataCC into chunks for each core (important for large datasets)
-      size_chunks <- ceiling(nrow(newdataCC) / cores)
-      indices_chunks <- split(seq(nrow(newdataCC)), rep(1:cores, each = size_chunks, length.out = nrow(newdataCC)))
-      chunks <- lapply(indices_chunks, function(indices) newdataCC[indices, ] )
-
-      # Apply parLapply over chunks
-      results_chunks <- parLapply(cl, chunks, function(chunk) {
-        apply(chunk, MARGIN = 1, .process_row)
-      })
-
-      # Combine the results from the computation of the data chunks
-      results <- unlist(results_chunks, recursive = FALSE)
-
-      # Stop the cluster
-      stopCluster(cl)
-
-      # Process the results and put them in the original output variables
-      for (i in seq(length(results))) {
-        DI_out[okrows[i]] <- results[[i]]$DI_out_i
-        LPD_out[okrows[i]] <- results[[i]]$LPD_out_i
-        if (indices & results[[i]]$LPD_out_i > 0) {
-          Indices_out[i,1:LPD_out[okrows[i]]] <- as.numeric(results[[i]]$Indices_out_i)
-        }
-      }
-    }
-
-    # set maxLPD to max of LPD_out if
-    realMaxLPD <- max(LPD_out, na.rm = T)
+    realMaxLPD <- max(knnLPD, na.rm = TRUE)
     if (maxLPD > realMaxLPD) {
-      if (inherits(maxLPD, c("numeric", "integer")) && verbose) {
-        message("Your specified maxLPD is bigger than the real maxLPD of you predictor data.")
-      }
       if (verbose) {
-        message(paste("maxLPD is set to", realMaxLPD))
+          message("Your specified maxLPD is bigger than the actual maxLPD of you predictor data.")
+          message(paste("maxLPD is set to", realMaxLPD))
       }
       trainDI$maxLPD <- realMaxLPD
     }
-
-    if (indices) {
-      Indices_out <- Indices_out[,1:trainDI$maxLPD]
-      rownames(Indices_out) <- okrows
+    if (isTRUE(indices)) {
+      indicesLPD <- attr(knnDist, "indices")
+      indicesLPD <- indicesLPD[, 1:trainDI$maxLPD]
+      rownames(indicesLPD) <- okrows
     }
   }
 
@@ -498,13 +347,13 @@ aoa.data.frame <- function(newdata,
   result <- list(
     parameters = trainDI,
     DI = DI_out,
-    AOA = ifelse(DI_out > trainDI$thres, 0L, 1L)
+    AOA = ifelse(DI_out > trainDI$threshold, 0L, 1L)
   )
 
-  if (calc_LPD == TRUE) {
+  if (isTRUE(LPD)) {
     result$LPD <- LPD_out
-    if (indices) {
-      result$indices <- Indices_out
+    if (isTRUE(indices)) {
+      result$indices <- indicesLPD
     }
   }
 
@@ -515,32 +364,5 @@ aoa.data.frame <- function(newdata,
   class(result) <- "aoa"
   return(result)
 }
-
-.process_row <- function(row) {
-  knnDist <- .knndistfun(train_scaled, row,  k=maxLPD, method=method, algorithm=algorithm, S_inv=S_inv)
-  knnDI <- knnDist / trainDIdat$trainDist_avrgmean
-  knnDI <- c(knnDI)
-
-  DI_out_i <- knnDI[1]
-  LPD_out_i <- sum(knnDI < trainDIdat$threshold)
-
-  # return if indices not to be calculated
-  return(list(DI_out_i = DI_out_i,
-              LPD_out_i = LPD_out_i
-  ))
-}
-
-# Tell R CMD check these variables are fine
-utils::globalVariables(
-  c(
-    "train_scaled",
-    "method",
-    "S_inv",
-    "trainDIdat",
-    "maxLPD",
-    "algorithm",
-    "indices"
-    )
-  )
 
 

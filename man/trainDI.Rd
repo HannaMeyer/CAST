@@ -5,18 +5,20 @@
 \title{Calculate Dissimilarity Index of training data}
 \usage{
 trainDI(
-  model = NA,
+  model = NULL,
   train = NULL,
   variables = "all",
-  weight = NA,
+  weight = NULL,
   CVtest = NULL,
   CVtrain = NULL,
-  method = "L2",
+  dist_fun = c("euclidean", "mahalanobis", "gower"),
   useWeight = TRUE,
   useCV = TRUE,
   LPD = FALSE,
+  chunk_size = 1000L,
   verbose = TRUE,
-  algorithm = "brute"
+  method,
+  algorithm
 )
 }
 \arguments{
@@ -37,7 +39,7 @@ Only required if no model is given.}
 Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
-\item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.}
+\item{dist_fun}{Character. Method used for distance calculation. Currently, euclidean and mahalanobis distance are implemented but only euclidean is tested.}
 
 \item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
 
@@ -45,9 +47,13 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
 \item{LPD}{Logical. Indicates whether the local point density should be calculated or not.}
 
+\item{chunk_size}{Integer. Number of training points to be processed in each chunk when calculating distances. Decreasing this number can help to reduce memory usage but increases runtime.}
+
 \item{verbose}{Logical. Print progress or not?}
 
-\item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
+\item{method}{Deprecated. Use dist_fun instead.}
+
+\item{algorithm}{Deprecated. Use dist_fun instead.}
 }
 \value{
 A list of class \code{trainDI} containing:

@@ -39,18 +39,18 @@ BugReports: https://github.com/HannaMeyer/CAST/issues/
 Imports: 
     caret,
     data.table,
-    FNN, 
     ggplot2, 
     graphics,
     grDevices,
     methods,
-    parallel,
     sf, 
     stats, 
     twosamples, 
     terra, 
     utils, 
-    zoo
+    zoo,
+    FNN,
+    philentropy
 Suggests: 
     clustMixType,
     doParallel,
@@ -69,6 +69,6 @@ Suggests:
     stars,
     testthat (>= 3.0.0),
     tmap
-RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0

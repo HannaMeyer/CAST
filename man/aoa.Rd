@@ -8,34 +8,36 @@
 \alias{aoa.data.frame}
 \title{Area of Applicability}
 \usage{
-aoa(newdata, model = NA, ...)
+aoa(newdata, model = NULL, ...)
 
-\method{aoa}{stars}(newdata, model = NA, ...)
+\method{aoa}{stars}(newdata, model = NULL, ...)
 
-\method{aoa}{Raster}(newdata, model = NA, ...)
+\method{aoa}{Raster}(newdata, model = NULL, ...)
 
-\method{aoa}{SpatRaster}(newdata, model = NA, ...)
+\method{aoa}{SpatRaster}(newdata, model = NULL, ...)
 
 \method{aoa}{data.frame}(
   newdata,
-  model = NA,
+  model = NULL,
   ...,
-  trainDI = NA,
+  trainDI = NULL,
   train = NULL,
-  weight = NA,
+  weight = NULL,
   variables = "all",
   CVtest = NULL,
   CVtrain = NULL,
-  method = "L2",
+  dist_fun = c("euclidean", "mahalanobis"),
   useWeight = TRUE,
   useCV = TRUE,
   LPD = FALSE,
   maxLPD = 1,
   indices = FALSE,
-  parallel = FALSE,
-  cores = 4,
+  chunk_size = 1000L,
   verbose = TRUE,
-  algorithm = "brute"
+  method,
+  algorithm,
+  parallel,
+  cores
 )
 }
 \arguments{
@@ -64,7 +66,7 @@ Only required if no model is given.}
 Only required if no model is given and only required if CVtrain is not the opposite of CVtest (i.e. if a data point is not used for testing, it is used for training).
 Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
-\item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.}
+\item{dist_fun}{Character. Method used for distance calculation. Currently, euclidean and mahalanobis distance are implemented but only euclidean is tested.}
 
 \item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
 
@@ -76,13 +78,17 @@ Relevant if some data points are excluded, e.g. when using \code{\link{nndm}}.}
 
 \item{indices}{logical. Calculate indices of the training data points that are responsible for the LPD of a new prediction location? Output is a matrix with the dimensions num(raster_cells) x maxLPD. Each row holds the indices of the training data points that are relevant for the specific LPD value at that location. Can be used in combination with exploreAOA(aoa) function from the \href{https://github.com/fab-scm/CASTvis}{CASTvis package} for a better visual interpretation of the results. Note that the matrix can be quite big for examples with a high resolution and a larger number of training samples, which can cause memory issues.}
 
-\item{parallel}{Logical. Parallelization the process. Only possible if LPD = TRUE. Can reduce computation time significantly.}
-
-\item{cores}{Integer or Character. Number of cores to use for the the parallelization. You can use "auto" to set your cores to \code{detectCores()/2} (see \code{\link[parallel]{detectCores}}).}
+\item{chunk_size}{integer. Only if \code{trainDI = NULL}. Number of training points to be processed in each chunk when calculating distances.}
 
 \item{verbose}{Logical. Print progress or not?}
 
-\item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
+\item{method}{Deprecated. Use dist_fun instead.}
+
+\item{algorithm}{Deprecated. Use dist_fun instead.}
+
+\item{parallel}{Deprecated. Parallelization is currently not implemented. Will be added in the future.}
+
+\item{cores}{Deprecated. Parallelization is currently not implemented. Will be added in the future.}
 }
 \value{
 An object of class \code{aoa} containing:

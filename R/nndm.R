@@ -2,10 +2,16 @@
 #' @description
 #' This function implements the NNDM algorithm for prediction-domain adaptive resampling and returns the necessary indices to perform a NNDM LOO CV for map validation.
 #' @author Carles Milà
-#' @param tpoints sf or sfc point object, or data.frame if space = "feature". Contains the training points samples.
+#' @param tpoints sf or sfc point object, or data.frame if dist_space = "feature". Contains the training points samples.
 #' @param modeldomain sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).
-#' @param predpoints sf or sfc point object, or data.frame if space = "feature". Contains the target prediction points. Optional; alternative to modeldomain (see Details).
-#' @param space character. Either "geographical" or "feature". Feature space is still experimental, so use with caution.
+#' @param predpoints sf or sfc point object, or data.frame if dist_space = "feature". Contains the target prediction points. Optional; alternative to modeldomain (see Details).
+#' @param dist_space character. Either "geographical" or "feature". Feature dist_space is still experimental, so use with caution.
+#' @param dist_fun character. Only used for `dist_space`="feature". `dist_fun` currently covers `euclidean` (default), `gower` and `mahalanobis`.
+#' `mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables,
+#' `gower` also works with mixed data including numerical and categorical variables.
+#' @param scale_vars boolean. Only used if `dist_space`="feature". Should variables be scaled?
+#' Calculating Gower distances already includes scaling, and manually rescale the data is redundant.
+#' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.
 #' @param samplesize numeric. How many points in the modeldomain should be sampled as prediction points?
 #' Only required if modeldomain is used instead of predpoints.
 #' @param sampling character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
@@ -15,7 +21,6 @@
 #' Per default (phi="max"), the maximum distance found in the training and prediction points is used. See Details.
 #' @param min_train Numeric between 0 and 1. Minimum proportion of training
 #' data that must be used in each CV fold. Defaults to 0.5 (i.e. half of the training points).
-#' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
 #' @return An object of class \emph{nndm} consisting of a list of six elements:
 #' indx_train, indx_test, and indx_exclude (indices of the observations to use as
 #' training/test/excluded data in each NNDM LOO CV iteration), Gij (distances for
@@ -158,7 +163,7 @@
 #' terra::plot(vect(splotdata), add = T)
 #'
 #' # Run and visualise the nndm results
-#' nndm_folds <- nndm(splotdata[,predictors], modeldomain = predictors_sp, space = "feature")
+#' nndm_folds <- nndm(splotdata[,predictors], modeldomain = predictors_sp, dist_space = "feature")
 #' plot(nndm_folds)
 #'
 #'
@@ -176,9 +181,9 @@
 #'
 #' }
 nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
-                 space="geographical",
+                 dist_space="geographical", dist_fun="euclidean", scale_vars = TRUE,
                  samplesize = 1000, sampling = "regular",
-                 phi = "max", min_train = 0.5, algorithm="brute"){
+                 phi = "max", min_train = 0.5){
 
 
   # 1. Preprocessing actions ----
@@ -192,8 +197,8 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     # If modeldomain is a SpatRaster, transform into polygon
     if(any(class(modeldomain) == "SpatRaster")){
 
-      # save predictor stack for extraction if space = "feature"
-      if(space == "feature") {
+      # save predictor stack for extraction if dist_space = "feature"
+      if(dist_space == "feature") {
         predictor_stack <- modeldomain
       }
       modeldomain[!is.na(modeldomain)] <- 1
@@ -211,7 +216,7 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     }
 
     # Check whether modeldomain has the same crs as tpoints
-    if(!identical(sf::st_crs(tpoints), sf::st_crs(modeldomain)) & space == "geographical"){
+    if(!identical(sf::st_crs(tpoints), sf::st_crs(modeldomain)) & dist_space == "geographical"){
       stop("tpoints and modeldomain must have the same CRS")
     }
 
@@ -220,12 +225,12 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     predpoints <- sf::st_sample(x = modeldomain, size = samplesize, type = sampling)
     sf::st_crs(predpoints) <- sf::st_crs(modeldomain)
 
-    if(space == "feature") {
+    if(dist_space == "feature") {
       message("predictor values are extracted for prediction points")
       predpoints <- terra::extract(predictor_stack, terra::vect(predpoints), ID=FALSE)
     }
 
-  }else if(!is.null(predpoints) & space == "geographical"){
+  }else if(!is.null(predpoints) & dist_space == "geographical"){
     if(!identical(sf::st_crs(tpoints), sf::st_crs(predpoints))){
       stop("tpoints and predpoints must have the same CRS")
     }
@@ -233,7 +238,11 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
 
 
   # 2. Data formats, data checks, scaling and categorical variables ----
-  if(isTRUE(space == "geographical")) {
+  if (!(dist_fun %in% c("euclidean", "mahalanobis", "gower")) && dist_space == "feature") {
+    stop("dist_fun must be one of 'euclidean', 'mahalanobis' or 'gower'")
+  }
+
+  if(isTRUE(dist_space == "geographical")) {
 
     # If tpoints is sfc, coerce to sf.
     if(any(class(tpoints) %in% "sfc")){
@@ -243,11 +252,11 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     if(any(class(predpoints) %in% "sfc")){
       predpoints <- sf::st_sf(geom=predpoints)
     }
-
+    
     # Input data checks
     nndm_checks_geo(tpoints, predpoints, phi, min_train)
 
-  }else if(isTRUE(space == "feature")){
+  }else if(isTRUE(dist_space == "feature")){
 
     # drop geometry if tpoints / predpoints are of class sf
     if(any(class(tpoints) %in% c("sf","sfc"))) {
@@ -277,55 +286,39 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     }
 
     # Input data checks
-    nndm_checks_feature(tpoints, predpoints, phi, min_train, catVars)
+    nndm_checks_feature(tpoints, predpoints, phi, min_train, catVars, dist_fun)
 
-    # Scaling and dealing with categorical factors
-    if(is.null(catVars)) {
+    # rescale data (optional)
+    if(isTRUE(scale_vars)) {
+      if(is.null(catVars)) {
 
-      scale_attr <- attributes(scale(tpoints))
-      tpoints <- scale(tpoints) |> as.data.frame()
-      predpoints <- scale(predpoints,center=scale_attr$`scaled:center`,
-                          scale=scale_attr$`scaled:scale`) |>
-        as.data.frame()
+        scale_attr <- attributes(scale(tpoints))
+        tpoints <- scale(tpoints) |> as.data.frame()
+        predpoints <- scale(predpoints,center=scale_attr$`scaled:center`,
+                            scale=scale_attr$`scaled:scale`) |>
+          as.data.frame()
 
-    } else {
-      tpoints_cat <- tpoints[,catVars,drop=FALSE]
-      predpoints_cat <- predpoints[,catVars,drop=FALSE]
+      } else {
+        tpoints_cat <- tpoints[,catVars,drop=FALSE]
+        predpoints_cat <- predpoints[,catVars,drop=FALSE]
 
-      tpoints_num <- tpoints[,-which(names(tpoints)%in%catVars),drop=FALSE]
-      predpoints_num <- predpoints[,-which(names(predpoints)%in%catVars),drop=FALSE]
+        tpoints_num <- tpoints[,-which(names(tpoints)%in%catVars),drop=FALSE]
+        predpoints_num <- predpoints[,-which(names(predpoints)%in%catVars),drop=FALSE]
 
-      scale_attr <- attributes(scale(tpoints_num))
-      tpoints <- scale(tpoints_num) |> as.data.frame()
-      predpoints <- scale(predpoints_num,center=scale_attr$`scaled:center`,
-                          scale=scale_attr$`scaled:scale`) |>
-        as.data.frame()
-      tpoints <- as.data.frame(cbind(tpoints, lapply(tpoints_cat, as.factor)))
-      predpoints <- as.data.frame(cbind(predpoints, lapply(predpoints_cat, as.factor)))
-
-      # 0/1 encode categorical variables (as in R/trainDI.R)
-      for (catvar in catVars){
-        # mask all unknown levels in newdata as NA
-        tpoints[,catvar]<-droplevels(tpoints[,catvar])
-        predpoints[,catvar]<-droplevels(predpoints[,catvar])
-
-        # then create dummy variables for the remaining levels in train:
-        dvi_train <- predict(caret::dummyVars(paste0("~",catvar), data = tpoints),
-                             tpoints)
-        dvi_predpoints <- predict(caret::dummyVars(paste0("~",catvar), data = predpoints),
-                                  predpoints)
-        tpoints <- data.frame(tpoints,dvi_train)
-        predpoints <- data.frame(predpoints,dvi_predpoints)
+        scale_attr <- attributes(scale(tpoints_num))
+        tpoints <- scale(tpoints_num) |> as.data.frame()
+        predpoints <- scale(predpoints_num,center=scale_attr$`scaled:center`,
+                            scale=scale_attr$`scaled:scale`) |>
+          as.data.frame()
+        tpoints <- as.data.frame(cbind(tpoints, lapply(tpoints_cat, as.factor)))
+        predpoints <- as.data.frame(cbind(predpoints, lapply(predpoints_cat, as.factor)))
 
       }
-      tpoints <- tpoints[,-which(names(tpoints)%in%catVars)]
-      predpoints <- predpoints[,-which(names(predpoints)%in%catVars)]
-
     }
   }
 
   # 3. Distance and phi computation ----
-  if(isTRUE(space=="geographical")){
+  if(isTRUE(dist_space=="geographical")){
 
     # Compute nearest neighbour distances between training and prediction points
     Gij <- sf::st_distance(predpoints, tpoints)
@@ -333,71 +326,54 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     Gij <- apply(Gij, 1, min)
 
     # Compute distance matrix of training points
-    tdist <- sf::st_distance(tpoints)
-    units(tdist) <- NULL
-    diag(tdist) <- NA
-    Gj <- apply(tdist, 1, function(x) min(x, na.rm=TRUE))
+    distmat <- sf::st_distance(tpoints)
+    units(distmat) <- NULL
+    diag(distmat) <- NA
+    Gj <- apply(distmat, 1, function(x) min(x, na.rm=TRUE))
     Gjstar <- Gj
 
     # if phi==max calculate the maximum relevant distance
     if(phi=="max"){
-      phi <- max(c(Gij, c(tdist)), na.rm=TRUE) + 1e-9
+      phi <- max(c(Gij, c(distmat)), na.rm=TRUE) + 1e-9
     }
 
 
-  }else if(isTRUE(space=="feature")){
+  }else if(isTRUE(dist_space=="feature")){
 
-    if(is.null(catVars)) {
-
-      # Euclidean distances if no categorical variables are present
-      Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1, algorithm=algorithm))
-      tdist <- as.matrix(stats::dist(tpoints, upper = TRUE))
-      diag(tdist) <- NA
-      Gj <- apply(tdist, 1, function(x) min(x, na.rm=TRUE))
-      Gjstar <- Gj
-
-    } else {
-
-      # Gower distances if categorical variables are present
-      Gj <- sapply(1:nrow(tpoints), function(i) gower::gower_topn(tpoints[i,], tpoints[-i,], n=1)$distance[[1]])
-      tdist <- matrix(NA, nrow=nrow(tpoints), ncol=nrow(tpoints))
-      for(r in 1:nrow(tdist)){
-        tdist[r,] <- gower::gower_dist(tpoints[r,], tpoints)
-      }
-      diag(tdist) <- NA
-      Gj <- apply(tdist, 1, function(x) min(x, na.rm=TRUE))
-      Gjstar <- Gj
-
-    }
+    # Gj and Gij calculation
+    distmat <- .distance(reference = tpoints, dist_fun = dist_fun)
+    Gj <- .knn_dist(distmat, k = 1, offset = 0)
+    Gij <- .knndist(reference = tpoints, query = predpoints, k = 1, dist_fun = dist_fun)
+    Gjstar <- Gj
 
     # if phi==max calculate the maximum relevant distance
     if(phi=="max"){
-      phi <- max(c(Gij, c(tdist)), na.rm=TRUE) + 1e-9
+      phi <- max(c(Gij, c(distmat)), na.rm=TRUE) + 1e-9
     }
   }
 
   # Start algorithm
   rmin <- min(Gjstar)
   jmin <- which.min(Gjstar)[1]
-  kmin <- which(tdist[jmin,]==rmin)
+  kmin <- which(distmat[jmin,]==rmin)
 
   while(rmin <= phi){
 
     # Check if removing the point improves the match. If yes, update
     if((sum(Gjstar<=rmin)-1)/length(Gjstar) >= (sum(Gij<=rmin)/length(Gij)) &
-       sum(!is.na(tdist[jmin, ]))/ncol(tdist) > min_train){
-      tdist[jmin, kmin] <- NA
-      Gjstar <- apply(tdist, 1, function(x) min(x, na.rm=TRUE))
+       sum(!is.na(distmat[jmin, ]))/ncol(distmat) > min_train){
+      distmat[jmin, kmin] <- NA
+      Gjstar <- apply(distmat, 1, function(x) min(x, na.rm=TRUE))
       rmin <- min(Gjstar[Gjstar>=rmin]) # Distances are the same for the same pair
       jmin <- which(Gjstar==rmin)[1]
-      kmin <- which(tdist[jmin,]==rmin)
+      kmin <- which(distmat[jmin,]==rmin)
 
     }else if(sum(Gjstar>rmin)==0){
       break
     }else{ # Otherwise move on to the next distance
       rmin <- min(Gjstar[Gjstar>rmin])
       jmin <- which(Gjstar==rmin)[1]
-      kmin <- which(tdist[jmin,]==rmin)
+      kmin <- which(distmat[jmin,]==rmin)
     }
   }
 
@@ -405,10 +381,10 @@ nndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
   indx_train <- list()
   indx_test <- list()
   indx_exclude <- list()
-  for(i in 1:nrow(tdist)){
-    indx_train[[i]] <- which(!is.na(tdist[i,]))
+  for(i in 1:nrow(distmat)){
+    indx_train[[i]] <- which(!is.na(distmat[i,]))
     indx_test[[i]] <- i
-    indx_exclude[[i]] <- setdiff(which(is.na(tdist[i,])), i)
+    indx_exclude[[i]] <- setdiff(which(is.na(distmat[i,])), i)
   }
 
   # Return list of indices
@@ -449,7 +425,7 @@ nndm_checks_geo <- function(tpoints, predpoints, phi, min_train){
 
 }
 
-nndm_checks_feature <- function(tpoints, predpoints, phi, min_train, catVars){
+nndm_checks_feature <- function(tpoints, predpoints, phi, min_train, catVars, dist_fun){
 
   # Check for valid range of phi
   if(phi < 0 | (!is.numeric(phi) & phi!= "max")){
@@ -461,7 +437,7 @@ nndm_checks_feature <- function(tpoints, predpoints, phi, min_train, catVars){
     stop("min_train must be a numeric between 0 and 1.")
   }
 
-  if(length(setdiff(names(tpoints), names(predpoints)))>0) {
+  if(!setequal(names(tpoints), names(predpoints))) {
     stop("tpoints and predpoints need to contain the predictor data and have the same colnames.")
   }
 
@@ -470,5 +446,9 @@ nndm_checks_feature <- function(tpoints, predpoints, phi, min_train, catVars){
       stop(paste0("Some values of factor", catvar, "are only present in training / prediction points.
                   All factor values in the prediction points must be present in the training points."))
     }
+  }
+
+  if (!is.null(catVars) && dist_fun != "gower") {
+    stop("Only gower distances work with categorical features. Please use dist_fun = 'gower'")
   }
 }
