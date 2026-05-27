@@ -19,6 +19,7 @@ test_that("geodist handles CRS mismatch between x and modeldomain", {
 
 test_that("geodist warns on missing CRS", {
   pts <- sf::st_as_sfc("POINT (1 1)")
+  pts <- rbind(pts, pts) |> sf::st_as_sfc()
   dist <- expect_warning(
     geodist(sf::st_as_sf(pts), preddata = sf::st_as_sf(pts), dist_space = "geographical"),
     "Missing CRS of the modeldomain or prediction points. Assuming projected CRS."
