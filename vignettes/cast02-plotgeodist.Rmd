@@ -242,6 +242,14 @@ So far we compared nearest neighbor distances in geographic space. We can also d
 
 ```{r,message = FALSE, warning=FALSE, results='hide'}
 predictors_global <- worldclim_global(var="bio",res = 10,path=tempdir())
+```
+
+```{r, echo=FALSE}
+wc_exist = ifelse(exists("predictors_global"), TRUE, FALSE)
+```
+
+
+```{r,message = FALSE, warning=FALSE, results='hide', eval = wc_exist}
 names(predictors_global) <- c(paste0("bio_",1:19)) 
 predictors_global <- predictors_global[[c("bio_2", "bio_10", "bio_13", "bio_19")]]
 plot(predictors_global)
@@ -249,7 +257,7 @@ plot(predictors_global)
 
 Then we visualize nearest neighbor feature space distances under consideration of cross-validation.
 
-```{r,message = FALSE, warning=FALSE, results='hide'}
+```{r,message = FALSE, warning=FALSE, results='hide', eval = wc_exist}
 
 # project the training points to the raster CRS
 pts_clustered <- st_transform(pts_clustered, st_crs(predictors_global))

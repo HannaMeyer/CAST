@@ -72,15 +72,21 @@ The data include the extracted WorldClim and elevation information as well as th
 ```{r, message = FALSE, warning=FALSE}
 wc <- worldclim_global(var="bio",res = 10,path=tempdir())
 elev <- elevation_global(res = 10, path=tempdir())
+```
+
+```{r, echo=FALSE}
+wc_exist = ifelse(exists("wc"), TRUE, FALSE)
+```
+
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 predictors_sp <- crop(c(wc,elev),st_bbox(splotdata))
 names(predictors_sp) <- c(paste0("bio_",1:19),"elev")
-
 ```
 
 
 To get an impression on the spatial properties of the dataset, let's have a look on the spatial distribution of the vegetation plots in South America, plotted on top of a elevation model:
 
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 plot(predictors_sp$elev)
 plot(splotdata[,"Species_richness"],add=T)
 ```
@@ -89,7 +95,7 @@ plot(splotdata[,"Species_richness"],add=T)
 ## Model training and prediction
 To start with, lets use this dataset to create a "default" Random Forest model that predicts species richness based on some predictor variables. For performance assessment we use default 3-fold random cross-validation. To keep computation time at a minimum, we don't include hyperparameter tuning (hence mtry was set to 2) which is reasonable as Random Forests are comparably insensitive to tuning.
 
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 predictors <- c("bio_1", "bio_4", "bio_5", "bio_6",
                 "bio_8", "bio_9", "bio_12", "bio_13",
                 "bio_14", "bio_15", "elev")
@@ -109,7 +115,7 @@ model_default <- train(st_drop_geometry(splotdata)[,predictors],
 Based on the trained model we can make spatial predictions of species richness. To do this we load a multiband raster that contains spatial data of all predictor variables for South America. We then apply the trained model on this data set.
 
 
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 prediction <- predict(predictors_sp,model_default,na.rm=TRUE)
 plot(prediction)
 ```
@@ -128,7 +134,7 @@ In the example above we used a random k-fold CV that we defined in caret's train
 To assess the performance of the model let's have a look on the output of the Random CV:
 
 
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 model_default
 global_validation(model_default)
 ```
@@ -148,14 +154,14 @@ Knndm tries to find a k-fold configuration such that the integral of the absolut
 See tutorial on the cross-validation in this package for more information.
 
 Example for CreateSpacetimeFolds:
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 set.seed(10)
 indices_LLO <- CreateSpacetimeFolds(splotdata,spacevar = "Country",
                                 k=3)
 ```
 
 Example for knndm:
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 set.seed(10)
 indices_knndm <- knndm(splotdata,predictors_sp,k=3, dist_fun = "great_circle")
 ```
@@ -165,7 +171,7 @@ See tutorial on geodistance visualizations in this package for more information.
 
 
 
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 plot(geodist(splotdata,predictors_sp,CVtest=model_default$control$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
 plot(geodist(splotdata,predictors_sp,CVtest=indices_LLO$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
@@ -177,7 +183,7 @@ plot(geodist(splotdata,predictors_sp,CVtest=indices_knndm$indx_test, dist_space 
 We see that using random folds, we're only testing how well the model can make predictions for new areas that are a few hundreds of meters away from the training data. Using createSpaceTimeFolds with the Country as spatial unit (i.e. leave-country-out CV), we produce prediction situations that are even harder than the prediction task. Knndm provides the best option, since the CV distances that we create during cross-validation are comparable to what is required when we predict for the entire area. 
 
 
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 model <- train(st_drop_geometry(splotdata)[,predictors],
                    st_drop_geometry(splotdata)$Species_richness,
                    method="rf",
@@ -197,7 +203,7 @@ Apparently, there is considerable overfitting in the model, causing a good rando
 
 Let's have a look at the variable importance ranking of Random Forest. Assuming that certain variables are misinterpreted by the algorithm we should be able to produce a higher LLO performance when such variables are removed. Let's see if this is true...
 
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 plot(varImp(model))
 ```
 
@@ -211,7 +217,7 @@ we can run ffs with earlyStopping=FALSE which will prevent the model from stoppi
 
 So let's run the ffs on our case study. This process will take 1-2 minutes...
 
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 set.seed(10)
 ffsmodel <- ffs(st_drop_geometry(splotdata)[,predictors],
                     st_drop_geometry(splotdata)$Species_richness,
@@ -233,7 +239,7 @@ Using the ffs with LLO CV, the RMSE could be decreased. Only few variables have 
 By plotting the results of ffs, we can visualize how the performance of the model changed depending on the variables being used:
 
 
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 plot(ffsmodel)
 ```
 
@@ -242,7 +248,7 @@ Note that the R² features a high standard deviation regardless of the variables
 
 What effect does the new model has on the spatial representation of species richness?
 
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 prediction_ffs <- predict(predictors_sp, ffsmodel, na.rm=TRUE)
 plot(prediction_ffs)
 ```
@@ -252,7 +258,7 @@ plot(prediction_ffs)
 Still it is required to analyse if the model can be applied to the entire study area of if there are locations that are very different in their predictor properties to what the model has learned from. See more details in the vignette on the Area of applicability and 
 [Meyer and Pebesma (2021)](https://doi.org/10.1111/2041-210X.13650).
 
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 ### AOA for which the spatial CV error applies:
 AOA <- aoa(predictors_sp,ffsmodel,LPD = TRUE, verbose=FALSE)
 
@@ -283,7 +289,7 @@ The aoa function returned, in addition to the AOA also the dissimilarity index (
 
 We expect, that there is a relationship between DI/LPD and the prediction performance, i.e. we expect that areas that have a low DI and a high LPD (well covered by reference data) have a lower error. We are going to analyze this using CAST::errorProfiles.
 
-```{r, message = FALSE, warning=FALSE}
+```{r, message = FALSE, warning=FALSE, eval = wc_exist}
 plot(c(AOA$DI,AOA$LPD))
 
 errormodel_DI <- errorProfiles(model_default,AOA,variable="DI")
@@ -296,7 +302,7 @@ plot(errormodel_LPD)
 
 Since the relationship between LPD and the RMSE seems to be comparably high, we're going to use this to model the error for the entire prediction area.
 
-```{r,  message = FALSE, warning=FALSE}
+```{r,  message = FALSE, warning=FALSE, eval = wc_exist}
 expected_error_LPD = terra::predict(AOA$LPD, errormodel_LPD)
 plot(expected_error_LPD)
 ```
