@@ -429,7 +429,7 @@ plot.knndm <- function(x, type = "strict", stat = "ecdf", ...) {
 #'}
 #' @name plot
 #' @export
-plot.ffs <- function(x,plotType="all",palette=hcl.colors,reverse=FALSE,
+plot.ffs <- function(x,plotType="all",palette=grDevices::hcl.colors,reverse=FALSE,
                      marker="black",size=1.5,lwd=0.5,
                      pch=21,...){
   metric <- x$metric

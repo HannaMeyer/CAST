@@ -22,7 +22,7 @@
 \method{plot}{ffs}(
   x,
   plotType = "all",
-  palette = hcl.colors,
+  palette = grDevices::hcl.colors,
   reverse = FALSE,
   marker = "black",
   size = 1.5,

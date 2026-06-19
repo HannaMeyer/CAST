@@ -569,9 +569,9 @@ ffs <- function (predictors,
                          length(startvars), " variables"))
 
           if(maximize){
-            best_models_table <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == max(x))), ]
+            best_models_table <- perf_all[as.logical(stats::ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == max(x))), ]
           }else{
-            best_models_table <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == min(x))), ]
+            best_models_table <- perf_all[as.logical(stats::ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == min(x))), ]
           }
 
 
@@ -628,9 +628,9 @@ ffs <- function (predictors,
 
 
           if(maximize){
-            best_models_table <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == max(x))), ]
+            best_models_table <- perf_all[as.logical(stats::ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == max(x))), ]
           }else{
-            best_models_table <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == min(x))), ]
+            best_models_table <- perf_all[as.logical(stats::ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == min(x))), ]
           }
 
 
@@ -741,9 +741,9 @@ ffs <- function (predictors,
   bestmodel$selectedvars <- names(bestmodel$trainingData)[-which(names(bestmodel$trainingData)==".outcome")]
 
   if(maximize){
-    best_models_table <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == max(x))), ]
+    best_models_table <- perf_all[as.logical(stats::ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == max(x))), ]
   }else{
-    best_models_table <- perf_all[as.logical(ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == min(x))), ]
+    best_models_table <- perf_all[as.logical(stats::ave(perf_all[,metric], perf_all$nvar, FUN = function(x) x == min(x))), ]
   }
   bestmodel$selectedvars_perf <- best_models_table[1:(length(bestmodel$selectedvars)-1),metric]
   bestmodel$selectedvars_perf_SE <- best_models_table$SE[1:(length(bestmodel$selectedvars)-1)]
