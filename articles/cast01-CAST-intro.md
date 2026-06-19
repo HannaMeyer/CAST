@@ -38,6 +38,7 @@ To work with the tutorial, first install the CAST package and load the
 library:
 
 ``` r
+
 #install.packages("CAST")
 library(CAST)
 ```
@@ -45,12 +46,14 @@ library(CAST)
 If you need help, see
 
 ``` r
+
 help(CAST)
 ```
 
 For this tutorial, we need a few additional packages:
 
 ``` r
+
 library(geodata)
 library(terra)
 library(sf)
@@ -75,6 +78,7 @@ learning algorithm in this tutorial.
 ### Description of the example dataset
 
 ``` r
+
 data(splotdata)
 head(splotdata)
 ```
@@ -112,8 +116,13 @@ for entire South America, we further need the WorldClim data for this
 area.
 
 ``` r
+
 wc <- worldclim_global(var="bio",res = 10,path=tempdir())
 elev <- elevation_global(res = 10, path=tempdir())
+```
+
+``` r
+
 predictors_sp <- crop(c(wc,elev),st_bbox(splotdata))
 names(predictors_sp) <- c(paste0("bio_",1:19),"elev")
 ```
@@ -123,11 +132,12 @@ have a look on the spatial distribution of the vegetation plots in South
 America, plotted on top of a elevation model:
 
 ``` r
+
 plot(predictors_sp$elev)
 plot(splotdata[,"Species_richness"],add=T)
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-6-1.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-8-1.png)
 
 ## Model training and prediction
 
@@ -139,6 +149,7 @@ include hyperparameter tuning (hence mtry was set to 2) which is
 reasonable as Random Forests are comparably insensitive to tuning.
 
 ``` r
+
 predictors <- c("bio_1", "bio_4", "bio_5", "bio_6",
                 "bio_8", "bio_9", "bio_12", "bio_13",
                 "bio_14", "bio_15", "elev")
@@ -160,11 +171,12 @@ data of all predictor variables for South America. We then apply the
 trained model on this data set.
 
 ``` r
+
 prediction <- predict(predictors_sp,model_default,na.rm=TRUE)
 plot(prediction)
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-8-1.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-10-1.png)
 
 The result is a spatially comprehensive map of the species richness of
 South America. We see that simply creating a map using machine learning
@@ -195,6 +207,7 @@ into 3 folds. To assess the performance of the model let’s have a look
 on the output of the Random CV:
 
 ``` r
+
 model_default
 ```
 
@@ -214,6 +227,7 @@ model_default
     ## Tuning parameter 'mtry' was held constant at a value of 2
 
 ``` r
+
 global_validation(model_default)
 ```
 
@@ -277,6 +291,7 @@ information.
 Example for CreateSpacetimeFolds:
 
 ``` r
+
 set.seed(10)
 indices_LLO <- CreateSpacetimeFolds(splotdata,spacevar = "Country",
                                 k=3)
@@ -285,6 +300,7 @@ indices_LLO <- CreateSpacetimeFolds(splotdata,spacevar = "Country",
 Example for knndm:
 
 ``` r
+
 set.seed(10)
 indices_knndm <- knndm(splotdata,predictors_sp,k=3, dist_fun = "great_circle")
 ```
@@ -299,25 +315,28 @@ between training data and CV folds is computed. See tutorial on
 geodistance visualizations in this package for more information.
 
 ``` r
+
 plot(geodist(splotdata,predictors_sp,CVtest=model_default$control$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-12-1.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-14-1.png)
 
 ``` r
+
 plot(geodist(splotdata,predictors_sp,CVtest=indices_LLO$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-12-2.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-14-2.png)
 
 ``` r
+
 plot(geodist(splotdata,predictors_sp,CVtest=indices_knndm$indx_test, dist_space = "geographical", dist_fun = "great_circle"))+ 
   scale_x_log10(labels=round)
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-12-3.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-14-3.png)
 
 We see that using random folds, we’re only testing how well the model
 can make predictions for new areas that are a few hundreds of meters
@@ -329,6 +348,7 @@ cross-validation are comparable to what is required when we predict for
 the entire area.
 
 ``` r
+
 model <- train(st_drop_geometry(splotdata)[,predictors],
                    st_drop_geometry(splotdata)$Species_richness,
                    method="rf",
@@ -356,6 +376,7 @@ model
     ## Tuning parameter 'mtry' was held constant at a value of 2
 
 ``` r
+
 global_validation(model)
 ```
 
@@ -380,10 +401,11 @@ should be able to produce a higher LLO performance when such variables
 are removed. Let’s see if this is true…
 
 ``` r
+
 plot(varImp(model))
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-14-1.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-16-1.png)
 
 ## Removing variables that cause overfitting
 
@@ -410,6 +432,7 @@ So let’s run the ffs on our case study. This process will take 1-2
 minutes…
 
 ``` r
+
 set.seed(10)
 ffsmodel <- ffs(st_drop_geometry(splotdata)[,predictors],
                     st_drop_geometry(splotdata)$Species_richness,
@@ -442,6 +465,7 @@ ffsmodel
     ## Tuning parameter 'mtry' was held constant at a value of 2
 
 ``` r
+
 global_validation(ffsmodel)
 ```
 
@@ -449,6 +473,7 @@ global_validation(ffsmodel)
     ## 33.2113246  0.4628401 20.8088080
 
 ``` r
+
 ffsmodel$selectedvars
 ```
 
@@ -463,10 +488,11 @@ By plotting the results of ffs, we can visualize how the performance of
 the model changed depending on the variables being used:
 
 ``` r
+
 plot(ffsmodel)
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-16-1.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-18-1.png)
 
 See that the best model using all combinations of two variables. Based
 on the best performing two variables, using a third variable could
@@ -480,11 +506,12 @@ What effect does the new model has on the spatial representation of
 species richness?
 
 ``` r
+
 prediction_ffs <- predict(predictors_sp, ffsmodel, na.rm=TRUE)
 plot(prediction_ffs)
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-17-1.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-19-1.png)
 
 ## Area of Applicability
 
@@ -495,6 +522,7 @@ details in the vignette on the Area of applicability and [Meyer and
 Pebesma (2021)](https://doi.org/10.1111/2041-210X.13650).
 
 ``` r
+
 ### AOA for which the spatial CV error applies:
 AOA <- aoa(predictors_sp,ffsmodel,LPD = TRUE, verbose=FALSE)
 
@@ -517,7 +545,7 @@ AOA <- aoa(predictors_sp,ffsmodel,LPD = TRUE, verbose=FALSE)
    tm_add_legend(type="polygons", fill = "grey", labels = "Outside \nAOA")
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-18-1.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-20-1.png)
 
 The figure shows in grey areas that are outside the area of
 applicability, hence predictions should not be considered for these
@@ -538,36 +566,40 @@ a high LPD (well covered by reference data) have a lower error. We are
 going to analyze this using CAST::errorProfiles.
 
 ``` r
+
 plot(c(AOA$DI,AOA$LPD))
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-19-1.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-21-1.png)
 
 ``` r
+
 errormodel_DI <- errorProfiles(model_default,AOA,variable="DI")
 errormodel_LPD <- errorProfiles(model_default,AOA,variable="LPD")
 
 plot(errormodel_DI)
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-19-2.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-21-2.png)
 
 ``` r
+
 plot(errormodel_LPD)
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-19-3.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-21-3.png)
 
 Since the relationship between LPD and the RMSE seems to be comparably
 high, we’re going to use this to model the error for the entire
 prediction area.
 
 ``` r
+
 expected_error_LPD = terra::predict(AOA$LPD, errormodel_LPD)
 plot(expected_error_LPD)
 ```
 
-![](cast01-CAST-intro_files/figure-html/unnamed-chunk-20-1.png)
+![](cast01-CAST-intro_files/figure-html/unnamed-chunk-22-1.png)
 
 ## Conclusions
 

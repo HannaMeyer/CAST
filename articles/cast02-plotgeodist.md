@@ -23,6 +23,7 @@ reference data are clustered in geographic space (see [Meyer and Pebesma
 on this).
 
 ``` r
+
 library(CAST)
 library(caret)
 library(terra)
@@ -36,6 +37,7 @@ Here we can define some parameters to run the example with different
 settings
 
 ``` r
+
 seed <- 10 # random realization
 samplesize <- 250 # how many samples will be used?
 nparents <- 20 #For clustered samples: How many clusters? 
@@ -49,6 +51,7 @@ imagine a prediction task where we aim at making global predictions
 based on the set of reference data.
 
 ``` r
+
 ee <- st_crs("+proj=eqearth")
 co <- ne_countries(returnclass = "sf")
 co.ee <- st_transform(co, ee)
@@ -60,6 +63,7 @@ Then, we simulate the random sample and visualize the data on the entire
 global prediction area.
 
 ``` r
+
 sf_use_s2(FALSE)
 set.seed(seed)
 pts_random <- st_sample(co.ee, samplesize)
@@ -77,6 +81,7 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 As second data set we use a clustered design of the same size.
 
 ``` r
+
 set.seed(seed)
 sf_use_s2(FALSE)
 pts_clustered <- clustered_sample(co.ee, samplesize, nparents, radius)
@@ -101,6 +106,7 @@ global case study here, throughout this tutorial we use sampling=regular
 to draw prediction locations with constant point density on the sphere.
 
 ``` r
+
 dist_random <- geodist(pts_random,co.ee,
                             sampling="regular")
 dist_clstr <- geodist(pts_clustered,co.ee,
@@ -112,6 +118,7 @@ plot(dist_random, unit = "km")+scale_x_log10(labels=round)+ggtitle("Randomly dis
 ![](cast02-plotgeodist_files/figure-html/unnamed-chunk-6-1.png)
 
 ``` r
+
 plot(dist_clstr, unit = "km")+scale_x_log10(labels=round)+ggtitle("Clustered reference data")
 ```
 
@@ -139,12 +146,14 @@ training and test (see Meyer et al.,
 might not be a good idea).
 
 ``` r
+
 randomfolds <- caret::createFolds(1:nrow(pts_clustered))
 ```
 
 ![](cast02-plotgeodist_files/figure-html/unnamed-chunk-8-1.png)
 
 ``` r
+
 dist_clstr <- geodist(pts_clustered,co.ee,
                            sampling="regular", 
                            CVtest= randomfolds)
@@ -167,12 +176,14 @@ spatial CV instead. Here, we use a leave-cluster-out CV, which means
 that in each iteration, one of the spatial clusters is held back.
 
 ``` r
+
 spatialfolds <- CreateSpacetimeFolds(pts_clustered,spacevar="parent",k=length(unique(pts_clustered$parent)))
 ```
 
 ![](cast02-plotgeodist_files/figure-html/unnamed-chunk-11-1.png)
 
 ``` r
+
 dist_clstr <- geodist(pts_clustered,co.ee,
                            sampling="regular",
                            CVtest= spatialfolds$indexOut)
@@ -201,6 +212,7 @@ that held large spatial units back during CV. Here we can see what
 happens when we apply spatial CV to randomly distributed reference data.
 
 ``` r
+
 # create a spatial CV for the randomly distributed data. Here:
 # "leave region-out-CV"
 sf_use_s2(FALSE)
@@ -217,6 +229,7 @@ ggplot() + geom_sf(data = co.ee, fill="#00BFC4",col="#00BFC4") +
 ![](cast02-plotgeodist_files/figure-html/unnamed-chunk-13-1.png)
 
 ``` r
+
 spfolds_rand <- CreateSpacetimeFolds(pts_random_co,spacevar = "subregion",
                                      k=length(unique(pts_random_co$subregion)))
 dist_rand_sp <- geodist(pts_random_co,co.ee,
@@ -252,6 +265,7 @@ al. (2024)](https://doi.org/10.5194/gmd-17-5897-2024) for more details
 on knndm)
 
 ``` r
+
 nndmfolds_clstr <- knndm(pts_clustered, modeldomain=co.ee, samplesize = 2000)
 dist_clstr <- geodist(pts_clustered,co.ee,
                            sampling = "regular",
@@ -266,6 +280,7 @@ distribution very well. What happens if we use NNDM CV for the
 randomly-distributed sampling points instead?
 
 ``` r
+
 nndmfolds_rand <- knndm(pts_random_co,  modeldomain=co.ee, samplesize = 2000)
 dist_rand <- geodist(pts_random_co,co.ee,
                           sampling = "regular",
@@ -288,18 +303,24 @@ variables are used (<https://www.worldclim.org>) as features
 (i.e. predictors) in this virtual prediction task.
 
 ``` r
+
 predictors_global <- worldclim_global(var="bio",res = 10,path=tempdir())
+```
+
+``` r
+
 names(predictors_global) <- c(paste0("bio_",1:19)) 
 predictors_global <- predictors_global[[c("bio_2", "bio_10", "bio_13", "bio_19")]]
 plot(predictors_global)
 ```
 
-![](cast02-plotgeodist_files/figure-html/unnamed-chunk-17-1.png)
+![](cast02-plotgeodist_files/figure-html/unnamed-chunk-19-1.png)
 
 Then we visualize nearest neighbor feature space distances under
 consideration of cross-validation.
 
 ``` r
+
 # project the training points to the raster CRS
 pts_clustered <- st_transform(pts_clustered, st_crs(predictors_global))
 
@@ -321,13 +342,14 @@ dist_clstr_sCV <- geodist(pts_clustered,
 plot(dist_clstr_rCV)+scale_x_log10()+ggtitle("Clustered reference data and random CV")
 ```
 
-![](cast02-plotgeodist_files/figure-html/unnamed-chunk-18-1.png)
+![](cast02-plotgeodist_files/figure-html/unnamed-chunk-20-1.png)
 
 ``` r
+
 plot(dist_clstr_sCV)+scale_x_log10()+ggtitle("Clustered reference data and spatial CV")
 ```
 
-![](cast02-plotgeodist_files/figure-html/unnamed-chunk-18-2.png)
+![](cast02-plotgeodist_files/figure-html/unnamed-chunk-20-2.png)
 
 With regard to the chosen predictor variables we see that again the
 nearest neighbor distance of the clustered training data is rather

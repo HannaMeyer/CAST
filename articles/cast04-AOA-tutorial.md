@@ -36,6 +36,7 @@ For further information see [Meyer and Pebesma
 #### Getting started
 
 ``` r
+
 library(CAST)
 library(caret)
 library(terra)
@@ -56,6 +57,7 @@ but cropped to an area in central Europe. The cropped data are provided
 in the CAST package.
 
 ``` r
+
 predictors <- rast(system.file("extdata","bioclim.tif",package="CAST"))
 plot(predictors)
 ```
@@ -69,6 +71,7 @@ simulated prediction task. We therefore simulate a virtual response
 variable from the bioclimatic variables.
 
 ``` r
+
 generate_random_response <- function(raster, predictornames =
 names(raster), seed = sample(seq(1000), 1)){
   operands_1 = c("+", "-", "*", "/")
@@ -101,12 +104,14 @@ length(predictornames)-1, replace = TRUE),
 ```
 
 ``` r
+
 response <- generate_random_response (predictors, seed = 10)
 ```
 
     ## [1] "bio2^1 * bio5^1 + bio10^2 - bio13^2 / bio14^2 / bio19^1"
 
 ``` r
+
 plot(response,main="virtual response")
 ```
 
@@ -119,6 +124,7 @@ randomly selected. Here, we randomly select 20 points. Note that this is
 a very small data set, but used here to avoid long computation times.
 
 ``` r
+
 mask <- predictors[[1]]
 values(mask)[!is.na(values(mask))] <- 1
 mask <- st_as_sf(as.polygons(mask))
@@ -126,6 +132,7 @@ mask <- st_make_valid(mask)
 ```
 
 ``` r
+
 set.seed(15)
 samplepoints <- st_as_sf(st_sample(mask,20,"random"))
 
@@ -146,6 +153,7 @@ Therefore, predictors and response are extracted for the sampling
 locations.
 
 ``` r
+
 trainDat <- extract(predictors,samplepoints,na.rm=FALSE)
 trainDat$response <- extract(response,samplepoints,na.rm=FALSE, ID=FALSE)$response
 trainDat <- na.omit(trainDat)
@@ -159,6 +167,7 @@ is validated by default cross-validation to estimate the prediction
 error.
 
 ``` r
+
 set.seed(10)
 model <- train(trainDat[,names(predictors)],
                trainDat$response,
@@ -192,6 +201,7 @@ The estimation of the AOA will require the importance of the individual
 predictor variables.
 
 ``` r
+
 plot(varImp(model,scale = F),col="black")
 ```
 
@@ -204,6 +214,7 @@ of interest. Since a simulated area-wide response is used, it’s possible
 in this tutorial to compare the predictions with the true reference.
 
 ``` r
+
 prediction <- predict(predictors,model,na.rm=T)
 truediff <- abs(prediction-response)
 plot(rast(list(prediction,response)),main=c("prediction","reference"))
@@ -226,6 +237,7 @@ predictor variables are treated equally important (unless weights are
 given in form of a table).
 
 ``` r
+
 AOA <- aoa(predictors, model, LPD = TRUE, verbose = FALSE)
 class(AOA)
 ```
@@ -233,48 +245,50 @@ class(AOA)
     ## [1] "aoa"
 
 ``` r
+
 names(AOA)
 ```
 
     ## [1] "parameters" "DI"         "AOA"        "LPD"
 
 ``` r
+
 print(AOA)
 ```
 
     ## DI:
-    ## class       : SpatRaster 
+    ## class       : SpatRaster
     ## size        : 102, 123, 1  (nrow, ncol, nlyr)
     ## resolution  : 14075.98, 14075.98  (x, y)
     ## extent      : 3496791, 5228136, 2143336, 3579086  (xmin, xmax, ymin, ymax)
-    ## coord. ref. : +proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs 
+    ## coord. ref. : +proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs
     ## source(s)   : memory
-    ## varname     : bioclim 
-    ## name        :       DI 
-    ## min value   : 0.000000 
-    ## max value   : 3.408739 
+    ## varname     : bioclim
+    ## name        :       DI
+    ## min value   :        0
+    ## max value   : 3.408739
     ## LPD:
-    ## class       : SpatRaster 
+    ## class       : SpatRaster
     ## size        : 102, 123, 1  (nrow, ncol, nlyr)
     ## resolution  : 14075.98, 14075.98  (x, y)
     ## extent      : 3496791, 5228136, 2143336, 3579086  (xmin, xmax, ymin, ymax)
-    ## coord. ref. : +proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs 
+    ## coord. ref. : +proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs
     ## source(s)   : memory
-    ## varname     : bioclim 
-    ## name        : LPD 
-    ## min value   :   0 
-    ## max value   :   9 
+    ## varname     : bioclim
+    ## name        : LPD
+    ## min value   :   0
+    ## max value   :   9
     ## AOA:
-    ## class       : SpatRaster 
+    ## class       : SpatRaster
     ## size        : 102, 123, 1  (nrow, ncol, nlyr)
     ## resolution  : 14075.98, 14075.98  (x, y)
     ## extent      : 3496791, 5228136, 2143336, 3579086  (xmin, xmax, ymin, ymax)
-    ## coord. ref. : +proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs 
+    ## coord. ref. : +proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs
     ## source(s)   : memory
-    ## varname     : bioclim 
-    ## name        : AOA 
-    ## min value   :   0 
-    ## max value   :   1 
+    ## varname     : bioclim
+    ## name        : AOA
+    ## min value   :   0
+    ## max value   :   1
     ## 
     ## 
     ## Predictor Weights:
@@ -288,6 +302,7 @@ Plotting the `aoa` object shows the distribution of DI values within the
 training data and the DI of the new data.
 
 ``` r
+
 plot(AOA)
 ```
 
@@ -310,6 +325,7 @@ is returned in the `parameters` list entry.
 We can plot the DI and LPD as well as predictions within the AOA:
 
 ``` r
+
 plot(truediff,main="true prediction error")
 plot(AOA$DI,main="DI")
 plot(AOA$LPD,main="LPD")
@@ -352,6 +368,7 @@ To show how this looks like, we use 15 spatial locations and simulate 5
 data points around each location.
 
 ``` r
+
 set.seed(25)
 samplepoints <- clustered_sample(mask,75,15,radius=25000)
 
@@ -362,6 +379,7 @@ plot(samplepoints,col="red",add=T,pch=3)
 ![](cast04-AOA-tutorial_files/figure-html/unnamed-chunk-15-1.png)
 
 ``` r
+
 trainDat <- extract(predictors,samplepoints,na.rm=FALSE)
 trainDat$response <- extract(response,samplepoints,na.rm=FALSE)$response
 trainDat <- data.frame(trainDat,samplepoints)
@@ -372,6 +390,7 @@ We first train a model with (in this case) inappropriate random
 cross-validation.
 
 ``` r
+
 set.seed(10)
 model_random <- train(trainDat[,names(predictors)],
                trainDat$response,
@@ -403,6 +422,7 @@ print(model_random)
 …and a model based on leave-cluster-out cross-validation.
 
 ``` r
+
 folds <- CreateSpacetimeFolds(trainDat, spacevar="parent",k=10)
 set.seed(15)
 model <- train(trainDat[,names(predictors)],
@@ -435,6 +455,7 @@ model <- train(trainDat[,names(predictors)],
     ## The final value used for the model was mtry = 6.
 
 ``` r
+
 prediction <- predict(predictors,model,na.rm=TRUE)
 ```
 
@@ -446,12 +467,14 @@ the aoa function, where the folds used for cross-validation are
 automatically extracted from the model.
 
 ``` r
+
 AOA_spatial <- aoa(predictors, model, LPD = TRUE, verbose = FALSE)
 
 AOA_random <- aoa(predictors, model_random, LPD = FALSE, verbose = FALSE)
 ```
 
 ``` r
+
 plot(AOA_spatial$DI,main="DI")
 plot(AOA_spatial$LPD,main="LPD")
 #mask prediction with AOA:
@@ -474,6 +497,7 @@ trainDI. Using spatial CV, the predictionDI is well within the DI of the
 training sample.
 
 ``` r
+
 grid.arrange(plot(AOA_spatial, variable = "DI") + ggplot2::ggtitle("Spatial CV"),
              plot(AOA_random, variable = "DI") + ggplot2::ggtitle("Random CV"), ncol = 2)
 ```
@@ -487,6 +511,7 @@ prediction error within the AOA with the model error, assuming that the
 model error applies inside the AOA but not outside.
 
 ``` r
+
 ###for the spatial CV:
 RMSE(values(prediction)[values(AOA_spatial$AOA)==1],
      values(response)[values(AOA_spatial$AOA)==1])
@@ -495,6 +520,7 @@ RMSE(values(prediction)[values(AOA_spatial$AOA)==1],
     ## [1] 3308.808
 
 ``` r
+
 RMSE(values(prediction)[values(AOA_spatial$AOA)==0],
      values(response)[values(AOA_spatial$AOA)==0])
 ```
@@ -502,6 +528,7 @@ RMSE(values(prediction)[values(AOA_spatial$AOA)==0],
     ## [1] 10855.31
 
 ``` r
+
 model$results
 ```
 
@@ -513,6 +540,7 @@ model$results
     ## 5    6 2494.756 0.9425158 2190.718 1507.700 0.07431001 1289.825
 
 ``` r
+
 ###and for the random CV:
 RMSE(values(prediction_random)[values(AOA_random$AOA)==1],
      values(response)[values(AOA_random$AOA)==1])
@@ -521,6 +549,7 @@ RMSE(values(prediction_random)[values(AOA_random$AOA)==1],
     ## [1] 1365.329
 
 ``` r
+
 RMSE(values(prediction_random)[values(AOA_random$AOA)==0],
      values(response)[values(AOA_random$AOA)==0])
 ```
@@ -528,6 +557,7 @@ RMSE(values(prediction_random)[values(AOA_random$AOA)==0],
     ## [1] 3959.685
 
 ``` r
+
 model_random$results
 ```
 
@@ -555,6 +585,7 @@ that we used a multi-purpose CV to estimate the relationship between the
 DI and the RMSE here (see details in the paper).
 
 ``` r
+
 DI_RMSE_relation <- errorProfiles(model, AOA_spatial$parameters, multiCV=TRUE,
                                     window.size = 5, length.out = 5, variable = "DI")
 plot(DI_RMSE_relation)
@@ -563,6 +594,7 @@ plot(DI_RMSE_relation)
 ![](cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-1.png)
 
 ``` r
+
 LPD_RMSE_relation <- errorProfiles(model, AOA_spatial$parameters, multiCV=TRUE,
                                     window.size = 5, length.out = 5, variable = "LPD")
 plot(LPD_RMSE_relation)
@@ -571,6 +603,7 @@ plot(LPD_RMSE_relation)
 ![](cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-2.png)
 
 ``` r
+
 DI_expected_RMSE = terra::predict(AOA_spatial$DI, DI_RMSE_relation)
 LPD_expected_RMSE = terra::predict(AOA_spatial$LPD, LPD_RMSE_relation)
 
@@ -587,6 +620,7 @@ plot(mask(DI_expected_RMSE,DI_updated_AOA,maskvalue=0),main="DI expected RMSE")
 ![](cast04-AOA-tutorial_files/figure-html/unnamed-chunk-23-3.png)
 
 ``` r
+
 plot(mask(LPD_expected_RMSE,LPD_updated_AOA,maskvalue=0),main="LPD expected RMSE")
 ```
 
@@ -611,6 +645,7 @@ response variable here. Hence, we’re aiming at making a spatial
 continuous prediction based on limited measurements from data loggers.
 
 ``` r
+
 data(cookfarm)
 # calculate average of VW for each sampling site:
 dat <- aggregate(cookfarm[,c("VW","Easting","Northing")],by=list(as.character(cookfarm$SOURCEID)),mean)
@@ -658,6 +693,7 @@ being used here (and for this small dataset a low ability of the
 predictors to model VW).
 
 ``` r
+
 predictors <- c("DEM","NDRE.Sd","TWI","Bt")
 response <- "VW"
 
@@ -690,6 +726,7 @@ model
 Next, the model is used to make predictions for the entire study area.
 
 ``` r
+
 #Predictors:
 plot(stretch(studyArea[[predictors]]))
 ```
@@ -697,6 +734,7 @@ plot(stretch(studyArea[[predictors]]))
 ![](cast04-AOA-tutorial_files/figure-html/unnamed-chunk-26-1.png)
 
 ``` r
+
 #prediction:
 prediction <- predict(studyArea,model,na.rm=TRUE)
 ```
@@ -707,6 +745,7 @@ Next we’re limiting the predictions to the AOA. Predictions outside the
 AOA should be excluded.
 
 ``` r
+
 AOA <- aoa(studyArea, model, LPD = TRUE, verbose = FALSE)
 
 #### Plot results:

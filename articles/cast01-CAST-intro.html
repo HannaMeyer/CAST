@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>1. Introduction to CAST • CAST</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="1. Introduction to CAST">
 </head>
@@ -63,7 +63,7 @@
                         <h4 data-toc-skip class="author">Hanna Meyer,
 Marvin Ludwig</h4>
             
-            <h4 data-toc-skip class="date">2026-03-14</h4>
+            <h4 data-toc-skip class="date">2026-06-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/master/vignettes/cast01-CAST-intro.Rmd" class="external-link"><code>vignettes/cast01-CAST-intro.Rmd</code></a></small>
       <div class="d-none name"><code>cast01-CAST-intro.Rmd</code></div>
@@ -116,7 +116,7 @@ the library:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/help.html" class="external-link">help</a></span><span class="op">(</span><span class="va">CAST</span><span class="op">)</span></span></code></pre></div>
 <p>For this tutorial, we need a few additional packages:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">geodata</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.github.io/geodata/" class="external-link">geodata</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/topepo/caret/" class="external-link">caret</a></span><span class="op">)</span></span>
@@ -173,17 +173,18 @@ well as the sampled species richness. Since we aim at making predictions
 for entire South America, we further need the WorldClim data for this
 area.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/geodata/man/worldclim.html" class="external-link">worldclim_global</a></span><span class="op">(</span>var<span class="op">=</span><span class="st">"bio"</span>,res <span class="op">=</span> <span class="fl">10</span>,path<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">elev</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/geodata/man/elevation.html" class="external-link">elevation_global</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fl">10</span>, path<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">predictors_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wc</span>,<span class="va">elev</span><span class="op">)</span>,<span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">wc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/geodata/reference/worldclim.html" class="external-link">worldclim_global</a></span><span class="op">(</span>var<span class="op">=</span><span class="st">"bio"</span>,res <span class="op">=</span> <span class="fl">10</span>,path<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">elev</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/geodata/reference/elevation.html" class="external-link">elevation_global</a></span><span class="op">(</span>res <span class="op">=</span> <span class="fl">10</span>, path<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">predictors_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/crop.html" class="external-link">crop</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wc</span>,<span class="va">elev</span><span class="op">)</span>,<span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">predictors_sp</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"bio_"</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">19</span><span class="op">)</span>,<span class="st">"elev"</span><span class="op">)</span></span></code></pre></div>
 <p>To get an impression on the spatial properties of the dataset, let’s
 have a look on the spatial distribution of the vegetation plots in South
 America, plotted on top of a elevation model:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">predictors_sp</span><span class="op">$</span><span class="va">elev</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">[</span>,<span class="st">"Species_richness"</span><span class="op">]</span>,add<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 </div>
 <div class="section level2">
@@ -195,7 +196,7 @@ variables. For performance assessment we use default 3-fold random
 cross-validation. To keep computation time at a minimum, we don’t
 include hyperparameter tuning (hence mtry was set to 2) which is
 reasonable as Random Forests are comparably insensitive to tuning.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">predictors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bio_1"</span>, <span class="st">"bio_4"</span>, <span class="st">"bio_5"</span>, <span class="st">"bio_6"</span>,</span>
 <span>                <span class="st">"bio_8"</span>, <span class="st">"bio_9"</span>, <span class="st">"bio_12"</span>, <span class="st">"bio_13"</span>,</span>
 <span>                <span class="st">"bio_14"</span>, <span class="st">"bio_15"</span>, <span class="st">"elev"</span><span class="op">)</span></span>
@@ -213,10 +214,10 @@ reasonable as Random Forests are comparably insensitive to tuning.</p>
 richness. To do this we load a multiband raster that contains spatial
 data of all predictor variables for South America. We then apply the
 trained model on this data set.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">prediction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">model_default</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">prediction</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="847.68"></p>
 <p>The result is a spatially comprehensive map of the species richness
 of South America. We see that simply creating a map using machine
 learning and caret is an easy task, however accurately measuring its
@@ -246,7 +247,7 @@ caret’s trainControl argument. More specifically, we used a random
 3-fold CV. Hence, the data points in our dataset were RANDOMLY split
 into 3 folds. To assess the performance of the model let’s have a look
 on the output of the Random CV:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_default</span></span></code></pre></div>
 <pre><code><span><span class="co">## Random Forest </span></span>
 <span><span class="co">## </span></span>
@@ -262,7 +263,7 @@ on the output of the Random CV:</p>
 <span><span class="co">##   25.75544  0.6651004  15.08417</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Tuning parameter 'mtry' was held constant at a value of 2</span></span></code></pre>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">model_default</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       RMSE   Rsquared        MAE </span></span>
 <span><span class="co">## 25.9283336  0.6672803 15.0845659</span></span></code></pre>
@@ -317,12 +318,12 @@ space distances are also an implemented option.</p>
 <p>See tutorial on the cross-validation in this package for more
 information.</p>
 <p>Example for CreateSpacetimeFolds:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="va">indices_LLO</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CreateSpacetimeFolds.html">CreateSpacetimeFolds</a></span><span class="op">(</span><span class="va">splotdata</span>,spacevar <span class="op">=</span> <span class="st">"Country"</span>,</span>
 <span>                                k<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <p>Example for knndm:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="va">indices_knndm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/knndm.html">knndm</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,k<span class="op">=</span><span class="fl">3</span>, dist_fun <span class="op">=</span> <span class="st">"great_circle"</span><span class="op">)</span></span></code></pre></div>
 <p>Let’s compare how well these strategies fit the prediction task,
@@ -333,18 +334,18 @@ well as between training data and prediction locations. Optional, an
 that is what we want to focus on here, the nearest neighbor distances
 between training data and CV folds is computed. See tutorial on
 geodistance visualizations in this package for more information.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,CVtest<span class="op">=</span><span class="va">model_default</span><span class="op">$</span><span class="va">control</span><span class="op">$</span><span class="va">indexOut</span>, dist_space <span class="op">=</span> <span class="st">"geographical"</span>, dist_fun <span class="op">=</span> <span class="st">"great_circle"</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="847.68"></p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="847.68"></p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,CVtest<span class="op">=</span><span class="va">indices_LLO</span><span class="op">$</span><span class="va">indexOut</span>, dist_space <span class="op">=</span> <span class="st">"geographical"</span>, dist_fun <span class="op">=</span> <span class="st">"great_circle"</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-12-2.png" class="r-plt" alt="" width="847.68"></p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-14-2.png" class="r-plt" alt="" width="847.68"></p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/geodist.html">geodist</a></span><span class="op">(</span><span class="va">splotdata</span>,<span class="va">predictors_sp</span>,CVtest<span class="op">=</span><span class="va">indices_knndm</span><span class="op">$</span><span class="va">indx_test</span>, dist_space <span class="op">=</span> <span class="st">"geographical"</span>, dist_fun <span class="op">=</span> <span class="st">"great_circle"</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_log10</a></span><span class="op">(</span>labels<span class="op">=</span><span class="va">round</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-12-3.png" class="r-plt" alt="" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-14-3.png" class="r-plt" alt="" width="847.68"></p>
 <p>We see that using random folds, we’re only testing how well the model
 can make predictions for new areas that are a few hundreds of meters
 away from the training data. Using createSpaceTimeFolds with the Country
@@ -353,7 +354,7 @@ situations that are even harder than the prediction task. Knndm provides
 the best option, since the CV distances that we create during
 cross-validation are comparable to what is required when we predict for
 the entire area.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/caret/man/train.html" class="external-link">train</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_drop_geometry</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span><span class="op">[</span>,<span class="va">predictors</span><span class="op">]</span>,</span>
 <span>                   <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_drop_geometry</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span><span class="op">$</span><span class="va">Species_richness</span>,</span>
 <span>                   method<span class="op">=</span><span class="st">"rf"</span>,</span>
@@ -377,7 +378,7 @@ the entire area.</p>
 <span><span class="co">##   34.16029  0.481697  20.71929</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Tuning parameter 'mtry' was held constant at a value of 2</span></span></code></pre>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##      RMSE  Rsquared       MAE </span></span>
 <span><span class="co">## 34.530783  0.428925 20.903479</span></span></code></pre>
@@ -394,9 +395,9 @@ OpenGeoHub summer school 2019</a>).</p>
 Forest. Assuming that certain variables are misinterpreted by the
 algorithm we should be able to produce a higher LLO performance when
 such variables are removed. Let’s see if this is true…</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/varImp.html" class="external-link">varImp</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 </div>
 <div class="section level2">
@@ -421,7 +422,7 @@ variable increases the performance. If so, we can run ffs with
 earlyStopping=FALSE which will prevent the model from stopping.</p>
 <p>So let’s run the ffs on our case study. This process will take 1-2
 minutes…</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="va">ffsmodel</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ffs.html">ffs</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_drop_geometry</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span><span class="op">[</span>,<span class="va">predictors</span><span class="op">]</span>,</span>
 <span>                    <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_drop_geometry</a></span><span class="op">(</span><span class="va">splotdata</span><span class="op">)</span><span class="op">$</span><span class="va">Species_richness</span>,</span>
@@ -450,11 +451,11 @@ minutes…</p>
 <span><span class="co">##   32.74653  0.5299616  20.5449</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Tuning parameter 'mtry' was held constant at a value of 2</span></span></code></pre>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/global_validation.html">global_validation</a></span><span class="op">(</span><span class="va">ffsmodel</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       RMSE   Rsquared        MAE </span></span>
 <span><span class="co">## 33.2113246  0.4628401 20.8088080</span></span></code></pre>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ffsmodel</span><span class="op">$</span><span class="va">selectedvars</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "bio_1"  "bio_14" "bio_12" "elev"</span></span></code></pre>
 <p>Using the ffs with LLO CV, the RMSE could be decreased. Only few
@@ -463,9 +464,9 @@ because they have (at least in this small example) no spatial meaning or
 are even counterproductive.</p>
 <p>By plotting the results of ffs, we can visualize how the performance
 of the model changed depending on the variables being used:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">ffsmodel</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="" width="847.68"></p>
 <p>See that the best model using all combinations of two variables.
 Based on the best performing two variables, using a third variable could
 slightly increase the R², same applies to a fourth variable. Any further
@@ -475,10 +476,10 @@ used. This is due to the small dataset that was used which cannot lead
 to robust results here.</p>
 <p>What effect does the new model has on the spatial representation of
 species richness?</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">prediction_ffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">predictors_sp</span>, <span class="va">ffsmodel</span>, na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">prediction_ffs</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 <div class="section level2">
 <h2 id="area-of-applicability">Area of Applicability<a class="anchor" aria-label="anchor" href="#area-of-applicability"></a>
@@ -488,7 +489,7 @@ entire study area of if there are locations that are very different in
 their predictor properties to what the model has learned from. See more
 details in the vignette on the Area of applicability and <a href="https://doi.org/10.1111/2041-210X.13650" class="external-link">Meyer and Pebesma
 (2021)</a>.</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">### AOA for which the spatial CV error applies:</span></span>
 <span><span class="va">AOA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aoa.html">aoa</a></span><span class="op">(</span><span class="va">predictors_sp</span>,<span class="va">ffsmodel</span>,LPD <span class="op">=</span> <span class="cn">TRUE</span>, verbose<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
@@ -509,7 +510,7 @@ details in the vignette on the Area of applicability and <a href="https://doi.or
 <span>             col.legend <span class="op">=</span> <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_legend.html" class="external-link">tm_legend</a></span><span class="op">(</span>show <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>   <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_layout.html" class="external-link">tm_layout</a></span><span class="op">(</span>frame <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>   <span class="fu"><a href="https://r-tmap.github.io/tmap/reference/tm_add_legend.html" class="external-link">tm_add_legend</a></span><span class="op">(</span>type<span class="op">=</span><span class="st">"polygons"</span>, fill <span class="op">=</span> <span class="st">"grey"</span>, labels <span class="op">=</span> <span class="st">"Outside \nAOA"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" alt="" width="847.68"></p>
 <p>The figure shows in grey areas that are outside the area of
 applicability, hence predictions should not be considered for these
 locations. See tutorial on the AOA in this package for more information.
@@ -526,25 +527,25 @@ and the LPD indicates the data point density in feature space.</p>
 prediction performance, i.e. we expect that areas that have a low DI and
 a high LPD (well covered by reference data) have a lower error. We are
 going to analyze this using CAST::errorProfiles.</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>,<span class="va">AOA</span><span class="op">$</span><span class="va">LPD</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-1.png" class="r-plt" alt="" width="847.68"></p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">DI</span>,<span class="va">AOA</span><span class="op">$</span><span class="va">LPD</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" alt="" width="847.68"></p>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">errormodel_DI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/errorProfiles.html">errorProfiles</a></span><span class="op">(</span><span class="va">model_default</span>,<span class="va">AOA</span>,variable<span class="op">=</span><span class="st">"DI"</span><span class="op">)</span></span>
 <span><span class="va">errormodel_LPD</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/errorProfiles.html">errorProfiles</a></span><span class="op">(</span><span class="va">model_default</span>,<span class="va">AOA</span>,variable<span class="op">=</span><span class="st">"LPD"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">errormodel_DI</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-2.png" class="r-plt" alt="" width="847.68"></p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-21-2.png" class="r-plt" alt="" width="847.68"></p>
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">errormodel_LPD</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-19-3.png" class="r-plt" alt="" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-21-3.png" class="r-plt" alt="" width="847.68"></p>
 <p>Since the relationship between LPD and the RMSE seems to be
 comparably high, we’re going to use this to model the error for the
 entire prediction area.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expected_error_LPD</span> <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">$</span><span class="va">LPD</span>, <span class="va">errormodel_LPD</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot.html">plot</a></span><span class="op">(</span><span class="va">expected_error_LPD</span><span class="op">)</span></span></code></pre></div>
-<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" alt="" width="847.68"></p>
+<p><img src="cast01-CAST-intro_files/figure-html/unnamed-chunk-22-1.png" class="r-plt" alt="" width="847.68"></p>
 </div>
 </div>
 <div class="section level2">

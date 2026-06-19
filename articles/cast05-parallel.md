@@ -20,6 +20,7 @@ training. On windows machines, you will get the warning
 `Parallel computations of ffs only implemented on unix systems. cores is set to 1`.
 
 ``` r
+
 data("splotdata")
 spatial_cv = CreateSpacetimeFolds(splotdata, spacevar = "Biome", k = 5)
 ctrl <- trainControl(method="cv",index = spatial_cv$index)
@@ -43,6 +44,7 @@ is adapted from [Kuhn (2019), Chapter
 9](https://topepo.github.io/caret/parallel-processing.html)
 
 ``` r
+
 library(doParallel)
 
 data("splotdata")
@@ -67,6 +69,7 @@ the `ranger` package is a fast and multicore implementation of the
 random forest model.
 
 ``` r
+
 ffsmodel <- ffs(predictors = splotdata[,6:16],
                 response = splotdata$Species_richness,
                 method = "ranger")
@@ -98,6 +101,7 @@ processes and calculate the DI on multiple raster tiles at once.
 ### trainDI
 
 ``` r
+
 library(CAST)
 library(caret)
 library(terra)
@@ -109,6 +113,7 @@ splotdata <- st_drop_geometry(splotdata)
 ```
 
 ``` r
+
 set.seed(10)
 model <- train(splotdata[,names(predictors)],
                splotdata$Species_richness,
@@ -127,6 +132,7 @@ training data and model that the `aoa` function needs to compute the DI
 for new locations.
 
 ``` r
+
 tdi = trainDI(model, verbose = FALSE)
 print(tdi)
 ```
@@ -137,12 +143,14 @@ print(tdi)
     ## AOA Threshold: 0.1903705
 
 ``` r
+
 class(tdi)
 ```
 
     ## [1] "trainDI"
 
 ``` r
+
 str(tdi)
 ```
 
@@ -191,6 +199,7 @@ str(tdi)
     ##  - attr(*, "class")= chr "trainDI"
 
 ``` r
+
 # you can save the trainDI object for later application
 saveRDS(tdi, "path/to/file")
 ```
@@ -204,6 +213,7 @@ based approach to apply the `trainDI` object from the previous step to
 multiple rasters at once.
 
 ``` r
+
 r1 = crop(predictors, c(-75.66667, -67, -30, -17.58333))
 r2 = crop(predictors, c(-75.66667, -67, -45, -30))
 r3 = crop(predictors, c(-75.66667, -67, -55.58333, -45))
@@ -220,6 +230,7 @@ Use the `trainDI` argument in the `aoa` function to specify, that you
 want to use a previously computed trainDI object.
 
 ``` r
+
 aoa_r1 = aoa(newdata = r1, trainDI = tdi)
 
 plot(r1[[1]], main = "Tile 1: Predictors")
@@ -234,6 +245,7 @@ course you can use for favorite parallel backend for this task, here we
 use mclapply from the `parallel` package.
 
 ``` r
+
 library(parallel)
 
 tiles_aoa = mclapply(list(r1, r2, r3), function(tile){
@@ -243,6 +255,7 @@ tiles_aoa = mclapply(list(r1, r2, r3), function(tile){
 ```
 
 ``` r
+
 plot(tiles_aoa[[1]]$AOA, main = "Tile 1")
 plot(tiles_aoa[[2]]$AOA, main = "Tile 2")
 plot(tiles_aoa[[3]]$AOA, main = "Tile 3")
@@ -254,6 +267,7 @@ For even larger tasks it might be useful to save the tiles to you
 hard-drive and load them one by one to avoid filling up your RAM.
 
 ``` r
+
 # Simple Example Code for raster tiles on the hard drive
 
 tiles = list.files("path/to/tiles", full.names = TRUE)

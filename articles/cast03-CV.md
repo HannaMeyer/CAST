@@ -1,6 +1,7 @@
 # 3. Nearest neighbor distance matching Cross-validation in CAST
 
 ``` r
+
 library("sf")
 library("CAST")
 library("caret")
@@ -27,13 +28,14 @@ it can be used as a last resort to obtain an estimate of the map error.
 
 The objective of this vignette is to showcase the CV methods implemented
 in `CAST`. To do so, we will work with two datasets of annual average
-air temperature and fine Particulate Matter (PM$_{2.5}$) air pollution
+air temperature and fine Particulate Matter (PM$`_{2.5}`$) air pollution
 in continental Spain for 2019, for which several predictors have been
 collected. For more details, check [Milà et
 al. (2024)](https://doi.org/10.5194/gmd-17-6007-2024) where the dataset
 is described in detail.
 
 ``` r
+
 # Read data
 temperature <- read_sf("https://github.com/carlesmila/RF-spatial-proxies/raw/main/data/temp/temp_train.gpkg")
 pm25 <- read_sf("https://github.com/carlesmila/RF-spatial-proxies/raw/main/data/AP/PM25_train.gpkg")
@@ -113,6 +115,7 @@ and a random 5-fold CV, where we set the `modeldomain` to be the polygon
 of the study area from which prediction points are regularly sampled:
 
 ``` r
+
 # Random 5-fold CV
 fold5_temp <- createFolds(1:nrow(temperature), k=5, returnTrain=FALSE)
 fold5_pm25 <- createFolds(1:nrow(pm25), k=5, returnTrain=FALSE)
@@ -131,11 +134,12 @@ grid.arrange(p1, p2, nrow=2)
 
 We see that, for temperature, although the distribution of geographical
 distances during CV vs. during prediction do not exactly match, the
-overlap between the two is substantial. In the PM$_{2.5}$ case, however,
-the clustering of the stations make prediction-to-sample distances to be
-much longer that those found during CV. In other words, there are parts
-of the prediction area that do not have a PM$_{2.5}$ station nearby,
-while this does not happen nearly as often during a random 5-fold CV.
+overlap between the two is substantial. In the PM$`_{2.5}`$ case,
+however, the clustering of the stations make prediction-to-sample
+distances to be much longer that those found during CV. In other words,
+there are parts of the prediction area that do not have a PM$`_{2.5}`$
+station nearby, while this does not happen nearly as often during a
+random 5-fold CV.
 
 Before we jump into the CV methods included in `CAST`, it is worth
 considering an alternative visualization of the distance distributions
@@ -147,6 +151,7 @@ any additional parameters to estimate the density function, and are one
 of the building blocks of our proposed methods.
 
 ``` r
+
 # Plot ECDF functions
 p1 <- plot(predcond_temp, stat = "ecdf") + ggtitle("Temperature")
 p2 <- plot(predcond_pm25, stat = "ecdf") + ggtitle(expression(PM[2.5]))
@@ -186,6 +191,7 @@ previously defined, for example a set of raster cell centroids (check
 argument `predpoints`). We run it first for temperature:
 
 ``` r
+
 temp_nndm <- nndm(temperature, modeldomain = spain, samplesize = 1000)
 print(temp_nndm)
 ```
@@ -196,6 +202,7 @@ print(temp_nndm)
     ## Minimum number of training points: 191
 
 ``` r
+
 plot(temp_nndm, type = "simple")
 ```
 
@@ -209,6 +216,7 @@ during LOO is already lower than the prediction-to-sample ECDF. Now, we
 do the same for air pollution:
 
 ``` r
+
 pm25_nndm <- nndm(pm25, modeldomain = spain, samplesize = 1000)
 print(pm25_nndm)
 ```
@@ -219,6 +227,7 @@ print(pm25_nndm)
     ## Minimum number of training points: 105
 
 ``` r
+
 plot(pm25_nndm, type = "simple")
 ```
 
@@ -244,6 +253,7 @@ First, we fit temperature models using a Digital Elevation Model (DEM),
 NDVI and Land Surface Temperature (LST) as predictors:
 
 ``` r
+
 # LOO CV
 temp_loo_ctrl <- trainControl(method="LOOCV", savePredictions=TRUE)
 temp_loo_mod <- train(temperature_df[c("dem", "ndvi", "lst_day",  "lst_night")],
@@ -264,10 +274,11 @@ temp_nndm_mod <- train(temperature_df[c("dem", "ndvi", "lst_day",  "lst_night")]
 temp_nndm_res <- global_validation(temp_nndm_mod)
 ```
 
-Next, we run PM$_{2.5}$ models using population and road density,
+Next, we run PM$`_{2.5}`$ models using population and road density,
 nighttime lights (NTL), and impervious surface (IMD) as predictors:
 
 ``` r
+
 # LOO CV
 pm25_loo_ctrl <- trainControl(method="LOOCV", savePredictions=TRUE)
 pm25_loo_mod <- train(pm25_df[c("popdens", "primaryroads", "ntl", "imd")],
@@ -300,7 +311,7 @@ And we summarise the CV results in a table:
 We can observe that the statistics for temperature models are almost the
 same for both CV methods since the NNDM algorithm did not detect any
 spatial clustering and thus returned a configuration almost identical to
-a standard LOO CV. However, for PM$_{2.5}$, there are important
+a standard LOO CV. However, for PM$`_{2.5}`$, there are important
 differences between the performance estimated by the two CV methods,
 with NNDM LOO CV suggesting a much lower performance when the actual
 predictive conditions are taken into account.
@@ -318,11 +329,11 @@ of nearest neighbour distances during CV to the ECDF found during
 prediction. Nonetheless, the means to achieve it are different. In
 kNNDM, what we do is to use a clustering algorithm (k-means and
 agglomerative clustering are currently implemented) to cluster our
-samples data into $q$ groups based on the coordinates, which are then
-merged into the final $k$ folds. The smaller the $q$, the stronger the
-spatial structure of the CV will be.
+samples data into $`q`$ groups based on the coordinates, which are then
+merged into the final $`k`$ folds. The smaller the $`q`$, the stronger
+the spatial structure of the CV will be.
 
-Among all candidate $q$, we choose the fold configuration that offers
+Among all candidate $`q`$, we choose the fold configuration that offers
 the best match between the two ECDFs. We choose it based on the
 Wassterstein’s W statistic, which is the integral of the absolute value
 differences between the two ECDFs. The lower the W, the better the
@@ -339,6 +350,7 @@ to our data! First, for temperature with the default clustering
 algorithm:
 
 ``` r
+
 temp_knndm <- knndm(temperature, k = 5, modeldomain = spain, samplesize = 1000, 
                    clustering = "hierarchical", linkf = "ward.D2")
 print(temp_knndm)
@@ -353,6 +365,7 @@ print(temp_knndm)
     ## Observations in each fold:  39 39 39 39 39
 
 ``` r
+
 plot(temp_nndm, type = "simple")
 ```
 
@@ -360,9 +373,10 @@ plot(temp_nndm, type = "simple")
 
 Similarly to NNDM LOO CV, kNNDM does not find any clustering and
 generalizes to a random k-fold CV. Now let’s see what happens in the
-PM$_{2.5}$ dataset:
+PM$`_{2.5}`$ dataset:
 
 ``` r
+
 pm25_knndm <- knndm(pm25, k = 5, modeldomain = spain, samplesize = 1000, 
                     clustering = "hierarchical", linkf = "ward.D2")
 print(pm25_knndm)
@@ -377,6 +391,7 @@ print(pm25_knndm)
     ## Observations in each fold:  29 22 18 32 23
 
 ``` r
+
 plot(pm25_knndm, type = "simple")
 ```
 
@@ -384,15 +399,16 @@ plot(pm25_knndm, type = "simple")
 
 In this case, we *do* find clustered samples and kNNDM spatially
 clusters observations into folds as indicated by the number of
-intermediate clusters $q$. With this kNNDM configuration, the match
+intermediate clusters $`q`$. With this kNNDM configuration, the match
 between the CV and the prediction distance distribution now seems to be
 quite good!
 
 Another thing we can do is to check whether other clustering algorithms,
 or a different number of folds, might yield a better match. For example,
-let’s try using k-means clustering for the PM$_{2.5}$ dataset:
+let’s try using k-means clustering for the PM$`_{2.5}`$ dataset:
 
 ``` r
+
 pm25_knndm_v2 <- knndm(pm25, k = 5, modeldomain = spain, samplesize = 1000, 
                        clustering = "kmeans")
 print(pm25_knndm_v2)
@@ -410,13 +426,13 @@ We see that the W statistic is larger than before, hence indicating the
 quality of the match in this alternative kNNDM configuration is actually
 poorer, so we will stick to the first one. We can easily visualize the
 resulting 5-fold kNNDM configurations for both temperature and
-PM$_{2.5}$:
+PM$`_{2.5}`$:
 
 ![](cast03-CV_files/figure-html/kNNDM%20viz-1.png)
 
 As we already knew, the 5-fold kNNDM configuration for temperature is
-random whereas the one for PM$_{2.5}$ has a clear spatial pattern where
-observations close in space tend to be in the same fold.
+random whereas the one for PM$`_{2.5}`$ has a clear spatial pattern
+where observations close in space tend to be in the same fold.
 
 Now, we can finally run our models (same predictors as before) and
 compare the results of a 5-fold random vs. kNNDM CV. To do so, we will
@@ -428,6 +444,7 @@ ECDF based on the whole distribution and not by fold. First, we run the
 temperature models:
 
 ``` r
+
 # Random 5-fold CV
 temp_rndmk_ctrl <- trainControl(method="cv", number=5, savePredictions=TRUE)
 temp_rndmk_mod <- train(temperature_df[c("dem", "ndvi", "lst_day",  "lst_night")],
@@ -447,9 +464,10 @@ temp_knndm_mod <- train(temperature_df[c("dem", "ndvi", "lst_day",  "lst_night")
 temp_knndm_res <- global_validation(temp_knndm_mod)
 ```
 
-And the PM$_{2.5}$ models:
+And the PM$`_{2.5}`$ models:
 
 ``` r
+
 # Random 5-fold CV
 pm25_rndmk_ctrl <- trainControl(method="cv", number=5, savePredictions=TRUE)
 pm25_rndmk_mod <- train(pm25_df[c("popdens", "primaryroads", "ntl", "imd")],
@@ -481,7 +499,7 @@ And summarize the results in a table:
 Here, we see the same pattern as in the LOO CV results. Since
 temperature data aren’t clustered, kNNDM CV has generalized to a random
 k-fold CV and thus results of both methods are very similar. This is not
-true for PM$_{2.5}$, where kNNDM CV shows that once predictive
+true for PM$`_{2.5}`$, where kNNDM CV shows that once predictive
 conditions are taken into account, the estimated performance is lower.
 
 ## Cross-validation in feature space

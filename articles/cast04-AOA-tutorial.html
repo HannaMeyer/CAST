@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>4. Area of applicability of spatial prediction models • CAST</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="4. Area of applicability of spatial prediction models">
 </head>
@@ -63,7 +63,7 @@
                         <h4 data-toc-skip class="author">Hanna
 Meyer</h4>
             
-            <h4 data-toc-skip class="date">2026-03-14</h4>
+            <h4 data-toc-skip class="date">2026-06-19</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/master/vignettes/cast04-AOA-tutorial.Rmd" class="external-link"><code>vignettes/cast04-AOA-tutorial.Rmd</code></a></small>
       <div class="d-none name"><code>cast04-AOA-tutorial.Rmd</code></div>
@@ -286,38 +286,38 @@ are given in form of a table).</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">AOA</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## DI:</span></span>
-<span><span class="co">## class       : SpatRaster </span></span>
+<span><span class="co">## class       : SpatRaster</span></span>
 <span><span class="co">## size        : 102, 123, 1  (nrow, ncol, nlyr)</span></span>
 <span><span class="co">## resolution  : 14075.98, 14075.98  (x, y)</span></span>
 <span><span class="co">## extent      : 3496791, 5228136, 2143336, 3579086  (xmin, xmax, ymin, ymax)</span></span>
-<span><span class="co">## coord. ref. : +proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs </span></span>
+<span><span class="co">## coord. ref. : +proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs</span></span>
 <span><span class="co">## source(s)   : memory</span></span>
-<span><span class="co">## varname     : bioclim </span></span>
-<span><span class="co">## name        :       DI </span></span>
-<span><span class="co">## min value   : 0.000000 </span></span>
-<span><span class="co">## max value   : 3.408739 </span></span>
+<span><span class="co">## varname     : bioclim</span></span>
+<span><span class="co">## name        :       DI</span></span>
+<span><span class="co">## min value   :        0</span></span>
+<span><span class="co">## max value   : 3.408739</span></span>
 <span><span class="co">## LPD:</span></span>
-<span><span class="co">## class       : SpatRaster </span></span>
+<span><span class="co">## class       : SpatRaster</span></span>
 <span><span class="co">## size        : 102, 123, 1  (nrow, ncol, nlyr)</span></span>
 <span><span class="co">## resolution  : 14075.98, 14075.98  (x, y)</span></span>
 <span><span class="co">## extent      : 3496791, 5228136, 2143336, 3579086  (xmin, xmax, ymin, ymax)</span></span>
-<span><span class="co">## coord. ref. : +proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs </span></span>
+<span><span class="co">## coord. ref. : +proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs</span></span>
 <span><span class="co">## source(s)   : memory</span></span>
-<span><span class="co">## varname     : bioclim </span></span>
-<span><span class="co">## name        : LPD </span></span>
-<span><span class="co">## min value   :   0 </span></span>
-<span><span class="co">## max value   :   9 </span></span>
+<span><span class="co">## varname     : bioclim</span></span>
+<span><span class="co">## name        : LPD</span></span>
+<span><span class="co">## min value   :   0</span></span>
+<span><span class="co">## max value   :   9</span></span>
 <span><span class="co">## AOA:</span></span>
-<span><span class="co">## class       : SpatRaster </span></span>
+<span><span class="co">## class       : SpatRaster</span></span>
 <span><span class="co">## size        : 102, 123, 1  (nrow, ncol, nlyr)</span></span>
 <span><span class="co">## resolution  : 14075.98, 14075.98  (x, y)</span></span>
 <span><span class="co">## extent      : 3496791, 5228136, 2143336, 3579086  (xmin, xmax, ymin, ymax)</span></span>
-<span><span class="co">## coord. ref. : +proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs </span></span>
+<span><span class="co">## coord. ref. : +proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs</span></span>
 <span><span class="co">## source(s)   : memory</span></span>
-<span><span class="co">## varname     : bioclim </span></span>
-<span><span class="co">## name        : AOA </span></span>
-<span><span class="co">## min value   :   0 </span></span>
-<span><span class="co">## max value   :   1 </span></span>
+<span><span class="co">## varname     : bioclim</span></span>
+<span><span class="co">## name        : AOA</span></span>
+<span><span class="co">## min value   :   0</span></span>
+<span><span class="co">## max value   :   1</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Predictor Weights:</span></span>
