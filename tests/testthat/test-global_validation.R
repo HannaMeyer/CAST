@@ -1,4 +1,5 @@
 test_that("global_validation correctly handles missing predictions", {
+  skip_on_cran()
   skip_if_not_installed("randomForest")
   data("iris")
   set.seed(123)
@@ -10,6 +11,7 @@ test_that("global_validation correctly handles missing predictions", {
 })
 
 test_that("global_validation works with caret regression", {
+  skip_on_cran()
   skip_if_not_installed("randomForest")
   data("iris")
   set.seed(123)
@@ -24,6 +26,7 @@ test_that("global_validation works with caret regression", {
 })
 
 test_that("global_validation works with caret classification", {
+  skip_on_cran()
   skip_if_not_installed("randomForest")
   data("iris")
   set.seed(123)
@@ -38,6 +41,7 @@ test_that("global_validation works with caret classification", {
 })
 
 test_that("global_validation works with CreateSpacetimeFolds", {
+  skip_on_cran()
   skip_if_not_installed("randomForest")
   data("iris")
   set.seed(123)

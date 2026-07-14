@@ -1,7 +1,7 @@
 Package: CAST
 Type: Package
 Title: 'caret' Applications for Spatial-Temporal Models
-Version: 1.1.0
+Version: 1.1.1
 Authors@R: c(person("Hanna", "Meyer", email = "hanna.meyer@uni-muenster.de", role = c("cre", "aut")),
              person("Carles", "Milà", role = c("aut")),
              person("Marvin", "Ludwig", role = c("aut")),
@@ -69,6 +69,6 @@ Suggests:
     stars,
     testthat (>= 3.0.0),
     tmap
-RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
