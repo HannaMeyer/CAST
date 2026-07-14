@@ -1,6 +1,12 @@
 # Changelog
 
+## `CAST` 1.1.1
+
+- bug fix: handling of errors when server unavailable, conditional tests
+
 ## `CAST` 1.1.0
+
+CRAN release: 2026-06-19
 
 - new features:
   - knndm for train-test splits
