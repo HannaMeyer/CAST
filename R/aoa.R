@@ -184,8 +184,6 @@ aoa.Raster = function(newdata, model=NA, ...) {
 aoa.SpatRaster = function(newdata, model=NA, ...) {
   #### order data:
   out_template = newdata[[1]]
-  if (any(is.factor(newdata)))
-    newdata[[which(is.factor(newdata))]] <- as.numeric(newdata[[which(is.factor(newdata))]])
   # call the data.frame method:
   res = aoa(terra::as.data.frame(newdata, na.rm = FALSE), model=model, ...)
 
