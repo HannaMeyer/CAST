@@ -1,3 +1,6 @@
+# `CAST` 1.1.2
+* bug fix: handling of errors when data from Github unavailable for vignettes
+
 # `CAST` 1.1.1
 * bug fix: handling of errors when server unavailable, conditional tests
 
