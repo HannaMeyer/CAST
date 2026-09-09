@@ -41,6 +41,7 @@ temperature <- read_sf("https://github.com/carlesmila/RF-spatial-proxies/raw/mai
 pm25 <- read_sf("https://github.com/carlesmila/RF-spatial-proxies/raw/main/data/AP/PM25_train.gpkg")
 spain <- read_sf("https://github.com/carlesmila/RF-spatial-proxies/raw/main/data/boundaries/spain.gpkg")
 
+
 # df versions
 temperature_df <- as.data.frame(st_drop_geometry(temperature))
 pm25_df <- as.data.frame(st_drop_geometry(pm25))

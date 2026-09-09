@@ -2,6 +2,8 @@
 
 ## `CAST` 1.1.1
 
+CRAN release: 2026-07-15
+
 - bug fix: handling of errors when server unavailable, conditional tests
 
 ## `CAST` 1.1.0
