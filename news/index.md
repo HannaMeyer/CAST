@@ -2,6 +2,8 @@
 
 ## `CAST` 1.1.2
 
+CRAN release: 2026-09-09
+
 - bug fix: handling of errors when data from Github unavailable for
   vignettes
 
