@@ -74,3 +74,12 @@ https://www.youtube.com/watch?v=mkHlmYEzsVQ.
 * Ludwig, M., Moreno-Martinez, A., Hoelzel, N., Pebesma, E., Meyer, H. (2023): Assessing and improving the transferability of current global spatial prediction models. Global Ecology and Biogeography, 32, 356–368. https://doi.org/10.1111/geb.13635.
 
 * Milà, C., Ludwig, M., Pebesma, E., Tonne, C., and Meyer, H. (2024): Random forests with spatial proxies for environmental modelling: opportunities and pitfalls. Geosci. Model Dev., 17, 6007–6033. https://doi.org/10.5194/gmd-17-6007-2024.
+
+## FAQ: Why is there a horse in the logo?
+You might be wondering why a spatial modeling package is represented by a horse! Although the horse in the logo looks suspiciously like the maintainer's horse, that's purely coincidental!
+
+The real reason for the horse is the famous "Clever Hans" effect. Hans was a horse who became famous for his ability to do math, but it turned out he wasn't actually calculating; instead, he was simply reading the subtle body language of his owner. He hadn't learned any mathematical skills, as it was much easier to provide the correct answer (and probably earn cookies) by reading these cues.
+
+In spatial data science, we face a similar challenge: models often take “shortcuts” by learning patterns in the data that allow them to reproduce the right answer without understanding the underlying process. In these cases, the model fails to learn the scientifically meaningful relationships required for a reliable and transferable model.
+
+CAST is designed to help you detect this. It allows you to test for the spatial transferability of your model (via prediction domain adaptive validation) and ensures your model has learned the right relationships (via spatial variable selection), hence stopping it from being a "Clever Hans" and ensuring that your predictor variables are truly contributing to the spatial model's performance.
