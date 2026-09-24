@@ -1,5 +1,10 @@
 # Changelog
 
+## `CAST` 1.2.0
+
+- Introduce knn-engine and further refactors in aoa and trainDI. See PR
+  [\#167](https://github.com/HannaMeyer/CAST/issues/167)
+
 ## `CAST` 1.1.2
 
 CRAN release: 2026-09-09

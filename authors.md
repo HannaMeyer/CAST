@@ -12,6 +12,10 @@
 
 - **Fabian Schumacher**. Author.
 
+- **Darius Görgen**. Author.
+
+- **Jakub Nowosad**. Author.
+
 - **Philipp Otto**. Contributor.
 
 - **Chris Reudenbach**. Contributor.
@@ -20,23 +24,19 @@
 
 - **Edzer Pebesma**. Contributor.
 
-- **Jakub Nowosad**. Contributor.
-
-- **Darius Görgen**. Contributor.
-
 ## Citation
 
 Source:
 [`DESCRIPTION`](https://github.com/HannaMeyer/CAST/blob/master/DESCRIPTION)
 
-Meyer H, Milà C, Ludwig M, Linnenbrink J, Schumacher F (2026). *CAST:
-'caret' Applications for Spatial-Temporal Models*. R package version
-1.1.2, <https://github.com/HannaMeyer/CAST>.
+Meyer H, Milà C, Ludwig M, Linnenbrink J, Schumacher F, Görgen D,
+Nowosad J (2026). *CAST: 'caret' Applications for Spatial-Temporal
+Models*. R package version 1.2.0, <https://github.com/HannaMeyer/CAST>.
 
     @Manual{,
       title = {CAST: 'caret' Applications for Spatial-Temporal Models},
-      author = {Hanna Meyer and Carles Milà and Marvin Ludwig and Jan Linnenbrink and Fabian Schumacher},
+      author = {Hanna Meyer and Carles Milà and Marvin Ludwig and Jan Linnenbrink and Fabian Schumacher and Darius Görgen and Jakub Nowosad},
       year = {2026},
-      note = {R package version 1.1.2},
+      note = {R package version 1.2.0},
       url = {https://github.com/HannaMeyer/CAST},
     }
