@@ -25,10 +25,10 @@ test_that("errorProfiles works in default settings", {
   expect_equal(round(as.numeric(summary(errormodel_DI$fitted.values)),2),
                c(14.25, 14.34, 15.21, 17.23, 18.70, 27.46))
   # test model predictions
-
-  s <- as.vector(summary(terra::values(expected_error_DI)))
-  s <- as.numeric(sub(".*:\\s*", "", s))
-  expect_equal(s,c(14.26,27.46,27.46,26.81,27.46,27.47,17678.00))
+  vals <- summary(terra::values(expected_error_DI))
+  vals <- as.numeric(gsub(".*:([0-9\\.]+).*", "\\1", vals))
+  expect_equal(vals,
+              c(14.26, 27.46, 27.46, 26.81, 27.46, 27.47, 17678.0))
 })
 
 
@@ -54,11 +54,10 @@ test_that("errorProfiles works in with LPD", {
   expect_equal(round(as.numeric(summary(errormodel_LPD$fitted.values)),2),
                c(16.36, 16.36, 16.36, 16.36, 16.36, 16.36))
   # test model predictions
-
-  s <- as.vector(summary(terra::values(expected_error_LPD)))
-  s <- as.numeric(sub(".*:\\s*", "", s))
-  expect_equal(s,c(16.36,16.36,16.36,16.36,16.36,16.36,17678.00))
-
+  vals <- summary(terra::values(expected_error_LPD))
+  vals <- as.numeric(gsub(".*:([0-9\\.]+).*", "\\1", vals))
+  expect_equal(vals,
+              c(16.36, 16.36, 16.36, 16.36, 16.36, 16.36, 17678.0))
 })
 
 
@@ -85,10 +84,10 @@ test_that("errorProfiles works for multiCV", {
   expect_equal(round(as.numeric(summary(errormodel_DI$fitted.values)),2),
                c(12.53, 17.21, 26.80, 26.19, 35.28, 35.30))
   # test model predictions
-
-  s <- as.vector(summary(terra::values(expected_error_DI)))
-  s <- as.numeric(sub(".*:\\s*", "", s))
-  expect_equal(s,c(13.11,32.58,35.05,32.54,35.30,35.30,17678.00))
+  vals <- summary(terra::values(expected_error_DI))
+  vals <- as.numeric(gsub(".*:([0-9\\.]+).*", "\\1", vals))
+  expect_equal(vals,
+              c(13.11, 32.58, 35.05, 32.54, 35.30, 35.30, 17678.0))
 })
 
 test_that("plot for errorModel runs and returns ggplot", {

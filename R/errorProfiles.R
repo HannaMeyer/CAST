@@ -8,7 +8,7 @@
 #' @param window.size Numeric. Size of the moving window. See \code{\link[zoo]{rollapply}}.
 #' @param calib Character. Function to model the DI/LPD~performance relationship. Currently lm and scam are supported
 #' @param length.out Numeric. Only used if multiCV=TRUE. Number of cross-validation folds. See details.
-#' @param method Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer. See ?aoa for further explanation
+#' @param dist_fun Character. Method used for distance calculation. Currently "uclidean" distance, "mahalanobis" distance are implemented but only "euclidean" is tested.
 #' @param useWeight Logical. Only if a model is given. Weight variables according to importance in the model?
 #' @param k Numeric. See mgcv::s
 #' @param m Numeric. See mgcv::s
@@ -92,7 +92,7 @@ errorProfiles <- function(model,
                           length.out = 10,
                           window.size = 5,
                           calib = "scam",
-                          method= "L2",
+                          dist_fun= "euclidean",
                           useWeight=TRUE,
                           k = 6,
                           m = 2){
@@ -112,7 +112,7 @@ errorProfiles <- function(model,
     preds_all <- get_preds_all(model, trainDI, locations, variable)
   }
   if(multiCV){
-    preds_all <- multiCV(model, locations, length.out, method, useWeight, variable)
+    preds_all <- multiCV(model, locations, length.out, dist_fun, useWeight, variable)
   }
 
   # train model between DI and Errormetric
@@ -232,7 +232,7 @@ errorModel <- function(preds_all, model, window.size, calib, k, m, variable){
 
 
 # MultiCV
-multiCV <- function(model, locations, length.out, method, useWeight, variable,...){
+multiCV <- function(model, locations, length.out, dist_fun, useWeight, variable,...){
 
   preds_all <- data.frame()
   train_predictors <- model$trainingData[,-which(names(model$trainingData)==".outcome")]
@@ -260,9 +260,9 @@ multiCV <- function(model, locations, length.out, method, useWeight, variable,..
     # retrain model and calculate AOA
     model_new <- do.call(caret::train,mcall)
     if (variable == "DI") {
-      trainDI_new <- trainDI(model_new, method=method, useWeight=useWeight, verbose =FALSE)
+      trainDI_new <- trainDI(model_new, dist_fun=dist_fun, useWeight=useWeight, verbose =FALSE)
     } else if (variable == "LPD") {
-      trainDI_new <- trainDI(model_new, method=method, useWeight=useWeight, LPD = TRUE, verbose =FALSE)
+      trainDI_new <- trainDI(model_new, dist_fun=dist_fun, useWeight=useWeight, LPD = TRUE, verbose =FALSE)
     } else if (variable=="geodist"){
       ssize <- 2000 # default in geodist
       if(nrow(locations)<2000){

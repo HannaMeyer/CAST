@@ -14,7 +14,7 @@ errorProfiles(
   length.out = 10,
   window.size = 5,
   calib = "scam",
-  method = "L2",
+  dist_fun = "euclidean",
   useWeight = TRUE,
   k = 6,
   m = 2
@@ -37,7 +37,7 @@ errorProfiles(
 
 \item{calib}{Character. Function to model the DI/LPD~performance relationship. Currently lm and scam are supported}
 
-\item{method}{Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer. See ?aoa for further explanation}
+\item{dist_fun}{Character. Method used for distance calculation. Currently "uclidean" distance, "mahalanobis" distance are implemented but only "euclidean" is tested.}
 
 \item{useWeight}{Logical. Only if a model is given. Weight variables according to importance in the model?}
 

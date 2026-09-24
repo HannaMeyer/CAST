@@ -17,12 +17,11 @@
 #' Only required if modeldomain is used instead of predpoints.
 #' @param sampling character. How to draw prediction points from the modeldomain? See `sf::st_sample`.
 #' Only required if modeldomain is used instead of predpoints.
-#' @param dist_fun character. Currently covers `euclidean` (default), `gower`, `mahalanobis` and `great_circle`.
-#' `gower` and `mahalanobis` only work with `dist_space`="feature", while `great_circle` only works with `dist_space`="geographical".
+#' @param dist_fun character. Automatically detected if `dist_space`="geographical". For geographical (long/lat) coordinates,
+#' `dist_fun` is set to "great_circle", while "euclidean" distances are used for projected coordinats.
+#' For `dist_space`="feature", `dist_fun` currently covers `euclidean` (default), `gower` and `mahalanobis`.
 #' `mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables,
 #' `gower` also works with mixed data including numerical and categorical variables.
-#' For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.
-#' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
 #' @param scale_vars boolean. Should variables be scaled? Only for `dist_space`="feature".
 #' Calculating Gower distances already includes scaling, and manually rescale the data is redundant.
 #' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.
@@ -60,7 +59,7 @@
 #' Modifying the `test_prop` parameter, as well as increasing `test_prop` allow more flexible matching and can potentially improve the match.
 #'
 #' Using a projected CRS in `knndm` has large computational advantages since fast nearest neighbour search can be
-#' done via the `FNN` package, while working with geographic coordinates requires computing the full
+#' done via the `philentropy` package, while working with geographic coordinates requires computing the full
 #' spherical distance matrices. As a clustering algorithm, `kmeans` can only be used for
 #' projected CRS while `hierarchical` can work with both projected and geographical coordinates, though it requires
 #' calculating the full distance matrix of the training points even for a projected CRS.
@@ -264,7 +263,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
                   k = 10, maxp = 0.5,
                   clustering = "hierarchical", linkf = "ward.D2",
                   samplesize = 1000, sampling = "regular", dist_fun="euclidean",
-                  algorithm="brute", scale_vars = TRUE,
+                  scale_vars = TRUE,
                   space = NULL, useMD = NULL,
                   test_prop = NULL, test_tolerance = NULL,
                   nk_len = 100){
@@ -292,9 +291,13 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     stop("dist_fun must be one of 'euclidean', 'mahalanobis', 'gower' or 'great_circle'")
   }
 
-  if(dist_space == "time" && dist_fun != "euclidean") stop("Temporal space only supports euclidean distances.")
   if(dist_space == "feature" && dist_fun == "great_circle") stop("Great-circle distances only work with in geographical space.")
   if(dist_space == "geographical" && dist_fun %in% c("mahalanobis", "gower")) stop("Mahalanobis and Gower distances only work in feature space.")
+
+  # Check if clustering was correctly defined
+  if (!(clustering %in% c("kmeans", "hierarchical"))) {
+    stop("clustering must be one of `kmeans` or `hierarchical`")
+  }
 
   # Issue a warning if train/test split is used
   if(!is.null(test_prop)) {
@@ -315,16 +318,8 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     maxp <- test_prop + test_tolerance
     minp <- test_prop - test_tolerance
 
-    if(maxp <= 0 || minp >= 1 || minp > maxp) {
+    if(maxp <= 0 || maxp >= 1 || minp <= 0 || minp >= 1 || minp > maxp) {
       stop("Misspecified tolerance. Resulted in infeasible minp/maxp values")
-    }
-
-    if(minp <= 0) {
-      warning("minp was set to 0.1")
-      minp <- 0.1
-    } else if(maxp >= 1) {
-      warning("maxp was set to 0.9")
-      maxp <- 0.9
     }
 
     if(maxp == 1/k) {
@@ -400,12 +395,22 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     if (any(class(predpoints) %in% "sfc")) {
       predpoints <- sf::st_sf(geom = predpoints)
     }
+
     if(is.na(sf::st_crs(tpoints))){
       warning("Missing CRS in training or prediction points. Assuming projected CRS.")
       islonglat <- FALSE
     }else{
       islonglat <- sf::st_is_longlat(tpoints)
     }
+
+    if (islonglat) {
+      message("Calculating great-circle distances in geographic space (longlat coordinates).")
+      dist_fun <- "great_circle"
+    } else {
+      message("Calculating euclidean distances in geographic space (projected coordinates).")
+      dist_fun <- "euclidean"
+    }
+    
   } else if (dist_space == "feature") {
     # drop geometry if tpoints / predpoints are of class sf
     if(any(class(tpoints) %in% c("sf","sfc"))) {
@@ -442,7 +447,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     # kNNDM in geographical space
     knndm_res <- knndm_geo(tpoints = tpoints, predpoints = predpoints, k = k, maxp = maxp, minp = minp,
       test_prop = test_prop, clustering = clustering, linkf = linkf, nk_len = nk_len,
-      dist_fun = dist_fun, dist_space = dist_space, algorithm = algorithm)
+      dist_fun = dist_fun, dist_space = dist_space)
 
   } else if (isTRUE(dist_space == "feature")) {
 
@@ -452,7 +457,7 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
     # kNNDM in feature space
     knndm_res <- knndm_feature(tpoints = tpoints, predpoints = predpoints, k = k, maxp = maxp, minp = minp,
       test_prop = test_prop, clustering = clustering, linkf = linkf, nk_len = nk_len, dist_fun = dist_fun,
-      dist_space = dist_space, algorithm = algorithm, catVars = catVars, scale_vars = scale_vars)
+      dist_space = dist_space, catVars = catVars, scale_vars = scale_vars)
 
   }
 
@@ -462,14 +467,14 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
 
 
 # kNNDM checks
-check_knndm_geo <- function(tpoints, predpoints, dist_space, k, maxp, clustering, islonglat, dist_fun, test_prop){
+check_knndm_geo <- function(tpoints, predpoints, dist_space, k, maxp, clustering, dist_fun, test_prop, islonglat){
 
   if(!identical(sf::st_crs(tpoints), sf::st_crs(predpoints))){
     stop("tpoints and predpoints must have the same CRS")
   }
 
-  if (!(clustering %in% c("kmeans", "hierarchical"))) {
-    stop("clustering must be one of `kmeans` or `hierarchical`")
+  if(isTRUE(islonglat) && clustering == "kmeans") {
+    stop("kmeans clustering only works with projected coordinates")
   }
 
   if(is.null(test_prop)) {
@@ -477,21 +482,12 @@ check_knndm_geo <- function(tpoints, predpoints, dist_space, k, maxp, clustering
       stop("maxp must be strictly between 1/k and 1")
    }
   }
-
-  if(isTRUE(islonglat) & clustering == "kmeans"){
-    stop("kmeans works in the Euclidean space and therefore can only handle
-         projected coordinates. Please use hierarchical clustering or project your data.")
-  }
-
-  if(isTRUE(islonglat) && dist_fun != "great_circle")  {
-      stop("Only great-circle distances are allowed for lon/lat coordinates. Please use 'great_circle' as 'dist_fun'.")
-    }
 }
 
 check_knndm_feature <- function(tpoints, predpoints, dist_space, k, maxp, clustering, catVars, dist_fun, test_prop){
 
   if (!is.null(catVars) && dist_fun != "gower") {
-      stop("Only gower distances work with categorical features. Please use dist_fun = 'gower'")
+    stop("Only gower distances work with categorical features. Please use dist_fun = 'gower'")
   }
 
   if(is.null(test_prop)) {
@@ -504,7 +500,7 @@ check_knndm_feature <- function(tpoints, predpoints, dist_space, k, maxp, cluste
     stop("predpoints with predictor data missing")
   }
 
-  if(length(setdiff(names(tpoints), names(predpoints)))>0) {
+  if(!setequal(names(tpoints), names(predpoints))) {
     stop("tpoints and predpoints need to contain the predictor data and have the same colnames.")
   }
 
@@ -517,16 +513,63 @@ check_knndm_feature <- function(tpoints, predpoints, dist_space, k, maxp, cluste
 
 }
 
+# TODO: this local adapater is required as long as KNNDM is not properly aligned
+# with geodist and knndist.
+.cv_distances <- function(x, CVtest, dist_fun = "euclidean") {
+  # Get total length
+  n <- if (is.matrix(x)) nrow(x) else nrow(as.data.frame(x))
+  
+  # Initialize result vector to preserve position ordering
+  alldist <- rep(NA_real_, n)
+
+  # Normalize CVtest to a vector of fold IDs
+  if (is.list(CVtest)) {
+    CVtest_v <- rep(NA_integer_, n)
+    for (k in seq_along(CVtest)) {
+      CVtest_v[CVtest[[k]]] <- k
+    }
+  } else {
+    CVtest_v <- CVtest
+  }
+
+  # Helper: compute distances for a single fold
+  compute_fold <- function(train_idx, test_idx) {
+    if (is.matrix(x) && nrow(x) == ncol(x)) {
+      # x is a distance matrix (square)
+      sapply(test_idx, function(j) min(x[train_idx, j], na.rm = TRUE))
+    } else if (inherits(x, c("sf", "sfc"))) {
+      # x is sf: use .geo_dist which accepts sf objects
+      .geo_dist(x = x[train_idx, , drop = FALSE], y = x[test_idx, , drop = FALSE], dist_fun = dist_fun)
+    } else {
+      # x is numeric matrix/data.frame with coordinates or features
+      .knndist(reference = x[train_idx, , drop = FALSE], query = x[test_idx, , drop = FALSE], k = 1, dist_fun = dist_fun)
+    }
+  }
+
+  # Process each fold and assign distances to correct positions
+  for (fold_id in unique(CVtest_v)) {
+    test_idx <- which(CVtest_v == fold_id)
+    train_idx <- setdiff(seq_len(n), test_idx)
+    
+    # Compute distances only for this fold's test indices
+    fold_dists <- compute_fold(train_idx, test_idx)
+    
+    # Assign to correct positions in result vector
+    alldist[test_idx] <- fold_dists
+  }
+  
+  alldist
+}
 
 # kNNDM in the geographical space
 knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
-  clustering, linkf, nk_len, dist_fun, dist_space, algorithm){
+  clustering, linkf, nk_len, dist_fun, dist_space){
 
   # Gj and Gij calculation
   tcoords <- sf::st_coordinates(tpoints)[,1:2]
+  pred_coords <- sf::st_coordinates(predpoints)[,1:2]
   if(isTRUE(dist_fun == "great_circle")){
-    # For great-circle distance, we calculate the distance matrix here once and then use
-    # distclust_distmat later to avoid re-calculating the dist_mat when using compute_NND
+    # For great-circle distance, we calculate the distance matrix here once and then re-use it for NND calculations
     distmat <- sf::st_distance(tpoints)
     units(distmat) <- NULL
     diag(distmat) <- NA
@@ -535,8 +578,8 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
     units(Gij) <- NULL
     Gij <- apply(Gij, 1, min)
   }else{
-    Gj <- compute_NND(tpoints, dist_space = dist_space, dist_fun = dist_fun, algorithm = algorithm)$dist
-    Gij <- compute_NND(tpoints, y = predpoints, dist_space = dist_space, dist_fun = dist_fun, algorithm = algorithm)$dist
+    Gj <- .knndist(tcoords, k = 1, dist_fun = dist_fun)
+    Gij <- .knndist(tcoords, query = pred_coords, k=1, dist_fun = dist_fun)
   }
 
   # Check if Gj > Gij (warning suppressed regarding ties)
@@ -555,9 +598,9 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
     }
 
     if(isTRUE(dist_fun == "great_circle")){
-      Gjstar <- distclust_distmat(distmat, clust)
+      Gjstar <- .cv_distances(x = distmat, CVtest = clust, dist_fun = dist_fun)
     }else{
-      Gjstar <- cv_distances(tcoords, CVtest = clust, algorithm=algorithm, dist_fun = dist_fun)
+      Gjstar <- .cv_distances(x = tcoords, CVtest = clust, dist_fun = dist_fun)
     }
     k_final <- "random CV"
     W_final <- twosamples::wass_stat(Gjstar, Gij)
@@ -569,8 +612,9 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
       # For hierarchical clustering we need to compute the full distance matrix,
       # but we can integrate geographical distances
       if(isTRUE(dist_fun == "euclidean")){
-        distmat <- sf::st_distance(tpoints)
+        distmat <- .distance(tcoords, dist_fun = dist_fun)
       }
+
       hc <- stats::hclust(d = stats::as.dist(distmat), method = linkf)
     }
 
@@ -643,26 +687,15 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
 
       if(any(prop_valid)){
 
+        # Compute W statistic if not exceeding maxp
         if(isTRUE(dist_fun == "great_circle")){
-          Gjstar_i <- distclust_distmat(distmat, clust_k)
+          Gjstar_i <- .cv_distances(x = distmat, CVtest = clust_k, dist_fun = dist_fun)
         }else{
-          Gjstar_i <- cv_distances(tcoords, CVtest = clust_k,algorithm=algorithm, dist_fun = dist_fun)
+          Gjstar_i <- .cv_distances(x = tcoords, CVtest = clust_k, dist_fun = dist_fun)
         }
         clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
         clustgroups[[paste0("nk", nk)]] <- clust_k
 
-      }
-
-      # Compute W statistic if not exceeding maxp
-      if(!any(table(clust_k)/length(clust_k)>maxp)){
-
-        if(isTRUE(dist_fun == "great_circle")){
-          Gjstar_i <- distclust_distmat(distmat, clust_k)
-        }else{
-          Gjstar_i <- cv_distances(tcoords, CVtest = clust_k,algorithm=algorithm, dist_fun = dist_fun)
-        }
-        clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
-        clustgroups[[paste0("nk", nk)]] <- clust_k
       }
     }
 
@@ -676,9 +709,9 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
     }
 
     if(isTRUE(dist_fun == "great_circle")){
-      Gjstar <- distclust_distmat(distmat, clust)
+      Gjstar <- .cv_distances(x = distmat, CVtest = clust, dist_fun = dist_fun)
     }else{
-      Gjstar <- cv_distances(tcoords, CVtest = clust,algorithm=algorithm, dist_fun = dist_fun)
+      Gjstar <- .cv_distances(x = tcoords, CVtest = clust, dist_fun = dist_fun)
     }
   }
 
@@ -711,7 +744,7 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
 
 # kNNDM in the feature space
 knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
-  clustering, linkf, nk_len, dist_fun, dist_space, algorithm, catVars, scale_vars)  {
+  clustering, linkf, nk_len, dist_fun, dist_space, catVars, scale_vars)  {
 
   # rescale data (optional)
   if(isTRUE(scale_vars)) {
@@ -742,60 +775,8 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
   }
 
   # Gj and Gij calculation
-  if(is.null(catVars)) {
-
-
-    if(isTRUE(dist_fun == "mahalanobis")) {
-
-      tpoints_mat <- as.matrix(tpoints)
-      predpoints_mat <- as.matrix(predpoints)
-
-      # use Mahalanobis distances
-      if (dim(tpoints_mat)[2] == 1) {
-        S <- matrix(stats::var(tpoints_mat), 1, 1)
-        tpoints_mat <- as.matrix(tpoints_mat, ncol = 1)
-      } else {
-        S <- stats::cov(tpoints_mat)
-      }
-      S_inv <- MASS::ginv(S)
-
-      # calculate distance matrix
-      n_rows <- nrow(tpoints_mat)
-      distmat <- vapply(seq_len(n_rows), function(i) {
-          vapply(seq_len(n_rows), function(j) {
-            diff <- tpoints_mat[i, ] - tpoints_mat[j, ]
-            sqrt(t(diff) %*% S_inv %*% diff)
-          }, numeric(1))
-        }, numeric(n_rows))
-      diag(distmat) <- NA
-
-      Gj <- apply(distmat, 1, min, na.rm=TRUE)
-
-      n_rows_p <- nrow(predpoints_mat)
-      n_rows_t <- nrow(tpoints_mat)
-
-      Gij <- vapply(seq_len(n_rows_p), function(i) {
-        min(vapply(seq_len(n_rows_t), function(j) {
-          diff <- predpoints_mat[i, ] - tpoints_mat[j, ]
-          sqrt(t(diff) %*% S_inv %*% diff)
-        }, numeric(1)))
-      }, numeric(1))
-
-
-    } else {
-      # use FNN with Euclidean distances if no categorical variables are present
-      Gj <- c(FNN::knn.dist(tpoints, k = 1, algorithm=algorithm))
-      Gij <- c(FNN::knnx.dist(query = predpoints, data = tpoints, k = 1, algorithm=algorithm))
-    }
-
-
-  } else {
-
-    # use Gower distances if categorical variables are present
-    Gj <- vapply(1:nrow(tpoints), function(i) gower::gower_topn(tpoints[i,], tpoints[-i,], n=1)$distance[[1]], numeric(1))
-    Gij <- c(gower::gower_topn(predpoints, tpoints, n = 1)$distance)
-
-  }
+  Gj <- .knndist(reference = tpoints, k = 1, dist_fun = dist_fun)
+  Gij <- .knndist(reference = tpoints, query = predpoints, k = 1, dist_fun = dist_fun)
 
 
   # Check if Gj > Gij (warning suppressed regarding ties)
@@ -813,16 +794,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
       clust <- sample(rep(1:k, ceiling(nrow(tpoints)/k)), size = nrow(tpoints), replace=F)
     }
 
-    if(is.null(catVars)) {
-      if(isTRUE(dist_fun == "mahalanobis")) {
-        Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
-      } else {
-        Gjstar <- cv_distances(tpoints, clust,algorithm=algorithm, dist_fun = dist_fun)
-      }
-
-    } else {
-      Gjstar <- cv_distances(tpoints, clust, dist_fun = dist_fun)
-    }
+    Gjstar <- .cv_distances(x = tpoints, CVtest = clust, dist_fun = dist_fun)
 
     k_final <- "random CV"
     W_final <- twosamples::wass_stat(Gjstar, Gij)
@@ -831,29 +803,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
   }else{
 
     if(clustering == "hierarchical"){
-
-      # calculate distance matrix which is needed for hierarchical clustering
-      if(is.null(catVars)) {
-
-        if(isTRUE(dist_fun == "euclidean")) {
-          # calculate distance matrix with Euclidean distances if no categorical variables are present
-          # for MD: distance matrix was already calculated
-          distmat <- stats::dist(tpoints, upper=TRUE, diag=TRUE) |> as.matrix()
-          diag(distmat) <- NA
-        }
-
-      } else {
-
-        # calculate distance matrix with Gower distances if categorical variables are present
-        distmat <- matrix(nrow=nrow(tpoints), ncol=nrow(tpoints))
-        for (i in 1:nrow(tpoints)){
-
-          trainDist <-  gower::gower_dist(tpoints[i,], tpoints)
-
-          trainDist[i] <- NA
-          distmat[i,] <- trainDist
-        }
-      }
+      distmat <- .distance(tpoints, query = NULL, dist_fun = dist_fun)
       hc <- stats::hclust(d = stats::as.dist(distmat), method = linkf)
     }
 
@@ -956,20 +906,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
         # Compute W statistic if size of clust_k is valid
         if(any(prop_valid)){
 
-          if(clustering == "kmeans") {
-            if(is.null(catVars)) {
-              if(isTRUE(dist_fun == "mahalanobis")){
-                Gjstar_i <- cv_distances(tpoints, CVtest = clust_k, dist_fun = dist_fun)
-              } else {
-                Gjstar_i <- cv_distances(tpoints, CVtest = clust_k,algorithm = algorithm, dist_fun = dist_fun)
-              }
-            } else {
-              Gjstar_i <- cv_distances(tpoints, CVtest = clust_k, dist_fun = dist_fun)
-            }
-
-          } else {
-            Gjstar_i <- distclust_distmat(distmat, clust_k)
-          }
+          Gjstar_i <- .cv_distances(x = tpoints, CVtest = clust_k, dist_fun = dist_fun)
 
           clustgrid$W[clustgrid$nk==nk] <- twosamples::wass_stat(Gjstar_i, Gij)
           clustgroups[[paste0("nk", nk)]] <- clust_k
@@ -986,20 +923,7 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
       stop("No valid train/test configurations found in the range test_prop +/- tolerance. Increase tolerance.")
     }
 
-    if(clustering == "kmeans") {
-      if(is.null(catVars)) {
-        if(isTRUE(dist_fun == "mahalanobis")) {
-          Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
-        } else {
-          Gjstar <- cv_distances(tpoints, CVtest = clust,algorithm=algorithm, dist_fun = dist_fun)
-        }
-
-      } else {
-        Gjstar <- cv_distances(tpoints, CVtest = clust, dist_fun = dist_fun)
-      }
-    } else {
-      Gjstar <- distclust_distmat(distmat, clust)
-    }
+    Gjstar <- .cv_distances(x = tpoints, CVtest = clust, dist_fun = dist_fun)
 
   }
 
@@ -1030,12 +954,3 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
 
 }
 
-
-# Helper function: Compute out-of-fold NN distance based on a distance matrix (geographical coordinates / numerical variables)
-distclust_distmat <- function(distm, folds){
-  alldist <- rep(NA, length(folds))
-  for(f in unique(folds)){
-    alldist[f == folds] <- apply(distm[f == folds, f != folds, drop=FALSE], 1, min)
-  }
-  alldist
-}

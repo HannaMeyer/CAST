@@ -19,13 +19,12 @@
 #' @param variables character vector defining the predictor variables used if dist_space="feature". If not provided all variables included in modeldomain are used.
 #' @param time_var optional. character. Column that indicates the date. Only used if dist_space="time".
 #' @param time_unit optional. Character. Unit for temporal distances See ?difftime.Only used if dist_space="time".
-#' @param algorithm see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}
-#' @param dist_fun character. Currently covers `euclidean` (default), `gower`, `mahalanobis`, `great_circle` and `abs_time`.
-#' `gower` and `mahalanobis` only work with `dist_space`="feature", while `great_circle` only works with `dist_space`="geographical". 
-#' `mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables, 
+#' @param dist_fun character. Automatically detected if `dist_space`="geographical". For geographical (long/lat) coordinates,
+#' `dist_fun` is set to "great_circle", while "euclidean" distances are used for projected coordinats.
+#' For `dist_space`="feature", `dist_fun` currently covers `euclidean` (default), `gower` and `mahalanobis`.
+#' `mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables,
 #' `gower` also works with mixed data including numerical and categorical variables.
 #' For `dist_space`="time", currently only the absolute difference (`abs_time`) is implemented.
-#' For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.
 #' @param scale_vars boolean. Should variables be scaled? Only for `dist_space`="feature". 
 #' Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
 #' For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.
@@ -147,7 +146,6 @@ geodist <- function(
   variables = NULL,
   time_var = NULL,
   time_unit = "auto",
-  algorithm = "brute",
   dist_fun = "euclidean",
   scale_vars = TRUE,
   cvtrain = NULL,
@@ -155,8 +153,6 @@ geodist <- function(
   type = NULL,
   timevar = NULL
 ){
-
-  # 1. Input validation & normalization ----------
 
   ## Guard against old parameter names / deprecated parameters
   if (!is.null(cvtrain)) {
@@ -185,448 +181,412 @@ geodist <- function(
 
   if (dist_space == "geo") dist_space <- "geographical"
 
-
   ## Check that dist_space was correctly defined
   if (!dist_space %in% c("geographical", "feature", "time")) {
     stop("dist_space must be one of 'geographical', 'feature' or 'time'")
   }
-
   if (!(dist_fun %in% c("euclidean", "mahalanobis", "gower", "great_circle", "abs_time"))) {
     stop("dist_fun must be one of 'euclidean', 'mahalanobis', 'gower' or 'great_circle'")
   }
-
   if(dist_space == "time" && dist_fun != "abs_time"){
     warning("Temporal space only supports 'abs_time' distances.")
     dist_fun <- "abs_time"
   } 
-  if(dist_space == "feature" && dist_fun == "great_circle") stop("Great-circle distances only work with in geographical space.")
-  if(dist_space == "geographical" && dist_fun %in% c("mahalanobis", "gower")) stop("Mahalanobis and Gower distances only work in feature space.")
-
-  ## CVtrain
-  if(!is.null(CVtrain) && !is.list(CVtrain)) stop("CVtrain has to be a list of indices")
-  if(is.null(CVtest) && !is.null(CVtrain)) {
-    message("CVtest was inferred as the opposite of CVtrain")
-    n_flds <- max(unlist(CVtrain))
-    # Generate CVtest as the complement of CVtrain for each fold
-    CVtest <- lapply(CVtrain, function(train_idx) setdiff(seq_len(n_flds), train_idx))
+  if(dist_space == "feature" && dist_fun == "great_circle") {
+    stop("Great-circle distances only work with in geographical space.")
+  }
+  if(dist_space == "geographical" && dist_fun %in% c("mahalanobis", "gower")) {
+    stop("Mahalanobis and Gower distances only work in feature space.")
   }
 
+  ## CVtrain
+  if(!is.null(CVtrain) && !is.list(CVtrain)) {
+    stop("CVtrain has to be a list of indices")
+  }
+  if(!is.null(CVtest) && !is.list(CVtest)) {
+    stop("CVtest has to be a list of indices")
+  }
+  if(!is.null(CVtrain) && is.null(CVtest)) {
+    message("CVtest was inferred as the opposite of CVtrain")
+    n_flds <- max(unlist(CVtrain))
+    CVtest <- lapply(CVtrain, function(train_idx) setdiff(seq_len(n_flds), train_idx))
+  }
+  if (!is.null(CVtest) && is.null(CVtrain)) {
+    n_flds <- max(unlist(CVtest))
+    CVtrain <- lapply(CVtest, function(test_idx) setdiff(seq_len(n_flds), test_idx))
+  }
+  folds <- NULL
+  if (!is.null(CVtest) || !is.null(CVtrain)) folds <- list(train = CVtrain, test = CVtest)
 
   ## Check for different raster formats
   if (inherits(modeldomain, "Raster")) {
     modeldomain <- methods::as(modeldomain,"SpatRaster")
   }
   if (inherits(modeldomain, "stars")) {
-    if (!requireNamespace("stars", quietly = TRUE))
+    if (!requireNamespace("stars", quietly = TRUE)) {
       stop("package stars required: install that first")
+    }
     modeldomain <- methods::as(modeldomain, "SpatRaster")
   }
 
-  ## Check for time variable and unit
-  if (dist_space == "time") {
-    if (is.null(time_var)) {
-      time_var <- names(which(vapply(x, lubridate::is.Date, logical(1))))
-      message("time variable selected: ", time_var)
-    }
-    if (time_unit == "auto") {
-      time_unit <- units(difftime(
-        sf::st_drop_geometry(x)[, time_var],
-        sf::st_drop_geometry(x)[, time_var]
-      ))
-    }
-  }
+  # Retrieve variable names if not provided
+  variables <- .get_ref_vars(variables, x, modeldomain, preddata)
 
-  # 2. CRS harmonization ----------
-
-  # Retrieve the CRS of preddata (or modeldomain) and use it as a reference
-  ref_crs <- if (!is.null(preddata)) {
-    sf::st_crs(preddata)
-  } else if (!is.null(modeldomain) && inherits(modeldomain, "sf")) {
-    sf::st_crs(modeldomain)
-  } else if (!is.null(modeldomain) && inherits(modeldomain, "SpatRaster")) {
-    sf::st_crs(modeldomain)
+  # Sample prediction points from the study area if not supplied
+  if (is.null(preddata)) {
+    pred_points <- sampleFromArea(
+      modeldomain = modeldomain, 
+      samplesize = samplesize, 
+      dist_space = dist_space, 
+      variables = variables, 
+      sampling = sampling)
   } else {
-    sf::st_crs(x)
+    pred_points <- preddata
   }
 
-  # transform training points to the CRS of preddata (or modeldomain)
-  if (!is.na(ref_crs) && !is.na(sf::st_crs(x)) && sf::st_crs(x) != ref_crs) {
+  # Retrieve the reference CRS of preddata (or modeldomain)
+  ref_crs <- .get_ref_crs(pred_points, modeldomain, x)
+  # transform training points to the reference crs if necessary
+  if (sf::st_crs(x) != ref_crs) {
     message("Transforming training data CRS to match the preddata/modeldomain")
     x <- sf::st_transform(x, ref_crs)
   }
-
-  # transform test points to the CRS of preddata (or modeldomain)
-  if (!is.null(testdata) &&
-      !is.na(sf::st_crs(testdata)) &&
-      !is.na(sf::st_crs(x)) &&
-      sf::st_crs(testdata) != sf::st_crs(x)) {
+  # transform test points to the reference crs if necessary
+  if (!is.null(testdata) && sf::st_crs(testdata) != sf::st_crs(x)) {
     message("Transforming test data CRS to match the preddata/modeldomain")
     testdata <- sf::st_transform(testdata, sf::st_crs(x))
   }
 
-  # Check if coordinates are longitutude/latitude
-  islonglat <- if (is.na(ref_crs)) {
+  # now hand off to the appropriate distance processor function
+  if (dist_space == "geographical") {
+    message("Calculating distances in geographic space...")
+    nnds <- .geo_processor(
+      x = x, 
+      pred_points = pred_points,
+      testdata = testdata, 
+      dist_fun = dist_fun,
+      folds = folds
+    )
+  } else if (dist_space == "time") {
+    message("Calculating distances in temporal space...")
+    nnds <- .time_processor(
+      x = x,
+      pred_points = pred_points,
+      testdata = testdata,
+      dist_fun = dist_fun,
+      folds = folds,
+      time_var = time_var,
+      time_unit = time_unit
+    )
+  } else if (dist_space == "feature") {
+    message("Calculating distances in feature space...")
+    nnds <- .feature_processor(
+      x = x, 
+      pred_points = pred_points, 
+      testdata = testdata,
+      dist_fun = dist_fun,
+      folds = folds, 
+      variables = variables,
+      scale_vars = scale_vars,
+      modeldomain = modeldomain
+    )
+  }
+  # Post-processing ----------
+
+  class(nnds) <- c("geodist", class(nnds))
+  attr(nnds, "dist_space") <- dist_space
+  if (dist_space == "time") attr(nnds, "unit") <- time_unit
+
+  attr(nnds, "W_sample") <- twosamples::wass_stat(
+    nnds[nnds$what == "sample-to-sample", "dist"],
+    nnds[nnds$what == "prediction-to-sample", "dist"]
+  )
+
+  if (!is.null(testdata)) {
+    attr(nnds, "W_test") <- twosamples::wass_stat(
+      nnds[nnds$what == "test-to-sample", "dist"],
+      nnds[nnds$what == "prediction-to-sample", "dist"]
+    )
+  }
+
+  if (!is.null(CVtest)) {
+    attr(nnds, "W_CV") <- twosamples::wass_stat(
+      nnds[nnds$what == "CV-distances", "dist"],
+      nnds[nnds$what == "prediction-to-sample", "dist"]
+    )
+  }
+  nnds
+}
+
+.get_ref_crs <- function(preddata, modeldomain, x) {
+  crs <- sf::st_crs(x)
+  if (!is.null(modeldomain)) {
+    crs <- sf::st_crs(modeldomain)
+  }
+  if (!is.null(preddata)) {
+    crs <- sf::st_crs(preddata)
+  }
+  return(crs)
+}
+
+
+# Processor functions for different space types ----------
+.geo_processor <- function(
+  x, 
+  pred_points = NULL, 
+  testdata = NULL,
+  dist_fun = c("euclidean", "great_circle"),
+  folds = NULL) {
+  
+  dist_fun <- match.arg(dist_fun)
+  
+  islonglat <- if (is.na(sf::st_crs(x))) {
     warning("Missing CRS of the modeldomain or prediction points. Assuming projected CRS.")
     FALSE
   } else {
-    sf::st_is_longlat(ref_crs)
+    sf::st_is_longlat(sf::st_crs(x))
   }
 
-  # 3. Prediction point generation ----------
-
-  # Sample prediction points from the study area (only if no preddata are supplied)
-  pred_points <- if (is.null(preddata)) {
-    sampleFromArea(modeldomain, samplesize, dist_space, variables, sampling)
+  if (islonglat) {
+    message("Calculating great-circle distances in geographic space (longlat coordinates).")
+    dist_fun <- "great_circle"
   } else {
-    preddata
+    message("Calculating euclidean distances in geographic space (projected coordinates).")
+    dist_fun <- "euclidean"
   }
-
-
-  # 4. Feature-space preparation (if needed) ----------
-
-  catVars <- NULL
-
-  if (dist_space == "feature") {
-
-    if (is.null(preddata) && !inherits(modeldomain, "SpatRaster")) {
-      stop("For feature space, modeldomain must be a SpatRaster or preddata must be supplied.")
-    }
-
-    # If no variable names are given, retrieve them from the preddata or modeldomain (the latter is preferred)
-    if (is.null(variables) && !is.null(modeldomain)) {
-       variables <- names(modeldomain)
-    } else if (is.null(variables) && !is.null(preddata) && is.null(modeldomain)) {
-       variables <- names(preddata)
-    }
-
-    # Extract predictor values from the modeldomain if they are not attached
-    if (any(!variables %in% names(x))) {
-      message("Extracting predictors from modeldomain")
-      x <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(x), bind = TRUE, na.rm = TRUE))
-    }
-    x <- x[, variables]
-
-    if (!is.null(testdata) && any(!variables %in% names(testdata))) {
-      testdata <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(testdata), bind = TRUE, na.rm = TRUE))
-    }
-    if (!is.null(testdata)) testdata <- testdata[, variables]
-
-    if (any(!variables %in% names(pred_points))) {
-      pred_points <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(pred_points), bind = TRUE, na.rm = TRUE))
-    }
-    pred_points <- pred_points[, variables]
-
-    # Detect categorical variables
-    catVars <- names(x)[vapply(x, function(z) inherits(z, c("factor", "character")), logical(1))]
-    if (length(catVars) == 0) catVars <- NULL
-
-    # Drop the geometry of the training and prediction (and test) points
-    x <- sf::st_drop_geometry(x)
-    pred_points <- sf::st_drop_geometry(pred_points)
-    if (!is.null(testdata)) testdata <- sf::st_drop_geometry(testdata)
-
-    # Optionally scale the training, prediction and test points
-    if(isTRUE(scale_vars)) {
-      if (is.null(catVars)) {
-            scaleparam <- attributes(scale(x))
-            x <- data.frame(scale(x))
-            pred_points <- data.frame(scale(pred_points,
-                                            center = scaleparam$`scaled:center`,
-                                            scale = scaleparam$`scaled:scale`))
-            if (!is.null(testdata)) {
-              testdata <- data.frame(scale(testdata,
-                                          center = scaleparam$`scaled:center`,
-                                          scale = scaleparam$`scaled:scale`))
-            }
-          } else {
-            x_cat <- x[,catVars,drop=FALSE]
-            pred_points_cat <- pred_points[,catVars,drop=FALSE]
-        
-            num_cols <- !(names(x) %in% catVars)
-            x_num <- x[,num_cols,drop=FALSE]
-            pred_points_num <- pred_points[,-which(names(pred_points)%in%catVars),drop=FALSE]
-
-            scale_attr <- attributes(scale(x_num))
-            x <- scale(x_num) |> as.data.frame()
-            pred_points <- scale(pred_points_num,center=scale_attr$`scaled:center`,
-                                scale=scale_attr$`scaled:scale`) |>
-              as.data.frame()
-        
-            x <- as.data.frame(cbind(x, lapply(x_cat, as.factor)))
-            pred_points <- as.data.frame(cbind(pred_points, lapply(pred_points_cat, as.factor)))
-          
-            if (!is.null(testdata)) {
-              testdata_cat <- testdata[,catVars,drop=FALSE]
-              testdata_num <- testdata[,num_cols]
-              testdata <- scale(testdata_num,center=scale_attr$`scaled:center`,
-                                scale=scale_attr$`scaled:scale`) |>
-               as.data.frame()
-        
-              testdata <- as.data.frame(cbind(testdata, lapply(testdata_cat, as.factor)))
-            }
-
-      }
-    }
-    
-  }
-
-  # 5. Distance computation ----------
-
-  # Some more input checks
-  if(dist_space == "feature") {
-    if (!is.null(catVars) && dist_fun != "gower") {
-        stop("Only 'gower' distances are allowed for categorical variables.")
-    }
-  } else if(dist_space == "geographical") {
-    if(isTRUE(islonglat) && dist_fun != "great_circle")  {
-      stop("Only 'great_circle' distances are allowed for lon/lat coordinates.")
-    }
-  }
-
 
   # Calculate NNDs between training points
-  s2s <- compute_NND(
-    x=x, y=NULL, dist_space = dist_space, dist_type_label = "sample-to-sample",  dist_fun = dist_fun,
-    CVtest = NULL, CVtrain = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
+  dists <- .compute_nnds(
+    x = x, 
+    pred_points = pred_points, 
+    testdata = testdata, 
+    folds = folds,
+    .dist = .geo_dist, 
+    args = list(dist_fun = dist_fun)
   )
-
-  # Calculate NNDs between prediction and training points
-  p2s <- compute_NND(
-    x=x, y=pred_points, dist_space = dist_space, dist_type_label = "prediction-to-sample",  dist_fun = dist_fun,
-    CVtest = NULL, CVtrain = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
-  )
-  dists <- rbind(s2s, p2s)
-
-  # Calculate NNDs between test points and training points
-  if (!is.null(testdata)) {
-    t2s <- compute_NND(
-      x=x, y=testdata, dist_space = dist_space, dist_type_label = "test-to-sample",  dist_fun = dist_fun,
-      CVtest = NULL, CVtrain = NULL, time_var = time_var, time_unit = time_unit, algorithm = algorithm
-    )
-    dists <- rbind(dists, t2s)
-  }
-  # Calculate NNDs between CV folds
-  if (!is.null(CVtest)) {
-    cvdist <- compute_NND(
-      x=x, y=NULL, dist_space = dist_space, dist_type_label = "CV-distances",  dist_fun = dist_fun,
-      CVtest = CVtest, CVtrain = CVtrain, time_var = time_var, time_unit = time_unit, algorithm = algorithm
-    )
-    dists <- rbind(dists, cvdist)
-  }
-
-  # 6. Post-processing ----------
-
-  class(dists) <- c("geodist", class(dists))
-  attr(dists, "dist_space") <- dist_space
-  if (dist_space == "time") attr(dists, "unit") <- time_unit
-
-  attr(dists, "W_sample") <- twosamples::wass_stat(
-    dists[dists$what == "sample-to-sample", "dist"],
-    dists[dists$what == "prediction-to-sample", "dist"]
-  )
-
-  if (!is.null(testdata)) {
-    attr(dists, "W_test") <- twosamples::wass_stat(
-      dists[dists$what == "test-to-sample", "dist"],
-      dists[dists$what == "prediction-to-sample", "dist"]
-    )
-  }
-
-  if (!is.null(CVtest)) {
-    attr(dists, "W_CV") <- twosamples::wass_stat(
-      dists[dists$what == "CV-distances", "dist"],
-      dists[dists$what == "prediction-to-sample", "dist"]
-    )
-  }
-
-  dists
+  dists$dist_type <- "geographical"
+  return(dists)
 }
 
-
-
-## Distance calculation based on space ----------
-compute_NND <- function(x, y = NULL, dist_space = c("geographical","feature","time"), 
-                      dist_type_label = "sample-to-sample", 
-                      dist_fun = c("euclidean","mahalanobis","gower","great_circle", "abs_time"), 
-                      CVtest = NULL, CVtrain = NULL, time_var = NULL, time_unit = "auto", algorithm = "brute") {
+.time_processor <- function(
+  x, 
+  pred_points = NULL, 
+  testdata = NULL,
+  dist_fun = "abs_time", 
+  folds = NULL,
+  time_var = NULL, 
+  time_unit = "auto") {
   
-  dist_space <- match.arg(dist_space)
   dist_fun <- match.arg(dist_fun)
 
-  # Stop when encountering invalid parameter combinations
-  if(!is.null(y) && !is.null(CVtest)) stop("Currently, `CVtest` and `y` cannot be specified simultaniously.")
-
-  # Extract coordinates from x (and y)
-  coords_x <- if(dist_space == "geographical") sf::st_coordinates(x)[,1:2] else NULL
-  coords_y <- if(dist_space == "geographical" && !is.null(y)) sf::st_coordinates(y)[,1:2] else NULL
-
-  # Calculate nearest neighbor distances in geographical space
-  if(dist_space == "geographical") {
-    if(dist_fun == "great_circle") {
-      if(is.null(CVtest)) {
-        distmat <- if(is.null(y)) sf::st_distance(x) else sf::st_distance(y, x)
-        units(distmat) <- NULL
-        if(is.null(y)) diag(distmat) <- NA
-        min_d <- apply(distmat, 1, min, na.rm=TRUE)
-      } else {
-        min_d <- cv_distances(x, CVtest = CVtest, CVtrain = CVtrain, dist_fun = dist_fun)
-      }
-    } else {
-      if(is.null(y)) {
-        if(is.null(CVtest)) {
-          min_d <- FNN::knn.dist(coords_x, k = 1, algorithm=algorithm)
-        } else {
-          min_d <- cv_distances(coords_x, CVtest = CVtest, CVtrain = CVtrain, algorithm=algorithm, dist_fun = dist_fun)
-        }
-      } else {
-        min_d <- FNN::knnx.dist(query = coords_y, data = coords_x, k = 1, algorithm=algorithm)
-      }
+  if (is.null(time_var)) {
+    time_var <- names(which(vapply(x, lubridate::is.Date, logical(1))))
+    if (length(time_var) == 0) {
+      stop("No time variable found. Please specify the time variable using the 'time_var' argument.")
+    } else if (length(time_var) > 1) {
+      warning("Multiple time variables found. Using the first one: ", time_var[1])
+      time_var <- time_var[1]
     }
-    
-  } else if(dist_space == "feature"){
-    # Calculate nearest neighbor distances in feature space
-    df_x <- sf::st_drop_geometry(x)
-    df_y <- if(!is.null(y)) sf::st_drop_geometry(y) else df_x
-    mat_x <- as.matrix(df_x)
-    mat_y <- as.matrix(df_y)
-    
-    if(dist_fun == "mahalanobis"){
-      
-      if(is.null(CVtest)) {
-  
-        S <- if(ncol(mat_x) == 1) matrix(stats::var(mat_x),1,1) else stats::cov(mat_x)
-        S_inv <- MASS::ginv(S)
-        
-        min_d <- vapply(seq_len(nrow(mat_y)), function(i){
-          
-          idx <- if(is.null(y)) seq_len(nrow(mat_x))[-i] else seq_len(nrow(mat_x))
-          
-          min(vapply(idx, function(j){
-            diff <- mat_y[i,] - mat_x[j,]
-            as.numeric(sqrt(t(diff) %*% S_inv %*% diff))
-          }, numeric(1)))
-          
-        }, numeric(1))
-        
-      } else {
-        min_d <- cv_distances(mat_x, CVtest = CVtest, CVtrain = CVtrain, dist_fun = dist_fun)
-      }
-      
-    } else if(dist_fun == "euclidean"){
-      if(is.null(CVtest)) {
-        min_d <- if(is.null(y)) FNN::knn.dist(mat_x, k=1, algorithm=algorithm) else
-               FNN::knnx.dist(query = mat_y, data = mat_x, k=1, algorithm=algorithm)
-      } else {
-        min_d <- cv_distances(mat_x, CVtest = CVtest, CVtrain = CVtrain, algorithm=algorithm, dist_fun = dist_fun)
-      }
-      
-    } else if(dist_fun == "gower"){
-      if(is.null(CVtest)) {
-        min_d <- if(is.null(y)) {
-          vapply(1:nrow(df_x), function(i) gower::gower_topn(df_x[i,,drop=FALSE], df_x[-i,,drop=FALSE], n=1)$distance[[1]], numeric(1))
-        } else {
-          gower_res <- gower::gower_topn(df_y, df_x, n = 1)
-          vapply(gower_res$distance, function(x) x[1], numeric(1))
-        }
-      } else {
-        min_d <- cv_distances(df_x, CVtest = CVtest, CVtrain = CVtrain, dist_fun = dist_fun)
-      }      
-    }
-    
-  } else if(dist_space == "time"){
-    # Calculate nearest neighbor distances in temporal space
-    if(dist_fun == "abs_time") {
-      time_x <- sf::st_drop_geometry(x)[,time_var]
-      if(is.null(CVtest)) {
-        time_y <- if(!is.null(y)) sf::st_drop_geometry(y)[,time_var] else time_x
-        dmat <- abs(outer(time_y, time_x, FUN = function(a,b) as.numeric(difftime(a,b,units=time_unit))))
-        if(is.null(y)) diag(dmat) <- Inf
-        min_d <- apply(dmat, 1, min)
-      } else {
-        min_d <- cv_distances(time_x, CVtest = CVtest, time_unit = time_unit, CVtrain = CVtrain, dist_fun = dist_fun)
-      }
-      
-    }
-    
+    message("time variable selected: ", time_var)
   }
-  
-  data.frame(dist = min_d,
-             what = factor(dist_type_label),
-             dist_type = dist_space)
+
+  dists <- .compute_nnds(
+    x = x, 
+    pred_points = pred_points, 
+    testdata = testdata, 
+    folds = folds, 
+    .dist = .time_dist, 
+    args = list(time_var = time_var, time_unit = time_unit)
+  )
+  dists$dist_type <- "time"
+  return(dists)
 }
 
+.feature_processor <- function(
+  x, 
+  pred_points = NULL,
+  testdata = NULL,
+  dist_fun = c("euclidean", "mahalanobis", "gower"),
+  folds = NULL,
+  variables = NULL,
+  scale_vars = TRUE,
+  modeldomain = NULL) {
+  
+  
+  dist_fun <- match.arg(dist_fun)
+  if (is.null(pred_points) && !inherits(modeldomain, "SpatRaster")) {
+    stop("For feature space, modeldomain must be a SpatRaster or preddata must be supplied.")
+  }
+  # retrive variable names
+  variables <- .get_ref_vars(variables, x, modeldomain, pred_points)
+  # Extract predictor values from the modeldomain if they are not attached
+  x <- .extract_predictors(x, modeldomain, variables)
+  pred_points <- .extract_predictors(pred_points, modeldomain, variables)
+  if (!is.null(testdata)) {
+    testdata <- .extract_predictors(testdata, modeldomain, variables)
+  }
 
-## Helper function: Compute out-of-fold NN distance ----------
-cv_distances <- function(x, CVtest, CVtrain = NULL, dist_fun = "euclidean", algorithm = "brute", time_unit = "auto") {
+  # Drop the geometry of the training and prediction (and test) points
+  x <- sf::st_drop_geometry(x)
+  pred_points <- sf::st_drop_geometry(pred_points)
+  if (!is.null(testdata)) testdata <- sf::st_drop_geometry(testdata)
 
-  # define length of NND vector
-  n <- if(inherits(x, c("Date","POSIXct","POSIXt"))) length(x) else nrow(x)
-  alldist <- rep(NA, n)
+  # Detect categorical variables
+  cat_cols <- .get_categorical_variables(x, variables)
+  num_cols <- setdiff(variables, cat_cols)
 
-  # Convert CVtest and CVtrain to vectors (knndm supplies CVtest in vector format, so we can't only support lists of indices)
-  if(inherits(CVtest, "list")) {
-    CVtest_v <- rep(NA_integer_, n)
-    for(k in seq_along(CVtest)) CVtest_v[CVtest[[k]]] <- k
-  } else CVtest_v <- CVtest
+  if (length(cat_cols) > 0 && dist_fun != "gower") {
+      stop("Only 'gower' distances are allowed for categorical variables.")
+  }
 
-  # Calculate distance matrix for great circle distances
+  if (isTRUE(scale_vars)) {
+    if (length(num_cols) > 0) { # we only need to scale if there are numerical variables
+      scale_attr <- attributes(scale(x[, num_cols, drop=FALSE]))
+      center <- scale_attr$`scaled:center`
+      scale <- scale_attr$`scaled:scale`
+      x[, num_cols] <- scale(x[, num_cols, drop=FALSE])
+      pred_points[, num_cols] <- scale(pred_points[, num_cols, drop=FALSE], center = center, scale = scale)
+      if (!is.null(testdata)) {
+        testdata[, num_cols] <- scale(testdata[, num_cols, drop=FALSE], center = center, scale = scale)
+      }
+    }
+  }
+
+  dists <- .compute_nnds(
+    x = x, 
+    pred_points = pred_points, 
+    testdata = testdata, 
+    folds = folds, 
+    .dist = .feat_dist, 
+    args = list(dist_fun = dist_fun)
+  )
+  dists$dist_type <- "feature"
+  return(dists)
+}
+
+.get_ref_vars <- function(vars, x, modeldomain, preddata) {
+  if (!is.null(vars)) return(vars)
+  if (!is.null(modeldomain)) return(names(modeldomain))
+  if (!is.null(preddata)) return(names(preddata))
+  return(names(x))
+}
+
+.extract_predictors <- function(x, modeldomain, variables) {
+  if (any(!variables %in% names(x))) {
+    message("Extracting predictors from modeldomain")
+    x <- sf::st_as_sf(terra::extract(modeldomain, terra::vect(x), bind = TRUE, na.rm = TRUE))
+  }
+  x <- x[, variables]
+  return(x)
+}
+
+##### atomical distance functions ----------
+.geo_dist <- function(
+  x, 
+  y = NULL, 
+  dist_fun = NULL) {
+  
   if(dist_fun == "great_circle") {
-      distmat <- sf::st_distance(x)
-      units(distmat) <- NULL
-      diag(distmat) <- NA
+    dist_mat <- if(is.null(y)) sf::st_distance(x) else sf::st_distance(y, x)
+    units(dist_mat) <- NULL
+    if(is.null(y)) diag(dist_mat) <- NA
+    min_d <- apply(dist_mat, 1, min, na.rm=TRUE)
+  } 
+
+  if (dist_fun == "euclidean") {
+    coords_x <- sf::st_coordinates(x)[ ,1:2]
+    coords_y <- if(!is.null(y)) sf::st_coordinates(y)[ ,1:2] else NULL
+    min_d <- .knndist(query = coords_y, reference = coords_x, k = 1, dist_fun = dist_fun)
   }
 
-  # Prepare Mahalanobis distance
-  if(dist_fun == "mahalanobis") {
-    tr_mat <- as.matrix(x)
-    S_inv <- MASS::ginv(stats::cov(tr_mat))
-  }
-  
-  
-  # Calculate distances between CV folds
-  for(f in unique(CVtest_v)){
-    
-    test_idx <- which(CVtest_v == f)
-    
-    if(!is.null(CVtrain)) {
-      train_idx <- CVtrain[[f]]
-    } else {
-      train_idx <- which(CVtest_v != f)
-    }
-
-    if(inherits(x, c("Date","POSIXct","POSIXt"))) {
-        tr_train <- x[train_idx]
-        tr_test  <- x[test_idx]
-      } else {
-        tr_train <- x[train_idx,, drop=FALSE]
-        tr_test  <- x[test_idx,, drop=FALSE]
-      }
-
-    if(dist_fun == "euclidean") {
-      alldist[test_idx] <- FNN::knnx.dist(query = tr_test,
-                                  data = tr_train,
-                                  k = 1,
-                                  algorithm = algorithm)
-    } else if(dist_fun == "great_circle") {      
-      alldist[test_idx] <- apply(distmat[test_idx, train_idx, drop=FALSE], 1, min)
-    } else if(dist_fun == "gower") {
-        alldist[test_idx] <- c(gower::gower_topn(x[test_idx,,drop=FALSE],
-                                          x[train_idx,,drop=FALSE],
-                                          n = 1))$distance[[1]]
-    } else if(dist_fun == "mahalanobis") {
-      alldist[test_idx] <- apply(tr_mat[test_idx,,drop=FALSE], 1, function(y){
-      min(apply(tr_mat[train_idx,,drop=FALSE], 1, function(x){
-        sqrt(t(y - x) %*% S_inv %*% (y - x))
-      }))
-    })
-    } else if(dist_fun == "abs_time") {
-      diffs <- outer(x[test_idx], x[train_idx], function(x,y) abs(as.numeric(difftime(x, y, units=time_unit))))
-      alldist[test_idx] <- apply(diffs, 1, min)
-    }    
-  }
-  alldist
+  return(min_d)
 }
 
+.time_dist <- function(
+  x, 
+  y = NULL,
+  time_var, 
+  time_unit = "auto"){
+  
+  time_x <- sf::st_drop_geometry(x)[ ,time_var]
+  time_y <- if(!is.null(y)) sf::st_drop_geometry(y)[ ,time_var] else time_x
+  
+  if (time_unit == "auto") {
+    time_unit <- units(difftime(time_x, time_x))
+  }
+
+  dist_mat <- abs(outer(time_y, time_x, FUN = function(a,b) as.numeric(difftime(a,b,units=time_unit))))
+  if(is.null(y)) diag(dist_mat) <- NA
+  min_d <- apply(dist_mat, 1, min, na.rm = TRUE)
+
+  return(min_d)
+}
+
+.feat_dist <- function(
+  x, 
+  y = NULL,
+  dist_fun) {
+  min_d <- .knndist(
+    query = y, 
+    reference = x, 
+    k = 1, 
+    dist_fun = dist_fun, 
+    offset = 0 # TODO: check if this is really correct: do we need to ignore self distances when y is NULL?
+  )
+  return(min_d)
+}
+
+
+# Helper function: retrieve near neighbors distances ----------
+.compute_nnds <- function(
+  x, 
+  pred_points, 
+  testdata, 
+  folds = NULL,
+  .dist,
+  args
+) {
+  # sample to sample distances
+  s2s <- data.frame(dist = do.call(.dist, c(list(x = x, y = NULL), args)))
+  s2s$what <- "sample-to-sample"
+  # prediction to sample distances
+  p2s <- data.frame(dist = do.call(.dist, c(list(x = x, y = pred_points), args)))
+  p2s$what <- "prediction-to-sample"
+  # target to sample distances (if testdata is provided)
+  t2s <- NULL
+  if (!is.null(testdata)) {
+    t2s <- data.frame(dist = do.call(.dist, c(list(x = x, y = testdata), args)))
+    t2s$what <- "test-to-sample"
+  }
+  # CV fold distances (if CVtest is provided)
+  cvdist <- NULL
+  if (!is.null(folds) && !is.null(folds$test)) {
+    cvdist <- data.frame(dist = .cv_dist(x = x, folds = folds, .dist = .dist, args = args))
+    cvdist$what <- "CV-distances"
+  }
+  # Combine distances into a single data frame
+  dists <- rbind(s2s, p2s)
+  if (!is.null(t2s)) dists <- rbind(dists, t2s)
+  if (!is.null(cvdist)) dists <- rbind(dists, cvdist)
+  return(dists)
+}
+
+# Helper function: call .dist either with or without CV folds ---------
+.cv_dist <- function(x, folds, .dist, args) {
+  # Get total number of observations
+  n <- nrow(x)
+  # Initialize result vector to preserve position ordering
+  all_cv_dists <- rep(NA_real_, n)
+  # Process each fold and assign distances to correct positions
+  for (i in seq_along(folds$test)) {
+    test_idx <- folds$test[[i]]
+    train_idx <- folds$train[[i]]
+    fold_dists <- do.call(.dist, c(list(x = x[train_idx, , drop=FALSE], y = x[test_idx, , drop=FALSE]), args))
+    # Assign to correct positions in result vector
+    all_cv_dists[test_idx] <- fold_dists
+  }
+  return(all_cv_dists)
+}
 
 ## Helper function: sample prediction points from the prediction area ----------
 sampleFromArea <- function(modeldomain, samplesize, dist_space, variables, sampling){
@@ -671,7 +631,3 @@ sampleFromArea <- function(modeldomain, samplesize, dist_space, variables, sampl
   return(predictionloc)
 
 }
-
-
-
-

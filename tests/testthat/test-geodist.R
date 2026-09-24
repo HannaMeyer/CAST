@@ -19,6 +19,7 @@ test_that("geodist handles CRS mismatch between x and modeldomain", {
 
 test_that("geodist warns on missing CRS", {
   pts <- sf::st_as_sfc("POINT (1 1)")
+  pts <- rbind(pts, pts) |> sf::st_as_sfc()
   dist <- expect_warning(
     geodist(sf::st_as_sf(pts), preddata = sf::st_as_sf(pts), dist_space = "geographical"),
     "Missing CRS of the modeldomain or prediction points. Assuming projected CRS."
@@ -30,7 +31,7 @@ test_that("geodist supports Fibonacci sampling", {
   data(splotdata)
   studyArea <- rnaturalearth::ne_countries(continent = "South America", returnclass = "sf")
   expect_message(
-    geodist(splotdata, studyArea, sampling = "Fibonacci", dist_space = "geographical", dist_fun = "great_circle"),
+    geodist(splotdata, studyArea, sampling = "Fibonacci", dist_space = "geographical"),
     "Sampling 2000 prediction locations from the modeldomain vector."
   )
 })
@@ -47,8 +48,7 @@ test_that("geodist works with points and polygon in geographic space", {
   dist_geo <- geodist(x=splotdata,
                       modeldomain=studyArea,
                       CVtest=folds$indexOut,
-                      dist_space = "geographical",
-                      dist_fun = "great_circle")
+                      dist_space = "geographical")
 
   mean_sample2sample <- round(mean(dist_geo[dist_geo$what=="sample-to-sample","dist"]))
   mean_CV_distances <- round(mean(dist_geo[dist_geo$what=="CV-distances","dist"]))
@@ -104,7 +104,7 @@ test_that("geodist works with points and polygon in feature space using Mahalano
   mean_CV_distances <- round(mean(dist_fspace[dist_fspace$what=="CV-distances","dist"]), 4)
 
   expect_equal(mean_sample2sample, 0.0900)
-  expect_equal(mean_CV_distances, 0.1104)
+  expect_equal(mean_CV_distances, 0.1118)
 
 })
 
@@ -311,9 +311,9 @@ test_that("geodist works with categorical variables in feature space using Gower
   mean_CV_distance <- round(mean(dist[dist$what=="CV-distances","dist"]), 4)
 
   expect_equal(mean_sample2sample, 0.0459)
-  expect_equal(mean_prediction2sample, 0.0931)
-  expect_equal(mean_test2sample, 0.2128)
-  expect_equal(mean_CV_distance, 0.0271)
+  expect_equal(mean_prediction2sample, 0.1986)
+  expect_equal(mean_test2sample, 0.3525)
+  expect_equal(mean_CV_distance, 0.05830)
 })
 
 
