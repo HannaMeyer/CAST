@@ -1,3 +1,9 @@
+# `CAST` 1.1.2
+* bug fix: handling of errors when data from Github unavailable for vignettes
+
+# `CAST` 1.1.1
+* bug fix: handling of errors when server unavailable, conditional tests
+
 # `CAST` 1.1.0
 * new features:
   * knndm for train-test splits
