@@ -136,10 +136,50 @@ test_that("NNDM works in feature space", {
   pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
   studyArea <- studyArea[[names(studyArea) %in% names(pts)]]
   train_points <- pts[,names(pts) %in% names(studyArea)]
-  nndm_folds_f <- nndm(train_points, modeldomain = studyArea, space="feature")
-  nndm_folds_g <- nndm(train_points, modeldomain = studyArea, space="geographical")
+  nndm_folds_f <- nndm(train_points, modeldomain = studyArea, dist_space="feature")
+  nndm_folds_g <- nndm(train_points, modeldomain = studyArea, dist_space="geographical")
   expect_equal(round(as.numeric(mean(nndm_folds_f$Gjstar)),4), 0.6335)
   expect_equal(round(as.numeric(mean(nndm_folds_g$Gjstar)),4), 70.7268)
+
+})
+
+test_that("NNDM works in feature space with categorical variables", {
+  set.seed(1234)
+  data(cookfarm)
+  dat <- terra::aggregate(cookfarm[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+                          by=list(as.character(cookfarm$SOURCEID)),mean)
+  pts <- dat[,-1]
+  pts <- sf::st_as_sf(pts,coords=c("Easting","Northing"))
+  sf::st_crs(pts) <- 26911
+  studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
+  pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
+  studyArea <- studyArea[[names(studyArea) %in% names(pts)]]
+
+  prediction_points <- terra::spatSample(studyArea, 1000, "regular")
+  train_points <- pts[,names(pts) %in% names(studyArea)]
+
+  prediction_points$fct <- factor(sample(LETTERS[1:4], nrow(prediction_points), replace=TRUE))
+  train_points$fct <- factor(sample(LETTERS[1:4], nrow(pts), replace=TRUE))
+
+  nndm_folds_f <- nndm(train_points, predpoints = prediction_points, dist_space = "feature", dist_fun = "gower")
+  expect_equal(round(as.numeric(mean(nndm_folds_f$Gjstar)), 3), 0.099)
+
+})
+
+test_that("NNDM works in feature space with Mahalanobis distances", {
+  set.seed(1234)
+  data(cookfarm)
+  dat <- terra::aggregate(cookfarm[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+                          by=list(as.character(cookfarm$SOURCEID)),mean)
+  pts <- dat[,-1]
+  pts <- sf::st_as_sf(pts,coords=c("Easting","Northing"))
+  sf::st_crs(pts) <- 26911
+  studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
+  pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
+  studyArea <- studyArea[[names(studyArea) %in% names(pts)]]
+  train_points <- pts[,names(pts) %in% names(studyArea)]
+  nndm_folds_f <- nndm(train_points, modeldomain = studyArea, dist_space="feature", dist_fun = "mahalanobis")
+  expect_equal(round(as.numeric(mean(nndm_folds_f$Gjstar)),4), 0.6612)
 
 })
 

@@ -8,22 +8,31 @@ nndm(
   tpoints,
   modeldomain = NULL,
   predpoints = NULL,
-  space = "geographical",
+  dist_space = "geographical",
+  dist_fun = "euclidean",
+  scale_vars = TRUE,
   samplesize = 1000,
   sampling = "regular",
   phi = "max",
-  min_train = 0.5,
-  algorithm = "brute"
+  min_train = 0.5
 )
 }
 \arguments{
-\item{tpoints}{sf or sfc point object, or data.frame if space = "feature". Contains the training points samples.}
+\item{tpoints}{sf or sfc point object, or data.frame if dist_space = "feature". Contains the training points samples.}
 
 \item{modeldomain}{sf polygon object or SpatRaster defining the prediction area. Optional; alternative to predpoints (see Details).}
 
-\item{predpoints}{sf or sfc point object, or data.frame if space = "feature". Contains the target prediction points. Optional; alternative to modeldomain (see Details).}
+\item{predpoints}{sf or sfc point object, or data.frame if dist_space = "feature". Contains the target prediction points. Optional; alternative to modeldomain (see Details).}
 
-\item{space}{character. Either "geographical" or "feature". Feature space is still experimental, so use with caution.}
+\item{dist_space}{character. Either "geographical" or "feature". Feature dist_space is still experimental, so use with caution.}
+
+\item{dist_fun}{character. Only used for `dist_space`="feature". `dist_fun` currently covers `euclidean` (default), `gower` and `mahalanobis`.
+`mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables,
+`gower` also works with mixed data including numerical and categorical variables.}
+
+\item{scale_vars}{boolean. Only used if `dist_space`="feature". Should variables be scaled?
+Calculating Gower distances already includes scaling, and manually rescale the data is redundant.
+For other distances (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by default.}
 
 \item{samplesize}{numeric. How many points in the modeldomain should be sampled as prediction points?
 Only required if modeldomain is used instead of predpoints.}
@@ -37,8 +46,6 @@ Per default (phi="max"), the maximum distance found in the training and predicti
 
 \item{min_train}{Numeric between 0 and 1. Minimum proportion of training
 data that must be used in each CV fold. Defaults to 0.5 (i.e. half of the training points).}
-
-\item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
 }
 \value{
 An object of class \emph{nndm} consisting of a list of six elements:
@@ -182,7 +189,7 @@ terra::plot(predictors_sp[["bio_1"]])
 terra::plot(vect(splotdata), add = T)
 
 # Run and visualise the nndm results
-nndm_folds <- nndm(splotdata[,predictors], modeldomain = predictors_sp, space = "feature")
+nndm_folds <- nndm(splotdata[,predictors], modeldomain = predictors_sp, dist_space = "feature")
 plot(nndm_folds)
 
 

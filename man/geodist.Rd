@@ -17,7 +17,6 @@ geodist(
   variables = NULL,
   time_var = NULL,
   time_unit = "auto",
-  algorithm = "brute",
   dist_fun = "euclidean",
   scale_vars = TRUE,
   cvtrain = NULL,
@@ -56,14 +55,12 @@ Use sampling = "Fibonacci" for global applications (raster objects will be trans
 
 \item{time_unit}{optional. Character. Unit for temporal distances See ?difftime.Only used if dist_space="time".}
 
-\item{algorithm}{see \code{\link[FNN]{knnx.dist}} and \code{\link[FNN]{knnx.index}}}
-
-\item{dist_fun}{character. Currently covers `euclidean` (default), `gower`, `mahalanobis`, `great_circle` and `abs_time`.
-`gower` and `mahalanobis` only work with `dist_space`="feature", while `great_circle` only works with `dist_space`="geographical". 
-`mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables, 
+\item{dist_fun}{character. Automatically detected if `dist_space`="geographical". For geographical (long/lat) coordinates,
+`dist_fun` is set to "great_circle", while "euclidean" distances are used for projected coordinats.
+For `dist_space`="feature", `dist_fun` currently covers `euclidean` (default), `gower` and `mahalanobis`.
+`mahalanobis` takes into account correlation between predictor values. While `euclidean` and `mahalanobis` only work with numerical variables,
 `gower` also works with mixed data including numerical and categorical variables.
-For `dist_space`="time", currently only the absolute difference (`abs_time`) is implemented.
-For the geographical space, `great_circle` covers lon/lat coordinates, whereas `euclidean` only works with projected coordinates.}
+For `dist_space`="time", currently only the absolute difference (`abs_time`) is implemented.}
 
 \item{scale_vars}{boolean. Should variables be scaled? Only for `dist_space`="feature". 
 Calculating Gower distances already includes scaling, and manually rescale the data is redundant. 
