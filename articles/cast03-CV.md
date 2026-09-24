@@ -358,7 +358,7 @@ print(temp_knndm)
 ```
 
     ## knndm object
-    ## Space: 
+    ## Distance space: geographical
     ## Clustering algorithm: hierarchical
     ## Intermediate clusters (q): random CV
     ## W statistic: 9384.0966
@@ -384,7 +384,7 @@ print(pm25_knndm)
 ```
 
     ## knndm object
-    ## Space: 
+    ## Distance space: geographical
     ## Clustering algorithm: hierarchical
     ## Intermediate clusters (q): 46
     ## W statistic: 4919.5574
@@ -416,7 +416,7 @@ print(pm25_knndm_v2)
 ```
 
     ## knndm object
-    ## Space: 
+    ## Distance space: geographical
     ## Clustering algorithm: kmeans
     ## Intermediate clusters (q): 35
     ## W statistic: 5022.7072

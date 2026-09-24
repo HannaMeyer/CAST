@@ -193,9 +193,8 @@ str(tdi)
     ##  $ trainDist_avrg    : num [1:703] 87.2 87.2 87.1 86.9 87.6 ...
     ##  $ trainDist_avrgmean: num 81.5
     ##  $ trainDI           : num [1:703] 0.0222 0.0173 0.0258 0.0409 0.0115 ...
-    ##  $ threshold         : Named num 0.19
-    ##   ..- attr(*, "names")= chr "75%"
-    ##  $ method            : chr "L2"
+    ##  $ threshold         : num 0.19
+    ##  $ method            : chr "euclidean"
     ##  - attr(*, "class")= chr "trainDI"
 
 ``` r

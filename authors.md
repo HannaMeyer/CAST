@@ -27,7 +27,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/HannaMeyer/CAST/blob/v1.1.2/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/HannaMeyer/CAST/blob/master/DESCRIPTION)
 
 Meyer H, Milà C, Ludwig M, Linnenbrink J, Schumacher F (2026). *CAST:
 'caret' Applications for Spatial-Temporal Models*. R package version

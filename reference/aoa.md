@@ -14,38 +14,40 @@ number of similar training data points up to the DI threshold.
 ## Usage
 
 ``` r
-aoa(newdata, model = NA, ...)
+aoa(newdata, model = NULL, ...)
 
 # S3 method for class 'stars'
-aoa(newdata, model = NA, ...)
+aoa(newdata, model = NULL, ...)
 
 # S3 method for class 'Raster'
-aoa(newdata, model = NA, ...)
+aoa(newdata, model = NULL, ...)
 
 # S3 method for class 'SpatRaster'
-aoa(newdata, model = NA, ...)
+aoa(newdata, model = NULL, ...)
 
 # S3 method for class 'data.frame'
 aoa(
   newdata,
-  model = NA,
+  model = NULL,
   ...,
-  trainDI = NA,
+  trainDI = NULL,
   train = NULL,
-  weight = NA,
+  weight = NULL,
   variables = "all",
   CVtest = NULL,
   CVtrain = NULL,
-  method = "L2",
+  dist_fun = c("euclidean", "mahalanobis"),
   useWeight = TRUE,
   useCV = TRUE,
   LPD = FALSE,
   maxLPD = 1,
   indices = FALSE,
-  parallel = FALSE,
-  cores = 4,
+  chunk_size = 1000L,
   verbose = TRUE,
-  algorithm = "brute"
+  method,
+  algorithm,
+  parallel,
+  cores
 )
 ```
 
@@ -106,11 +108,10 @@ aoa(
   training). Relevant if some data points are excluded, e.g. when using
   [`nndm`](https://hannameyer.github.io/CAST/reference/nndm.md).
 
-- method:
+- dist_fun:
 
-  Character. Method used for distance calculation. Currently euclidean
-  distance (L2) and Mahalanobis distance (MD) are implemented but only
-  L2 is tested. Note that MD takes considerably longer.
+  Character. Method used for distance calculation. Currently, euclidean
+  and mahalanobis distance are implemented but only euclidean is tested.
 
 - useWeight:
 
@@ -151,26 +152,32 @@ aoa(
   for examples with a high resolution and a larger number of training
   samples, which can cause memory issues.
 
-- parallel:
+- chunk_size:
 
-  Logical. Parallelization the process. Only possible if LPD = TRUE. Can
-  reduce computation time significantly.
-
-- cores:
-
-  Integer or Character. Number of cores to use for the the
-  parallelization. You can use "auto" to set your cores to
-  `detectCores()/2` (see
-  [`detectCores`](https://rdrr.io/r/parallel/detectCores.html)).
+  integer. Only if `trainDI = NULL`. Number of training points to be
+  processed in each chunk when calculating distances.
 
 - verbose:
 
   Logical. Print progress or not?
 
+- method:
+
+  Deprecated. Use dist_fun instead.
+
 - algorithm:
 
-  see [`knnx.dist`](https://rdrr.io/pkg/FNN/man/knn.dist.html) and
-  [`knnx.index`](https://rdrr.io/pkg/FNN/man/knn.index.html)
+  Deprecated. Use dist_fun instead.
+
+- parallel:
+
+  Deprecated. Parallelization is currently not implemented. Will be
+  added in the future.
+
+- cores:
+
+  Deprecated. Parallelization is currently not implemented. Will be
+  added in the future.
 
 ## Value
 

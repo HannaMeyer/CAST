@@ -65,7 +65,7 @@ Ludwig</h4>
             
             <h4 data-toc-skip class="date">2026-09-24</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/v1.1.2/vignettes/cast05-parallel.Rmd" class="external-link"><code>vignettes/cast05-parallel.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/master/vignettes/cast05-parallel.Rmd" class="external-link"><code>vignettes/cast05-parallel.Rmd</code></a></small>
       <div class="d-none name"><code>cast05-parallel.Rmd</code></div>
     </div>
 
@@ -239,9 +239,8 @@ all the necessary information from the training data and model that the
 <span><span class="co">##  $ trainDist_avrg    : num [1:703] 87.2 87.2 87.1 86.9 87.6 ...</span></span>
 <span><span class="co">##  $ trainDist_avrgmean: num 81.5</span></span>
 <span><span class="co">##  $ trainDI           : num [1:703] 0.0222 0.0173 0.0258 0.0409 0.0115 ...</span></span>
-<span><span class="co">##  $ threshold         : Named num 0.19</span></span>
-<span><span class="co">##   ..- attr(*, "names")= chr "75%"</span></span>
-<span><span class="co">##  $ method            : chr "L2"</span></span>
+<span><span class="co">##  $ threshold         : num 0.19</span></span>
+<span><span class="co">##  $ method            : chr "euclidean"</span></span>
 <span><span class="co">##  - attr(*, "class")= chr "trainDI"</span></span></code></pre>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># you can save the trainDI object for later application</span></span>

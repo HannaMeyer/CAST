@@ -302,7 +302,7 @@ Example for knndm:
 ``` r
 
 set.seed(10)
-indices_knndm <- knndm(splotdata,predictors_sp,k=3, dist_fun = "great_circle")
+indices_knndm <- knndm(splotdata,predictors_sp,k=3)
 ```
 
 Let’s compare how well these strategies fit the prediction task,
@@ -316,7 +316,7 @@ geodistance visualizations in this package for more information.
 
 ``` r
 
-plot(geodist(splotdata,predictors_sp,CVtest=model_default$control$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=model_default$control$indexOut, dist_space = "geographical"))+ 
   scale_x_log10(labels=round)
 ```
 
@@ -324,7 +324,7 @@ plot(geodist(splotdata,predictors_sp,CVtest=model_default$control$indexOut, dist
 
 ``` r
 
-plot(geodist(splotdata,predictors_sp,CVtest=indices_LLO$indexOut, dist_space = "geographical", dist_fun = "great_circle"))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=indices_LLO$indexOut, dist_space = "geographical"))+ 
   scale_x_log10(labels=round)
 ```
 
@@ -332,7 +332,7 @@ plot(geodist(splotdata,predictors_sp,CVtest=indices_LLO$indexOut, dist_space = "
 
 ``` r
 
-plot(geodist(splotdata,predictors_sp,CVtest=indices_knndm$indx_test, dist_space = "geographical", dist_fun = "great_circle"))+ 
+plot(geodist(splotdata,predictors_sp,CVtest=indices_knndm$indx_test, dist_space = "geographical"))+ 
   scale_x_log10(labels=round)
 ```
 

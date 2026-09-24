@@ -11,12 +11,13 @@ nndm(
   tpoints,
   modeldomain = NULL,
   predpoints = NULL,
-  space = "geographical",
+  dist_space = "geographical",
+  dist_fun = "euclidean",
+  scale_vars = TRUE,
   samplesize = 1000,
   sampling = "regular",
   phi = "max",
-  min_train = 0.5,
-  algorithm = "brute"
+  min_train = 0.5
 )
 ```
 
@@ -24,8 +25,8 @@ nndm(
 
 - tpoints:
 
-  sf or sfc point object, or data.frame if space = "feature". Contains
-  the training points samples.
+  sf or sfc point object, or data.frame if dist_space = "feature".
+  Contains the training points samples.
 
 - modeldomain:
 
@@ -34,14 +35,31 @@ nndm(
 
 - predpoints:
 
-  sf or sfc point object, or data.frame if space = "feature". Contains
-  the target prediction points. Optional; alternative to modeldomain
-  (see Details).
+  sf or sfc point object, or data.frame if dist_space = "feature".
+  Contains the target prediction points. Optional; alternative to
+  modeldomain (see Details).
 
-- space:
+- dist_space:
 
-  character. Either "geographical" or "feature". Feature space is still
-  experimental, so use with caution.
+  character. Either "geographical" or "feature". Feature dist_space is
+  still experimental, so use with caution.
+
+- dist_fun:
+
+  character. Only used for \`dist_space\`="feature". \`dist_fun\`
+  currently covers \`euclidean\` (default), \`gower\` and
+  \`mahalanobis\`. \`mahalanobis\` takes into account correlation
+  between predictor values. While \`euclidean\` and \`mahalanobis\` only
+  work with numerical variables, \`gower\` also works with mixed data
+  including numerical and categorical variables.
+
+- scale_vars:
+
+  boolean. Only used if \`dist_space\`="feature". Should variables be
+  scaled? Calculating Gower distances already includes scaling, and
+  manually rescale the data is redundant. For other distances
+  (Mahalanobis, Euclidean), scaling the data is important. Thus, TRUE by
+  default.
 
 - samplesize:
 
@@ -67,11 +85,6 @@ nndm(
   Numeric between 0 and 1. Minimum proportion of training data that must
   be used in each CV fold. Defaults to 0.5 (i.e. half of the training
   points).
-
-- algorithm:
-
-  see [`knnx.dist`](https://rdrr.io/pkg/FNN/man/knn.dist.html) and
-  [`knnx.index`](https://rdrr.io/pkg/FNN/man/knn.index.html)
 
 ## Value
 
@@ -272,7 +285,7 @@ terra::plot(predictors_sp[["bio_1"]])
 terra::plot(vect(splotdata), add = T)
 
 # Run and visualise the nndm results
-nndm_folds <- nndm(splotdata[,predictors], modeldomain = predictors_sp, space = "feature")
+nndm_folds <- nndm(splotdata[,predictors], modeldomain = predictors_sp, dist_space = "feature")
 plot(nndm_folds)
 
 

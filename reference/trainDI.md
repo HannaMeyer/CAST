@@ -10,18 +10,20 @@ model training.
 
 ``` r
 trainDI(
-  model = NA,
+  model = NULL,
   train = NULL,
   variables = "all",
-  weight = NA,
+  weight = NULL,
   CVtest = NULL,
   CVtrain = NULL,
-  method = "L2",
+  dist_fun = c("euclidean", "mahalanobis", "gower"),
   useWeight = TRUE,
   useCV = TRUE,
   LPD = FALSE,
+  chunk_size = 1000L,
   verbose = TRUE,
-  algorithm = "brute"
+  method,
+  algorithm
 )
 ```
 
@@ -65,11 +67,10 @@ trainDI(
   training). Relevant if some data points are excluded, e.g. when using
   [`nndm`](https://hannameyer.github.io/CAST/reference/nndm.md).
 
-- method:
+- dist_fun:
 
-  Character. Method used for distance calculation. Currently euclidean
-  distance (L2) and Mahalanobis distance (MD) are implemented but only
-  L2 is tested. Note that MD takes considerably longer.
+  Character. Method used for distance calculation. Currently, euclidean
+  and mahalanobis distance are implemented but only euclidean is tested.
 
 - useWeight:
 
@@ -86,14 +87,23 @@ trainDI(
   Logical. Indicates whether the local point density should be
   calculated or not.
 
+- chunk_size:
+
+  Integer. Number of training points to be processed in each chunk when
+  calculating distances. Decreasing this number can help to reduce
+  memory usage but increases runtime.
+
 - verbose:
 
   Logical. Print progress or not?
 
+- method:
+
+  Deprecated. Use dist_fun instead.
+
 - algorithm:
 
-  see [`knnx.dist`](https://rdrr.io/pkg/FNN/man/knn.dist.html) and
-  [`knnx.index`](https://rdrr.io/pkg/FNN/man/knn.index.html)
+  Deprecated. Use dist_fun instead.
 
 ## Value
 

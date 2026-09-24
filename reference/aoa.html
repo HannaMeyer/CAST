@@ -52,7 +52,7 @@ Optionally, the local point density is calculated which indicates the number of 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Area of Applicability</h1>
-      <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/v1.1.2/R/aoa.R" class="external-link"><code>R/aoa.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/HannaMeyer/CAST/blob/master/R/aoa.R" class="external-link"><code>R/aoa.R</code></a></small>
       <div class="d-none name"><code>aoa.Rd</code></div>
     </div>
 
@@ -70,38 +70,40 @@ Optionally, the local point density is calculated which indicates the number of 
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">aoa</span><span class="op">(</span><span class="va">newdata</span>, model <span class="op">=</span> <span class="cn">NA</span>, <span class="va">...</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">aoa</span><span class="op">(</span><span class="va">newdata</span>, model <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'stars'</span></span>
-<span><span class="fu">aoa</span><span class="op">(</span><span class="va">newdata</span>, model <span class="op">=</span> <span class="cn">NA</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">aoa</span><span class="op">(</span><span class="va">newdata</span>, model <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'Raster'</span></span>
-<span><span class="fu">aoa</span><span class="op">(</span><span class="va">newdata</span>, model <span class="op">=</span> <span class="cn">NA</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">aoa</span><span class="op">(</span><span class="va">newdata</span>, model <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'SpatRaster'</span></span>
-<span><span class="fu">aoa</span><span class="op">(</span><span class="va">newdata</span>, model <span class="op">=</span> <span class="cn">NA</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">aoa</span><span class="op">(</span><span class="va">newdata</span>, model <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'data.frame'</span></span>
 <span><span class="fu">aoa</span><span class="op">(</span></span>
 <span>  <span class="va">newdata</span>,</span>
-<span>  model <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span>,</span>
-<span>  trainDI <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  trainDI <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  train <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  weight <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  weight <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  variables <span class="op">=</span> <span class="st">"all"</span>,</span>
 <span>  CVtest <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  CVtrain <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"L2"</span>,</span>
+<span>  dist_fun <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"euclidean"</span>, <span class="st">"mahalanobis"</span><span class="op">)</span>,</span>
 <span>  useWeight <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  useCV <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  LPD <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maxLPD <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  indices <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  cores <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  chunk_size <span class="op">=</span> <span class="fl">1000L</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  algorithm <span class="op">=</span> <span class="st">"brute"</span></span>
+<span>  <span class="va">method</span>,</span>
+<span>  <span class="va">algorithm</span>,</span>
+<span>  <span class="va">parallel</span>,</span>
+<span>  <span class="va">cores</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -152,8 +154,8 @@ Only required if no model is given and only required if CVtrain is not the oppos
 Relevant if some data points are excluded, e.g. when using <code><a href="nndm.html">nndm</a></code>.</p></dd>
 
 
-<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>Character. Method used for distance calculation. Currently euclidean distance (L2) and Mahalanobis distance (MD) are implemented but only L2 is tested. Note that MD takes considerably longer.</p></dd>
+<dt id="arg-dist-fun">dist_fun<a class="anchor" aria-label="anchor" href="#arg-dist-fun"></a></dt>
+<dd><p>Character. Method used for distance calculation. Currently, euclidean and mahalanobis distance are implemented but only euclidean is tested.</p></dd>
 
 
 <dt id="arg-useweight">useWeight<a class="anchor" aria-label="anchor" href="#arg-useweight"></a></dt>
@@ -176,20 +178,28 @@ Relevant if some data points are excluded, e.g. when using <code><a href="nndm.h
 <dd><p>logical. Calculate indices of the training data points that are responsible for the LPD of a new prediction location? Output is a matrix with the dimensions num(raster_cells) x maxLPD. Each row holds the indices of the training data points that are relevant for the specific LPD value at that location. Can be used in combination with exploreAOA(aoa) function from the <a href="https://github.com/fab-scm/CASTvis" class="external-link">CASTvis package</a> for a better visual interpretation of the results. Note that the matrix can be quite big for examples with a high resolution and a larger number of training samples, which can cause memory issues.</p></dd>
 
 
-<dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
-<dd><p>Logical. Parallelization the process. Only possible if LPD = TRUE. Can reduce computation time significantly.</p></dd>
-
-
-<dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
-<dd><p>Integer or Character. Number of cores to use for the the parallelization. You can use "auto" to set your cores to <code>detectCores()/2</code> (see <code><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></code>).</p></dd>
+<dt id="arg-chunk-size">chunk_size<a class="anchor" aria-label="anchor" href="#arg-chunk-size"></a></dt>
+<dd><p>integer. Only if <code>trainDI = NULL</code>. Number of training points to be processed in each chunk when calculating distances.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>Logical. Print progress or not?</p></dd>
 
 
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
+<dd><p>Deprecated. Use dist_fun instead.</p></dd>
+
+
 <dt id="arg-algorithm">algorithm<a class="anchor" aria-label="anchor" href="#arg-algorithm"></a></dt>
-<dd><p>see <code><a href="https://rdrr.io/pkg/FNN/man/knn.dist.html" class="external-link">knnx.dist</a></code> and <code><a href="https://rdrr.io/pkg/FNN/man/knn.index.html" class="external-link">knnx.index</a></code></p></dd>
+<dd><p>Deprecated. Use dist_fun instead.</p></dd>
+
+
+<dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
+<dd><p>Deprecated. Parallelization is currently not implemented. Will be added in the future.</p></dd>
+
+
+<dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
+<dd><p>Deprecated. Parallelization is currently not implemented. Will be added in the future.</p></dd>
 
 </dl></div>
     <div class="section level2">
