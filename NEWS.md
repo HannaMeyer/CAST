@@ -1,3 +1,6 @@
+# `CAST` 1.2.0
+* Introduce knn-engine and further refactors in aoa and trainDI. See PR #167
+
 # `CAST` 1.1.2
 * bug fix: handling of errors when data from Github unavailable for vignettes
 

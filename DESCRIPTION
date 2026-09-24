@@ -1,18 +1,18 @@
 Package: CAST
 Type: Package
 Title: 'caret' Applications for Spatial-Temporal Models
-Version: 1.1.2
+Version: 1.2.0
 Authors@R: c(person("Hanna", "Meyer", email = "hanna.meyer@uni-muenster.de", role = c("cre", "aut")),
              person("Carles", "Milà", role = c("aut")),
              person("Marvin", "Ludwig", role = c("aut")),
              person("Jan", "Linnenbrink", role = c("aut")),
              person("Fabian", "Schumacher", role = c("aut")),
+             person("Darius", "Görgen", role = c("aut"))
+             person("Jakub", "Nowosad", role = c("aut")),
              person("Philipp", "Otto", role = c("ctb")),
              person("Chris", "Reudenbach", role = c("ctb")),
              person("Thomas", "Nauss", role = c("ctb")),
-             person("Edzer", "Pebesma", role = c("ctb")),
-             person("Jakub", "Nowosad", role = c("ctb")),
-             person("Darius", "Görgen", role = c("ctb")))
+             person("Edzer", "Pebesma", role = c("ctb")))
 Description: Supporting functionality to run 'caret' with spatial or spatial-temporal data. 
     'caret' is a frequently used package for model training and prediction using machine learning. 
     CAST includes functions to improve spatial or spatial-temporal modelling tasks using 'caret'. 
