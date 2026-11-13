@@ -753,7 +753,6 @@ knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
   
   # reorder columns of the prediction data if it differs from the order in the training data
   if(!identical(names(tpoints), names(predpoints))) {
-    message("predpoints were reordered to match the order of columns in the training data")
     predpoints <- predpoints[, names(tpoints), drop = FALSE]
   }
 
