@@ -11,6 +11,8 @@ test_that("kNNDM recognizes erroneous input", {
 
   predpoints$fct <- factor(sample(LETTERS[1:4], nrow(predpoints), replace=TRUE))
 
+  # neither predpoints nor modeldomain supplied
+  expect_error(knndm(tpoints, k=5, maxp=0.6), "either modeldomain or predpoints must be supplied")
   # maxp to small
   expect_error(knndm(tpoints, predpoints=predpoints, k=2, maxp=0.4), "maxp must be strictly between 1/k and 1")
   # k larger than number of tpoints
@@ -235,6 +237,30 @@ test_that("kNNDM works in feature space with kmeans clustering and raster as mod
 
 })
 
+test_that("kNNDM works in feature space with shuffled predictor names", {
+  set.seed(1234)
+
+  # prepare sample data
+  data(cookfarm)
+  dat <- terra::aggregate(cookfarm[,c("DEM","TWI", "NDRE.M", "Easting", "Northing","VW")],
+                          by=list(as.character(cookfarm$SOURCEID)),mean)
+  pts <- dat[,-1]
+  pts <- sf::st_as_sf(pts,coords=c("Easting","Northing"))
+  sf::st_crs(pts) <- 26911
+  studyArea <- terra::rast(system.file("extdata","predictors_2012-03-25.tif",package="CAST"))
+  pts <- sf::st_transform(pts, crs = sf::st_crs(studyArea))
+
+  studyArea <- studyArea[[names(studyArea) %in% names(pts)]]
+  train_points <- pts[,names(pts) %in% names(studyArea)]
+
+  # shuffle columns of study area
+  studyArea <- studyArea[[c(3,2,1)]]
+
+  knndm_folds <- knndm(train_points, modeldomain = studyArea, dist_space="feature", clustering = "kmeans")
+
+  expect_equal(round(as.numeric(knndm_folds$Gjstar[40]),4), 0.2132)
+
+})
 
 test_that("kNNDM works in feature space with hierarchical clustering and raster as modeldomain", {
   set.seed(1234)

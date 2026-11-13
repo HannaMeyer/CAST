@@ -282,6 +282,11 @@ knndm <- function(tpoints, modeldomain = NULL, predpoints = NULL,
 
   if (dist_space == "geo") dist_space <- "geographical"
 
+  ## Check that either predpoints or modeldomain is supplied
+  if(is.null(predpoints) && is.null(modeldomain)) {
+    stop("either modeldomain or predpoints must be supplied")
+  }
+
   ## Check that dist_space was correctly defined
   if (!dist_space %in% c("geographical", "feature")) {
     stop("dist_space must be one of 'geographical' or 'feature'")
@@ -745,6 +750,11 @@ knndm_geo <- function(tpoints, predpoints, k, maxp, minp, test_prop,
 # kNNDM in the feature space
 knndm_feature <- function(tpoints, predpoints, k, maxp, minp, test_prop,
   clustering, linkf, nk_len, dist_fun, dist_space, catVars, scale_vars)  {
+  
+  # reorder columns of the prediction data if it differs from the order in the training data
+  if(!identical(names(tpoints), names(predpoints))) {
+    predpoints <- predpoints[, names(tpoints), drop = FALSE]
+  }
 
   # rescale data (optional)
   if(isTRUE(scale_vars)) {
