@@ -49,7 +49,7 @@ Carles Milà
 ``` r
 # Simulate 100 points in a 100x100 square with 5 parents and a radius of 10.
 library(sf)
-#> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
+#> Linking to GEOS 3.14.1, GDAL 3.12.2, PROJ 9.7.1; sf_use_s2() is TRUE
 library(ggplot2)
 
 set.seed(1234)
